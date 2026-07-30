@@ -50,3 +50,32 @@ nuvem). Pasta isolada `/root/calistenia_app/`, app em `app/`.
 
 **Validação:** `flutter analyze` → sem issues. `flutter test` → 3/3 (linha do tempo,
 pulos de tempo-0, duração total). Compilação de ponta a ponta via `flutter build web`.
+
+---
+
+## 2026-07-30 — Publicação: repo GitHub + APK v0.1.0 na nuvem
+
+**Contexto:** MVP validado localmente; faltava commit (nada estava commitado) e o APK
+pra instalar no celular. Espelhado o `lista_app`.
+
+**O que foi feito:**
+- 1º commit do projeto e criação do repo **privado** `viniciostristao1/calistenia`
+  (`gh repo create calistenia --private --source=. --push`). Privado como o `lista_app`.
+- Push na `main` (paths `app/**`) disparou o workflow **Build APK** → **CI verde** em
+  ~alguns min. Artefato `calistenia-apks` (~25 MB) com 3 APKs por arquitetura.
+- Criado **release `v0.1.0`** (`gh release create`) anexando os 3 APKs, pra dar link
+  direto de download (mais fácil no celular que navegar "Artifacts" do Actions).
+  Instalar = `app-arm64-v8a-release.apk` (Android moderno), debug-signed → instala direto.
+
+**Gotchas / notas:**
+- **`gradle-wrapper.jar` NÃO vai no repo** (é ignorado pelo `.gitignore` padrão do
+  Flutter, junto de `gradlew`/`gradlew.bat`). Mesmo assim o CI builda — a
+  `subosito/flutter-action` + `flutter build apk` regeneram o wrapper. Confirmado que o
+  `lista_app` builda idêntico. **Não** adicionar o jar ao repo "pra garantir".
+- `gh run download` / `gh release ...` **fora do diretório do repo** (ex.: rodando do
+  scratchpad) exigem **`-R viniciostristao1/calistenia`**, senão dá
+  "not a git repository". Alguns comandos `gh`/`git` resetam o cwd do shell.
+- Editar só os `.md` da raiz **não** dispara o CI (o gatilho é `app/**` +
+  o próprio workflow) — bom pra atualizar docs sem gerar build à toa.
+
+**Release:** https://github.com/viniciostristao1/calistenia/releases/tag/v0.1.0

@@ -18,8 +18,13 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
-**MVP funcional pronto** (código compila, `flutter analyze` limpo, testes passam).
-Fase atual = **primeira instalação no celular do usuário** (APK via nuvem).
+**MVP funcional pronto** (código compila, `flutter analyze` limpo, testes passam) e
+**publicado**: repositório privado `viniciostristao1/calistenia` no GitHub, CI verde, e
+o **APK está no release `v0.1.0`** (assets por arquitetura). Fase atual = **usuário
+instalar o `app-arm64-v8a-release.apk` no celular e usar de verdade** → iterar pelo
+feedback real (ver [`IDEIAS.md`](IDEIAS.md)).
+
+> Link do release: https://github.com/viniciostristao1/calistenia/releases/tag/v0.1.0
 
 **O que existe e funciona (v0.1.0):**
 - **Home** com seletor de **dias da semana** (Seg–Dom, hoje destacado; ponto verde nos
@@ -39,9 +44,10 @@ Fase atual = **primeira instalação no celular do usuário** (APK via nuvem).
   semeia um "Treino exemplo" (editável/excluível).
 
 **O que falta (próximo passo):**
-1. **Gerar o APK na nuvem** (CI pronto) e o usuário **instalar no celular** para testar
-   de verdade. Ver `LANCAMENTO`/este arquivo § "Como gerar o APK".
-2. Iterar pelo feedback do uso real (ver [`IDEIAS.md`](IDEIAS.md)).
+1. ✅ ~~Gerar o APK na nuvem e publicar~~ — **feito** (release `v0.1.0`, CI verde).
+2. **Usuário instalar o `app-arm64-v8a-release.apk` no celular** e usar de verdade.
+3. Iterar pelo feedback do uso real (ver [`IDEIAS.md`](IDEIAS.md)). Próximos candidatos:
+   bip de áudio nas transições (item [TOP]) e ícone próprio.
 
 ## O que o app faz (MVP)
 1. Usuário cria um **treino**, dá um nome e marca os **dias da semana**.
