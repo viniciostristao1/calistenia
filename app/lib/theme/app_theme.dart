@@ -9,17 +9,25 @@ ThemeData buildAppTheme() {
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.bg,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.exec,
+      primary: AppColors.accent,
       onPrimary: AppColors.onAccent,
       secondary: AppColors.rest,
       surface: AppColors.surface,
       onSurface: AppColors.text,
       error: AppColors.danger,
     ),
-    textTheme: base.textTheme.apply(
-      bodyColor: AppColors.text,
-      displayColor: AppColors.text,
-    ),
+    textTheme: base.textTheme
+        .apply(
+          bodyColor: AppColors.text,
+          displayColor: AppColors.text,
+        )
+        .copyWith(
+          titleLarge: const TextStyle(
+            color: AppColors.text,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.2,
+          ),
+        ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.bg,
       foregroundColor: AppColors.text,
@@ -27,18 +35,30 @@ ThemeData buildAppTheme() {
       centerTitle: false,
       titleTextStyle: TextStyle(
         color: AppColors.text,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
+        fontSize: 22,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.3,
       ),
     ),
     cardTheme: CardThemeData(
       color: AppColors.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         side: const BorderSide(color: AppColors.line),
       ),
       margin: EdgeInsets.zero,
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     ),
     dividerColor: AppColors.line,
     inputDecorationTheme: InputDecorationTheme(

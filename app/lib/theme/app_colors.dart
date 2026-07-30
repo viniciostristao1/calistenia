@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
 
-/// Paleta do app (tema escuro). Ponto único de verdade das cores.
+/// Paleta do app (tema escuro, azul-escuro/navy). Ponto único de verdade das cores.
+///
+/// Dois papéis distintos, para não se confundirem:
+///  - **accent** (azul) = marca / ação (FAB, "iniciar", seleção de dia, botões).
+///  - **prep/exec/rest** = cores SEMÂNTICAS das fases do cronômetro (não são a marca).
 abstract final class AppColors {
-  static const bg = Color(0xFF0E0F13); // fundo
-  static const surface = Color(0xFF191C22); // cards
-  static const surface2 = Color(0xFF212530); // elevação / hover
-  static const line = Color(0x12FFFFFF); // divisórias ~7% branco
-  static const lineStrong = Color(0x1FFFFFFF); // ~12% branco
+  // Base — azul-escuro profundo (navy). É a "cara" do app.
+  static const bg = Color(0xFF0A0F1C); // fundo (navy quase preto)
+  static const surface = Color(0xFF121A2E); // cards
+  static const surface2 = Color(0xFF1B2540); // elevação / campos / hover
+  static const line = Color(0x14FFFFFF); // divisórias ~8% branco
+  static const lineStrong = Color(0x26FFFFFF); // ~15% branco
 
-  static const text = Color(0xFFEDEFF3); // texto principal
-  static const dim = Color(0xFF8B93A1); // texto secundário
-  static const dim2 = Color(0xFF5F6674); // texto terciário / ícones apagados
+  static const text = Color(0xFFEAF0FB); // texto principal (branco azulado)
+  static const dim = Color(0xFF8A96AE); // texto secundário
+  static const dim2 = Color(0xFF56607A); // terciário / ícones apagados
 
-  // Cores semânticas das fases do cronômetro.
-  static const prep = Color(0xFFF2B84B); // preparação (prepare-se)
-  static const exec = Color(0xFF33D17F); // execução (faça o movimento)
-  static const rest = Color(0xFF4C8DFF); // descanso
+  // Accent / marca — azul vivo. Ações e seleção.
+  static const accent = Color(0xFF3B82F6);
+  static const accentDark = Color(0xFF2563EB);
+  static const onAccent = Color(0xFFF2F7FF); // texto/ícone sobre o accent
 
-  static const onAccent = Color(0xFF08130C); // texto sobre cor forte
-  static const danger = Color(0xFFFF7A7A);
-  static const amber = prep;
-  static const green = exec;
-  static const blue = rest;
+  // Cores semânticas das fases do cronômetro (mantidas bem distinguíveis).
+  static const prep = Color(0xFFF5A524); // preparação (âmbar — "prepare-se")
+  static const exec = Color(0xFF31C971); // execução (verde — "faça / vai")
+  static const rest = Color(0xFF5B9CFF); // descanso (azul claro — "recupere")
+  static const onFase = Color(0xFF06111F); // texto sobre uma cor de fase clara
+
+  static const danger = Color(0xFFFF6B6B);
 }

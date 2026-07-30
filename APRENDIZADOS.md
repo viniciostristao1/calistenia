@@ -79,3 +79,47 @@ pra instalar no celular. Espelhado o `lista_app`.
   o próprio workflow) — bom pra atualizar docs sem gerar build à toa.
 
 **Release:** https://github.com/viniciostristao1/calistenia/releases/tag/v0.1.0
+
+---
+
+## 2026-07-30 — v0.2.0: séries + ritmo por repetição, visual navy, exercício avulso
+
+Três melhorias pedidas pelo usuário, num lote só (1 APK).
+
+**1) Modelo "ritmo por repetição" (decisão do usuário, entre 2 opções):**
+- Nova semântica do `Exercicio`: `execucaoSeg` = tempo de UMA repetição; `repeticoes` =
+  reps por série; **`series`** (campo novo) = nº de séries; `descansoSeg` = descanso
+  **entre séries**. Linha do tempo: `prep(1×) → [execução×reps → descanso] × séries`.
+  Não há descanso entre reps (são seguidas) — o bip a cada rep sai naturalmente da
+  transição execução→execução do player (nenhuma lógica de sub-contagem nova).
+- **Isométrico** (prancha) = `repeticoes: 1`, `execucaoSeg` = tempo da série → o modelo A
+  generaliza o "tempo por série" sem código extra.
+- **Migração automática** em `Exercicio.fromJson`: JSON antigo (sem `series`) tinha
+  `repeticoes` = nº de rodadas → vira `series = antigo`, `repeticoes = 1`. Preserva o
+  comportamento v0.1.0 exatamente. Mantida a chave `treinos_v1` (migração no parse, sem
+  perder dados). Teste dedicado cobre isso.
+- **Ajuste fino:** `_TempoLinha` ganhou `passo` (default 5); a Execução usa `passo: 1`.
+
+**2) Visual navy:** `AppColors` reescrito — base azul-escuro + **`accent` (azul)**
+separado das cores de FASE (prep/exec/rest). Regra: `accent` = marca/ação (FAB, iniciar,
+seleção, botões); `exec` (verde) fica SÓ para a fase execução e o ✓ de concluído. Troca
+cirúrgica de `exec`→`accent` nos pontos de ação (home, editor, player). `onAccent` virou
+quase-branco (era verde-escuro, pensado p/ cima de verde).
+
+**3) Home + exercício avulso:** `_TreinoCard` agora lista os exercícios; cada linha roda
+**só aquele exercício**. `PlayerScreen` deixou de receber `Treino` e passou a receber
+`{ titulo, List<Exercicio> exercicios }` (usa `montarLinhaDoTempoDe(List)`), servindo
+treino inteiro e exercício avulso com o mesmo widget.
+
+**Gotchas / notas:**
+- Muitas fases: flexão 10 reps × 3 séries = 33 fases. O "Etapa X de N" cru ficaria feio →
+  troquei o texto de progresso por "Exercício i/N · Série s/S" (barra continua por fase).
+- Toques aninhados no card da home: cabeçalho (InkWell→editor) e ▶ grande ficam lado a
+  lado (Row), sem aninhar; nas linhas de exercício o ▶ pequeno é InkWell dentro do InkWell
+  da linha, mas **ambos chamam a mesma ação** (rodar o exercício), então o aninhamento é
+  inofensivo.
+- `duracaoTotalSeg` (resumo do card) é aproximado (inclui descanso final); o player usa a
+  soma real das fases (`_duracaoTotal`, sem o descanso final). Diferença só no resumo.
+
+**Validação:** `flutter analyze` limpo. `flutter test` → 4/4 (linha do tempo por série,
+isométrico, duração, **migração v0.1.0→v0.2.0**). Versão `0.2.0+2`.

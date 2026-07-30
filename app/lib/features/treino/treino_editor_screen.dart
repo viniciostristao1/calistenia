@@ -113,7 +113,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
         minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
         child: FilledButton.icon(
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.exec,
+            backgroundColor: AppColors.accent,
             foregroundColor: AppColors.onAccent,
             minimumSize: const Size.fromHeight(52),
           ),
@@ -121,7 +121,10 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
               ? null
               : () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => PlayerScreen(treino: _t),
+                      builder: (_) => PlayerScreen(
+                        titulo: _t.nome,
+                        exercicios: _t.exercicios,
+                      ),
                     ),
                   ),
           icon: const Icon(Icons.play_arrow_rounded),
@@ -157,7 +160,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                   selected: _t.dias.contains(d),
                   showCheckmark: false,
                   backgroundColor: AppColors.surface,
-                  selectedColor: AppColors.exec,
+                  selectedColor: AppColors.accent,
                   labelStyle: TextStyle(
                     color: _t.dias.contains(d)
                         ? AppColors.onAccent
@@ -226,8 +229,8 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           const SizedBox(height: 12),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.exec,
-              side: const BorderSide(color: AppColors.exec),
+              foregroundColor: AppColors.accent,
+              side: const BorderSide(color: AppColors.accent),
               minimumSize: const Size.fromHeight(48),
             ),
             onPressed: () => _editarExercicio(),
@@ -257,9 +260,12 @@ class _ExercicioRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final e = exercicio;
+    final serieTxt = e.repeticoes > 1
+        ? '${e.series}×${e.repeticoes} · ${fmtSeg(e.execucaoSeg)}/rep'
+        : '${e.series}× ${fmtSeg(e.execucaoSeg)}';
     final partes = <String>[
       if (e.preparacaoSeg > 0) 'Prep ${fmtSeg(e.preparacaoSeg)}',
-      '${fmtSeg(e.execucaoSeg)} × ${e.repeticoes}',
+      serieTxt,
       if (e.descansoSeg > 0) 'Desc ${fmtSeg(e.descansoSeg)}',
     ];
     return Padding(

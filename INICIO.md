@@ -18,13 +18,20 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
-**MVP funcional pronto** (código compila, `flutter analyze` limpo, testes passam) e
-**publicado**: repositório privado `viniciostristao1/calistenia` no GitHub, CI verde, e
-o **APK está no release `v0.1.0`** (assets por arquitetura). Fase atual = **usuário
-instalar o `app-arm64-v8a-release.apk` no celular e usar de verdade** → iterar pelo
-feedback real (ver [`IDEIAS.md`](IDEIAS.md)).
+**Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
+atual = **v0.2.0** (release com APKs por arquitetura). Fase = **usuário instalar o
+`app-arm64-v8a-release.apk` e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-> Link do release: https://github.com/viniciostristao1/calistenia/releases/tag/v0.1.0
+**Novidades da v0.2.0** (3 pedidos do usuário, num lote):
+- **Séries + ritmo por repetição:** exercício agora tem `series` (rodadas) e `repeticoes`
+  (por série); **execução = tempo de UMA rep** com ajuste fino de 1s; descanso **entre
+  séries**. Isométrico = `repeticoes: 1`. Dados v0.1.0 migram sozinhos (`fromJson`:
+  repetições antigas → séries). Detalhe no [`APRENDIZADOS.md`](APRENDIZADOS.md).
+- **Visual navy** (azul-escuro) com `accent` azul separado das cores de fase.
+- **Home lista os exercícios** e cada um roda **avulso** (`PlayerScreen` agora recebe
+  `titulo` + `List<Exercicio>`, não mais `Treino`).
+
+> Releases: https://github.com/viniciostristao1/calistenia/releases
 
 **O que existe e funciona (v0.1.0):**
 - **Home** com seletor de **dias da semana** (Seg–Dom, hoje destacado; ponto verde nos
@@ -57,10 +64,16 @@ feedback real (ver [`IDEIAS.md`](IDEIAS.md)).
 3. Na home, seleciona o dia, toca ▶ no treino → os **cronômetros começam** e avançam
    sozinhos pela sequência, com opção de pausar/pular/voltar.
 
-### Modelo mental dos cronômetros
-Para cada exercício: `preparação (1×) → [ execução → descanso ] × repetições`.
+### Modelo mental dos cronômetros (v0.2.0 — "ritmo por repetição")
+Para cada exercício: `preparação (1×) → [ execução×repetições → descanso ] × séries`.
+- **execução** = tempo de UMA repetição (ex.: uma flexão de 3s; ajuste fino de 1s);
+- **repetições** = quantas por série (ex.: 10 flexões);
+- **séries** = quantas rodadas (ex.: 3);
+- **descanso** = entre séries (não há descanso entre repetições).
+
 Um tempo em **0 = etapa ausente** (ex.: descanso 0 = sem descanso). O descanso no fim
-absoluto do treino é omitido (não faz sentido descansar quando acabou).
+absoluto do treino é omitido. **Isométrico** (prancha) = `repetições 1`, execução = tempo
+da série. Migração v0.1.0→v0.2.0: o antigo "repetições" (rodadas) vira **séries**.
 
 ## Princípios (não violar)
 1. **Sem conta / sem nuvem** (por ora) — é um cronômetro pessoal; dados locais.

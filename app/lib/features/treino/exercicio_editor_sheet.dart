@@ -37,6 +37,7 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
   late int _exec;
   late int _desc;
   late int _reps;
+  late int _series;
 
   @override
   void initState() {
@@ -44,9 +45,10 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
     final e = widget.existente;
     _nomeCtrl = TextEditingController(text: e?.nome ?? '');
     _prep = e?.preparacaoSeg ?? 10;
-    _exec = e?.execucaoSeg ?? 30;
-    _desc = e?.descansoSeg ?? 15;
-    _reps = e?.repeticoes ?? 3;
+    _exec = e?.execucaoSeg ?? 3;
+    _desc = e?.descansoSeg ?? 60;
+    _reps = e?.repeticoes ?? 10;
+    _series = e?.series ?? 3;
   }
 
   @override
@@ -63,7 +65,8 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
       ..preparacaoSeg = _prep
       ..execucaoSeg = _exec < 1 ? 1 : _exec
       ..descansoSeg = _desc
-      ..repeticoes = _reps < 1 ? 1 : _reps;
+      ..repeticoes = _reps < 1 ? 1 : _reps
+      ..series = _series < 1 ? 1 : _series;
     Navigator.of(context).pop(e);
   }
 
@@ -104,7 +107,21 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
             ),
             const SizedBox(height: 20),
             _StepperLinha(
-              rotulo: 'Repetições',
+              rotulo: 'Séries',
+              cor: AppColors.text,
+              valorTexto: '$_series',
+              onMenos: () =>
+                  setState(() => _series = (_series - 1).clamp(1, 99)),
+              onMais: () =>
+                  setState(() => _series = (_series + 1).clamp(1, 99)),
+              onTapValor: () async {
+                final v = await _pedirNumero(context, 'Séries', _series, 1);
+                if (v != null) setState(() => _series = v);
+              },
+            ),
+            const SizedBox(height: 6),
+            _StepperLinha(
+              rotulo: 'Repetições (por série)',
               cor: AppColors.text,
               valorTexto: '$_reps',
               onMenos: () => setState(() => _reps = (_reps - 1).clamp(1, 999)),
@@ -123,24 +140,32 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
               onChanged: (v) => setState(() => _prep = v),
             ),
             _TempoLinha(
-              rotulo: 'Execução',
+              rotulo: 'Execução (por rep)',
               cor: AppColors.exec,
               segundos: _exec,
               removivel: false,
               minimo: 1,
+              passo: 1, // ajuste fino: uma flexão pode durar 2, 3, 4s…
               onChanged: (v) => setState(() => _exec = v),
             ),
             _TempoLinha(
-              rotulo: 'Descanso',
+              rotulo: 'Descanso (entre séries)',
               cor: AppColors.rest,
               segundos: _desc,
               removivel: true,
               onChanged: (v) => setState(() => _desc = v),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
+            _Resumo(
+              series: _series,
+              reps: _reps,
+              execSeg: _exec,
+              descSeg: _desc,
+            ),
+            const SizedBox(height: 18),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.exec,
+                backgroundColor: AppColors.accent,
                 foregroundColor: AppColors.onAccent,
                 minimumSize: const Size.fromHeight(52),
               ),
@@ -164,6 +189,7 @@ class _TempoLinha extends StatelessWidget {
     required this.removivel,
     required this.onChanged,
     this.minimo = 0,
+    this.passo = 5,
   });
 
   final String rotulo;
@@ -171,7 +197,11 @@ class _TempoLinha extends StatelessWidget {
   final int segundos;
   final bool removivel;
   final int minimo;
+  final int passo;
   final ValueChanged<int> onChanged;
+
+  /// Primeira palavra do rótulo ("Descanso (entre séries)" -> "descanso").
+  String get _rotuloCurto => rotulo.split(' ').first.toLowerCase();
 
   @override
   Widget build(BuildContext context) {
@@ -182,9 +212,10 @@ class _TempoLinha extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
             style: TextButton.styleFrom(foregroundColor: cor),
-            onPressed: () => onChanged(rotulo == 'Descanso' ? 15 : 10),
+            onPressed: () =>
+                onChanged(rotulo.startsWith('Descanso') ? 60 : 10),
             icon: const Icon(Icons.add, size: 18),
-            label: Text('Adicionar ${rotulo.toLowerCase()}'),
+            label: Text('Adicionar $_rotuloCurto'),
           ),
         ),
       );
@@ -206,7 +237,7 @@ class _TempoLinha extends StatelessWidget {
           _Redondo(
             icon: Icons.remove,
             onTap: () =>
-                onChanged((segundos - 5).clamp(minimo, 3600)),
+                onChanged((segundos - passo).clamp(minimo, 3600)),
           ),
           GestureDetector(
             onTap: () async {
@@ -226,7 +257,7 @@ class _TempoLinha extends StatelessWidget {
           ),
           _Redondo(
             icon: Icons.add,
-            onTap: () => onChanged((segundos + 5).clamp(minimo, 3600)),
+            onTap: () => onChanged((segundos + passo).clamp(minimo, 3600)),
           ),
           SizedBox(
             width: 40,
@@ -286,6 +317,49 @@ class _StepperLinha extends StatelessWidget {
         _Redondo(icon: Icons.add, onTap: onMais),
         const SizedBox(width: 40),
       ],
+    );
+  }
+}
+
+/// Resuminho em linguagem natural do que o cronômetro vai fazer.
+class _Resumo extends StatelessWidget {
+  const _Resumo({
+    required this.series,
+    required this.reps,
+    required this.execSeg,
+    required this.descSeg,
+  });
+
+  final int series;
+  final int reps;
+  final int execSeg;
+  final int descSeg;
+
+  @override
+  Widget build(BuildContext context) {
+    final serieTxt = reps > 1
+        ? '$reps reps de ${fmtSeg(execSeg)}'
+        : 'segure ${fmtSeg(execSeg)}';
+    final descTxt = descSeg > 0 ? ' · descanso ${fmtSeg(descSeg)}' : '';
+    final vezes = series > 1 ? '$series séries' : '1 série';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.timer_outlined, size: 18, color: AppColors.dim),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '$vezes de ($serieTxt)$descTxt',
+              style: const TextStyle(color: AppColors.dim, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

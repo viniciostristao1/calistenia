@@ -3,6 +3,17 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-07-30 — v0.2.0 (séries, novo visual e exercício avulso):**
+  - **Séries + ritmo por repetição:** agora cada exercício tem **séries** (quantas
+    rodadas) e **repetições** (quantas por série), e a **execução é o tempo de UMA
+    repetição** com ajuste fino de 1 em 1 segundo (2s, 3s, 4s por flexão…). O
+    cronômetro conta rep a rep e descansa **entre séries**. Isométrico (prancha) =
+    repetições 1. Seus treinos antigos são convertidos automaticamente (o antigo
+    "repetições" vira "séries").
+  - **Visual novo:** paleta **azul-escura (navy)** com destaque azul, cards e botões
+    repaginados — cara própria, menos genérica.
+  - **Home mostra os exercícios:** o card do treino lista os exercícios; **toque em um
+    para executá-lo sozinho** (ex.: só o agachamento). O ▶ grande roda o treino todo.
 - **2026-07-30 — v0.1.0 (primeira versão):** app de cronômetros de calistenia. Crie
   treinos por dia da semana, escreva os exercícios, ajuste preparação/execução/descanso
   e repetições, exclua qualquer etapa. Toque ▶ e os cronômetros rodam sozinhos com

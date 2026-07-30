@@ -18,12 +18,15 @@ class Treino {
        dias = dias ?? [],
        exercicios = exercicios ?? [];
 
-  /// Duração total do treino em segundos (soma de todas as etapas).
+  /// Duração total do treino em segundos (aproximada — inclui o descanso da
+  /// última série; a linha do tempo real remove o descanso do fim absoluto).
   int get duracaoTotalSeg {
     var total = 0;
     for (final e in exercicios) {
+      final series = e.series < 1 ? 1 : e.series;
+      final reps = e.repeticoes < 1 ? 1 : e.repeticoes;
       total += e.preparacaoSeg;
-      total += (e.execucaoSeg + e.descansoSeg) * e.repeticoes;
+      total += (e.execucaoSeg * reps + e.descansoSeg) * series;
     }
     return total;
   }

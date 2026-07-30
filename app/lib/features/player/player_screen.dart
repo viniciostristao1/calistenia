@@ -4,18 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../models/exercicio.dart';
 import '../../models/fase.dart';
-import '../../models/treino.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
 
-/// Roda o cronômetro do treino: percorre a linha do tempo (preparação →
-/// execução × reps → descanso) contando segundo a segundo, com pausa,
-/// pular/voltar etapa e vibração nas transições. Mantém a tela ligada.
+/// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
+/// → descanso, por série) contando segundo a segundo, com pausa, pular/voltar
+/// etapa e vibração nas transições. Mantém a tela ligada. Serve tanto para o
+/// treino inteiro quanto para um único exercício (basta a lista `exercicios`).
 class PlayerScreen extends StatefulWidget {
-  const PlayerScreen({super.key, required this.treino});
+  const PlayerScreen({
+    super.key,
+    required this.titulo,
+    required this.exercicios,
+  });
 
-  final Treino treino;
+  final String titulo;
+  final List<Exercicio> exercicios;
 
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
@@ -23,6 +29,7 @@ class PlayerScreen extends StatefulWidget {
 
 class _PlayerScreenState extends State<PlayerScreen> {
   late final List<Fase> _fases;
+  late final int _duracaoTotal; // soma das fases, em segundos
   int _idx = 0;
   int _restanteMs = 0;
   bool _running = false;
@@ -34,7 +41,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
-    _fases = montarLinhaDoTempo(widget.treino);
+    _fases = montarLinhaDoTempoDe(widget.exercicios);
+    _duracaoTotal = _fases.fold(0, (a, f) => a + f.segundos);
     if (_fases.isNotEmpty) {
       _restanteMs = _fases[0].segundos * 1000;
       WidgetsBinding.instance.addPostFrameCallback((_) => _iniciar());
@@ -211,7 +219,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
           Expanded(
             child: Text(
-              widget.treino.nome,
+              widget.titulo,
               style: const TextStyle(
                   fontSize: 15, fontWeight: FontWeight.w600),
               overflow: TextOverflow.ellipsis,
@@ -240,12 +248,42 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Etapa ${_idx + 1} de ${_fases.length}',
+            _rotuloProgresso(),
             style: const TextStyle(color: AppColors.dim, fontSize: 12),
           ),
         ],
       ),
     );
+  }
+
+  String _rotuloProgresso() {
+    final f = _fases[_idx];
+    final ex = f.totalExercicios > 1
+        ? 'Exercício ${f.exercicioIndex + 1}/${f.totalExercicios}'
+        : f.exercicioNome;
+    final ser = (f.serie > 0 && f.totalSeries > 1)
+        ? ' · Série ${f.serie}/${f.totalSeries}'
+        : '';
+    return '$ex$ser';
+  }
+
+  /// Subtexto dentro do anel, conforme a fase.
+  String _subtextoAnel(Fase f) {
+    switch (f.tipo) {
+      case FaseTipo.preparacao:
+        return 'Prepare-se';
+      case FaseTipo.descanso:
+        return f.totalSeries > 1 ? 'Recupere · série ${f.serie}/${f.totalSeries}' : 'Recupere';
+      case FaseTipo.execucao:
+        final temReps = f.totalReps > 1;
+        final temSeries = f.totalSeries > 1;
+        if (temReps && temSeries) {
+          return 'Série ${f.serie}/${f.totalSeries} · rep ${f.rep}/${f.totalReps}';
+        }
+        if (temReps) return 'Repetição ${f.rep}/${f.totalReps}';
+        if (temSeries) return 'Série ${f.serie}/${f.totalSeries}';
+        return 'Vai!';
+    }
   }
 
   Widget _anel(Color cor, double fracao, int segundos, Fase fase) {
@@ -289,11 +327,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                fase.tipo == FaseTipo.execucao
-                    ? 'Repetição ${fase.rep}/${fase.totalReps}'
-                    : (fase.tipo == FaseTipo.preparacao
-                        ? 'Prepare-se'
-                        : 'Recupere'),
+                _subtextoAnel(fase),
                 style: const TextStyle(color: AppColors.dim, fontSize: 14),
               ),
             ],
@@ -325,7 +359,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         ),
         const SizedBox(width: 28),
         Material(
-          color: AppColors.exec,
+          color: AppColors.accent,
           shape: const CircleBorder(),
           child: InkWell(
             customBorder: const CircleBorder(),
@@ -369,13 +403,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${widget.treino.nome} · ${fmtSeg(widget.treino.duracaoTotalSeg)}',
+                  '${widget.titulo} · ${fmtSeg(_duracaoTotal)}',
                   style: const TextStyle(color: AppColors.dim),
                 ),
                 const SizedBox(height: 32),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.exec,
+                    backgroundColor: AppColors.accent,
                     foregroundColor: AppColors.onAccent,
                     minimumSize: const Size(220, 52),
                   ),
