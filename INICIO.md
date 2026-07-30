@@ -1,0 +1,95 @@
+# Calistenia — INÍCIO (ler primeiro em toda tarefa)
+
+App **Flutter** de **cronômetros de treino de calistenia**. O usuário monta treinos
+(por dia da semana, com nomes de exercícios que ele mesmo escreve) e, ao iniciar, o
+app roda uma sequência de cronômetros: **preparação → execução → descanso**, repetida
+pelo número de repetições. Design escuro, simples. Meta futura: **Play Store**.
+
+> ⚠️ Projeto isolado. Vive **só** em `/root/calistenia_app/`.
+> NUNCA tocar em `/root/trading/`, `/root/trading_acoes/`, `/root/trading_opcoes/`,
+> `/root/lista_app/`.
+
+> 📓 **Fluxo fixo:** ao fim de cada bloco significativo, atualizar
+> [`APRENDIZADOS.md`](APRENDIZADOS.md) (diário técnico + lições) e dar **commit/push**.
+> **Toda melhoria visível ao usuário / release novo → UMA LINHA (resumo + data) em
+> [`ATUALIZACOES.md`](ATUALIZACOES.md)** (topo = mais recente). Planos futuros →
+> [`IDEIAS.md`](IDEIAS.md). Os três têm papéis distintos: técnico (`APRENDIZADOS`) ·
+> changelog do usuário (`ATUALIZACOES`) · futuro (`IDEIAS`).
+
+## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
+
+**MVP funcional pronto** (código compila, `flutter analyze` limpo, testes passam).
+Fase atual = **primeira instalação no celular do usuário** (APK via nuvem).
+
+**O que existe e funciona (v0.1.0):**
+- **Home** com seletor de **dias da semana** (Seg–Dom, hoje destacado; ponto verde nos
+  dias que têm treino) e a lista de treinos do dia. FAB "Novo treino".
+- **Editor de treino:** nome, dias em que aparece (multi-seleção), lista de exercícios
+  **reordenável** (arrastar), adicionar/excluir exercício, excluir o treino. Salva ao
+  vivo (nada se perde ao voltar). Botão "Iniciar treino".
+- **Editor de exercício** (folha): nome + **repetições** + tempos de **preparação /
+  execução / descanso** em segundos (± de 5 em 5 ou toque p/ digitar). Preparação e
+  descanso são **removíveis** ("excluir alguma etapa"); execução é o núcleo.
+- **Player (cronômetro):** roda a sequência com anel de progresso colorido por fase
+  (preparação=âmbar, execução=verde, descanso=azul), número grande em contagem
+  regressiva, contador de repetição, **pausar/retomar**, **pular** e **voltar** etapa,
+  progresso geral ("Etapa X de N"), "A seguir: …", vibração nas transições e nos
+  últimos 3s, e **mantém a tela ligada** (wakelock). Tela de "Treino concluído".
+- **Dados 100% locais** (`shared_preferences`) — **sem login, sem nuvem**. No 1º uso
+  semeia um "Treino exemplo" (editável/excluível).
+
+**O que falta (próximo passo):**
+1. **Gerar o APK na nuvem** (CI pronto) e o usuário **instalar no celular** para testar
+   de verdade. Ver `LANCAMENTO`/este arquivo § "Como gerar o APK".
+2. Iterar pelo feedback do uso real (ver [`IDEIAS.md`](IDEIAS.md)).
+
+## O que o app faz (MVP)
+1. Usuário cria um **treino**, dá um nome e marca os **dias da semana**.
+2. Adiciona **exercícios** (escreve o nome) e ajusta, para cada um:
+   **preparação** (segundos p/ se posicionar), **execução** (segundos fazendo o
+   movimento), **descanso** (segundos) e **repetições**.
+3. Na home, seleciona o dia, toca ▶ no treino → os **cronômetros começam** e avançam
+   sozinhos pela sequência, com opção de pausar/pular/voltar.
+
+### Modelo mental dos cronômetros
+Para cada exercício: `preparação (1×) → [ execução → descanso ] × repetições`.
+Um tempo em **0 = etapa ausente** (ex.: descanso 0 = sem descanso). O descanso no fim
+absoluto do treino é omitido (não faz sentido descansar quando acabou).
+
+## Princípios (não violar)
+1. **Sem conta / sem nuvem** (por ora) — é um cronômetro pessoal; dados locais.
+2. **Tudo editável** — todos os tempos e repetições, e excluir qualquer etapa.
+3. **Simples** — abrir e treinar em poucos toques.
+
+## Técnico
+- Flutter **3.44.7** / Dart **3.12.2** em `/root/flutter`.
+- Estado: **Riverpod** (`flutter_riverpod`), persistência: **shared_preferences**,
+  tela ligada no treino: **wakelock_plus**.
+- Arquitetura feature-based: `app/lib/features/<feature>/`.
+- Pacote Android: **com.vinyapps.calistenia**. Nome de exibição: **Calistenia**.
+- **Build de release: na nuvem (GitHub Actions)** — a VPS é fraca p/ compilar Android.
+
+## Estrutura do código (`app/lib/`)
+- `models/` — `exercicio.dart`, `treino.dart`, `fase.dart` (+ `montarLinhaDoTempo`).
+- `services/treinos_repository.dart` — carrega/salva treinos (Riverpod AsyncNotifier).
+- `features/home/` — tela inicial (dias + treinos).
+- `features/treino/` — editor de treino + folha de edição de exercício.
+- `features/player/` — o cronômetro em execução.
+- `theme/` — cores e tema escuro. `util/` — dias, formatação de tempo, ids.
+
+## Como gerar o APK (instalar no celular)
+A VPS não compila Android bem → o build sai na **nuvem** (GitHub Actions,
+`.github/workflows/build-apk.yml`). Fluxo:
+1. Repositório no GitHub (branch `main`) com este projeto.
+2. Push em `app/**` dispara o workflow → gera **APKs release por arquitetura**
+   (assinados com a chave de **debug**, então **instalam direto**, sem keystore).
+3. Baixar o artefato `calistenia-apks`, pegar o **`app-arm64-v8a-release.apk`**
+   (celulares Android modernos) e instalar no telefone (permitir "fontes desconhecidas").
+   Alternativa: `gh run download` / criar um release com `gh release create`.
+
+> Assinatura de **produção** (upload keystore) só quando formos à Play Store — aí
+> seguimos o mesmo padrão do `lista_app` (secrets `KEYSTORE_BASE64`/`KEYSTORE_PASSWORD`).
+
+## Ambiente
+VPS: ~1 vCPU, pouca RAM. OK para codar/`flutter analyze`/`flutter test`/`build web`;
+build de APK sai na nuvem.

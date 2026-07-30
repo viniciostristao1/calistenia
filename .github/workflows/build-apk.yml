@@ -1,0 +1,46 @@
+name: Build APK
+
+# Gera o APK de teste na nuvem a cada push no app (a VPS é fraca p/ compilar Android).
+# Por enquanto o release é assinado com a chave de DEBUG (instala direto no celular,
+# sem keystore). Ao ir para a Play Store, adicionamos a keystore de upload via secrets.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.7
+
+      - name: Dependências
+        working-directory: app
+        run: flutter pub get
+
+      - name: Build APK (release, por arquitetura)
+        working-directory: app
+        run: flutter build apk --release --split-per-abi
+
+      - name: Publica os APKs como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: calistenia-apks
+          path: app/build/app/outputs/flutter-apk/*-release.apk
+          if-no-files-found: error

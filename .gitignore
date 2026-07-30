@@ -1,0 +1,13 @@
+# Build da compilação web local (não versionar)
+app/build/
+app/.dart_tool/
+app/.flutter-plugins-dependencies
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Segredos futuros (keystore de upload, quando formos à Play Store)
+app/android/key.properties
+app/android/app/*.jks
+app/android/app/*.keystore
