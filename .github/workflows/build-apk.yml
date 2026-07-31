@@ -30,6 +30,16 @@ jobs:
           channel: stable
           flutter-version: 3.44.7
 
+      - name: Assinatura de release (keystore + key.properties)
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/android/app/upload-keystore.jks
+          cat > app/android/key.properties <<EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=upload
+          storeFile=upload-keystore.jks
+          EOF
+
       - name: Dependências
         working-directory: app
         run: flutter pub get

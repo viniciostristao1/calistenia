@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-07-31 — v0.4.0 (atualização por cima sem perder treinos + ícone ajustado):**
+  - **⚠️ Instale esta versão UMA vez desinstalando a anterior** (a assinatura do app
+    mudou). **A partir desta**, as próximas você instala **por cima**, sem "conflito" e
+    **sem perder os treinos** — era isso que apagava seus dados.
+  - **Backup automático do Google** ligado: ao trocar de aparelho ou reinstalar, o Android
+    pode restaurar seus treinos (sem login, sem Firebase).
+  - **Ícone menor**, com **botão de cronômetro** no topo e **marcadores 12/3/6/9h**.
 - **2026-07-31 — v0.3.0 (cores, etapas opcionais, descanso por série e ícone):**
   - **Cores das fases trocadas:** preparação agora é **verde claro** e execução é
     **laranja** (o descanso segue azul).

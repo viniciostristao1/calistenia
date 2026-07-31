@@ -2,7 +2,9 @@
     <application
         android:label="Calistenia"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="true"
+        android:fullBackupContent="true"><!-- backup automático do Google (restaura treinos ao reinstalar/trocar de aparelho) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -19,11 +19,17 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.3.0** (release com APKs por arquitetura). Fase = **usuário instalar o
+atual = **v0.4.0** (release com APKs por arquitetura). Fase = **usuário instalar o
 `app-arm64-v8a-release.apk` e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.3.0:** cores de fase invertidas (prep=verde claro, exec=laranja);
-**execução opcional** (pode remover, como prep/descanso); **descanso variável por série**
+**Novidades da v0.4.0:** **assinatura FIXA** (keystore de upload própria via secrets —
+`build.gradle.kts` + workflow, padrão do lista_app) → fim do "conflito ao instalar" e da
+perda de treinos; a v0.3.0→v0.4.0 exige UMA última desinstalação, depois updates por cima
+OK. **Auto Backup** do Android (manifest). Ícone menor com botão + marcadores 12/3/6/9h.
+**A keystore (`app/android/app/upload-keystore.jks`, gitignored) é crítica — não perder.**
+
+**Base (v0.3.0):** cores de fase invertidas (prep=verde claro, exec=laranja); **execução
+opcional** (pode remover, como prep/descanso); **descanso variável por série**
 (`Exercicio.descansos`); **ícone do app** (cronômetro azul, `tools/gerar_icone.py`).
 
 **Base (v0.2.0):** **séries + ritmo por repetição** (execução = tempo de UMA rep, ajuste
@@ -101,14 +107,17 @@ da série. Migração v0.1.0→v0.2.0: o antigo "repetições" (rodadas) vira **
 A VPS não compila Android bem → o build sai na **nuvem** (GitHub Actions,
 `.github/workflows/build-apk.yml`). Fluxo:
 1. Repositório no GitHub (branch `main`) com este projeto.
-2. Push em `app/**` dispara o workflow → gera **APKs release por arquitetura**
-   (assinados com a chave de **debug**, então **instalam direto**, sem keystore).
+2. Push em `app/**` dispara o workflow → o step de assinatura escreve `key.properties`
+   a partir dos secrets e gera **APKs release por arquitetura** assinados com a **keystore
+   de upload FIXA** (desde a v0.4.0). Chave estável ⇒ atualiza por cima sem "conflito".
 3. Baixar o artefato `calistenia-apks`, pegar o **`app-arm64-v8a-release.apk`**
    (celulares Android modernos) e instalar no telefone (permitir "fontes desconhecidas").
    Alternativa: `gh run download` / criar um release com `gh release create`.
 
-> Assinatura de **produção** (upload keystore) só quando formos à Play Store — aí
-> seguimos o mesmo padrão do `lista_app` (secrets `KEYSTORE_BASE64`/`KEYSTORE_PASSWORD`).
+> **Assinatura (v0.4.0+):** keystore própria em `app/android/app/upload-keystore.jks` +
+> `app/android/key.properties` (**gitignored**, presentes na VPS); secrets no GitHub
+> `KEYSTORE_BASE64` (base64 do .jks) e `KEYSTORE_PASSWORD`, alias `upload`. **Guardar
+> backup da keystore** (perdê-la trava updates e a Play Store). Mesmo padrão do `lista_app`.
 
 ## Ambiente
 VPS: ~1 vCPU, pouca RAM. OK para codar/`flutter analyze`/`flutter test`/`build web`;

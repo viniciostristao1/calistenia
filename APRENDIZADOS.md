@@ -159,3 +159,42 @@ p/ não sair pequeno; conferido com uma prévia PIL (bg + fg@68% + máscara circ
 
 **Validação:** `flutter analyze` limpo. `flutter test` → 6/6 (+ descanso variável, +
 execução 0). Versão `0.3.0+3`.
+
+---
+
+## 2026-07-31 — v0.4.0: assinatura FIXA (fim da perda de dados) + ícone ajustado
+
+**Causa raiz do "app abre do zero / conflito ao instalar" (bug reportado):** os APKs
+v0.1.0–v0.3.0 eram assinados com a chave **debug**, e no GitHub Actions o runner é
+**efêmero** → cada build gerava um `debug.keystore` com chave DIFERENTE → assinaturas
+diferentes entre releases → o Android recusa atualizar por cima
+(`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, "conflito") → o usuário desinstala → o
+`shared_preferences` some. **Não era falta de Firebase** — dados locais são por design; o
+problema era a assinatura instável.
+
+**Correção (padrão do lista_app):**
+- Keystore de upload própria (`keytool`, RSA 2048, validade 10000d, alias `upload`) em
+  `app/android/app/upload-keystore.jks` + `app/android/key.properties` — ambos
+  **gitignored** e presentes localmente na VPS. Secrets no GitHub: `KEYSTORE_BASE64`
+  (base64 do .jks) e `KEYSTORE_PASSWORD` (via `gh secret set`).
+- `build.gradle.kts`: `signingConfigs.release` lê o `key.properties`; `buildTypes.release`
+  usa a chave de upload se o arquivo existe, senão cai no debug (p/ `flutter run` local).
+  Imports `java.util.Properties` / `java.io.FileInputStream` no topo. Estrutura idêntica ao
+  lista_app (comparada linha a linha antes do push).
+- Workflow: step "Assinatura de release" decodifica a keystore do secret e escreve o
+  `key.properties` **antes** do `flutter pub get`/build.
+- `AndroidManifest`: `allowBackup="true"` + `fullBackupContent="true"` → Android Auto
+  Backup (restaura treinos em reinstalação/troca de aparelho, sem Firebase).
+
+**⚠️ Transição inevitável:** a v0.3.0 (debug) → v0.4.0 (upload key) MUDA a assinatura →
+exige UMA última desinstalação. Da v0.4.0 em diante a chave é fixa → updates por cima OK.
+**A keystore é crítica** (perdê-la = não conseguir mais atualizar o app / publicar na Play
+Store) → guardar backup (Drive) além da VPS.
+
+**Ícone (ajuste do pedido):** menor (scale 0.74→0.62 full; 0.86→0.74 foreground), **botão
+estilo cronômetro** no topo (haste + tampa larga) e **marcadores 12/3/6/9h**; ponteiro
+encurtado p/ não bater nos marcadores. Regenerado com `tools/gerar_icone.py` +
+`flutter_launcher_icons`. Conferido com prévia PIL (full + adaptive-recorte-circular).
+
+**Validação:** código Dart inalterado desde a v0.3.0 (6/6 testes seguem válidos); a
+assinatura é validada pelo build do CI. Versão `0.4.0+4`.

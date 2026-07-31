@@ -40,41 +40,54 @@ def vgrad(size, top, bot):
     return img
 
 
-def clock_mask(size, scale, cy_frac=0.545):
-    """Máscara (L) do cronômetro: anel + haste + ponteiro + centro."""
+def clock_mask(size, scale, cy_frac=0.53):
+    """Máscara (L) do cronômetro: anel + botão no topo + marcadores + ponteiro."""
     m = Image.new("L", (size, size), 0)
     d = ImageDraw.Draw(m)
     cx = size / 2
     cy = size * cy_frac
     r_out = size * 0.5 * scale
-    ring = r_out * 0.165  # espessura do anel
+    ring = r_out * 0.15  # espessura do anel
     r_in = r_out - ring
 
     # Anel: círculo cheio branco menos o furo interno.
     d.ellipse([cx - r_out, cy - r_out, cx + r_out, cy + r_out], fill=255)
     d.ellipse([cx - r_in, cy - r_in, cx + r_in, cy + r_in], fill=0)
 
-    # Haste (botão) no topo do cronômetro.
-    sw = r_out * 0.26
-    sh = r_out * 0.20
-    top = cy - r_out - sh * 0.55
+    # Botão estilo cronômetro no topo: haste + tampa larga arredondada.
+    sw = r_out * 0.16
+    sh = r_out * 0.17
+    stem_top = cy - r_out - sh * 0.7
     d.rounded_rectangle(
-        [cx - sw / 2, top, cx + sw / 2, top + sh],
-        radius=sw * 0.32,
+        [cx - sw / 2, stem_top, cx + sw / 2, cy - r_out + ring * 0.4],
+        radius=sw * 0.4,
+        fill=255,
+    )
+    cap_w = r_out * 0.44
+    cap_h = r_out * 0.17
+    cap_top = stem_top - cap_h * 0.78
+    d.rounded_rectangle(
+        [cx - cap_w / 2, cap_top, cx + cap_w / 2, cap_top + cap_h],
+        radius=cap_h * 0.5,
         fill=255,
     )
 
-    # Ponteiro apontando p/ ~1-2h (nordeste).
+    # Marcadores nas 12h, 3h, 6h e 9h (dentro do anel).
+    mk = r_out * 0.052
+    rm = r_in * 0.80
+    for (mx, my) in [(cx, cy - rm), (cx + rm, cy), (cx, cy + rm), (cx - rm, cy)]:
+        d.ellipse([mx - mk, my - mk, mx + mk, my + mk], fill=255)
+
+    # Ponteiro apontando p/ ~1-2h (nordeste), curto p/ não bater nos marcadores.
     ang = math.radians(-58)
-    length = r_in * 0.80
+    length = r_in * 0.60
     px, py = cx + length * math.cos(ang), cy + length * math.sin(ang)
-    d.line([(cx, cy), (px, py)], fill=255, width=int(r_out * 0.075))
-    # cap arredondado na ponta
-    cap = r_out * 0.037
+    d.line([(cx, cy), (px, py)], fill=255, width=int(r_out * 0.07))
+    cap = r_out * 0.033
     d.ellipse([px - cap, py - cap, px + cap, py + cap], fill=255)
 
     # Miolo central.
-    hub = r_out * 0.075
+    hub = r_out * 0.072
     d.ellipse([cx - hub, cy - hub, cx + hub, cy + hub], fill=255)
     return m
 
@@ -97,14 +110,14 @@ def salvar(img, nome):
 
 def main():
     os.makedirs(ASSETS, exist_ok=True)
-    # full: relógio maior sobre o fundo.
-    salvar(compor(clock_mask(S, 0.74), com_fundo=True), "icon_full.png")
+    # full: relógio com boa margem sobre o fundo (menor que antes).
+    salvar(compor(clock_mask(S, 0.62, cy_frac=0.53), com_fundo=True), "icon_full.png")
     # adaptive background: só o fundo degradê.
     salvar(vgrad(S, BG_TOP, BG_BOT).convert("RGBA"), "icon_background.png")
     # adaptive foreground: relógio maior e centralizado — o launcher_icons ainda
-    # aplica um inset de 16%, então isto resulta em ~0.58 do tile visível.
+    # aplica um inset de 16%, então isto resulta em ~0.51 do tile visível.
     salvar(
-        compor(clock_mask(S, 0.86, cy_frac=0.5), com_fundo=False),
+        compor(clock_mask(S, 0.74, cy_frac=0.5), com_fundo=False),
         "icon_foreground.png",
     )
 
