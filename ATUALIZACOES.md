@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-07-31 — v0.7.0 (dica de edição no card + ícone menor):**
+  - No card do treino, um **ícone de 6 pontinhos** ao lado do nome (ex.: "Peitoral")
+    indica que ali se **toca para editar** os exercícios.
+  - **Ícone do app** com o cronômetro um pouco menor (mais margem).
 - **2026-07-31 — v0.6.0 (aba Progressão com gráfico de barras):**
   - Nova aba embaixo, **Progressão** 📈. Para cada exercício, um **gráfico de barras** com
     a evolução das repetições ao longo das datas (mostra "de X → Y reps" e a variação).

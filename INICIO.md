@@ -19,14 +19,17 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.6.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+atual = **v0.7.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
 Cronômetro"** (pacote Dart segue `calistenia`). Fase = **usuário instalar e usar** →
 iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.6.0:** aba **Progressão** (bottom nav via `RootScreen`) — gráfico de
-barras da evolução das **repetições** por exercício; botão "Adicionar à progressão" no
-editor (digita quantas fez). Modelo `RegistroProgressao` (liga por nome) +
-`progressaoProvider` (`progressao_v1`). Gráfico com widgets puros (sem pacote de chart).
+**Novidades da v0.7.0:** ícone "6 pontinhos" (`drag_indicator`) ao lado do nome do treino
+no card (dica de "toque p/ editar"); ícone do app menor.
+
+**Base (v0.6.0):** aba **Progressão** (bottom nav via `RootScreen`) — gráfico de barras da
+evolução das **repetições** por exercício; botão "Adicionar à progressão" no editor (digita
+quantas fez). Modelo `RegistroProgressao` (liga por nome) + `progressaoProvider`
+(`progressao_v1`). Gráfico com widgets puros (sem pacote de chart).
 
 **Base (v0.5.0):** rename → **Calis Cronômetro**; **logo na home** (`assets/icon/logo.png`);
 ícone menor. 1ª versão instalada **por cima** (teste da assinatura fixa da v0.4.0).

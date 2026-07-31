@@ -111,12 +111,12 @@ def salvar(img, nome):
 def main():
     os.makedirs(ASSETS, exist_ok=True)
     # full: relógio com bastante margem sobre o fundo (menor ainda).
-    salvar(compor(clock_mask(S, 0.56, cy_frac=0.53), com_fundo=True), "icon_full.png")
+    salvar(compor(clock_mask(S, 0.50, cy_frac=0.52), com_fundo=True), "icon_full.png")
     # adaptive background: só o fundo degradê.
     salvar(vgrad(S, BG_TOP, BG_BOT).convert("RGBA"), "icon_background.png")
     # adaptive foreground: o launcher_icons ainda aplica inset de 16%.
     salvar(
-        compor(clock_mask(S, 0.68, cy_frac=0.5), com_fundo=False),
+        compor(clock_mask(S, 0.62, cy_frac=0.5), com_fundo=False),
         "icon_foreground.png",
     )
     # logo p/ usar DENTRO do app (transparente, relógio preenchendo o quadro).

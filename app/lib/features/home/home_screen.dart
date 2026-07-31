@@ -217,21 +217,34 @@ class _TreinoCard extends StatelessWidget {
                     onTap: () => _abrirEditor(context),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Column(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            treino.nome.isEmpty ? 'Sem nome' : treino.nome,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          // "6 pontinhos": pista de que o título abre a edição.
+                          const Padding(
+                            padding: EdgeInsets.only(top: 2, right: 6),
+                            child: Icon(Icons.drag_indicator,
+                                size: 20, color: AppColors.dim2),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            resumo,
-                            style: const TextStyle(
-                                color: AppColors.dim, fontSize: 13),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  treino.nome.isEmpty ? 'Sem nome' : treino.nome,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  resumo,
+                                  style: const TextStyle(
+                                      color: AppColors.dim, fontSize: 13),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

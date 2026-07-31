@@ -242,3 +242,17 @@ sob a folha (aceitável). FAB da Home fica logo acima da NavigationBar (Scaffold
 
 **Validação:** `flutter analyze` limpo, `flutter test` **7/7** (+ agrupamento da
 progressão). Versão `0.6.0+6`.
+
+---
+
+## 2026-07-31 — v0.7.0: dica de edição no card + ícone menor
+
+- **`_TreinoCard` (home):** ícone `Icons.drag_indicator` ("6 pontinhos", cor dim2) à
+  esquerda do nome do treino, dentro do InkWell que abre o editor — affordance de "toque
+  aqui para editar" (o usuário reconheceu os 6 pontinhos do editor). Cabeçalho virou uma
+  Row [ícone · Expanded(Column[nome, resumo])].
+- **Ícone do app:** cronômetro menor — `clock_mask` scale full 0.56→0.50, foreground
+  0.68→0.62 (o `logo.png` da home segue 0.82). Regenerado via `gerar_icone.py` +
+  `flutter_launcher_icons`.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 7/7. Versão `0.7.0+7`.
