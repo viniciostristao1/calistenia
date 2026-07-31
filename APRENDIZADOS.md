@@ -214,6 +214,31 @@ assinatura é validada pelo build do CI. Versão `0.4.0+4`.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 6/6. Versão `0.5.0+5`.
 
-> **Pendente (próxima):** aba **Progressão** (bottom nav) com gráfico de barras da evolução
-> por exercício, alimentada por um botão "Adicionar à progressão". Design em discussão com
-> o usuário (ver `IDEIAS.md`).
+---
+
+## 2026-07-31 — v0.6.0: aba Progressão (gráfico de barras da evolução)
+
+Feature nova (design alinhado com o usuário: métrica = **repetições que você fez**,
+digitável; registro **no editor do exercício**).
+
+- **Navegação:** `RootScreen` novo com `NavigationBar` (2 abas: Treinos / Progressão) e
+  `body: IndexedStack([HomeScreen, ProgressaoScreen])` — preserva o estado de cada aba;
+  cada tela mantém seu próprio Scaffold (Scaffold aninhado, ok). `main.dart` passou a abrir
+  `RootScreen` (era `HomeScreen`).
+- **Dados:** `RegistroProgressao { exercicio(nome), valor(reps), data }` +
+  `progressaoProvider` (AsyncNotifier, chave `progressao_v1` no shared_preferences).
+  **Liga por NOME** (a evolução da "Flexão" acumula entre treinos). `agruparPorExercicio()`
+  agrupa e ordena por data; `GrupoProgressao` expõe primeiro/último/maior.
+- **Registrar:** `_ExercicioEditor` virou `ConsumerStatefulWidget`; botão "Adicionar à
+  progressão" pede o valor (sugere as reps atuais, mas edita = desempenho real) e grava
+  com a data de hoje. SnackBar de confirmação.
+- **Gráfico:** `_GraficoBarras` desenhado com widgets puros (sem pacote de chart) — Row
+  scrollável de barras com altura proporcional ao máximo; última barra em destaque; toque
+  na barra remove o registro; lixeira limpa o exercício. Delta "+N" colorido.
+
+**Gotchas:** liga por nome (nomes iguais em treinos diferentes somam — proposital; nomes
+divergentes viram grupos separados). SnackBar dentro da bottom sheet pode ficar parcialmente
+sob a folha (aceitável). FAB da Home fica logo acima da NavigationBar (Scaffold aninhado).
+
+**Validação:** `flutter analyze` limpo, `flutter test` **7/7** (+ agrupamento da
+progressão). Versão `0.6.0+6`.

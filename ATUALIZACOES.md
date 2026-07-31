@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-07-31 — v0.6.0 (aba Progressão com gráfico de barras):**
+  - Nova aba embaixo, **Progressão** 📈. Para cada exercício, um **gráfico de barras** com
+    a evolução das repetições ao longo das datas (mostra "de X → Y reps" e a variação).
+  - No editor de um exercício, botão **"Adicionar à progressão"**: digite quantas
+    repetições você fez hoje (já vem sugerido o valor do exercício) e vira uma barra.
+  - Toque numa barra para remover aquele registro; a lixeira limpa a progressão do
+    exercício. Tudo salvo no aparelho (sem login).
 - **2026-07-31 — v0.5.0 (novo nome + logo na tela + ícone menor):**
   - O app agora se chama **Calis Cronômetro** (nome sob o ícone no celular).
   - Na tela inicial, o **logo do cronômetro** aparece ao lado do nome (no lugar do texto

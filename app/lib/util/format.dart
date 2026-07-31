@@ -7,6 +7,14 @@ String fmtSeg(int s) {
   return '${m}min ${r}s';
 }
 
+/// DateTime -> "31/07" (dia/mês, 2 dígitos).
+String fmtDataCurta(DateTime d) =>
+    '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+
+/// DateTime -> "31/07/26" (com ano curto).
+String fmtDataAno(DateTime d) =>
+    '${fmtDataCurta(d)}/${(d.year % 100).toString().padLeft(2, '0')}';
+
 /// "90" -> "01:30" (formato de relógio para o cronômetro).
 String fmtRelogio(int s) {
   if (s < 0) s = 0;

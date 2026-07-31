@@ -1,6 +1,8 @@
 import 'package:calistenia/models/exercicio.dart';
 import 'package:calistenia/models/fase.dart';
+import 'package:calistenia/models/registro_progressao.dart';
 import 'package:calistenia/models/treino.dart';
+import 'package:calistenia/services/progressao_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -113,6 +115,24 @@ void main() {
     final fases = montarLinhaDoTempo(t);
     expect(fases.length, 1);
     expect(fases.first.tipo, FaseTipo.preparacao);
+  });
+
+  test('progressão agrupa por exercício e resume a evolução', () {
+    final regs = [
+      RegistroProgressao(
+          exercicio: 'Flexão', valor: 10, data: DateTime(2026, 7, 1)),
+      RegistroProgressao(
+          exercicio: 'Flexão', valor: 15, data: DateTime(2026, 7, 20)),
+      RegistroProgressao(
+          exercicio: 'Agachamento', valor: 20, data: DateTime(2026, 7, 10)),
+    ];
+    final grupos = agruparPorExercicio(regs);
+    expect(grupos.length, 2);
+    // ordenado pela última data (desc): Flexão (20/07) antes de Agachamento.
+    expect(grupos.first.exercicio, 'Flexão');
+    expect(grupos.first.primeiro, 10); // registro mais antigo
+    expect(grupos.first.ultimo, 15); // registro mais recente
+    expect(grupos.first.maior, 15);
   });
 
   test('migração do formato antigo: repetições antigas viram séries', () {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/home/home_screen.dart';
+import 'features/root/root_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -17,10 +17,10 @@ class CalisteniaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Calistenia',
+      title: 'Calis Cronômetro',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
-      home: const HomeScreen(),
+      home: const RootScreen(),
     );
   }
 }
