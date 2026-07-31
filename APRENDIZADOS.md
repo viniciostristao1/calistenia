@@ -198,3 +198,22 @@ encurtado p/ não bater nos marcadores. Regenerado com `tools/gerar_icone.py` +
 
 **Validação:** código Dart inalterado desde a v0.3.0 (6/6 testes seguem válidos); a
 assinatura é validada pelo build do CI. Versão `0.4.0+4`.
+
+---
+
+## 2026-07-31 — v0.5.0: rename "Calis Cronômetro" + logo na home + ícone menor
+
+- **Nome de exibição** → "Calis Cronômetro" (`AndroidManifest android:label`; o `name:` do
+  pacote Dart segue `calistenia`, mudar quebraria imports). Acento no label inline (UTF-8, OK).
+- **Logo dentro do app:** novo asset `assets/icon/logo.png` (transparente, relógio
+  preenchendo o quadro; gerado por `gerar_icone.py`), declarado em `flutter: assets:` e
+  exibido na AppBar da home via `Image.asset(height:26)` + texto "Calis Cronômetro".
+- **Ícone menor:** scale full 0.62→0.56, foreground 0.74→0.68 (o usuário pediu mais margem).
+- **Marco:** esta é a 1ª versão a ser instalada POR CIMA (assinatura fixa da v0.4.0) — é o
+  teste real do "sem perder treinos".
+
+**Validação:** `flutter analyze` limpo, `flutter test` 6/6. Versão `0.5.0+5`.
+
+> **Pendente (próxima):** aba **Progressão** (bottom nav) com gráfico de barras da evolução
+> por exercício, alimentada por um botão "Adicionar à progressão". Design em discussão com
+> o usuário (ver `IDEIAS.md`).

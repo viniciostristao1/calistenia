@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-07-31 — v0.5.0 (novo nome + logo na tela + ícone menor):**
+  - O app agora se chama **Calis Cronômetro** (nome sob o ícone no celular).
+  - Na tela inicial, o **logo do cronômetro** aparece ao lado do nome (no lugar do texto
+    antigo "Calistenia").
+  - **Ícone do app um pouco menor** (mais margem).
+  - **1ª atualização instalada POR CIMA** (sobre a v0.4.0) — se seus treinos continuarem lá,
+    a correção de assinatura funcionou. 🎯
 - **2026-07-31 — v0.4.0 (atualização por cima sem perder treinos + ícone ajustado):**
   - **⚠️ Instale esta versão UMA vez desinstalando a anterior** (a assinatura do app
     mudou). **A partir desta**, as próximas você instala **por cima**, sem "conflito" e

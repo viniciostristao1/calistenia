@@ -34,7 +34,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final async = ref.watch(treinosProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Calistenia')),
+      appBar: AppBar(
+        titleSpacing: 16,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/icon/logo.png', height: 26),
+            const SizedBox(width: 8),
+            const Text('Calis Cronômetro'),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _novoTreino,
         backgroundColor: AppColors.accent,

@@ -19,14 +19,18 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.4.0** (release com APKs por arquitetura). Fase = **usuário instalar o
-`app-arm64-v8a-release.apk` e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
+atual = **v0.5.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+Cronômetro"** (pacote Dart segue `calistenia`). Fase = **usuário instalar e usar** →
+iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.4.0:** **assinatura FIXA** (keystore de upload própria via secrets —
-`build.gradle.kts` + workflow, padrão do lista_app) → fim do "conflito ao instalar" e da
-perda de treinos; a v0.3.0→v0.4.0 exige UMA última desinstalação, depois updates por cima
-OK. **Auto Backup** do Android (manifest). Ícone menor com botão + marcadores 12/3/6/9h.
-**A keystore (`app/android/app/upload-keystore.jks`, gitignored) é crítica — não perder.**
+**Novidades da v0.5.0:** rename → **Calis Cronômetro**; **logo na home** (`assets/icon/
+logo.png`, `Image.asset` na AppBar); ícone menor. 1ª versão instalada **por cima** (teste
+da assinatura fixa). **Em discussão:** aba **Progressão** (gráfico de barras) — ver IDEIAS.
+
+**Base (v0.4.0):** **assinatura FIXA** (keystore de upload via secrets — `build.gradle.kts`
++ workflow, padrão do lista_app) → fim do "conflito ao instalar" e da perda de treinos;
+**Auto Backup** do Android (manifest). **A keystore (`app/android/app/upload-keystore.jks`,
+gitignored) é crítica — não perder.**
 
 **Base (v0.3.0):** cores de fase invertidas (prep=verde claro, exec=laranja); **execução
 opcional** (pode remover, como prep/descanso); **descanso variável por série**

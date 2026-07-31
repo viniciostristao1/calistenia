@@ -15,6 +15,14 @@ Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 - **Ajustes finos do player:** confirmar antes de sair no meio do treino; botão de
   "adicionar +10s" na fase atual; manter a tela na horizontal opcional. `[A FAZER]`
 
+## Em desenho (próxima grande)
+- **Aba "Progressão"** (bottom navigation, ícone de evolução/`trending_up`). Ideia do
+  usuário: gráfico de **barras** mostrando a evolução por exercício ao longo do tempo,
+  alimentado por um botão **"Adicionar à progressão"** (ao salvar/editar um exercício, ou
+  ao concluir o treino). Cada registro guarda **data** + valor. Decisões em aberto (a
+  alinhar): o que a barra mede (repetições? tempo? — provável: reps, e tempo p/
+  isométricos), de onde se registra, e o que a aba mostra. `[EM DESENHO]`
+
 ## Médio prazo
 - **Tempo total decorrido / estimado restante** do treino inteiro no player.
 - **Histórico**: registrar treinos concluídos (data, duração). `[IDEIA]`
