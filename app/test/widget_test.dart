@@ -71,6 +71,50 @@ void main() {
     expect(t.duracaoTotalSeg, 280);
   });
 
+  test('descanso variável por série entra na linha do tempo', () {
+    final t = Treino(
+      nome: 'Teste',
+      exercicios: [
+        Exercicio(
+          nome: 'Flexão',
+          preparacaoSeg: 0,
+          execucaoSeg: 45,
+          repeticoes: 1,
+          series: 3,
+          descansos: [60, 90, 120], // após série 1, 2 e 3 (a 3ª some no fim)
+        ),
+      ],
+    );
+    final fases = montarLinhaDoTempo(t);
+    final descansos =
+        fases.where((f) => f.tipo == FaseTipo.descanso).toList();
+    // exec, desc60, exec, desc90, exec (desc120 final removido).
+    expect(descansos.length, 2);
+    expect(descansos[0].segundos, 60);
+    expect(descansos[1].segundos, 90);
+    // 45*3 + 60 + 90 = 285
+    expect(t.duracaoTotalSeg, 45 * 3 + 60 + 90 + 120);
+  });
+
+  test('execução removida (0) some da linha do tempo', () {
+    final t = Treino(
+      nome: 'Teste',
+      exercicios: [
+        Exercicio(
+          nome: 'Só descanso',
+          preparacaoSeg: 10,
+          execucaoSeg: 0, // sem execução
+          descansoSeg: 0,
+          repeticoes: 5,
+          series: 2,
+        ),
+      ],
+    );
+    final fases = montarLinhaDoTempo(t);
+    expect(fases.length, 1);
+    expect(fases.first.tipo, FaseTipo.preparacao);
+  });
+
   test('migração do formato antigo: repetições antigas viram séries', () {
     // JSON v0.1.0 (sem "series"): "repeticoes" era o nº de rodadas.
     final e = Exercicio.fromJson({

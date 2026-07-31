@@ -123,3 +123,39 @@ treino inteiro e exercício avulso com o mesmo widget.
 
 **Validação:** `flutter analyze` limpo. `flutter test` → 4/4 (linha do tempo por série,
 isométrico, duração, **migração v0.1.0→v0.2.0**). Versão `0.2.0+2`.
+
+---
+
+## 2026-07-31 — v0.3.0: cores invertidas, etapas opcionais, descanso por série, ícone
+
+Mais três melhorias do usuário, num lote (1 APK).
+
+**1) Cores das fases:** invertidas em `AppColors` — `prep` = verde claro (#5DE0A0),
+`exec` = laranja (#FF9538); `rest` segue azul. O ✓ da tela "concluído" passou de `exec`
+(que agora é laranja) para `accent` (azul), p/ não virar laranja.
+
+**2a) Execução opcional:** `_TempoLinha` da Execução virou `removivel: true, minimo: 0`
+(era `false/1`). `_salvar` agora permite `execucaoSeg = 0`. A linha do tempo já pulava
+tempos 0, então execução 0 = etapa ausente sem mudança de engine. `_defaultAdd` no
+`_TempoLinha` dá o valor certo ao readicionar por tipo (execução→3, descanso→60, prep→10).
+
+**2b) Descanso por série (variável):** `Exercicio` ganhou `List<int>? descansos`
+(tamanho = séries; `null` = usa o `descansoSeg` padrão) + helper `descansoAposSerie(s)`.
+`montarLinhaDoTempoDe` e `duracaoTotalSeg` usam o helper. UI: `_descansoSection()` alterna
+entre descanso único e N campos "Após série s" (o botão "Descanso diferente por série"
+inicializa a lista com o padrão; "Um só" volta a `null`). Ao mudar séries com a lista
+ativa, `_ajustarDescansos()` redimensiona. Migração: JSON sem `descansos` → `null` (compat
+total). Resumo de lista centralizado em `Exercicio.resumoCurto` (usado por home e editor),
+com faixa "desc 1min–1min30" quando variável e "sem execução" quando exec 0.
+
+**3) Ícone:** arte gerada por **`tools/gerar_icone.py`** (Pillow, num venv de projeto
+`tools_venv/` — fora do git). Cronômetro minimalista, gradiente vertical azul claro
+(#ADDDFF→#3B82F6) sobre fundo azul escuro (#0A0F1C→#17275A), supersampling 4×. Gera
+`icon_full` (legacy), `icon_background` + `icon_foreground` (adaptive). `flutter_launcher_icons`
+0.14.4 gera os mipmaps/adaptive. **Gotcha:** o launcher_icons aplica **inset de 16%** no
+foreground → o relógio do foreground precisa ser MAIOR (scale 0.86, centralizado cy=0.5)
+p/ não sair pequeno; conferido com uma prévia PIL (bg + fg@68% + máscara circular). O
+`icon_full` usa scale 0.74/cy 0.545.
+
+**Validação:** `flutter analyze` limpo. `flutter test` → 6/6 (+ descanso variável, +
+execução 0). Versão `0.3.0+3`.

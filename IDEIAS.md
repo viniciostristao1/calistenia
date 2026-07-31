@@ -10,7 +10,8 @@ Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 - **Descanso entre exercícios** como etapa própria (hoje o descanso do exercício cobre o
   intervalo). Avaliar se vale separar. `[EM DISCUSSÃO]`
 - **Duplicar treino / duplicar exercício** (montar variações rápido). `[A FAZER]`
-- **Ícone do app** (logo próprio via `flutter_launcher_icons`, como no lista_app). `[A FAZER]`
+- ~~**Ícone do app** (logo próprio via `flutter_launcher_icons`).~~ `[FEITO v0.3.0]` —
+  cronômetro minimalista azul, arte em `tools/gerar_icone.py`.
 - **Ajustes finos do player:** confirmar antes de sair no meio do treino; botão de
   "adicionar +10s" na fase atual; manter a tela na horizontal opcional. `[A FAZER]`
 

@@ -26,7 +26,10 @@ class Treino {
       final series = e.series < 1 ? 1 : e.series;
       final reps = e.repeticoes < 1 ? 1 : e.repeticoes;
       total += e.preparacaoSeg;
-      total += (e.execucaoSeg * reps + e.descansoSeg) * series;
+      total += e.execucaoSeg * reps * series;
+      for (var s = 1; s <= series; s++) {
+        total += e.descansoAposSerie(s);
+      }
     }
     return total;
   }

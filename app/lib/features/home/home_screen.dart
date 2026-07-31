@@ -266,9 +266,7 @@ class _ExercicioLinha extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final e = exercicio;
-    final detalhe = e.repeticoes > 1
-        ? '${e.series}×${e.repeticoes} · ${fmtSeg(e.execucaoSeg)}/rep'
-        : '${e.series}× ${fmtSeg(e.execucaoSeg)}';
+    final detalhe = e.resumoCurto;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: onRodar,

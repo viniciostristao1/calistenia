@@ -19,17 +19,18 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.2.0** (release com APKs por arquitetura). Fase = **usuário instalar o
+atual = **v0.3.0** (release com APKs por arquitetura). Fase = **usuário instalar o
 `app-arm64-v8a-release.apk` e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.2.0** (3 pedidos do usuário, num lote):
-- **Séries + ritmo por repetição:** exercício agora tem `series` (rodadas) e `repeticoes`
-  (por série); **execução = tempo de UMA rep** com ajuste fino de 1s; descanso **entre
-  séries**. Isométrico = `repeticoes: 1`. Dados v0.1.0 migram sozinhos (`fromJson`:
-  repetições antigas → séries). Detalhe no [`APRENDIZADOS.md`](APRENDIZADOS.md).
-- **Visual navy** (azul-escuro) com `accent` azul separado das cores de fase.
-- **Home lista os exercícios** e cada um roda **avulso** (`PlayerScreen` agora recebe
-  `titulo` + `List<Exercicio>`, não mais `Treino`).
+**Novidades da v0.3.0:** cores de fase invertidas (prep=verde claro, exec=laranja);
+**execução opcional** (pode remover, como prep/descanso); **descanso variável por série**
+(`Exercicio.descansos`); **ícone do app** (cronômetro azul, `tools/gerar_icone.py`).
+
+**Base (v0.2.0):** **séries + ritmo por repetição** (execução = tempo de UMA rep, ajuste
+fino 1s, descanso entre séries; isométrico = `repeticoes: 1`; dados v0.1.0 migram
+sozinhos); **visual navy** com `accent` azul separado das cores de fase; **home lista os
+exercícios** e cada um roda avulso (`PlayerScreen` recebe `titulo` + `List<Exercicio>`).
+Detalhes no [`APRENDIZADOS.md`](APRENDIZADOS.md).
 
 > Releases: https://github.com/viniciostristao1/calistenia/releases
 

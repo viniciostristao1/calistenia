@@ -38,6 +38,7 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
   late int _desc;
   late int _reps;
   late int _series;
+  List<int>? _descansos; // descanso por série; null = descanso único (_desc)
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
     _desc = e?.descansoSeg ?? 60;
     _reps = e?.repeticoes ?? 10;
     _series = e?.series ?? 3;
+    _descansos = e?.descansos == null ? null : List<int>.of(e!.descansos!);
   }
 
   @override
@@ -57,17 +59,98 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
     super.dispose();
   }
 
+  /// Mantém a lista de descansos por série do tamanho de `_series` (preenche
+  /// novos com o descanso padrão, corta os que sobram).
+  void _ajustarDescansos() {
+    final d = _descansos;
+    if (d == null) return;
+    if (d.length < _series) {
+      d.addAll(List<int>.filled(_series - d.length, _desc));
+    } else if (d.length > _series) {
+      d.removeRange(_series, d.length);
+    }
+  }
+
+  void _mudarSeries(int novo) {
+    setState(() {
+      _series = novo.clamp(1, 99);
+      _ajustarDescansos();
+    });
+  }
+
   void _salvar() {
+    if (_descansos != null) _ajustarDescansos();
     final e = (widget.existente ?? Exercicio(nome: ''))
       ..nome = _nomeCtrl.text.trim().isEmpty
           ? 'Exercício'
           : _nomeCtrl.text.trim()
       ..preparacaoSeg = _prep
-      ..execucaoSeg = _exec < 1 ? 1 : _exec
+      ..execucaoSeg = _exec < 0 ? 0 : _exec // 0 = execução ausente (removida)
       ..descansoSeg = _desc
       ..repeticoes = _reps < 1 ? 1 : _reps
-      ..series = _series < 1 ? 1 : _series;
+      ..series = _series < 1 ? 1 : _series
+      ..descansos = _descansos == null ? null : List<int>.of(_descansos!);
     Navigator.of(context).pop(e);
+  }
+
+  /// A seção de descanso: um descanso único (padrão) OU um por série.
+  List<Widget> _descansoSection() {
+    final d = _descansos;
+    if (d == null) {
+      return [
+        _TempoLinha(
+          rotulo: 'Descanso (entre séries)',
+          cor: AppColors.rest,
+          segundos: _desc,
+          removivel: true,
+          onChanged: (v) => setState(() => _desc = v),
+        ),
+        if (_series > 1)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              style: TextButton.styleFrom(foregroundColor: AppColors.rest),
+              onPressed: () =>
+                  setState(() => _descansos = List<int>.filled(_series, _desc)),
+              icon: const Icon(Icons.tune, size: 18),
+              label: const Text('Descanso diferente por série'),
+            ),
+          ),
+      ];
+    }
+    return [
+      Padding(
+        padding: const EdgeInsets.only(top: 4, bottom: 2),
+        child: Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              margin: const EdgeInsets.only(right: 10),
+              decoration:
+                  const BoxDecoration(color: AppColors.rest, shape: BoxShape.circle),
+            ),
+            const Expanded(
+              child: Text('Descanso por série',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+            TextButton(
+              onPressed: () => setState(() => _descansos = null),
+              child: const Text('Um só'),
+            ),
+          ],
+        ),
+      ),
+      for (var s = 0; s < d.length; s++)
+        _TempoLinha(
+          rotulo: 'Após série ${s + 1}',
+          cor: AppColors.rest,
+          segundos: d[s],
+          removivel: false,
+          minimo: 0,
+          onChanged: (v) => setState(() => d[s] = v),
+        ),
+    ];
   }
 
   @override
@@ -110,13 +193,11 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
               rotulo: 'Séries',
               cor: AppColors.text,
               valorTexto: '$_series',
-              onMenos: () =>
-                  setState(() => _series = (_series - 1).clamp(1, 99)),
-              onMais: () =>
-                  setState(() => _series = (_series + 1).clamp(1, 99)),
+              onMenos: () => _mudarSeries(_series - 1),
+              onMais: () => _mudarSeries(_series + 1),
               onTapValor: () async {
                 final v = await _pedirNumero(context, 'Séries', _series, 1);
-                if (v != null) setState(() => _series = v);
+                if (v != null) _mudarSeries(v);
               },
             ),
             const SizedBox(height: 6),
@@ -143,24 +224,19 @@ class _ExercicioEditorState extends State<_ExercicioEditor> {
               rotulo: 'Execução (por rep)',
               cor: AppColors.exec,
               segundos: _exec,
-              removivel: false,
-              minimo: 1,
+              removivel: true, // agora pode não ter execução (igual preparação)
+              minimo: 0,
               passo: 1, // ajuste fino: uma flexão pode durar 2, 3, 4s…
               onChanged: (v) => setState(() => _exec = v),
             ),
-            _TempoLinha(
-              rotulo: 'Descanso (entre séries)',
-              cor: AppColors.rest,
-              segundos: _desc,
-              removivel: true,
-              onChanged: (v) => setState(() => _desc = v),
-            ),
+            ..._descansoSection(),
             const SizedBox(height: 14),
             _Resumo(
               series: _series,
               reps: _reps,
               execSeg: _exec,
               descSeg: _desc,
+              descansos: _descansos,
             ),
             const SizedBox(height: 18),
             FilledButton(
@@ -203,6 +279,13 @@ class _TempoLinha extends StatelessWidget {
   /// Primeira palavra do rótulo ("Descanso (entre séries)" -> "descanso").
   String get _rotuloCurto => rotulo.split(' ').first.toLowerCase();
 
+  /// Valor sugerido ao (re)adicionar a etapa, por tipo.
+  int get _defaultAdd {
+    if (rotulo.startsWith('Descanso')) return 60;
+    if (rotulo.startsWith('Execução')) return 3;
+    return 10;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (removivel && segundos <= 0) {
@@ -212,8 +295,7 @@ class _TempoLinha extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
             style: TextButton.styleFrom(foregroundColor: cor),
-            onPressed: () =>
-                onChanged(rotulo.startsWith('Descanso') ? 60 : 10),
+            onPressed: () => onChanged(_defaultAdd),
             icon: const Icon(Icons.add, size: 18),
             label: Text('Adicionar $_rotuloCurto'),
           ),
@@ -328,19 +410,43 @@ class _Resumo extends StatelessWidget {
     required this.reps,
     required this.execSeg,
     required this.descSeg,
+    required this.descansos,
   });
 
   final int series;
   final int reps;
   final int execSeg;
   final int descSeg;
+  final List<int>? descansos;
+
+  String get _serieTxt {
+    if (execSeg <= 0) return 'sem execução';
+    return reps > 1 ? '$reps reps de ${fmtSeg(execSeg)}' : 'segure ${fmtSeg(execSeg)}';
+  }
+
+  String get _descTxt {
+    final lista = descansos;
+    if (lista != null && lista.isNotEmpty) {
+      var mn = 1 << 30, mx = 0, ativos = 0;
+      for (final d in lista) {
+        if (d > 0) {
+          ativos++;
+          if (d < mn) mn = d;
+          if (d > mx) mx = d;
+        }
+      }
+      if (ativos == 0) return '';
+      return mn == mx
+          ? ' · descanso ${fmtSeg(mn)}'
+          : ' · descanso ${fmtSeg(mn)}–${fmtSeg(mx)}';
+    }
+    return descSeg > 0 ? ' · descanso ${fmtSeg(descSeg)}' : '';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final serieTxt = reps > 1
-        ? '$reps reps de ${fmtSeg(execSeg)}'
-        : 'segure ${fmtSeg(execSeg)}';
-    final descTxt = descSeg > 0 ? ' · descanso ${fmtSeg(descSeg)}' : '';
+    final serieTxt = _serieTxt;
+    final descTxt = _descTxt;
     final vezes = series > 1 ? '$series séries' : '1 série';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

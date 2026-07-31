@@ -3,6 +3,9 @@ app/build/
 app/.dart_tool/
 app/.flutter-plugins-dependencies
 
+# Venv de ferramentas (geração de ícone etc.) — não versionar
+tools_venv/
+
 # IDE / OS
 .idea/
 .DS_Store

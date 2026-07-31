@@ -23,8 +23,8 @@ abstract final class AppColors {
   static const onAccent = Color(0xFFF2F7FF); // texto/ícone sobre o accent
 
   // Cores semânticas das fases do cronômetro (mantidas bem distinguíveis).
-  static const prep = Color(0xFFF5A524); // preparação (âmbar — "prepare-se")
-  static const exec = Color(0xFF31C971); // execução (verde — "faça / vai")
+  static const prep = Color(0xFF5DE0A0); // preparação (verde claro — "prepare-se")
+  static const exec = Color(0xFFFF9538); // execução (laranja — "faça / vai")
   static const rest = Color(0xFF5B9CFF); // descanso (azul claro — "recupere")
   static const onFase = Color(0xFF06111F); // texto sobre uma cor de fase clara
 

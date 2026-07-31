@@ -81,11 +81,12 @@ List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
           ));
         }
       }
-      if (e.descansoSeg > 0) {
+      final desc = e.descansoAposSerie(s);
+      if (desc > 0) {
         fases.add(Fase(
           tipo: FaseTipo.descanso,
           exercicioNome: e.nome,
-          segundos: e.descansoSeg,
+          segundos: desc,
           rep: 0,
           totalReps: reps,
           serie: s,

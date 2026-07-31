@@ -260,13 +260,9 @@ class _ExercicioRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final e = exercicio;
-    final serieTxt = e.repeticoes > 1
-        ? '${e.series}×${e.repeticoes} · ${fmtSeg(e.execucaoSeg)}/rep'
-        : '${e.series}× ${fmtSeg(e.execucaoSeg)}';
     final partes = <String>[
       if (e.preparacaoSeg > 0) 'Prep ${fmtSeg(e.preparacaoSeg)}',
-      serieTxt,
-      if (e.descansoSeg > 0) 'Desc ${fmtSeg(e.descansoSeg)}',
+      e.resumoCurto,
     ];
     return Padding(
       key: key,
