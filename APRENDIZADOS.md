@@ -300,5 +300,25 @@ Lote de 6 pedidos do usuário.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 8/8. Versão `0.9.0+9`.
 
-> **Pendente (próxima):** aba **Check-in** — calendário mensal com pontinhos das cores dos
-> exercícios feitos por dia (assiduidade). Design em discussão com o usuário (IDEIAS).
+---
+
+## 2026-08-01 — v0.10.0: aba Check-in (calendário de assiduidade)
+
+Design escolhido pelo usuário: **check-in automático ao terminar cada exercício** +
+edição manual no calendário.
+
+- **Dados:** `CheckIn { data(normalizada ao dia), exercicio(nome), corIndex }` +
+  `checkinProvider` (AsyncNotifier, `checkin_v1`). `registrar(Exercicio)` não duplica no
+  mesmo dia+nome; `adicionarManual`/`remover`; `checkinsDoDia`.
+- **Automático:** `PlayerScreen` virou `ConsumerStatefulWidget`. `_talvezMarcar(ei)`
+  registra o exercício quando o cronômetro **passa da última fase dele** — detectado em
+  `_avancar` (troca de `exercicioIndex`) e `_finalizar` (último). `Set _marcados` evita
+  repetir na sessão; se o usuário para no meio, os exercícios já concluídos ficam.
+- **Calendário:** `CheckinScreen` custom (GridView 7 col), navegação de mês (‹ ›), hoje
+  destacado; cada dia mostra até 4 pontinhos das cores + "+N". Toque no dia → bottom sheet
+  para remover check-ins e **marcar** um exercício (escolhido entre os exercícios dos
+  treinos, `_exerciciosDisponiveis`). Semana começa na segunda (`nomesDiasCurtos`).
+- **Navegação:** 3ª aba no `RootScreen` (Treinos · Check-in · Progressão).
+
+**Validação:** `flutter analyze` limpo, `flutter test` **9/9** (+ modelo/filtro de
+check-in). Versão `0.10.0+10`.

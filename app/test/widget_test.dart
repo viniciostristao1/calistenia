@@ -1,7 +1,9 @@
+import 'package:calistenia/models/checkin.dart';
 import 'package:calistenia/models/exercicio.dart';
 import 'package:calistenia/models/fase.dart';
 import 'package:calistenia/models/registro_progressao.dart';
 import 'package:calistenia/models/treino.dart';
+import 'package:calistenia/services/checkin_repository.dart';
 import 'package:calistenia/services/progressao_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -153,6 +155,21 @@ void main() {
         {'nome': 'X', 'execucaoSeg': 30, 'repeticoes': 3, 'series': 1});
     expect(antigo.pesoKg, 0);
     expect(antigo.corIndex, 0);
+  });
+
+  test('check-in: normaliza data ao dia, round-trip e filtro por dia', () {
+    final c1 = CheckIn(
+        data: DateTime(2026, 8, 1, 15, 30), exercicio: 'Flexão', corIndex: 2);
+    expect(c1.data.hour, 0); // normalizado à meia-noite
+    expect(mesmoDia(c1.data, DateTime(2026, 8, 1, 9)), isTrue);
+    final back = CheckIn.fromJson(c1.toJson());
+    expect(back.exercicio, 'Flexão');
+    expect(back.corIndex, 2);
+    final lista = [
+      c1,
+      CheckIn(data: DateTime(2026, 8, 2), exercicio: 'X', corIndex: 0),
+    ];
+    expect(checkinsDoDia(lista, DateTime(2026, 8, 1)).length, 1);
   });
 
   test('migração do formato antigo: repetições antigas viram séries', () {

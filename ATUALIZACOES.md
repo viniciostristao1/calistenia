@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-01 — v0.10.0 (aba Check-in / calendário de assiduidade):**
+  - Nova aba **Check-in** 📅 com um **calendário mensal**. Cada dia mostra **pontinhos com
+    as cores dos exercícios** que você fez — dá pra ver a constância do mês de relance.
+  - **Automático:** ao terminar o cronômetro de um exercício, ele já é **marcado no dia de
+    hoje** (mesmo que você pare o treino no meio, os exercícios feitos contam).
+  - **Manual:** toque num dia do calendário para **marcar/desmarcar** exercícios (corrigir
+    ou registrar dias sem cronômetro).
 - **2026-08-01 — v0.9.0 (novo ícone + ajustes):**
   - **Novo ícone** do app: cronômetro azul com o botão lateral, ponteiro afilado (segue a
     arte que você enviou).

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
+import '../checkin/checkin_screen.dart';
 import '../home/home_screen.dart';
 import '../progressao/progressao_screen.dart';
 
@@ -21,7 +22,7 @@ class _RootScreenState extends State<RootScreen> {
       // IndexedStack preserva o estado de cada aba ao alternar.
       body: IndexedStack(
         index: _aba,
-        children: const [HomeScreen(), ProgressaoScreen()],
+        children: const [HomeScreen(), CheckinScreen(), ProgressaoScreen()],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _aba,
@@ -34,6 +35,11 @@ class _RootScreenState extends State<RootScreen> {
             selectedIcon:
                 Icon(Icons.fitness_center, color: AppColors.accent),
             label: 'Treinos',
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month, color: AppColors.accent),
+            label: 'Check-in',
           ),
           NavigationDestination(
             icon: const Icon(Icons.trending_up_outlined),

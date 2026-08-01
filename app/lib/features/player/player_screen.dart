@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../models/exercicio.dart';
 import '../../models/fase.dart';
+import '../../services/checkin_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
 
@@ -13,7 +15,7 @@ import '../../util/format.dart';
 /// → descanso, por série) contando segundo a segundo, com pausa, pular/voltar
 /// etapa e vibração nas transições. Mantém a tela ligada. Serve tanto para o
 /// treino inteiro quanto para um único exercício (basta a lista `exercicios`).
-class PlayerScreen extends StatefulWidget {
+class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({
     super.key,
     required this.titulo,
@@ -24,10 +26,10 @@ class PlayerScreen extends StatefulWidget {
   final List<Exercicio> exercicios;
 
   @override
-  State<PlayerScreen> createState() => _PlayerScreenState();
+  ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
 }
 
-class _PlayerScreenState extends State<PlayerScreen> {
+class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   late final List<Fase> _fases;
   late final int _duracaoTotal; // soma das fases, em segundos
   int _idx = 0;
@@ -37,6 +39,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Timer? _timer;
   final Stopwatch _sw = Stopwatch();
   int _ultimoBip = -1;
+  final Set<int> _marcados = {}; // exercícios já registrados no check-in
+
+  /// Check-in automático quando o exercício [ei] termina (uma vez por sessão).
+  void _talvezMarcar(int ei) {
+    if (_marcados.contains(ei)) return;
+    _marcados.add(ei);
+    if (ei >= 0 && ei < widget.exercicios.length) {
+      ref.read(checkinProvider.notifier).registrar(widget.exercicios[ei]);
+    }
+  }
 
   @override
   void initState() {
@@ -101,8 +113,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
       _finalizar();
       return;
     }
+    final exAntes = _fases[_idx].exercicioIndex;
     final resto = auto ? _restanteMs : 0; // carrega o "estouro" p/ manter o ritmo
     _idx++;
+    // Trocou de exercício? O anterior foi concluído -> check-in.
+    if (_fases[_idx].exercicioIndex != exAntes) _talvezMarcar(exAntes);
     _ultimoBip = -1;
     _restanteMs = _fases[_idx].segundos * 1000 + resto;
     HapticFeedback.heavyImpact();
@@ -128,6 +143,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     _sw.stop();
     WakelockPlus.disable();
     HapticFeedback.heavyImpact();
+    _talvezMarcar(_fases[_idx].exercicioIndex); // último exercício concluído
     setState(() {
       _concluido = true;
       _running = false;

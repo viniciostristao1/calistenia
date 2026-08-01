@@ -15,15 +15,10 @@ Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 - **Ajustes finos do player:** confirmar antes de sair no meio do treino; botão de
   "adicionar +10s" na fase atual; manter a tela na horizontal opcional. `[A FAZER]`
 
-## Em desenho (próxima grande)
-- **Aba "Check-in"** (calendário de assiduidade). Ideia do usuário: calendário mensal em
-  que cada dia mostra **pontinhos com as cores dos exercícios** que a pessoa fez check-in
-  naquele dia — ver o que treinou no mês, por dia. Foco: assiduidade/motivação (bater
-  metas). A definir: **de onde se faz o check-in** (ao concluir o cronômetro? manual no
-  calendário?) e se é por exercício ou por treino. Modelo provável: `CheckIn { data,
-  exercício/cor }` + calendário custom. `[EM DESENHO]`
-
 ## Feito recentemente
+- ~~**Aba "Check-in"** (calendário de assiduidade).~~ `[FEITO v0.10.0]` — automático ao
+  terminar cada exercício + edição manual no dia. Possíveis evoluções: sequência
+  ("streak") de dias seguidos, metas semanais, ver a assiduidade na Progressão.
 - ~~**Aba "Progressão"** com gráfico de barras da evolução por exercício.~~
   `[FEITO v0.6.0]` — métrica = repetições feitas (digitável), registro no editor do
   exercício. Possíveis evoluções: registrar ao concluir o treino; escolher métrica
