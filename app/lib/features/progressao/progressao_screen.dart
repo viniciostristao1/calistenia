@@ -182,8 +182,8 @@ class _GraficoBarras extends StatelessWidget {
 
   // Trilho de altura fixa: as bases das barras ficam TODAS na mesma linha
   // (embaixo); só a altura muda com o valor. Espaço reservado no topo p/ o número.
-  static const double _trilho = 140;
-  static const double _reservaValor = 20;
+  static const double _trilho = 70;
+  static const double _reservaValor = 18;
 
   @override
   Widget build(BuildContext context) {

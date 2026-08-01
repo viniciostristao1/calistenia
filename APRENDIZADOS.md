@@ -284,3 +284,21 @@ Lote de 6 pedidos do usuário.
 - Migração: JSON antigo sem `pesoKg`/`corIndex` → 0 (teste cobre round-trip + migração).
 
 **Validação:** `flutter analyze` limpo, `flutter test` **8/8**. Versão `0.8.0+8`.
+
+---
+
+## 2026-08-01 — v0.9.0: novo ícone (referência do usuário) + ajustes
+
+- **Ícone:** o usuário subiu uma arte de referência via GitHub (commit "Add files via
+  upload", um screenshot). Recriei o desenho no `gerar_icone.py` (mantém a pipeline
+  vetorial/todas as variantes) em vez de recortar o print: cronômetro azul **sólido**
+  (degradê sutil #5CB6EC→#308CDC), **botão lateral NE** (`_oriented_rect`, retângulo
+  radial), **ponteiro afilado** (triângulo), **sem** os marcadores 12/3/6/9h, fundo navy
+  mais uniforme. Screenshot de referência removido do repo depois de usado.
+- **Progressão (item 2):** altura do gráfico pela metade — `_trilho` 140→70.
+- **Home (item 4):** removido o `Divider` abaixo do seletor de dias.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 8/8. Versão `0.9.0+9`.
+
+> **Pendente (próxima):** aba **Check-in** — calendário mensal com pontinhos das cores dos
+> exercícios feitos por dia (assiduidade). Design em discussão com o usuário (IDEIAS).

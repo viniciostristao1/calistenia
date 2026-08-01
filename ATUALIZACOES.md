@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-01 — v0.9.0 (novo ícone + ajustes):**
+  - **Novo ícone** do app: cronômetro azul com o botão lateral, ponteiro afilado (segue a
+    arte que você enviou).
+  - **Progressão:** altura dos gráficos de barras **reduzida pela metade**.
+  - **Aba Treinos:** removida a **linha** abaixo dos dias da semana.
 - **2026-08-01 — v0.8.0 (barra superior, tema, compartilhar, peso, cores):**
   - **Barra de cima** com **⚙️ configurações**, **compartilhar** e **sair**.
   - **Configurações → tema:** escolha entre **azul** (atual) e **âmbar** para os destaques.

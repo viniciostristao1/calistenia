@@ -19,15 +19,19 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.8.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+atual = **v0.9.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
 Cronômetro"** (pacote Dart segue `calistenia`). Fase = **usuário instalar e usar** →
 iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.8.0:** barra superior (⚙️ config / compartilhar / sair); **tema
-azul/âmbar** (`AppColors.accent` virou getter mutável + `temaProvider`); **compartilhar**
-treino como texto (`Clipboard`); **peso** por exercício (`Exercicio.pesoKg`); **cor** por
-exercício (pontinho, 10 cores, `corIndex`); barras da Progressão alinhadas na base.
-Detalhes no [`APRENDIZADOS.md`](APRENDIZADOS.md).
+**Novidades da v0.9.0:** **novo ícone** (cronômetro azul com botão lateral, arte de
+referência do usuário recriada no `gerar_icone.py`); gráficos da Progressão com metade da
+altura; removida a linha abaixo dos dias na home. **Em discussão:** aba **Check-in**
+(calendário de assiduidade) — ver IDEIAS.
+
+**Base (v0.8.0):** barra superior (⚙️ config / compartilhar / sair); **tema azul/âmbar**
+(`AppColors.accent` virou getter mutável + `temaProvider`); **compartilhar** treino como
+texto (`Clipboard`); **peso** por exercício (`Exercicio.pesoKg`); **cor** por exercício
+(pontinho, 10 cores, `corIndex`); barras da Progressão alinhadas na base.
 
 **Base (v0.7.0):** ícone "6 pontinhos" (`drag_indicator`) ao lado do nome do treino no
 card (dica de "toque p/ editar"); ícone do app menor.

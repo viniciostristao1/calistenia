@@ -20,11 +20,11 @@ S = OUT * SS
 
 ASSETS = os.path.join(os.path.dirname(__file__), "..", "app", "assets", "icon")
 
-# Cores (RGB).
-BG_TOP = (10, 15, 28)     # #0A0F1C  azul quase preto
-BG_BOT = (23, 39, 90)     # #17275A  azul escuro
-CLOCK_TOP = (173, 221, 255)  # #ADDDFF  azul bem claro
-CLOCK_BOT = (59, 130, 246)   # #3B82F6  azul
+# Cores (RGB) — referência do usuário: cronômetro azul sólido sobre navy.
+BG_TOP = (9, 18, 40)      # #091228  navy escuro
+BG_BOT = (12, 28, 58)     # #0C1C3A  navy (degradê sutil)
+CLOCK_TOP = (92, 182, 236)   # #5CB6EC  azul céu
+CLOCK_BOT = (48, 140, 220)   # #308CDC  azul médio
 
 
 def lerp(a, b, t):
@@ -40,8 +40,30 @@ def vgrad(size, top, bot):
     return img
 
 
-def clock_mask(size, scale, cy_frac=0.53):
-    """Máscara (L) do cronômetro: anel + botão no topo + marcadores + ponteiro."""
+def _oriented_rect(d, cx, cy, dist, ang, length, width, fill, round_cap=True):
+    """Desenha um retângulo orientado radialmente (centro a `dist` do centro,
+    no ângulo `ang`), opcionalmente com a ponta externa arredondada."""
+    dx, dy = math.cos(ang), math.sin(ang)
+    px, py = -dy, dx  # perpendicular
+    bcx, bcy = cx + dist * dx, cy + dist * dy
+    corners = []
+    for sl in (1, -1):
+        for sw in (1, -1):
+            corners.append((
+                bcx + sl * (length / 2) * dx + sl * sw * (width / 2) * px,
+                bcy + sl * (length / 2) * dy + sl * sw * (width / 2) * py,
+            ))
+    d.polygon(corners, fill=fill)
+    if round_cap:
+        # ponta externa arredondada
+        ex, ey = bcx + (length / 2) * dx, bcy + (length / 2) * dy
+        r = width / 2
+        d.ellipse([ex - r, ey - r, ex + r, ey + r], fill=fill)
+
+
+def clock_mask(size, scale, cy_frac=0.52):
+    """Máscara (L) do cronômetro: anel + botão no topo + botão lateral (NE) +
+    ponteiro afilado (sem marcadores). Segue a referência do usuário."""
     m = Image.new("L", (size, size), 0)
     d = ImageDraw.Draw(m)
     cx = size / 2
@@ -54,8 +76,8 @@ def clock_mask(size, scale, cy_frac=0.53):
     d.ellipse([cx - r_out, cy - r_out, cx + r_out, cy + r_out], fill=255)
     d.ellipse([cx - r_in, cy - r_in, cx + r_in, cy + r_in], fill=0)
 
-    # Botão estilo cronômetro no topo: haste + tampa larga arredondada.
-    sw = r_out * 0.16
+    # Botão de topo: haste + tampa larga arredondada.
+    sw = r_out * 0.17
     sh = r_out * 0.17
     stem_top = cy - r_out - sh * 0.7
     d.rounded_rectangle(
@@ -72,22 +94,31 @@ def clock_mask(size, scale, cy_frac=0.53):
         fill=255,
     )
 
-    # Marcadores nas 12h, 3h, 6h e 9h (dentro do anel).
-    mk = r_out * 0.052
-    rm = r_in * 0.80
-    for (mx, my) in [(cx, cy - rm), (cx + rm, cy), (cx, cy + rm), (cx - rm, cy)]:
-        d.ellipse([mx - mk, my - mk, mx + mk, my + mk], fill=255)
+    # Botão lateral no canto superior-direito (nordeste), saindo do anel.
+    aL = math.radians(-52)
+    _oriented_rect(
+        d, cx, cy,
+        dist=r_out + r_out * 0.42 * 0.18,
+        ang=aL,
+        length=r_out * 0.42,
+        width=r_out * 0.21,
+        fill=255,
+    )
 
-    # Ponteiro apontando p/ ~1-2h (nordeste), curto p/ não bater nos marcadores.
-    ang = math.radians(-58)
-    length = r_in * 0.60
-    px, py = cx + length * math.cos(ang), cy + length * math.sin(ang)
-    d.line([(cx, cy), (px, py)], fill=255, width=int(r_out * 0.07))
-    cap = r_out * 0.033
-    d.ellipse([px - cap, py - cap, px + cap, py + cap], fill=255)
+    # Ponteiro afilado (triângulo) apontando p/ ~1-2h (nordeste).
+    aP = math.radians(-58)
+    L = r_in * 0.66
+    dx, dy = math.cos(aP), math.sin(aP)
+    px, py = -dy, dx
+    baseW = r_out * 0.135
+    d.polygon([
+        (cx + L * dx, cy + L * dy),          # ponta
+        (cx + (baseW / 2) * px, cy + (baseW / 2) * py),  # base 1
+        (cx - (baseW / 2) * px, cy - (baseW / 2) * py),  # base 2
+    ], fill=255)
 
     # Miolo central.
-    hub = r_out * 0.072
+    hub = r_out * 0.085
     d.ellipse([cx - hub, cy - hub, cx + hub, cy + hub], fill=255)
     return m
 

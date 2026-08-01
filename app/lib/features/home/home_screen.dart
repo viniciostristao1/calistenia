@@ -165,7 +165,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 diasComTreino: diasComTreino,
                 onSelect: (d) => setState(() => _dia = d),
               ),
-              const Divider(height: 1),
               Expanded(
                 child: doDia.isEmpty
                     ? _Vazio(dia: _dia)
