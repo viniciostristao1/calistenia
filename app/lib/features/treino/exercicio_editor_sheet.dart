@@ -42,6 +42,8 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
   late int _reps;
   late int _series;
   List<int>? _descansos; // descanso por série; null = descanso único (_desc)
+  late double _peso;
+  late int _cor;
 
   @override
   void initState() {
@@ -54,6 +56,8 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     _reps = e?.repeticoes ?? 10;
     _series = e?.series ?? 3;
     _descansos = e?.descansos == null ? null : List<int>.of(e!.descansos!);
+    _peso = e?.pesoKg ?? 0;
+    _cor = e?.corIndex ?? 0;
   }
 
   @override
@@ -92,7 +96,9 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
       ..descansoSeg = _desc
       ..repeticoes = _reps < 1 ? 1 : _reps
       ..series = _series < 1 ? 1 : _series
-      ..descansos = _descansos == null ? null : List<int>.of(_descansos!);
+      ..descansos = _descansos == null ? null : List<int>.of(_descansos!)
+      ..pesoKg = _peso < 0 ? 0 : _peso
+      ..corIndex = _cor;
     Navigator.of(context).pop(e);
   }
 
@@ -257,6 +263,19 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               onChanged: (v) => setState(() => _exec = v),
             ),
             ..._descansoSection(),
+            _PesoLinha(
+              peso: _peso,
+              onChanged: (v) => setState(() => _peso = v),
+              onDigitar: () async {
+                final v = await _pedirPeso(context, _peso);
+                if (v != null) setState(() => _peso = v);
+              },
+            ),
+            const Divider(height: 24),
+            _SeletorCor(
+              selecionado: _cor,
+              onSelect: (i) => setState(() => _cor = i),
+            ),
             const SizedBox(height: 14),
             _Resumo(
               series: _series,
@@ -508,6 +527,133 @@ class _Resumo extends StatelessWidget {
   }
 }
 
+/// Linha de peso (kg). Quando 0, vira um botão "Adicionar peso".
+class _PesoLinha extends StatelessWidget {
+  const _PesoLinha({
+    required this.peso,
+    required this.onChanged,
+    required this.onDigitar,
+  });
+
+  final double peso;
+  final ValueChanged<double> onChanged;
+  final VoidCallback onDigitar;
+
+  @override
+  Widget build(BuildContext context) {
+    if (peso <= 0) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            style: TextButton.styleFrom(foregroundColor: AppColors.text),
+            onPressed: () => onChanged(5),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Adicionar peso'),
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: const BoxDecoration(
+                color: AppColors.dim2, shape: BoxShape.circle),
+          ),
+          const Expanded(
+            child: Text('Peso',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          _Redondo(
+            icon: Icons.remove,
+            onTap: () => onChanged((peso - 2.5).clamp(0, 999)),
+          ),
+          GestureDetector(
+            onTap: onDigitar,
+            child: Container(
+              width: 84,
+              alignment: Alignment.center,
+              child: Text(
+                fmtPeso(peso),
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text),
+              ),
+            ),
+          ),
+          _Redondo(
+            icon: Icons.add,
+            onTap: () => onChanged((peso + 2.5).clamp(0, 999)),
+          ),
+          SizedBox(
+            width: 40,
+            child: IconButton(
+              tooltip: 'Remover peso',
+              icon: const Icon(Icons.close, size: 18, color: AppColors.dim2),
+              onPressed: () => onChanged(0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Seletor de cor (marca do exercício): 10 bolinhas.
+class _SeletorCor extends StatelessWidget {
+  const _SeletorCor({required this.selecionado, required this.onSelect});
+
+  final int selecionado;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Cor do exercício',
+            style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (var i = 0; i < AppColors.paletaExercicio.length; i++)
+              GestureDetector(
+                onTap: () => onSelect(i),
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.corExercicio(i),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: i == selecionado
+                          ? AppColors.text
+                          : Colors.transparent,
+                      width: 3,
+                    ),
+                  ),
+                  child: i == selecionado
+                      ? const Icon(Icons.check,
+                          size: 18, color: Color(0xFF06111F))
+                      : null,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 class _Redondo extends StatelessWidget {
   const _Redondo({required this.icon, required this.onTap});
 
@@ -529,6 +675,44 @@ class _Redondo extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<double?> _pedirPeso(BuildContext context, double atual) {
+  final txt = atual <= 0
+      ? ''
+      : (atual == atual.roundToDouble()
+          ? atual.toInt().toString()
+          : atual.toString().replaceAll('.', ','));
+  final ctrl = TextEditingController(text: txt);
+  return showDialog<double>(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: AppColors.surface,
+      title: const Text('Peso (kg)'),
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+        ],
+        decoration: const InputDecoration(hintText: 'Ex.: 10 ou 2,5'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () {
+            final v = double.tryParse(ctrl.text.replaceAll(',', '.'));
+            Navigator.pop(context, v == null || v < 0 ? null : v);
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
 }
 
 Future<int?> _pedirNumero(

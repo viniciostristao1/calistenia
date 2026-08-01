@@ -180,7 +180,10 @@ class _GraficoBarras extends StatelessWidget {
   final List<RegistroProgressao> registros;
   final ValueChanged<RegistroProgressao> onTapBarra;
 
-  static const double _altura = 120;
+  // Trilho de altura fixa: as bases das barras ficam TODAS na mesma linha
+  // (embaixo); só a altura muda com o valor. Espaço reservado no topo p/ o número.
+  static const double _trilho = 140;
+  static const double _reservaValor = 20;
 
   @override
   Widget build(BuildContext context) {
@@ -188,17 +191,18 @@ class _GraficoBarras extends StatelessWidget {
         .map((r) => r.valor)
         .fold<int>(1, (a, b) => a > b ? a : b);
     return SizedBox(
-      height: _altura + 34,
+      height: _trilho + 30,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (var i = 0; i < registros.length; i++)
               _Barra(
                 registro: registros[i],
                 fracao: registros[i].valor / maxV,
-                altura: _altura,
+                trilho: _trilho,
+                alturaMaxBarra: _trilho - _reservaValor,
                 destaque: i == registros.length - 1,
                 onTap: () => onTapBarra(registros[i]),
               ),
@@ -213,20 +217,22 @@ class _Barra extends StatelessWidget {
   const _Barra({
     required this.registro,
     required this.fracao,
-    required this.altura,
+    required this.trilho,
+    required this.alturaMaxBarra,
     required this.destaque,
     required this.onTap,
   });
 
   final RegistroProgressao registro;
   final double fracao;
-  final double altura;
+  final double trilho;
+  final double alturaMaxBarra;
   final bool destaque; // último registro em destaque
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final h = (altura * fracao).clamp(6.0, altura);
+    final h = (alturaMaxBarra * fracao).clamp(6.0, alturaMaxBarra);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child: InkWell(
@@ -235,23 +241,33 @@ class _Barra extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              '${registro.valor}',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: destaque ? AppColors.accent : AppColors.text,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              width: 28,
-              height: h,
-              decoration: BoxDecoration(
-                color: destaque
-                    ? AppColors.accent
-                    : AppColors.accent.withValues(alpha: 0.45),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+            // Trilho fixo com o conteúdo colado embaixo -> base alinhada.
+            SizedBox(
+              height: trilho,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    '${registro.valor}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: destaque ? AppColors.accent : AppColors.text,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Container(
+                    width: 28,
+                    height: h,
+                    decoration: BoxDecoration(
+                      color: destaque
+                          ? AppColors.accent
+                          : AppColors.accent.withValues(alpha: 0.45),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(6)),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 6),

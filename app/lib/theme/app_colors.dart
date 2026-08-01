@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+/// Tema de destaque (cor da marca/ação). O usuário escolhe nas configurações.
+enum TemaApp { azul, ambar }
+
 /// Paleta do app (tema escuro, azul-escuro/navy). Ponto único de verdade das cores.
 ///
-/// Dois papéis distintos, para não se confundirem:
-///  - **accent** (azul) = marca / ação (FAB, "iniciar", seleção de dia, botões).
-///  - **prep/exec/rest** = cores SEMÂNTICAS das fases do cronômetro (não são a marca).
+/// `accent`/`onAccent` são a cor de MARCA/AÇÃO e mudam conforme o [TemaApp]
+/// escolhido (getters mutáveis — ver [aplicarTema]). As cores de FASE
+/// (prep/exec/rest) são semânticas e não mudam com o tema.
 abstract final class AppColors {
   // Base — azul-escuro profundo (navy). É a "cara" do app.
   static const bg = Color(0xFF0A0F1C); // fundo (navy quase preto)
@@ -17,10 +20,29 @@ abstract final class AppColors {
   static const dim = Color(0xFF8A96AE); // texto secundário
   static const dim2 = Color(0xFF56607A); // terciário / ícones apagados
 
-  // Accent / marca — azul vivo. Ações e seleção.
-  static const accent = Color(0xFF3B82F6);
-  static const accentDark = Color(0xFF2563EB);
-  static const onAccent = Color(0xFFF2F7FF); // texto/ícone sobre o accent
+  // Variantes de accent (marca/ação). O tema escolhe qual está ativa.
+  static const accentAzul = Color(0xFF3B82F6);
+  static const onAccentAzul = Color(0xFFF2F7FF);
+  static const accentAmbar = Color(0xFFF5A524);
+  static const onAccentAmbar = Color(0xFF231402); // texto escuro sobre âmbar claro
+
+  static Color _accent = accentAzul;
+  static Color _onAccent = onAccentAzul;
+
+  /// Cor de marca/ação atual (muda com o tema).
+  static Color get accent => _accent;
+  static Color get onAccent => _onAccent;
+
+  /// Aplica o tema de destaque (chamado no build do app conforme a preferência).
+  static void aplicarTema(TemaApp t) {
+    if (t == TemaApp.ambar) {
+      _accent = accentAmbar;
+      _onAccent = onAccentAmbar;
+    } else {
+      _accent = accentAzul;
+      _onAccent = onAccentAzul;
+    }
+  }
 
   // Cores semânticas das fases do cronômetro (mantidas bem distinguíveis).
   static const prep = Color(0xFF5DE0A0); // preparação (verde claro — "prepare-se")
@@ -29,4 +51,22 @@ abstract final class AppColors {
   static const onFase = Color(0xFF06111F); // texto sobre uma cor de fase clara
 
   static const danger = Color(0xFFFF6B6B);
+
+  /// 10 cores para marcar exercícios (o "pontinho" antes do nome).
+  static const paletaExercicio = <Color>[
+    Color(0xFF5B9CFF), // azul
+    Color(0xFF31C971), // verde
+    Color(0xFFF5A524), // âmbar
+    Color(0xFFFF6B6B), // vermelho
+    Color(0xFFB88BFF), // roxo
+    Color(0xFF3DD6D0), // ciano
+    Color(0xFFFF8FB0), // rosa
+    Color(0xFFFF9538), // laranja
+    Color(0xFF9CCC65), // lima
+    Color(0xFFC0C7D2), // cinza claro
+  ];
+
+  /// Cor do exercício pelo índice (com wrap defensivo).
+  static Color corExercicio(int i) =>
+      paletaExercicio[i % paletaExercicio.length];
 }

@@ -256,3 +256,31 @@ progressão). Versão `0.6.0+6`.
   `flutter_launcher_icons`.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 7/7. Versão `0.7.0+7`.
+
+---
+
+## 2026-08-01 — v0.8.0: barra superior, tema azul/âmbar, compartilhar, peso, cores
+
+Lote de 6 pedidos do usuário.
+
+- **Barra superior (home AppBar `actions`):** ⚙️ configurações, compartilhar, sair. "Sair"
+  = `SystemNavigator.pop()` com confirmação.
+- **Tema azul/âmbar (dinâmico):** `AppColors.accent`/`onAccent` viraram **getters
+  mutáveis** (`aplicarTema(TemaApp)`), evitando trocar os 31 usos por `Theme.of(context)`.
+  `temaProvider` (AsyncNotifier, `tema_v1`) persiste; `CalisteniaApp` (ConsumerWidget)
+  aplica o accent e reconstrói o `ThemeData` a cada mudança. **Gotcha:** getter não é
+  const → tirei `const` de 4 sites (`ColorScheme`, `NavigationDestination` list, check de
+  concluído, `BorderSide`); o compilador aponta (`invalid_constant`).
+- **Compartilhar (item 3):** `treinoParaTexto`/`treinosParaTexto` (usa `resumoCurto`);
+  dialog com `SelectableText` + **Copiar** via `Clipboard` (padrão do lista_app, sem
+  pacote novo). A barra compartilha os treinos do **dia** selecionado.
+- **Peso (item 4):** `Exercicio.pesoKg` (double, 0 = sem peso). `_PesoLinha` (±2,5kg,
+  digitação decimal com vírgula) no editor; entra no `resumoCurto` (`fmtPeso`) e no texto.
+- **Cores (item 6):** `Exercicio.corIndex` + `AppColors.paletaExercicio` (10 cores) +
+  `corExercicio(i)`. Pontinho antes do nome na home e no editor; `_SeletorCor` (10
+  bolinhas) na folha de edição.
+- **Gráfico base alinhada (item 5):** `_Barra` agora usa **trilho de altura fixa** com
+  `mainAxisAlignment.end` → todas as bases na mesma linha; só a altura muda.
+- Migração: JSON antigo sem `pesoKg`/`corIndex` → 0 (teste cobre round-trip + migração).
+
+**Validação:** `flutter analyze` limpo, `flutter test` **8/8**. Versão `0.8.0+8`.

@@ -28,14 +28,15 @@ class _RootScreenState extends State<RootScreen> {
         onDestinationSelected: (i) => setState(() => _aba = i),
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.accent.withValues(alpha: 0.20),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.fitness_center_outlined),
-            selectedIcon: Icon(Icons.fitness_center, color: AppColors.accent),
+            icon: const Icon(Icons.fitness_center_outlined),
+            selectedIcon:
+                Icon(Icons.fitness_center, color: AppColors.accent),
             label: 'Treinos',
           ),
           NavigationDestination(
-            icon: Icon(Icons.trending_up_outlined),
+            icon: const Icon(Icons.trending_up_outlined),
             selectedIcon: Icon(Icons.trending_up, color: AppColors.accent),
             label: 'Progressão',
           ),

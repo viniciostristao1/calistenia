@@ -26,6 +26,8 @@ class Exercicio {
   int repeticoes; // repetições por série; >= 1
   int series; // número de séries; >= 1
   List<int>? descansos; // descanso por série (tamanho = series); null = padrão
+  double pesoKg; // peso adicional usado; 0 = só o peso do corpo
+  int corIndex; // índice na paleta de cores (marca do exercício)
 
   Exercicio({
     String? id,
@@ -36,6 +38,8 @@ class Exercicio {
     this.repeticoes = 10,
     this.series = 3,
     this.descansos,
+    this.pesoKg = 0,
+    this.corIndex = 0,
   }) : id = id ?? novoId();
 
   /// Descanso após a série [s] (1-based). Usa o override por série se houver;
@@ -49,8 +53,8 @@ class Exercicio {
   /// True se os descansos por série não são todos iguais (descanso variável ativo).
   bool get temDescansoVariavel => descansos != null;
 
-  /// Resumo curto para listas: "3×10 · 3s/rep · desc 1min", "3 séries · sem
-  /// execução", "3× 45s" (isométrico), com descanso variável como faixa.
+  /// Resumo curto para listas: "3×10 · 3s/rep · 10kg · desc 1min", "3 séries ·
+  /// sem execução", "3× 45s" (isométrico), com descanso variável como faixa.
   String get resumoCurto {
     final String base;
     if (execucaoSeg <= 0) {
@@ -61,7 +65,11 @@ class Exercicio {
       base = '$series× ${fmtSeg(execucaoSeg)}';
     }
     final desc = _resumoDescanso();
-    return desc.isEmpty ? base : '$base · $desc';
+    return [
+      base,
+      if (pesoKg > 0) fmtPeso(pesoKg),
+      if (desc.isNotEmpty) desc,
+    ].join(' · ');
   }
 
   String _resumoDescanso() {
@@ -90,6 +98,8 @@ class Exercicio {
     repeticoes: repeticoes,
     series: series,
     descansos: descansos == null ? null : List<int>.of(descansos!),
+    pesoKg: pesoKg,
+    corIndex: corIndex,
   );
 
   Map<String, dynamic> toJson() => {
@@ -101,6 +111,8 @@ class Exercicio {
     'repeticoes': repeticoes,
     'series': series,
     if (descansos != null) 'descansos': descansos,
+    'pesoKg': pesoKg,
+    'corIndex': corIndex,
   };
 
   factory Exercicio.fromJson(Map<String, dynamic> j) {
@@ -121,6 +133,8 @@ class Exercicio {
       descansos: rawDescansos == null
           ? null
           : (rawDescansos as List).map((e) => e as int).toList(),
+      pesoKg: ((j['pesoKg'] ?? 0) as num).toDouble(),
+      corIndex: (j['corIndex'] ?? 0) as int,
     );
   }
 }

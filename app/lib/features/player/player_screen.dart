@@ -393,8 +393,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle,
-                    size: 88, color: AppColors.accent),
+                Icon(Icons.check_circle, size: 88, color: AppColors.accent),
                 const SizedBox(height: 20),
                 const Text(
                   'Treino concluído!',

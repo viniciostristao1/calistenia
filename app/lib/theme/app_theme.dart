@@ -8,7 +8,7 @@ ThemeData buildAppTheme() {
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.bg,
-    colorScheme: const ColorScheme.dark(
+    colorScheme: ColorScheme.dark(
       primary: AppColors.accent,
       onPrimary: AppColors.onAccent,
       secondary: AppColors.rest,

@@ -3,6 +3,16 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-01 — v0.8.0 (barra superior, tema, compartilhar, peso, cores):**
+  - **Barra de cima** com **⚙️ configurações**, **compartilhar** e **sair**.
+  - **Configurações → tema:** escolha entre **azul** (atual) e **âmbar** para os destaques.
+  - **Compartilhar:** gera o treino do dia em **texto** (exercícios, séries, tempos, peso…)
+    para **copiar** e colar onde quiser (WhatsApp etc.).
+  - **Peso por exercício:** novo campo no editor (ex.: 10kg, 2,5kg) — aparece no resumo e
+    no texto compartilhado.
+  - **Cor por exercício:** um **pontinho colorido** antes do nome; escolha entre **10
+    cores** no editor do exercício.
+  - **Progressão:** as barras agora ficam **alinhadas embaixo** (só a altura muda).
 - **2026-07-31 — v0.7.0 (dica de edição no card + ícone menor):**
   - No card do treino, um **ícone de 6 pontinhos** ao lado do nome (ex.: "Peitoral")
     indica que ali se **toca para editar** os exercícios.

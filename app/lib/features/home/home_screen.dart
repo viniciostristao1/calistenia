@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/exercicio.dart';
@@ -6,7 +7,9 @@ import '../../models/treino.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
+import '../../util/exportar_treino.dart';
 import '../../util/format.dart';
+import '../config/config_screen.dart';
 import '../player/player_screen.dart';
 import '../treino/treino_editor_screen.dart';
 
@@ -29,6 +32,82 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  void _abrirConfig() => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const ConfigScreen()),
+      );
+
+  void _compartilharDia() {
+    final treinos = (ref.read(treinosProvider).value ?? const <Treino>[])
+        .where((t) => t.dias.contains(_dia))
+        .toList();
+    if (treinos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nenhum treino neste dia para compartilhar.')),
+      );
+      return;
+    }
+    final texto = treinosParaTexto(treinos);
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Compartilhar treino'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              texto,
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fechar'),
+          ),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.onAccent,
+            ),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: texto));
+              if (!mounted) return;
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Treino copiado!')),
+              );
+            },
+            icon: const Icon(Icons.copy, size: 18),
+            label: const Text('Copiar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sair() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Sair do app?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) SystemNavigator.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(treinosProvider);
@@ -41,9 +120,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Image.asset('assets/icon/logo.png', height: 26),
             const SizedBox(width: 8),
-            const Text('Calis Cronômetro'),
+            const Flexible(
+              child: Text('Calis Cronômetro', overflow: TextOverflow.ellipsis),
+            ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Configurações',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: _abrirConfig,
+          ),
+          IconButton(
+            tooltip: 'Compartilhar treino',
+            icon: const Icon(Icons.share_outlined),
+            onPressed: _compartilharDia,
+          ),
+          IconButton(
+            tooltip: 'Sair',
+            icon: const Icon(Icons.logout),
+            onPressed: _sair,
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _novoTreino,
@@ -297,6 +395,15 @@ class _ExercicioLinha extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Row(
           children: [
+            Container(
+              width: 10,
+              height: 10,
+              margin: const EdgeInsets.only(right: 10),
+              decoration: BoxDecoration(
+                color: AppColors.corExercicio(e.corIndex),
+                shape: BoxShape.circle,
+              ),
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,8 +472,8 @@ class _PlayCircle extends StatelessWidget {
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
-        child: const Padding(
-          padding: EdgeInsets.all(7),
+        child: Padding(
+          padding: const EdgeInsets.all(7),
           child: Icon(
             Icons.play_arrow_rounded,
             size: 20,

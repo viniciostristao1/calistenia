@@ -135,6 +135,26 @@ void main() {
     expect(grupos.first.maior, 15);
   });
 
+  test('peso e cor: resumo inclui peso, JSON round-trip e migração', () {
+    final e = Exercicio(
+      nome: 'Rosca',
+      execucaoSeg: 3,
+      repeticoes: 10,
+      series: 3,
+      pesoKg: 12.5,
+      corIndex: 4,
+    );
+    expect(e.resumoCurto.contains('12,5kg'), isTrue);
+    final back = Exercicio.fromJson(e.toJson());
+    expect(back.pesoKg, 12.5);
+    expect(back.corIndex, 4);
+    // Exercício antigo (sem peso/cor) migra para 0.
+    final antigo = Exercicio.fromJson(
+        {'nome': 'X', 'execucaoSeg': 30, 'repeticoes': 3, 'series': 1});
+    expect(antigo.pesoKg, 0);
+    expect(antigo.corIndex, 0);
+  });
+
   test('migração do formato antigo: repetições antigas viram séries', () {
     // JSON v0.1.0 (sem "series"): "repeticoes" era o nº de rodadas.
     final e = Exercicio.fromJson({

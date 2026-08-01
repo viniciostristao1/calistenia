@@ -7,6 +7,12 @@ String fmtSeg(int s) {
   return '${m}min ${r}s';
 }
 
+/// 10.0 -> "10kg"; 2.5 -> "2,5kg".
+String fmtPeso(double kg) {
+  if (kg == kg.roundToDouble()) return '${kg.toInt()}kg';
+  return '${kg.toStringAsFixed(1).replaceAll('.', ',')}kg';
+}
+
 /// DateTime -> "31/07" (dia/mês, 2 dígitos).
 String fmtDataCurta(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';

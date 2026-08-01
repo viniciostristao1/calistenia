@@ -230,7 +230,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.accent,
-              side: const BorderSide(color: AppColors.accent),
+              side: BorderSide(color: AppColors.accent),
               minimumSize: const Size.fromHeight(48),
             ),
             onPressed: () => _editarExercicio(),
@@ -280,9 +280,24 @@ class _ExercicioRow extends StatelessWidget {
             index: index,
             child: const Icon(Icons.drag_indicator, color: AppColors.dim2),
           ),
-          title: Text(
-            e.nome.isEmpty ? 'Sem nome' : e.nome,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+          title: Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.corExercicio(e.corIndex),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  e.nome.isEmpty ? 'Sem nome' : e.nome,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
           ),
           subtitle: Text(
             partes.join(' · '),
