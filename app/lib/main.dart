@@ -19,12 +19,14 @@ class CalisteniaApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Aplica o accent do tema escolhido antes de montar o ThemeData.
-    final tema = ref.watch(temaProvider).value ?? TemaApp.azul;
+    final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
     AppColors.aplicarTema(tema);
     return MaterialApp(
       title: 'Calis Cronômetro',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
+      // Troca de tema instantânea (sem a animação padrão que dava "delay").
+      themeAnimationDuration: Duration.zero,
       home: const RootScreen(),
     );
   }

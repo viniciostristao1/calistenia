@@ -19,13 +19,18 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.10.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
-Cronômetro"** (pacote Dart segue `calistenia`). Fase = **usuário instalar e usar** →
-iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
+atual = **v0.11.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+Cronômetro"** (pacote Dart segue `calistenia`). **Cor oficial = âmbar** (azul é opção).
+Fase = **usuário instalar e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.10.0:** aba **Check-in** (3ª aba) — calendário mensal de assiduidade com
+**Novidades da v0.11.0:** ícone **preto sobre âmbar** (estilo lista_app, menor/mais p/
+baixo); **âmbar = tema padrão** (`AppColors` default + `temaProvider` default); troca de
+tema **instantânea** (`themeAnimationDuration: Duration.zero`); Progressão sem o texto "de
+X→Y reps". **Pendente:** login Google (depende de setup Firebase — ver IDEIAS).
+
+**Base (v0.10.0):** aba **Check-in** (3ª aba) — calendário mensal de assiduidade com
 pontinhos das cores dos exercícios; **check-in automático** ao terminar cada exercício no
-player (`CheckIn` + `checkinProvider`) + edição manual tocando no dia.
+player + edição manual tocando no dia.
 
 **Base (v0.9.0):** novo ícone (cronômetro azul com botão lateral, `gerar_icone.py`);
 gráficos da Progressão com metade da altura; removida a linha abaixo dos dias na home.

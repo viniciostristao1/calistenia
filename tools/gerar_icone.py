@@ -20,11 +20,11 @@ S = OUT * SS
 
 ASSETS = os.path.join(os.path.dirname(__file__), "..", "app", "assets", "icon")
 
-# Cores (RGB) — referência do usuário: cronômetro azul sólido sobre navy.
-BG_TOP = (9, 18, 40)      # #091228  navy escuro
-BG_BOT = (12, 28, 58)     # #0C1C3A  navy (degradê sutil)
-CLOCK_TOP = (92, 182, 236)   # #5CB6EC  azul céu
-CLOCK_BOT = (48, 140, 220)   # #308CDC  azul médio
+# Cores (RGB) — estilo lista_app: cronômetro PRETO sobre âmbar degradê.
+BG_TOP = (242, 190, 84)   # #F2BE54  âmbar claro
+BG_BOT = (219, 152, 56)   # #DB9838  âmbar quente
+CLOCK_BLACK = (26, 26, 26)   # #1A1A1A  linhas do cronômetro (preto suave)
+LOGO_AMBER = (240, 176, 66)  # #F0B042  cronômetro no logo (sobre o navy da home)
 
 
 def lerp(a, b, t):
@@ -123,9 +123,9 @@ def clock_mask(size, scale, cy_frac=0.52):
     return m
 
 
-def compor(mask, com_fundo):
-    """Aplica o gradiente do relógio na máscara, opcionalmente sobre o fundo."""
-    clock = vgrad(S, CLOCK_TOP, CLOCK_BOT).convert("RGBA")
+def compor(mask, com_fundo, clock_color=CLOCK_BLACK):
+    """Aplica a cor do relógio na máscara, opcionalmente sobre o fundo âmbar."""
+    clock = Image.new("RGB", (S, S), clock_color).convert("RGBA")
     clock.putalpha(mask)
     if com_fundo:
         base = vgrad(S, BG_TOP, BG_BOT).convert("RGBA")
@@ -141,18 +141,19 @@ def salvar(img, nome):
 
 def main():
     os.makedirs(ASSETS, exist_ok=True)
-    # full: relógio com bastante margem sobre o fundo (menor ainda).
-    salvar(compor(clock_mask(S, 0.50, cy_frac=0.52), com_fundo=True), "icon_full.png")
-    # adaptive background: só o fundo degradê.
+    # full: cronômetro PRETO menor e um pouco mais p/ baixo, sobre âmbar.
+    salvar(compor(clock_mask(S, 0.46, cy_frac=0.55), com_fundo=True), "icon_full.png")
+    # adaptive background: só o âmbar degradê.
     salvar(vgrad(S, BG_TOP, BG_BOT).convert("RGBA"), "icon_background.png")
-    # adaptive foreground: o launcher_icons ainda aplica inset de 16%.
+    # adaptive foreground: cronômetro preto (o launcher_icons aplica inset 16%).
     salvar(
-        compor(clock_mask(S, 0.62, cy_frac=0.5), com_fundo=False),
+        compor(clock_mask(S, 0.58, cy_frac=0.52), com_fundo=False),
         "icon_foreground.png",
     )
-    # logo p/ usar DENTRO do app (transparente, relógio preenchendo o quadro).
+    # logo p/ usar DENTRO do app (âmbar transparente, sobre o navy da home).
     salvar(
-        compor(clock_mask(S, 0.82, cy_frac=0.54), com_fundo=False),
+        compor(clock_mask(S, 0.82, cy_frac=0.54), com_fundo=False,
+               clock_color=LOGO_AMBER),
         "logo.png",
     )
 

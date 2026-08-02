@@ -12,8 +12,9 @@ final temaProvider =
 class TemaNotifier extends AsyncNotifier<TemaApp> {
   @override
   Future<TemaApp> build() async {
+    // Padrão = âmbar (cor oficial); azul só se o usuário escolher.
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_chave) == 'ambar' ? TemaApp.ambar : TemaApp.azul;
+    return prefs.getString(_chave) == 'azul' ? TemaApp.azul : TemaApp.ambar;
   }
 
   Future<void> definir(TemaApp t) async {

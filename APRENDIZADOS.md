@@ -322,3 +322,24 @@ edição manual no calendário.
 
 **Validação:** `flutter analyze` limpo, `flutter test` **9/9** (+ modelo/filtro de
 check-in). Versão `0.10.0+10`.
+
+---
+
+## 2026-08-02 — v0.11.0: ícone âmbar (estilo lista_app), tema padrão âmbar, limpezas
+
+- **Ícone (item 2):** estilo lista_app — cronômetro **preto sólido** (`CLOCK_BLACK`
+  #1A1A1A) sobre **âmbar degradê** (#F2BE54→#DB9838); desenho menor e mais p/ baixo (full
+  scale 0.50→0.46/cy 0.55; fg 0.62→0.58). `compor()` ganhou `clock_color`. O `logo.png` da
+  home passou a ser **âmbar** (`LOGO_AMBER`, transparente, visível sobre o navy).
+- **Âmbar oficial (item 2):** `AppColors._accent` default → âmbar; `temaProvider` default →
+  âmbar (só azul se o usuário escolher); `main` fallback → âmbar. Azul segue como opção.
+- **Delay do tema (item 4):** era a animação padrão de `ThemeData` do MaterialApp
+  (`themeAnimationDuration` ~200ms) — some com `themeAnimationDuration: Duration.zero`.
+  (A maioria dos widgets usa `AppColors.accent` (getter, instantâneo); zerar a animação
+  alinha tudo.)
+- **Progressão (item 3):** removido o texto "de X → Y reps"; ficou nome + `_DeltaChip`.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.11.0+11`.
+
+> **Pendente (item 1):** login com Google — depende de setup no Firebase Console (projeto/
+> app + google-services.json + SHA-1 da keystore). Discussão aberta com o usuário.

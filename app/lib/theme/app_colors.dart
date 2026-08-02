@@ -26,8 +26,9 @@ abstract final class AppColors {
   static const accentAmbar = Color(0xFFF5A524);
   static const onAccentAmbar = Color(0xFF231402); // texto escuro sobre âmbar claro
 
-  static Color _accent = accentAzul;
-  static Color _onAccent = onAccentAzul;
+  // Âmbar é a cor OFICIAL (padrão) do app; azul é opção nas configurações.
+  static Color _accent = accentAmbar;
+  static Color _onAccent = onAccentAmbar;
 
   /// Cor de marca/ação atual (muda com o tema).
   static Color get accent => _accent;

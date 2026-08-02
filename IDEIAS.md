@@ -15,6 +15,15 @@ Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 - **Ajustes finos do player:** confirmar antes de sair no meio do treino; botão de
   "adicionar +10s" na fase atual; manter a tela na horizontal opcional. `[A FAZER]`
 
+## Em desenho (próxima grande)
+- **Login com Google** (preparar p/ virar app publicável). **Depende de setup no Firebase
+  Console** (que só o dono da conta faz): criar/usar um projeto, adicionar o app
+  `com.vinyapps.calistenia`, baixar o `google-services.json`, registrar o **SHA-1** da
+  keystore de upload. Depois (código, eu faço): `firebase_auth` + `google_sign_in`, tela de
+  login, botão entrar/sair nas Configurações — nos moldes do lista_app; secrets
+  (`GOOGLE_SERVICES_JSON`) no CI. Migrar dados locais → nuvem é um passo à parte.
+  `[EM DESENHO — precisa do google-services.json do Firebase]`
+
 ## Feito recentemente
 - ~~**Aba "Check-in"** (calendário de assiduidade).~~ `[FEITO v0.10.0]` — automático ao
   terminar cada exercício + edição manual no dia. Possíveis evoluções: sequência

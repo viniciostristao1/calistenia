@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-02 — v0.11.0 (ícone âmbar + tema padrão âmbar + limpezas):**
+  - **Novo ícone** no estilo do lista_app: cronômetro **preto** sobre **fundo âmbar**;
+    desenho um pouco menor e mais para baixo.
+  - **Âmbar** virou a **cor oficial** do app (tema padrão). Dá pra trocar para **azul** em
+    Configurações.
+  - **Troca de tema instantânea** (sumiu o "delay" ao alternar azul/âmbar).
+  - **Progressão** mais limpa: removido o texto "de X → Y reps" (fica o nome + a variação).
 - **2026-08-01 — v0.10.0 (aba Check-in / calendário de assiduidade):**
   - Nova aba **Check-in** 📅 com um **calendário mensal**. Cada dia mostra **pontinhos com
     as cores dos exercícios** que você fez — dá pra ver a constância do mês de relance.

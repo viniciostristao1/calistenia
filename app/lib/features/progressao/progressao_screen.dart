@@ -94,9 +94,6 @@ class _ExercicioProgressoCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final delta = grupo.ultimo - grupo.primeiro;
-    final resumo = grupo.registros.length == 1
-        ? '${grupo.ultimo} reps'
-        : 'de ${grupo.primeiro} → ${grupo.ultimo} reps';
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
@@ -106,26 +103,22 @@ class _ExercicioProgressoCard extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        grupo.exercicio.isEmpty ? 'Sem nome' : grupo.exercicio,
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w700),
+                      Flexible(
+                        child: Text(
+                          grupo.exercicio.isEmpty
+                              ? 'Sem nome'
+                              : grupo.exercicio,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700),
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Text(resumo,
-                              style: const TextStyle(
-                                  color: AppColors.dim, fontSize: 12.5)),
-                          if (delta != 0) ...[
-                            const SizedBox(width: 6),
-                            _DeltaChip(delta: delta),
-                          ],
-                        ],
-                      ),
+                      if (delta != 0) ...[
+                        const SizedBox(width: 8),
+                        _DeltaChip(delta: delta),
+                      ],
                     ],
                   ),
                 ),
