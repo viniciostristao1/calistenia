@@ -28,22 +28,22 @@ class _RootScreenState extends State<RootScreen> {
         selectedIndex: _aba,
         onDestinationSelected: (i) => setState(() => _aba = i),
         backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.accent.withValues(alpha: 0.20),
+        indicatorColor: context.accent.withValues(alpha: 0.20),
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.fitness_center_outlined),
             selectedIcon:
-                Icon(Icons.fitness_center, color: AppColors.accent),
+                Icon(Icons.fitness_center, color: context.accent),
             label: 'Treinos',
           ),
           NavigationDestination(
             icon: const Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month, color: AppColors.accent),
+            selectedIcon: Icon(Icons.calendar_month, color: context.accent),
             label: 'Check-in',
           ),
           NavigationDestination(
             icon: const Icon(Icons.trending_up_outlined),
-            selectedIcon: Icon(Icons.trending_up, color: AppColors.accent),
+            selectedIcon: Icon(Icons.trending_up, color: context.accent),
             label: 'Progressão',
           ),
         ],

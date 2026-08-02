@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../services/som_repository.dart';
 import '../../services/tema_repository.dart';
 import '../../theme/app_colors.dart';
 
@@ -10,7 +11,8 @@ class ConfigScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tema = ref.watch(temaProvider).value ?? TemaApp.azul;
+    final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
+    final som = ref.watch(somProvider).value ?? true;
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações')),
       body: ListView(
@@ -35,7 +37,20 @@ class ConfigScreen extends ConsumerWidget {
             selecionado: tema == TemaApp.ambar,
             onTap: () => ref.read(temaProvider.notifier).definir(TemaApp.ambar),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: som,
+            onChanged: (v) => ref.read(somProvider.notifier).definir(v),
+            activeThumbColor: context.accent,
+            title: const Text('Som',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            subtitle: const Text(
+              'Bips nas transições e no fim do treino.',
+              style: TextStyle(color: AppColors.dim, fontSize: 13),
+            ),
+          ),
+          const SizedBox(height: 20),
           const Text('Conta',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 4),

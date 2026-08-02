@@ -19,13 +19,17 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.12.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+atual = **v0.13.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
 Cronômetro"** (pacote Dart segue `calistenia`). **Cor oficial = âmbar** (azul é opção).
 Fase = **usuário instalar e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.12.0:** tela de **login com Google preparada** (Config → Conta, botão
-visual "em breve"; sem Firebase ainda — decisão "deixar a tela pronta"). SHA-1 da keystore
-guardado no APRENDIZADOS p/ o setup Firebase futuro.
+**Novidades da v0.13.0:** **tema corrigido na raiz** (accent via `Theme.of`/`context.accent`,
+sem o delay); dias da semana cabem todos (Expanded); **som** on/off (`somProvider`) + som de
+fim; "Check-in concluído"; contador maior (104); Progressão mais compacta; meses
+Capitalizados; ícone âmbar mais escuro.
+
+**Base (v0.12.0):** tela de **login com Google preparada** (Config → Conta, "em breve"; sem
+Firebase). SHA-1 da keystore no APRENDIZADOS p/ o setup futuro.
 
 **Base (v0.11.0):** ícone **preto sobre âmbar** (estilo lista_app, menor/mais p/ baixo);
 **âmbar = tema padrão** (`AppColors` default + `temaProvider` default); troca de tema

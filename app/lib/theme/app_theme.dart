@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 /// Tema escuro do app. Ponto único de verdade visual.
-ThemeData buildAppTheme() {
+ThemeData buildAppTheme(TemaApp tema) {
   final base = ThemeData.dark(useMaterial3: true);
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.bg,
     colorScheme: ColorScheme.dark(
-      primary: AppColors.accent,
-      onPrimary: AppColors.onAccent,
+      primary: AppColors.accentDoTema(tema),
+      onPrimary: AppColors.onAccentDoTema(tema),
       secondary: AppColors.rest,
       surface: AppColors.surface,
       onSurface: AppColors.text,

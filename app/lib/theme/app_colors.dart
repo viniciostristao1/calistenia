@@ -21,29 +21,16 @@ abstract final class AppColors {
   static const dim2 = Color(0xFF56607A); // terciário / ícones apagados
 
   // Variantes de accent (marca/ação). O tema escolhe qual está ativa.
+  // Âmbar é a cor OFICIAL (padrão); azul é opção nas configurações.
   static const accentAzul = Color(0xFF3B82F6);
   static const onAccentAzul = Color(0xFFF2F7FF);
   static const accentAmbar = Color(0xFFF5A524);
   static const onAccentAmbar = Color(0xFF231402); // texto escuro sobre âmbar claro
 
-  // Âmbar é a cor OFICIAL (padrão) do app; azul é opção nas configurações.
-  static Color _accent = accentAmbar;
-  static Color _onAccent = onAccentAmbar;
-
-  /// Cor de marca/ação atual (muda com o tema).
-  static Color get accent => _accent;
-  static Color get onAccent => _onAccent;
-
-  /// Aplica o tema de destaque (chamado no build do app conforme a preferência).
-  static void aplicarTema(TemaApp t) {
-    if (t == TemaApp.ambar) {
-      _accent = accentAmbar;
-      _onAccent = onAccentAmbar;
-    } else {
-      _accent = accentAzul;
-      _onAccent = onAccentAzul;
-    }
-  }
+  static Color accentDoTema(TemaApp t) =>
+      t == TemaApp.ambar ? accentAmbar : accentAzul;
+  static Color onAccentDoTema(TemaApp t) =>
+      t == TemaApp.ambar ? onAccentAmbar : onAccentAzul;
 
   // Cores semânticas das fases do cronômetro (mantidas bem distinguíveis).
   static const prep = Color(0xFF5DE0A0); // preparação (verde claro — "prepare-se")
@@ -70,4 +57,11 @@ abstract final class AppColors {
   /// Cor do exercício pelo índice (com wrap defensivo).
   static Color corExercicio(int i) =>
       paletaExercicio[i % paletaExercicio.length];
+}
+
+/// Cor de destaque atual, lida via Theme — assim os widgets que a usam são
+/// "dependentes" do tema e rebuildam na hora quando ele muda (sem delay/bug).
+extension AccentContext on BuildContext {
+  Color get accent => Theme.of(this).colorScheme.primary;
+  Color get onAccent => Theme.of(this).colorScheme.onPrimary;
 }

@@ -113,8 +113,8 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
         minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
         child: FilledButton.icon(
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.accent,
-            foregroundColor: AppColors.onAccent,
+            backgroundColor: context.accent,
+            foregroundColor: context.onAccent,
             minimumSize: const Size.fromHeight(52),
           ),
           onPressed: _t.exercicios.isEmpty
@@ -160,10 +160,10 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                   selected: _t.dias.contains(d),
                   showCheckmark: false,
                   backgroundColor: AppColors.surface,
-                  selectedColor: AppColors.accent,
+                  selectedColor: context.accent,
                   labelStyle: TextStyle(
                     color: _t.dias.contains(d)
-                        ? AppColors.onAccent
+                        ? context.onAccent
                         : AppColors.text,
                     fontWeight: FontWeight.w600,
                   ),
@@ -229,8 +229,8 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           const SizedBox(height: 12),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.accent,
-              side: BorderSide(color: AppColors.accent),
+              foregroundColor: context.accent,
+              side: BorderSide(color: context.accent),
               minimumSize: const Size.fromHeight(48),
             ),
             onPressed: () => _editarExercicio(),

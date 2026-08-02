@@ -358,3 +358,29 @@ integração real quando o Firebase for configurado.
   (ver IDEIAS). Login ≠ sync de dados (sync é etapa à parte).
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.12.0+12`.
+
+---
+
+## 2026-08-02 — v0.13.0: correção do tema (raiz), som, layout, ícone
+
+- **Bug do tema (item 6) — causa raiz:** `AppColors.accent` era **getter estático
+  mutável** setado no build do MaterialApp. Os widgets que o liam **não eram dependentes
+  do tema** (não usavam `Theme.of`), então só pegavam a cor nova quando algo os fazia
+  rebuildar (ao clicar) → o "delay/atualiza conforme clico". **Fix definitivo:** removido
+  o getter mutável; `buildAppTheme(TemaApp)` define `colorScheme.primary/onPrimary`;
+  extension `context.accent`/`context.onAccent` (= `Theme.of(context).colorScheme.*`).
+  Migrados os 31 usos em 7 telas (`AppColors.accent`→`context.accent`) via sed (os arquivos
+  não usavam as constantes `accentAzul/Ambar`, então seguro). Agora o tema propaga na hora
+  via InheritedWidget, sem recriar a árvore (mantém estado). **Lição:** cor de tema
+  dinâmica tem de vir do `Theme`/InheritedWidget, não de estado global.
+- **Dias (item 1):** `_SeletorDias` deixou de rolar — `Row` com cada dia em `Expanded`
+  (largura flexível), `_DiaPill` sem `width` fixo.
+- **Som (itens 4/7):** `somProvider` (bool, `som_v1`, padrão ligado) + `SwitchListTile` em
+  Configurações. Player gate: `_tocarSom()` só toca `SystemSound` se ligado; som de fim
+  adicionado no `_finalizar`. (Sem pacote de áudio; `SystemSound.alert`.)
+- **Outros:** "Treino concluído"→"**Check-in concluído**" (item 3); fonte do contador
+  76→**104** (item 8); gap título↔barras na Progressão reduzido + IconButton compacto (item
+  2); meses **Capitalizados** (item 5); fundo do ícone âmbar mais escuro
+  #DFAF4D→#C58932 (item 9).
+
+**Validação:** `flutter analyze` limpo, `flutter test` **9/9**. Versão `0.13.0+13`.

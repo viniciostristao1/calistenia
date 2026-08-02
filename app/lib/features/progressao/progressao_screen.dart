@@ -124,13 +124,16 @@ class _ExercicioProgressoCard extends ConsumerWidget {
                 ),
                 IconButton(
                   tooltip: 'Limpar progressão',
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(),
                   icon: const Icon(Icons.delete_outline,
                       size: 20, color: AppColors.dim2),
                   onPressed: () => _confirmarLimpar(context, ref),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
             _GraficoBarras(
               registros: grupo.registros,
               onTapBarra: (r) => _confirmarRemoverRegistro(context, ref, r),
@@ -245,7 +248,7 @@ class _Barra extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: destaque ? AppColors.accent : AppColors.text,
+                      color: destaque ? context.accent : AppColors.text,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -254,8 +257,8 @@ class _Barra extends StatelessWidget {
                     height: h,
                     decoration: BoxDecoration(
                       color: destaque
-                          ? AppColors.accent
-                          : AppColors.accent.withValues(alpha: 0.45),
+                          ? context.accent
+                          : context.accent.withValues(alpha: 0.45),
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(6)),
                     ),

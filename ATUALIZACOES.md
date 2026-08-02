@@ -3,6 +3,15 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-02 — v0.13.0 (ajustes de layout, som, tema e ícone):**
+  - **Dias da semana** cabem todos no topo da aba Treinos (sem precisar arrastar).
+  - **Troca de tema corrigida:** agora muda **na hora**, sem o delay/atualização parcial.
+  - **Som:** liga/desliga em **Configurações → Som**; e um som leve marca o **fim** do treino.
+  - **"Check-in concluído"** na tela final (era "Treino concluído").
+  - **Números do cronômetro maiores** (mais fáceis de ler de longe).
+  - **Progressão:** barras mais perto do título do exercício.
+  - **Check-in:** meses com a **primeira letra maiúscula**.
+  - **Ícone** do app com o âmbar um pouco mais escuro (mais perto do lista_app).
 - **2026-08-02 — v0.12.0 (tela de login preparada):**
   - Em **Configurações → Conta**, o botão **"Entrar com Google"** já aparece (visual). A
     conexão real é ativada quando configurarmos o Firebase — por ora ele avisa "em breve".

@@ -10,8 +10,8 @@ import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
 
 const _meses = [
-  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ];
 
 /// Aba "Check-in": calendário mensal de assiduidade. Cada dia mostra os
@@ -206,7 +206,7 @@ class _Celula extends StatelessWidget {
           color: cores.isNotEmpty ? AppColors.surface : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: hoje
-              ? Border.all(color: AppColors.accent, width: 1.5)
+              ? Border.all(color: context.accent, width: 1.5)
               : Border.all(color: AppColors.line),
         ),
         child: Column(
@@ -217,7 +217,7 @@ class _Celula extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: hoje ? FontWeight.w800 : FontWeight.w500,
-                color: hoje ? AppColors.accent : AppColors.text,
+                color: hoje ? context.accent : AppColors.text,
               ),
             ),
             const SizedBox(height: 4),
@@ -309,8 +309,8 @@ class _EditarDiaSheet extends ConsumerWidget {
           const SizedBox(height: 8),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.accent,
-              side: BorderSide(color: AppColors.accent),
+              foregroundColor: context.accent,
+              side: BorderSide(color: context.accent),
               minimumSize: const Size.fromHeight(48),
             ),
             onPressed: () => _adicionar(context, ref),

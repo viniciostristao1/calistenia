@@ -20,9 +20,10 @@ S = OUT * SS
 
 ASSETS = os.path.join(os.path.dirname(__file__), "..", "app", "assets", "icon")
 
-# Cores (RGB) — estilo lista_app: cronômetro PRETO sobre âmbar degradê.
-BG_TOP = (242, 190, 84)   # #F2BE54  âmbar claro
-BG_BOT = (219, 152, 56)   # #DB9838  âmbar quente
+# Cores (RGB) — estilo lista_app: cronômetro PRETO sobre âmbar degradê (um
+# tom mais escuro, mais próximo do lista_app).
+BG_TOP = (223, 175, 77)   # #DFAF4D  âmbar
+BG_BOT = (197, 137, 50)   # #C58932  âmbar quente/escuro
 CLOCK_BLACK = (26, 26, 26)   # #1A1A1A  linhas do cronômetro (preto suave)
 LOGO_AMBER = (240, 176, 66)  # #F0B042  cronômetro no logo (sobre o navy da home)
 

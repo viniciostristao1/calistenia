@@ -68,8 +68,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           FilledButton.icon(
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              foregroundColor: AppColors.onAccent,
+              backgroundColor: context.accent,
+              foregroundColor: context.onAccent,
             ),
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: texto));
@@ -145,8 +145,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _novoTreino,
-        backgroundColor: AppColors.accent,
-        foregroundColor: AppColors.onAccent,
+        backgroundColor: context.accent,
+        foregroundColor: context.onAccent,
         icon: const Icon(Icons.add),
         label: const Text('Novo treino'),
       ),
@@ -197,20 +197,22 @@ class _SeletorDias extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    // Todos os 7 dias cabem na largura (cada um em um Expanded), sem scroll.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
       child: Row(
         children: [
           for (var d = 0; d < 7; d++)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: _DiaPill(
-                rotulo: nomesDiasCurtos[d],
-                selecionado: d == selecionado,
-                hoje: d == diaDeHoje,
-                temTreino: diasComTreino.contains(d),
-                onTap: () => onSelect(d),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: _DiaPill(
+                  rotulo: nomesDiasCurtos[d],
+                  selecionado: d == selecionado,
+                  hoje: d == diaDeHoje,
+                  temTreino: diasComTreino.contains(d),
+                  onTap: () => onSelect(d),
+                ),
               ),
             ),
         ],
@@ -240,13 +242,12 @@ class _DiaPill extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Container(
-        width: 46,
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: selecionado ? AppColors.accent : AppColors.surface,
+          color: selecionado ? context.accent : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: hoje && !selecionado ? AppColors.accent : AppColors.line,
+            color: hoje && !selecionado ? context.accent : AppColors.line,
           ),
         ),
         child: Column(
@@ -255,7 +256,7 @@ class _DiaPill extends StatelessWidget {
               rotulo,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: selecionado ? AppColors.onAccent : AppColors.text,
+                color: selecionado ? context.onAccent : AppColors.text,
               ),
             ),
             const SizedBox(height: 6),
@@ -265,7 +266,7 @@ class _DiaPill extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: temTreino
-                    ? (selecionado ? AppColors.onAccent : AppColors.accent)
+                    ? (selecionado ? context.onAccent : context.accent)
                     : Colors.transparent,
               ),
             ),
@@ -447,7 +448,7 @@ class _PlayCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     if (grande) {
       return Material(
-        color: habilitado ? AppColors.accent : AppColors.surface2,
+        color: habilitado ? context.accent : AppColors.surface2,
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
@@ -457,7 +458,7 @@ class _PlayCircle extends StatelessWidget {
             child: Icon(
               Icons.play_arrow_rounded,
               size: 28,
-              color: habilitado ? AppColors.onAccent : AppColors.dim2,
+              color: habilitado ? context.onAccent : AppColors.dim2,
             ),
           ),
         ),
@@ -476,7 +477,7 @@ class _PlayCircle extends StatelessWidget {
           child: Icon(
             Icons.play_arrow_rounded,
             size: 20,
-            color: AppColors.accent,
+            color: context.accent,
           ),
         ),
       ),

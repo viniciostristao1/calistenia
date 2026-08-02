@@ -287,8 +287,8 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             const SizedBox(height: 18),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: AppColors.onAccent,
+                backgroundColor: context.accent,
+                foregroundColor: context.onAccent,
                 minimumSize: const Size.fromHeight(52),
               ),
               onPressed: _salvar,
@@ -297,7 +297,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.accent,
+                foregroundColor: context.accent,
                 side: const BorderSide(color: AppColors.line),
                 minimumSize: const Size.fromHeight(48),
               ),

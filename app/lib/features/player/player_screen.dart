@@ -8,6 +8,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../models/exercicio.dart';
 import '../../models/fase.dart';
 import '../../services/checkin_repository.dart';
+import '../../services/som_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
 
@@ -40,6 +41,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   final Stopwatch _sw = Stopwatch();
   int _ultimoBip = -1;
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
+
+  /// Toca um som do sistema se o som estiver ligado nas configurações.
+  void _tocarSom(SystemSoundType tipo) {
+    if (ref.read(somProvider).value ?? true) SystemSound.play(tipo);
+  }
 
   /// Check-in automático quando o exercício [ei] termina (uma vez por sessão).
   void _talvezMarcar(int ei) {
@@ -121,7 +127,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _ultimoBip = -1;
     _restanteMs = _fases[_idx].segundos * 1000 + resto;
     HapticFeedback.heavyImpact();
-    SystemSound.play(SystemSoundType.alert);
+    _tocarSom(SystemSoundType.alert);
     setState(() {});
   }
 
@@ -143,6 +149,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _sw.stop();
     WakelockPlus.disable();
     HapticFeedback.heavyImpact();
+    _tocarSom(SystemSoundType.alert); // som leve marcando o fim
     _talvezMarcar(_fases[_idx].exercicioIndex); // último exercício concluído
     setState(() {
       _concluido = true;
@@ -336,7 +343,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               Text(
                 '$segundos',
                 style: const TextStyle(
-                  fontSize: 76,
+                  fontSize: 104,
                   fontWeight: FontWeight.w800,
                   height: 1.0,
                 ),
@@ -375,7 +382,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         ),
         const SizedBox(width: 28),
         Material(
-          color: AppColors.accent,
+          color: context.accent,
           shape: const CircleBorder(),
           child: InkWell(
             customBorder: const CircleBorder(),
@@ -385,7 +392,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               child: Icon(
                 _running ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 size: 40,
-                color: AppColors.onAccent,
+                color: context.onAccent,
               ),
             ),
           ),
@@ -409,10 +416,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle, size: 88, color: AppColors.accent),
+                Icon(Icons.check_circle, size: 88, color: context.accent),
                 const SizedBox(height: 20),
                 const Text(
-                  'Treino concluído!',
+                  'Check-in concluído',
                   style:
                       TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
                 ),
@@ -424,8 +431,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 const SizedBox(height: 32),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: AppColors.onAccent,
+                    backgroundColor: context.accent,
+                    foregroundColor: context.onAccent,
                     minimumSize: const Size(220, 52),
                   ),
                   onPressed: _reiniciar,
