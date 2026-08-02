@@ -19,14 +19,19 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.13.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+atual = **v0.14.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
 Cronômetro"** (pacote Dart segue `calistenia`). **Cor oficial = âmbar** (azul é opção).
 Fase = **usuário instalar e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.13.0:** **tema corrigido na raiz** (accent via `Theme.of`/`context.accent`,
-sem o delay); dias da semana cabem todos (Expanded); **som** on/off (`somProvider`) + som de
-fim; "Check-in concluído"; contador maior (104); Progressão mais compacta; meses
-Capitalizados; ícone âmbar mais escuro.
+**Novidades da v0.14.0:** **som real** (`audioplayers` + WAV próprios em `assets/sounds/`;
+`SystemSound` não tocava no Android); "Adicionar à progressão" também no fim do treino
+(`_AddProgressaoSheet`); **reusar exercício salvo** no editor (`Exercicio.duplicar()`);
+ícones nos títulos Check-in/Progressão; placeholders em cor fraca; steppers −/+ mais
+próximos; barras da progressão com metade da largura; contador 128.
+
+**Base (v0.13.0):** tema corrigido na raiz (`context.accent` via `Theme.of`); dias cabem
+todos; **som** on/off (`somProvider`); "Check-in concluído"; meses Capitalizados; ícone
+âmbar mais escuro.
 
 **Base (v0.12.0):** tela de **login com Google preparada** (Config → Conta, "em breve"; sem
 Firebase). SHA-1 da keystore no APRENDIZADOS p/ o setup futuro.

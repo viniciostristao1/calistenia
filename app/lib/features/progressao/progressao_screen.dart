@@ -15,7 +15,16 @@ class ProgressaoScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(progressaoProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Progressão')),
+      appBar: AppBar(
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.trending_up, size: 22),
+            SizedBox(width: 8),
+            Text('Progressão'),
+          ],
+        ),
+      ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erro ao carregar: $e')),
@@ -230,7 +239,7 @@ class _Barra extends StatelessWidget {
   Widget build(BuildContext context) {
     final h = (alturaMaxBarra * fracao).clamp(6.0, alturaMaxBarra);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 3),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: onTap,
@@ -246,14 +255,14 @@ class _Barra extends StatelessWidget {
                   Text(
                     '${registro.valor}',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: destaque ? context.accent : AppColors.text,
                     ),
                   ),
                   const SizedBox(height: 3),
                   Container(
-                    width: 28,
+                    width: 14,
                     height: h,
                     decoration: BoxDecoration(
                       color: destaque

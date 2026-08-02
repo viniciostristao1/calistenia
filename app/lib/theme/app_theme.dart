@@ -64,6 +64,8 @@ ThemeData buildAppTheme(TemaApp tema) {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.surface2,
+      hintStyle: const TextStyle(color: AppColors.dim2), // "Ex.:…" bem fraco
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,

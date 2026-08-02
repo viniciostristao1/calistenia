@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,9 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../models/exercicio.dart';
 import '../../models/fase.dart';
+import '../../models/registro_progressao.dart';
 import '../../services/checkin_repository.dart';
+import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
@@ -41,10 +44,26 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   final Stopwatch _sw = Stopwatch();
   int _ultimoBip = -1;
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
+  final AudioPlayer _somPlayer = AudioPlayer(playerId: 'calis_beep')
+    ..setReleaseMode(ReleaseMode.stop);
 
-  /// Toca um som do sistema se o som estiver ligado nas configurações.
-  void _tocarSom(SystemSoundType tipo) {
-    if (ref.read(somProvider).value ?? true) SystemSound.play(tipo);
+  /// Toca um bip (asset) se o som estiver ligado nas configurações.
+  void _tocarSom(String asset) {
+    if (ref.read(somProvider).value ?? true) {
+      _somPlayer.play(AssetSource(asset), volume: 0.8);
+    }
+  }
+
+  void _abrirAddProgressao() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _AddProgressaoSheet(exercicios: widget.exercicios),
+    );
   }
 
   /// Check-in automático quando o exercício [ei] termina (uma vez por sessão).
@@ -70,6 +89,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _somPlayer.dispose();
     WakelockPlus.disable();
     super.dispose();
   }
@@ -127,7 +147,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _ultimoBip = -1;
     _restanteMs = _fases[_idx].segundos * 1000 + resto;
     HapticFeedback.heavyImpact();
-    _tocarSom(SystemSoundType.alert);
+    _tocarSom('sounds/beep.wav');
     setState(() {});
   }
 
@@ -149,7 +169,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _sw.stop();
     WakelockPlus.disable();
     HapticFeedback.heavyImpact();
-    _tocarSom(SystemSoundType.alert); // som leve marcando o fim
+    _tocarSom('sounds/fim.wav'); // som leve marcando o fim
     _talvezMarcar(_fases[_idx].exercicioIndex); // último exercício concluído
     setState(() {
       _concluido = true;
@@ -340,12 +360,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 ),
               ),
               const SizedBox(height: 6),
-              Text(
-                '$segundos',
-                style: const TextStyle(
-                  fontSize: 104,
-                  fontWeight: FontWeight.w800,
-                  height: 1.0,
+              SizedBox(
+                width: 210,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '$segundos',
+                    style: const TextStyle(
+                      fontSize: 128,
+                      fontWeight: FontWeight.w800,
+                      height: 1.0,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
@@ -440,6 +466,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                   label: const Text('Repetir treino'),
                 ),
                 const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.accent,
+                    side: BorderSide(color: context.accent),
+                    minimumSize: const Size(220, 50),
+                  ),
+                  onPressed: _abrirAddProgressao,
+                  icon: const Icon(Icons.trending_up, size: 20),
+                  label: const Text('Adicionar à progressão'),
+                ),
+                const SizedBox(height: 12),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Voltar'),
@@ -448,6 +485,148 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Folha para registrar na progressão as repetições feitas de cada exercício
+/// (aberta no fim do treino). Pré-preenche com as repetições configuradas.
+class _AddProgressaoSheet extends ConsumerStatefulWidget {
+  const _AddProgressaoSheet({required this.exercicios});
+
+  final List<Exercicio> exercicios;
+
+  @override
+  ConsumerState<_AddProgressaoSheet> createState() =>
+      _AddProgressaoSheetState();
+}
+
+class _AddProgressaoSheetState extends ConsumerState<_AddProgressaoSheet> {
+  late final List<TextEditingController> _ctrls;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrls = widget.exercicios
+        .map((e) => TextEditingController(text: '${e.repeticoes}'))
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    for (final c in _ctrls) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  void _salvar() {
+    final messenger = ScaffoldMessenger.of(context);
+    final notifier = ref.read(progressaoProvider.notifier);
+    var n = 0;
+    for (var i = 0; i < widget.exercicios.length; i++) {
+      final v = int.tryParse(_ctrls[i].text);
+      if (v == null || v < 0) continue;
+      final e = widget.exercicios[i];
+      final nome = e.nome.trim().isEmpty ? 'Exercício' : e.nome.trim();
+      notifier.adicionar(RegistroProgressao(exercicio: nome, valor: v));
+      n++;
+    }
+    Navigator.pop(context);
+    messenger.showSnackBar(
+      SnackBar(content: Text('Adicionado à progressão ($n)')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: AppColors.lineStrong,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const Text('Adicionar à progressão',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          const Text('Quantas repetições você fez de cada um?',
+              style: TextStyle(color: AppColors.dim, fontSize: 13)),
+          const SizedBox(height: 12),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  for (var i = 0; i < widget.exercicios.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.corExercicio(
+                                  widget.exercicios[i].corIndex),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              widget.exercicios[i].nome.trim().isEmpty
+                                  ? 'Exercício'
+                                  : widget.exercicios[i].nome,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 68,
+                            child: TextField(
+                              controller: _ctrls[i],
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 10),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: context.accent,
+              foregroundColor: context.onAccent,
+              minimumSize: const Size.fromHeight(52),
+            ),
+            onPressed: _salvar,
+            child: const Text('Salvar'),
+          ),
+        ],
       ),
     );
   }

@@ -3,6 +3,18 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-02 — v0.14.0 (som de verdade + vários ajustes):**
+  - **Som agora funciona:** bip próprio (não mais o som do sistema, que não tocava) nas
+    transições e um som no fim do treino. Liga/desliga em Configurações → Som.
+  - **Números do cronômetro** ainda maiores.
+  - **"Adicionar à progressão"** também no **fim do treino** (entre "Repetir treino" e
+    "Voltar"), pedindo quantas repetições você fez de cada exercício.
+  - **Reusar exercícios:** no editor de treino, "Adicionar de exercícios já salvos" —
+    toque num exercício de outro treino para adicioná-lo aqui.
+  - **Ícones** ao lado dos títulos das abas **Check-in** e **Progressão**.
+  - Placeholders (**"Ex.:…"** e **"Novo treino"**) agora em cor **neutra/fraca**.
+  - Botões **−/+** mais **próximos** dos números.
+  - **Barras da progressão** com **metade da largura** (cabem mais).
 - **2026-08-02 — v0.13.0 (ajustes de layout, som, tema e ícone):**
   - **Dias da semana** cabem todos no topo da aba Treinos (sem precisar arrastar).
   - **Troca de tema corrigida:** agora muda **na hora**, sem o delay/atualização parcial.

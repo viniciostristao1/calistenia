@@ -69,6 +69,66 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
     await _salvar();
   }
 
+  /// Adiciona uma cópia de um exercício já salvo em outro treino.
+  Future<void> _adicionarExistente() async {
+    final treinos = ref.read(treinosProvider).value ?? const <Treino>[];
+    final mapa = <String, Exercicio>{};
+    for (final t in treinos) {
+      for (final e in t.exercicios) {
+        final nome = e.nome.trim();
+        if (nome.isNotEmpty) mapa.putIfAbsent(nome.toLowerCase(), () => e);
+      }
+    }
+    final disponiveis = mapa.values.toList();
+    if (disponiveis.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nenhum exercício salvo ainda.')),
+      );
+      return;
+    }
+    final escolhido = await showModalBottomSheet<Exercicio>(
+      context: context,
+      backgroundColor: AppColors.bg,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.only(bottom: 12),
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text('Exercícios já salvos',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            ),
+            for (final e in disponiveis)
+              ListTile(
+                leading: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: AppColors.corExercicio(e.corIndex),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                title: Text(e.nome),
+                subtitle: Text(e.resumoCurto,
+                    style:
+                        const TextStyle(color: AppColors.dim, fontSize: 12.5)),
+                onTap: () => Navigator.pop(context, e),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (escolhido != null) {
+      _t.exercicios.add(escolhido.duplicar());
+      await _salvar();
+    }
+  }
+
   Future<void> _excluirTreino() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -139,6 +199,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
               labelText: 'Nome do treino',
+              hintText: 'Ex.: Peitoral, Pernas…',
               prefixIcon: Icon(Icons.edit_outlined),
             ),
             onChanged: (v) {
@@ -236,6 +297,16 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
             onPressed: () => _editarExercicio(),
             icon: const Icon(Icons.add),
             label: const Text('Adicionar exercício'),
+          ),
+          const SizedBox(height: 10),
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.dim,
+              minimumSize: const Size.fromHeight(44),
+            ),
+            onPressed: _adicionarExistente,
+            icon: const Icon(Icons.playlist_add, size: 20),
+            label: const Text('Adicionar de exercícios já salvos'),
           ),
         ],
       ),

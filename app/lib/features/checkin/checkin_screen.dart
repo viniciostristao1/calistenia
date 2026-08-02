@@ -40,7 +40,16 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(checkinProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Check-in')),
+      appBar: AppBar(
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.calendar_month, size: 22),
+            SizedBox(width: 8),
+            Text('Check-in'),
+          ],
+        ),
+      ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erro ao carregar: $e')),

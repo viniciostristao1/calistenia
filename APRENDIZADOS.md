@@ -384,3 +384,27 @@ integração real quando o Firebase for configurado.
   #DFAF4D→#C58932 (item 9).
 
 **Validação:** `flutter analyze` limpo, `flutter test` **9/9**. Versão `0.13.0+13`.
+
+---
+
+## 2026-08-02 — v0.14.0: som real (audioplayers) + ajustes
+
+- **Som (item 8) — causa:** `SystemSound.play(alert)` é best-effort no Android e
+  normalmente **não toca**. Fix: pacote **`audioplayers ^6.8.1`** + bips WAV próprios
+  gerados por Python (`wave` stdlib) em `assets/sounds/` (`beep.wav` transição, `fim.wav`
+  dois tons). `PlayerScreen` tem um `AudioPlayer` (ReleaseMode.stop); `_tocarSom(asset)`
+  toca gated pelo `somProvider`; disposto no dispose. **Risco:** plugin nativo novo — o
+  build do CI valida (minSdk 21 OK p/ audioplayers 6).
+- **Contador (item 1):** 104→**128**, dentro de `FittedBox(scaleDown)` (largura 210) p/ 3
+  dígitos não estourarem o anel.
+- **Add à progressão no fim (item 2):** `_AddProgressaoSheet` (folha com um campo por
+  exercício, pré = reps) entre "Repetir treino" e "Voltar"; serve treino completo e avulso.
+- **Reusar exercício (item 6):** `Exercicio.duplicar()` (cópia com id novo); botão
+  "Adicionar de exercícios já salvos" no editor lista os distintos (por nome) de todos os
+  treinos e adiciona a cópia.
+- **Outros:** ícones nos títulos das abas Check-in/Progressão (item 3); `hintStyle` fraco
+  (dim2) + "Novo treino" vira hint/placeholder neutro (nome default '' + card em cor dim)
+  (item 4); value box dos steppers 84→52 (item 5); barras da progressão 28→14 de largura
+  (item 7).
+
+**Validação:** `flutter analyze` limpo, `flutter test` **9/9**. Versão `0.14.0+14`.

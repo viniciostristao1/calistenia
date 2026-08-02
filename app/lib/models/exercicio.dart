@@ -102,6 +102,19 @@ class Exercicio {
     corIndex: corIndex,
   );
 
+  /// Cópia independente (novo id) para reusar o exercício em outro treino.
+  Exercicio duplicar() => Exercicio(
+    nome: nome,
+    preparacaoSeg: preparacaoSeg,
+    execucaoSeg: execucaoSeg,
+    descansoSeg: descansoSeg,
+    repeticoes: repeticoes,
+    series: series,
+    descansos: descansos == null ? null : List<int>.of(descansos!),
+    pesoKg: pesoKg,
+    corIndex: corIndex,
+  );
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'nome': nome,

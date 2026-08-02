@@ -24,7 +24,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _dia = diaDeHoje;
 
   Future<void> _novoTreino() async {
-    final t = Treino(nome: 'Novo treino', dias: [_dia]);
+    final t = Treino(nome: '', dias: [_dia]);
     await ref.read(treinosProvider.notifier).salvar(t);
     if (!mounted) return;
     Navigator.of(context).push(
@@ -329,10 +329,16 @@ class _TreinoCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  treino.nome.isEmpty ? 'Sem nome' : treino.nome,
-                                  style: const TextStyle(
+                                  treino.nome.isEmpty
+                                      ? 'Novo treino'
+                                      : treino.nome,
+                                  style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w700,
+                                    // nome vazio = sugestão neutra (cor fraca)
+                                    color: treino.nome.isEmpty
+                                        ? AppColors.dim
+                                        : AppColors.text,
                                   ),
                                 ),
                                 const SizedBox(height: 4),

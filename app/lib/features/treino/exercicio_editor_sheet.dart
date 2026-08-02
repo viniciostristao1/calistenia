@@ -385,7 +385,7 @@ class _TempoLinha extends StatelessWidget {
               if (v != null) onChanged(v.clamp(minimo, 3600));
             },
             child: Container(
-              width: 84,
+              width: 52,
               alignment: Alignment.center,
               child: Text(
                 fmtSeg(segundos),
@@ -444,7 +444,7 @@ class _StepperLinha extends StatelessWidget {
         GestureDetector(
           onTap: onTapValor,
           child: Container(
-            width: 84,
+            width: 52,
             alignment: Alignment.center,
             child: Text(
               valorTexto,
@@ -577,7 +577,7 @@ class _PesoLinha extends StatelessWidget {
           GestureDetector(
             onTap: onDigitar,
             child: Container(
-              width: 84,
+              width: 52,
               alignment: Alignment.center,
               child: Text(
                 fmtPeso(peso),
