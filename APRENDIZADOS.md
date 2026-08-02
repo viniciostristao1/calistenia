@@ -341,5 +341,20 @@ check-in). Versão `0.10.0+10`.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.11.0+11`.
 
-> **Pendente (item 1):** login com Google — depende de setup no Firebase Console (projeto/
-> app + google-services.json + SHA-1 da keystore). Discussão aberta com o usuário.
+---
+
+## 2026-08-02 — v0.12.0: tela de login preparada (sem Firebase ainda)
+
+Decisão do usuário para o item 1 (login Google): **"deixar a tela pronta"** — UI agora,
+integração real quando o Firebase for configurado.
+
+- `ConfigScreen` ganhou a seção **"Conta"** + botão **"Entrar com Google"** (`_BotaoGoogle`,
+  visual) que por ora mostra um SnackBar "em breve". **Sem** `firebase_auth`/`google_sign_in`
+  (não adiciona plugin nem quebra o build sem o `google-services.json`).
+- **SHA-1 da keystore de upload** (para registrar no Firebase quando for a hora):
+  `6B:33:2E:7E:E7:2E:03:C3:D2:8F:72:CC:04:8B:29:E6:67:45:92:6A`.
+- Para ativar de verdade: usuário cria projeto/app no Firebase e envia o
+  `google-services.json`; então adiciono os pacotes, o gate de auth e o entrar/sair reais
+  (ver IDEIAS). Login ≠ sync de dados (sync é etapa à parte).
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.12.0+12`.

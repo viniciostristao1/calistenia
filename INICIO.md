@@ -19,14 +19,17 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.11.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+atual = **v0.12.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
 Cronômetro"** (pacote Dart segue `calistenia`). **Cor oficial = âmbar** (azul é opção).
 Fase = **usuário instalar e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
-**Novidades da v0.11.0:** ícone **preto sobre âmbar** (estilo lista_app, menor/mais p/
-baixo); **âmbar = tema padrão** (`AppColors` default + `temaProvider` default); troca de
-tema **instantânea** (`themeAnimationDuration: Duration.zero`); Progressão sem o texto "de
-X→Y reps". **Pendente:** login Google (depende de setup Firebase — ver IDEIAS).
+**Novidades da v0.12.0:** tela de **login com Google preparada** (Config → Conta, botão
+visual "em breve"; sem Firebase ainda — decisão "deixar a tela pronta"). SHA-1 da keystore
+guardado no APRENDIZADOS p/ o setup Firebase futuro.
+
+**Base (v0.11.0):** ícone **preto sobre âmbar** (estilo lista_app, menor/mais p/ baixo);
+**âmbar = tema padrão** (`AppColors` default + `temaProvider` default); troca de tema
+**instantânea** (`themeAnimationDuration: Duration.zero`); Progressão sem "de X→Y reps".
 
 **Base (v0.10.0):** aba **Check-in** (3ª aba) — calendário mensal de assiduidade com
 pontinhos das cores dos exercícios; **check-in automático** ao terminar cada exercício no

@@ -35,8 +35,47 @@ class ConfigScreen extends ConsumerWidget {
             selecionado: tema == TemaApp.ambar,
             onTap: () => ref.read(temaProvider.notifier).definir(TemaApp.ambar),
           ),
+          const SizedBox(height: 28),
+          const Text('Conta',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+          const SizedBox(height: 4),
+          const Text(
+            'Em breve: entrar com Google para salvar seus treinos na conta e '
+            'recuperar ao trocar de celular.',
+            style: TextStyle(color: AppColors.dim, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          const _BotaoGoogle(),
         ],
       ),
+    );
+  }
+}
+
+/// Botão "Entrar com Google" — visual pronto; a conexão real chega quando o
+/// Firebase for configurado (ver IDEIAS.md). Por ora, avisa "em breve".
+class _BotaoGoogle extends StatelessWidget {
+  const _BotaoGoogle();
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.text,
+        side: const BorderSide(color: AppColors.lineStrong),
+        minimumSize: const Size.fromHeight(50),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      onPressed: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login com Google chega em breve.'),
+          ),
+        );
+      },
+      icon: const Icon(Icons.g_mobiledata, size: 28),
+      label: const Text('Entrar com Google'),
     );
   }
 }
