@@ -490,13 +490,16 @@ aparelho (o CI/`flutter test` não valida som). Versão `0.18.0+18`.
 
 ## 2026-08-03 — v0.19.0: som via soundpool + Desfazer visível + fonte
 
-- **Som (item 1) — audioplayers NÃO serve p/ bips rápidos:** mesmo pré-carregado +
-  lowLatency + seek/resume, o `_beep` (a cada rep) não tocava; só o `_fim` (espaçado). Em
-  lowLatency o `seek` não é suportado e o `resume` não reinicia em sucessão rápida.
-  **Trocado por `soundpool ^2.4.1`** (SoundPool nativo, feito p/ SFX curtos e sobrepostos):
-  `pool.load(rootBundle.load(asset))` → `_idBeep`/`_idFim`; tocar = `pool.play(id)`
-  (fire-and-forget, baixíssima latência). Removido `audioplayers`. `StreamType.music`.
-  A lógica de "fim de série vs bip" (rep==totalReps) permanece.
+- **Som (item 1) — a saga:** (a) v0.17 `play(AssetSource)` em **modo normal** (mediaPlayer)
+  → latência de prepare mata bips rápidos. (b) v0.18 lowLatency + **`seek`+`resume`** → o
+  `seek` não é suportado em lowLatency e quebrava; só o `_fim` (espaçado) tocava. (c) tentei
+  **`soundpool`** → **NÃO compila**: `soundpool 2.4.1` está **descontinuado** e usa a API
+  `Registrar` do plugin **embedding v1**, removida no Flutter atual (`Unresolved reference
+  'Registrar'`). **Solução final:** voltar ao `audioplayers` em **`PlayerMode.lowLatency`
+  (SoundPool no Android) + `play(AssetSource)` direto** (sem seek/resume) — combinação que
+  não tinha sido testada. Dois players (`_beep`/`_fim`). Lógica fim-de-série vs bip
+  (rep==totalReps) mantida. **Lição:** conferir se um plugin é mantido (embedding v2) antes
+  de adotar; o CI é quem pega isso.
 - **Desfazer visível (item 2):** o `SnackBarAction` ficava escuro (M3 usa `inversePrimary`
   no dark) → invisível, e o usuário não conseguia tocar (o exercício "ficava permanente").
   Fix: `snackBarTheme.actionTextColor = AppColors.accentDoTema(tema)`. Duração 3s já ok.

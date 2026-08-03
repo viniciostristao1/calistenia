@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soundpool/soundpool.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../models/exercicio.dart';
@@ -45,33 +45,25 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   int _ultimoBip = -1;
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
 
-  // Efeitos sonoros via Soundpool (SoundPool nativo) — feito para bips curtos e
-  // repetidos com baixa latência. O audioplayers falhava nas trocas rápidas.
-  Soundpool? _pool;
-  int? _idBeep; // troca de repetição
-  int? _idFim; // fim de série / treino
+  // Dois players em MODO BAIXA LATÊNCIA (SoundPool no Android) — nesse modo o
+  // play() é rápido e reprodutível em transições curtas. `_beep` = troca de
+  // repetição; `_fim` = fim de série/treino.
+  final AudioPlayer _beep = AudioPlayer(playerId: 'calis_beep');
+  final AudioPlayer _fim = AudioPlayer(playerId: 'calis_fim');
 
   Future<void> _prepararSom() async {
-    final pool = Soundpool.fromOptions(
-      options: const SoundpoolOptions(streamType: StreamType.music),
-    );
-    final beep = await pool.load(await rootBundle.load('assets/sounds/beep.wav'));
-    final fim = await pool.load(await rootBundle.load('assets/sounds/fim.wav'));
-    if (!mounted) {
-      pool.dispose();
-      return;
+    for (final p in [_beep, _fim]) {
+      await p.setPlayerMode(PlayerMode.lowLatency);
+      await p.setReleaseMode(ReleaseMode.stop);
+      await p.setVolume(1.0);
     }
-    _pool = pool;
-    _idBeep = beep;
-    _idFim = fim;
   }
 
   /// Toca um efeito (fim de série ou bip) se o som estiver ligado.
   void _tocarSom({required bool fim}) {
     if (!(ref.read(somProvider).value ?? true)) return;
-    final pool = _pool;
-    final id = fim ? _idFim : _idBeep;
-    if (pool != null && id != null) pool.play(id);
+    final p = fim ? _fim : _beep;
+    p.play(AssetSource(fim ? 'sounds/fim.wav' : 'sounds/beep.wav'));
   }
 
   void _abrirAddProgressao() {
@@ -110,8 +102,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _pool?.release();
-    _pool?.dispose();
+    _beep.dispose();
+    _fim.dispose();
     WakelockPlus.disable();
     super.dispose();
   }
