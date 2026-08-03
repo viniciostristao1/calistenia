@@ -32,9 +32,9 @@ class ProgressaoScreen extends ConsumerWidget {
           if (registros.isEmpty) return const _Vazio();
           final grupos = agruparPorExercicio(registros);
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             itemCount: grupos.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
             itemBuilder: (_, i) => _ExercicioProgressoCard(grupo: grupos[i]),
           );
         },
@@ -105,7 +105,7 @@ class _ExercicioProgressoCard extends ConsumerWidget {
     final delta = grupo.ultimo - grupo.primeiro;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+        padding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -196,7 +196,7 @@ class _GraficoBarras extends StatelessWidget {
         .map((r) => r.valor)
         .fold<int>(1, (a, b) => a > b ? a : b);
     return SizedBox(
-      height: _trilho + 30,
+      height: _trilho + 20,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -275,7 +275,7 @@ class _Barra extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 3),
             Text(
               fmtDataCurta(registro.data),
               style: const TextStyle(color: AppColors.dim, fontSize: 11),

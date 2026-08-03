@@ -8,12 +8,14 @@ class Treino {
   String nome;
   List<int> dias; // 0=seg .. 6=dom
   List<Exercicio> exercicios;
+  String? fundo; // nome do asset de fundo (ex.: 'fundo1.jpg'); null = nenhum
 
   Treino({
     String? id,
     required this.nome,
     List<int>? dias,
     List<Exercicio>? exercicios,
+    this.fundo,
   }) : id = id ?? novoId(),
        dias = dias ?? [],
        exercicios = exercicios ?? [];
@@ -39,6 +41,7 @@ class Treino {
     nome: nome,
     dias: List.of(dias),
     exercicios: exercicios.map((e) => e.copy()).toList(),
+    fundo: fundo,
   );
 
   Map<String, dynamic> toJson() => {
@@ -46,6 +49,7 @@ class Treino {
     'nome': nome,
     'dias': dias,
     'exercicios': exercicios.map((e) => e.toJson()).toList(),
+    if (fundo != null) 'fundo': fundo,
   };
 
   factory Treino.fromJson(Map<String, dynamic> j) => Treino(
@@ -55,5 +59,6 @@ class Treino {
     exercicios: ((j['exercicios'] ?? []) as List)
         .map((e) => Exercicio.fromJson(e as Map<String, dynamic>))
         .toList(),
+    fundo: j['fundo'] as String?,
   );
 }

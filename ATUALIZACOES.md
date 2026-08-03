@@ -3,6 +3,15 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-04 — v0.20.0 (imagem de fundo + horário de término + som + progressão):**
+  - **Imagem de fundo motivacional** no cronômetro: no editor do treino, escolha uma das
+    fotos (miniaturas) — ela aparece atrás do contador daquele treino. "Nenhuma" também é
+    opção.
+  - **Horário de término** no card do treino (aba Treinos): a que horas termina se começar
+    agora (ex.: "termina ~14:35").
+  - **Som (4ª abordagem):** um **pool de players** — cada bip usa um player livre, pra tocar
+    **em cada repetição** (o reuso do mesmo player falhava nas trocas rápidas).
+  - **Progressão** mais compacta (menos espaço vazio nas caixinhas).
 - **2026-08-03 — v0.19.0 (som de novo + Desfazer visível + fonte):**
   - **Som (2ª tentativa):** troquei o motor de áudio por um feito para efeitos rápidos, pra
     o bip tocar **em cada repetição** (na versão anterior só o som de fim de série tocava).

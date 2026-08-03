@@ -291,15 +291,23 @@ class _TreinoCard extends StatelessWidget {
   void _rodar(BuildContext context, String titulo, List<Exercicio> exs) =>
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => PlayerScreen(titulo: titulo, exercicios: exs),
+          builder: (_) => PlayerScreen(
+            titulo: titulo,
+            exercicios: exs,
+            fundo: treino.fundo,
+          ),
         ),
       );
 
   @override
   Widget build(BuildContext context) {
     final n = treino.exercicios.length;
+    final dur = treino.duracaoTotalSeg;
+    final termina = dur > 0
+        ? ' · termina ~${fmtHora(DateTime.now().add(Duration(seconds: dur)))}'
+        : '';
     final resumo =
-        '$n ${n == 1 ? 'exercício' : 'exercícios'} · ${fmtSeg(treino.duracaoTotalSeg)}';
+        '$n ${n == 1 ? 'exercício' : 'exercícios'} · ${fmtSeg(dur)}$termina';
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),

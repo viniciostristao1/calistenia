@@ -7,6 +7,7 @@ import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
 import '../../util/format.dart';
+import '../../util/fundos.dart';
 import '../player/player_screen.dart';
 import 'exercicio_editor_sheet.dart';
 
@@ -62,6 +63,11 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
       _t.exercicios.add(resultado);
     }
     await _salvar();
+  }
+
+  void _definirFundo(String? f) {
+    setState(() => _t.fundo = f);
+    ref.read(treinosProvider.notifier).salvar(_t);
   }
 
   Future<void> _excluirExercicio(Exercicio e) async {
@@ -214,6 +220,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                       builder: (_) => PlayerScreen(
                         titulo: _t.nome,
                         exercicios: _t.exercicios,
+                        fundo: _t.fundo,
                       ),
                     ),
                   ),
@@ -271,6 +278,31 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                   },
                 ),
             ],
+          ),
+          const SizedBox(height: 22),
+          const Text('Imagem de fundo do cronômetro',
+              style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          const Text('Motivação no fundo da tela do treino.',
+              style: TextStyle(color: AppColors.dim, fontSize: 13)),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 104,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _MiniaturaFundo(
+                  selecionado: _t.fundo == null,
+                  onTap: () => _definirFundo(null),
+                ),
+                for (final f in fundosDisponiveis)
+                  _MiniaturaFundo(
+                    asset: fundoAsset(f),
+                    selecionado: _t.fundo == f,
+                    onTap: () => _definirFundo(f),
+                  ),
+              ],
+            ),
           ),
           const SizedBox(height: 26),
           Row(
@@ -339,6 +371,43 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
             label: const Text('Adicionar de exercícios já salvos'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Miniatura de escolha de fundo (a 1ª, sem asset, é "nenhum").
+class _MiniaturaFundo extends StatelessWidget {
+  const _MiniaturaFundo({
+    this.asset,
+    required this.selecionado,
+    required this.onTap,
+  });
+
+  final String? asset;
+  final bool selecionado;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 58,
+        margin: const EdgeInsets.only(right: 10),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selecionado ? context.accent : AppColors.line,
+            width: selecionado ? 3 : 1,
+          ),
+        ),
+        child: asset == null
+            ? const Center(
+                child: Icon(Icons.block, color: AppColors.dim2, size: 22))
+            : Image.asset(asset!, fit: BoxFit.cover),
       ),
     );
   }

@@ -507,3 +507,25 @@ aparelho (o CI/`flutter test` não valida som). Versão `0.18.0+18`.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Risco:** soundpool é plugin
 nativo novo — o build do CI valida; áudio só no aparelho. Versão `0.19.0+19`.
+
+---
+
+## 2026-08-04 — v0.20.0: fundo motivacional + horário de término + som (pool) + progressão
+
+- **Som (item 4) — POOL de players:** mesmo em lowLatency + play(), reusar UM player a cada
+  rep curta ainda falhava (tocava nas transições espaçadas, não nas rápidas). Fix: **5
+  players de beep em rodízio** (`_beeps[_beepIdx]`, round-robin) — cada bip usa um livre.
+  `_fim` segue com 1 player (espaçado). Dispose de todos.
+- **Fundo do treino (item 3):** o usuário subiu 5 PNGs (~2MB, 941×1672, stories) via GitHub;
+  comprimi p/ JPEG 810px q80 (~130KB cada, 712KB total) em `assets/fundos/` (PNGs originais
+  removidos do repo). `Treino.fundo` (String? nome do asset). `util/fundos.dart`
+  (`fundosDisponiveis` + `fundoAsset`). Editor: `_MiniaturaFundo` (rodízio horizontal, 1ª =
+  "nenhum"/`Icons.block`). Player: `Stack` [Image cover + overlay preto 0.55 + conteúdo];
+  novo param `PlayerScreen.fundo` (passado da home e do editor). Sincroniza no Firestore
+  (campo `fundo` no JSON; assets são embutidos, iguais em todo device).
+- **Horário de término (item 1):** `fmtHora(DateTime)`; card mostra "termina ~HH:MM" =
+  `now + duracaoTotalSeg` (só se dur>0).
+- **Progressão (item 2):** card padding 12→6, separator 12→8, gráfico height +30→+20, gap
+  barra-data 6→3.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.20.0+20`.

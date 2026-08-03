@@ -3,7 +3,7 @@ description: "Cronômetros de treino de calistenia — preparação, execução,
 publish_to: 'none'
 
 # versionName+versionCode. Ex.: 0.1.0+1 → versionName "0.1.0", versionCode 1.
-version: 0.19.0+19
+version: 0.20.0+20
 
 environment:
   sdk: ^3.12.2
@@ -34,6 +34,7 @@ flutter:
     - assets/icon/logo.png
     - assets/sounds/beep.wav
     - assets/sounds/fim.wav
+    - assets/fundos/
 
 # Ícone do app (cronômetro minimalista, azul degradê). A arte é gerada por
 # tools/gerar_icone.py; rode `dart run flutter_launcher_icons` após alterá-la.

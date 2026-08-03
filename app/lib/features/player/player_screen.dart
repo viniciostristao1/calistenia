@@ -14,6 +14,7 @@ import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
+import '../../util/fundos.dart';
 
 /// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
 /// → descanso, por série) contando segundo a segundo, com pausa, pular/voltar
@@ -24,10 +25,12 @@ class PlayerScreen extends ConsumerStatefulWidget {
     super.key,
     required this.titulo,
     required this.exercicios,
+    this.fundo,
   });
 
   final String titulo;
   final List<Exercicio> exercicios;
+  final String? fundo; // imagem de fundo do treino (asset), ou null
 
   @override
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
@@ -45,14 +48,16 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   int _ultimoBip = -1;
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
 
-  // Dois players em MODO BAIXA LATÊNCIA (SoundPool no Android) — nesse modo o
-  // play() é rápido e reprodutível em transições curtas. `_beep` = troca de
-  // repetição; `_fim` = fim de série/treino.
-  final AudioPlayer _beep = AudioPlayer(playerId: 'calis_beep');
+  // POOL de players (baixa latência): reusar UM player a cada repetição curta
+  // fazia o som falhar. Com vários players em rodízio, cada bip usa um livre.
+  static const _nBeeps = 5;
+  final List<AudioPlayer> _beeps =
+      List.generate(_nBeeps, (i) => AudioPlayer(playerId: 'calis_beep$i'));
   final AudioPlayer _fim = AudioPlayer(playerId: 'calis_fim');
+  int _beepIdx = 0;
 
   Future<void> _prepararSom() async {
-    for (final p in [_beep, _fim]) {
+    for (final p in [..._beeps, _fim]) {
       await p.setPlayerMode(PlayerMode.lowLatency);
       await p.setReleaseMode(ReleaseMode.stop);
       await p.setVolume(1.0);
@@ -62,8 +67,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   /// Toca um efeito (fim de série ou bip) se o som estiver ligado.
   void _tocarSom({required bool fim}) {
     if (!(ref.read(somProvider).value ?? true)) return;
-    final p = fim ? _fim : _beep;
-    p.play(AssetSource(fim ? 'sounds/fim.wav' : 'sounds/beep.wav'));
+    if (fim) {
+      _fim.play(AssetSource('sounds/fim.wav'));
+      return;
+    }
+    // Rodízio: cada bip num player diferente (evita o "reuso rápido").
+    final p = _beeps[_beepIdx];
+    _beepIdx = (_beepIdx + 1) % _nBeeps;
+    p.play(AssetSource('sounds/beep.wav'));
   }
 
   void _abrirAddProgressao() {
@@ -102,7 +113,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _beep.dispose();
+    for (final p in _beeps) {
+      p.dispose();
+    }
     _fim.dispose();
     WakelockPlus.disable();
     super.dispose();
@@ -231,40 +244,56 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final segundos = (_restanteMs / 1000).ceil().clamp(0, 99999);
     final proxima = _idx < _fases.length - 1 ? _fases[_idx + 1] : null;
 
+    final fundo = widget.fundo;
     return Scaffold(
       backgroundColor: AppColors.bg,
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [cor.withValues(alpha: 0.18), AppColors.bg],
-              stops: const [0, 0.5],
+      body: Stack(
+        children: [
+          if (fundo != null) ...[
+            Positioned.fill(
+              child: Image.asset(fundoAsset(fundo), fit: BoxFit.cover),
+            ),
+            // Escurece a foto p/ o anel/números ficarem legíveis.
+            Positioned.fill(
+              child: Container(color: Colors.black.withValues(alpha: 0.55)),
+            ),
+          ],
+          SafeArea(
+            child: Container(
+              decoration: fundo != null
+                  ? null
+                  : BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [cor.withValues(alpha: 0.18), AppColors.bg],
+                        stops: const [0, 0.5],
+                      ),
+                    ),
+              child: Column(
+                children: [
+                  _barraTopo(),
+                  const SizedBox(height: 8),
+                  _progressoGeral(),
+                  const Spacer(),
+                  Text(
+                    fase.exercicioNome,
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.w700),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  _anel(cor, fracao, segundos, fase),
+                  const SizedBox(height: 20),
+                  _legendaProxima(proxima),
+                  const Spacer(),
+                  _controles(),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
           ),
-          child: Column(
-            children: [
-              _barraTopo(),
-              const SizedBox(height: 8),
-              _progressoGeral(),
-              const Spacer(),
-              Text(
-                fase.exercicioNome,
-                style: const TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.w700),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              _anel(cor, fracao, segundos, fase),
-              const SizedBox(height: 20),
-              _legendaProxima(proxima),
-              const Spacer(),
-              _controles(),
-              const SizedBox(height: 12),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }

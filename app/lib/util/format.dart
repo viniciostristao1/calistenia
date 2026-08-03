@@ -13,6 +13,10 @@ String fmtPeso(double kg) {
   return '${kg.toStringAsFixed(1).replaceAll('.', ',')}kg';
 }
 
+/// DateTime -> "14:05" (hora:minuto).
+String fmtHora(DateTime d) =>
+    '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
 /// DateTime -> "31/07" (dia/mês, 2 dígitos).
 String fmtDataCurta(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
