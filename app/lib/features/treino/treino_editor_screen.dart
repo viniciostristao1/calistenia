@@ -65,8 +65,24 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
   }
 
   Future<void> _excluirExercicio(Exercicio e) async {
-    _t.exercicios.removeWhere((x) => x.id == e.id);
+    final idx = _t.exercicios.indexWhere((x) => x.id == e.id);
+    if (idx < 0) return;
+    _t.exercicios.removeAt(idx);
     await _salvar();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: const Text('Exercício excluído'),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Desfazer',
+          onPressed: () {
+            _t.exercicios.insert(idx.clamp(0, _t.exercicios.length), e);
+            _salvar();
+          },
+        ),
+      ));
   }
 
   /// Adiciona uma cópia de um exercício já salvo em outro treino.
@@ -149,9 +165,23 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
         ],
       ),
     );
-    if (ok != true) return;
-    await ref.read(treinosProvider.notifier).remover(_t.id);
-    if (mounted) Navigator.of(context).pop();
+    if (ok != true || !mounted) return;
+    final removido = _t.copy();
+    final notifier = ref.read(treinosProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    await notifier.remover(_t.id);
+    navigator.pop();
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: const Text('Treino excluído'),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Desfazer',
+          onPressed: () => notifier.salvar(removido),
+        ),
+      ));
   }
 
   @override

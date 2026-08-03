@@ -464,3 +464,24 @@ build do CI é o teste real. Versão `0.16.0+16`.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Risco:** Firestore nativo +
 regras — testar com o banco criado. Versão `0.17.0+17`.
+
+---
+
+## 2026-08-03 — v0.18.0: som corrigido + fim de série + desfazer + fonte
+
+- **Bug do som (item 1) — causa:** `AudioPlayer.play(AssetSource(...))` **recarrega o asset
+  a cada chamada** → em transições automáticas rápidas (reps de poucos segundos) a latência
+  fazia o som falhar (funcionava só no skip manual, mais espaçado). **Fix:** **2 players
+  pré-carregados** (`_beep`, `_fim`) com `setSource` + `PlayerMode.lowLatency`; tocar =
+  `seek(0)+resume()` (instantâneo). Fallback `play()` enquanto o pré-load não terminou.
+- **Som de fim de série (item 1):** no `_avancar`, se a fase que termina é execução com
+  `rep == totalReps` (última rep da série) → toca `_fim` (som do fim do treino); senão
+  `_beep`. Diferencia "executar" de "terminou".
+- **Desfazer (item 2):** `SnackBarAction "Desfazer"` (3s) em `_excluirExercicio`
+  (re-insere no índice original) e `_excluirTreino` (re-salva via notifier+messenger
+  capturados antes do pop). Guard `if (ok != true || !mounted) return;` p/
+  use_build_context_synchronously.
+- **Fonte (item 3):** contador 128→150 (FittedBox width 210→224).
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Áudio:** só testável no
+aparelho (o CI/`flutter test` não valida som). Versão `0.18.0+18`.

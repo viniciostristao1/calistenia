@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-03 — v0.18.0 (som corrigido + fim de série + desfazer):**
+  - **Som corrigido:** o bip agora toca **em cada repetição** durante o treino (antes falhava
+    nas trocas automáticas). E o **fim de cada série** toca um **som diferente** (o mesmo do
+    fim do treino) — pra diferenciar "vai executar" de "terminou".
+  - **Desfazer exclusão:** ao excluir um treino ou exercício, aparece **"Desfazer"** por
+    3 segundos.
+  - **Números do cronômetro** um pouco maiores.
 - **2026-08-03 — v0.17.0 (sincronização na conta):**
   - Com você **logado**, seus **treinos, check-ins e progressão** ficam salvos na sua
     conta Google e **voltam ao reinstalar ou trocar de celular**. Funciona offline (envia

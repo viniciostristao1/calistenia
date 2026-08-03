@@ -44,13 +44,36 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   final Stopwatch _sw = Stopwatch();
   int _ultimoBip = -1;
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
-  final AudioPlayer _somPlayer = AudioPlayer(playerId: 'calis_beep')
-    ..setReleaseMode(ReleaseMode.stop);
 
-  /// Toca um bip (asset) se o som estiver ligado nas configurações.
-  void _tocarSom(String asset) {
-    if (ref.read(somProvider).value ?? true) {
-      _somPlayer.play(AssetSource(asset), volume: 0.8);
+  // Dois players PRÉ-CARREGADOS: em transições rápidas, recarregar o asset a
+  // cada play() falhava/atrasava. Com a source já pronta + modo baixa latência,
+  // tocar é instantâneo. `_beep` = troca de repetição; `_fim` = fim de série/treino.
+  final AudioPlayer _beep = AudioPlayer(playerId: 'calis_beep');
+  final AudioPlayer _fim = AudioPlayer(playerId: 'calis_fim');
+  bool _somPronto = false;
+
+  Future<void> _prepararSom() async {
+    for (final (p, asset) in [
+      (_beep, 'sounds/beep.wav'),
+      (_fim, 'sounds/fim.wav'),
+    ]) {
+      await p.setReleaseMode(ReleaseMode.stop);
+      await p.setPlayerMode(PlayerMode.lowLatency);
+      await p.setVolume(0.9);
+      await p.setSource(AssetSource(asset));
+    }
+    _somPronto = true;
+  }
+
+  /// Toca o som pré-carregado [p] (do início) se o som estiver ligado.
+  void _tocarSom(AudioPlayer p) {
+    if (!(ref.read(somProvider).value ?? true)) return;
+    if (_somPronto) {
+      p.seek(Duration.zero);
+      p.resume();
+    } else {
+      // fallback enquanto o pré-carregamento não terminou
+      p.play(AssetSource(p == _fim ? 'sounds/fim.wav' : 'sounds/beep.wav'));
     }
   }
 
@@ -78,6 +101,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    _prepararSom();
     _fases = montarLinhaDoTempoDe(widget.exercicios);
     _duracaoTotal = _fases.fold(0, (a, f) => a + f.segundos);
     if (_fases.isNotEmpty) {
@@ -89,7 +113,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _somPlayer.dispose();
+    _beep.dispose();
+    _fim.dispose();
     WakelockPlus.disable();
     super.dispose();
   }
@@ -139,7 +164,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       _finalizar();
       return;
     }
-    final exAntes = _fases[_idx].exercicioIndex;
+    final faseTerm = _fases[_idx]; // a fase que está terminando
+    final exAntes = faseTerm.exercicioIndex;
     final resto = auto ? _restanteMs : 0; // carrega o "estouro" p/ manter o ritmo
     _idx++;
     // Trocou de exercício? O anterior foi concluído -> check-in.
@@ -147,7 +173,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _ultimoBip = -1;
     _restanteMs = _fases[_idx].segundos * 1000 + resto;
     HapticFeedback.heavyImpact();
-    _tocarSom('sounds/beep.wav');
+    // Última repetição da série = fim de série (som diferente); senão, bip.
+    final fimDeSerie = faseTerm.tipo == FaseTipo.execucao &&
+        faseTerm.rep == faseTerm.totalReps;
+    _tocarSom(fimDeSerie ? _fim : _beep);
     setState(() {});
   }
 
@@ -169,7 +198,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _sw.stop();
     WakelockPlus.disable();
     HapticFeedback.heavyImpact();
-    _tocarSom('sounds/fim.wav'); // som leve marcando o fim
+    _tocarSom(_fim); // som de fim marcando o término
     _talvezMarcar(_fases[_idx].exercicioIndex); // último exercício concluído
     setState(() {
       _concluido = true;
@@ -361,13 +390,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               ),
               const SizedBox(height: 6),
               SizedBox(
-                width: 210,
+                width: 224,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '$segundos',
                     style: const TextStyle(
-                      fontSize: 128,
+                      fontSize: 150,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
                     ),
