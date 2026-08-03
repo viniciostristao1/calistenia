@@ -121,7 +121,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Image.asset('assets/icon/logo.png', height: 26),
             const SizedBox(width: 8),
             const Flexible(
-              child: Text('Calis Cronômetro', overflow: TextOverflow.ellipsis),
+              child: Text('Calis Timer', overflow: TextOverflow.ellipsis),
             ),
           ],
         ),

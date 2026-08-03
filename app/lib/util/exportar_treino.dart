@@ -15,7 +15,7 @@ String treinoParaTexto(Treino t) {
   }
   buf.writeln('');
   buf.writeln('Duração ~${fmtSeg(t.duracaoTotalSeg)}');
-  buf.writeln('— feito no Calis Cronômetro');
+  buf.writeln('— feito no Calis Timer');
   return buf.toString();
 }
 

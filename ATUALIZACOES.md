@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-03 — v0.15.0 (novo nome: Calis Timer):**
+  - O app agora se chama **Calis Timer** (nome de exibição, na tela inicial e sob o ícone).
+    O identificador interno (`com.vinyapps.calistenia`) segue igual — nada de dados/instalação
+    muda, e o Firebase continua compatível.
 - **2026-08-02 — v0.14.0 (som de verdade + vários ajustes):**
   - **Som agora funciona:** bip próprio (não mais o som do sistema, que não tocava) nas
     transições e um som no fim do treino. Liga/desliga em Configurações → Som.

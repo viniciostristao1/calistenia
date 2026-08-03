@@ -19,8 +19,11 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 ## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.14.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
-Cronômetro"** (pacote Dart segue `calistenia`). **Cor oficial = âmbar** (azul é opção).
+atual = **v0.15.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+Timer"** (pacote/applicationId segue `com.vinyapps.calistenia`, pacote Dart `calistenia`;
+NÃO mudar — Firebase/Play Store se registram pelo package). **Cor oficial = âmbar** (azul
+é opção). **Firebase:** guia em [`FIREBASE.md`](FIREBASE.md) (login Google — aguardando o
+`google-services.json` do usuário).
 Fase = **usuário instalar e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
 **Novidades da v0.14.0:** **som real** (`audioplayers` + WAV próprios em `assets/sounds/`;
