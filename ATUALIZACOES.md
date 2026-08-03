@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-03 — v0.17.0 (sincronização na conta):**
+  - Com você **logado**, seus **treinos, check-ins e progressão** ficam salvos na sua
+    conta Google e **voltam ao reinstalar ou trocar de celular**. Funciona offline (envia
+    quando reconecta).
+  - No 1º login, o app **une** o que está no aparelho com o que já está na conta (não perde
+    nada). Depois, o que você edita se reflete nos outros aparelhos.
+  - Requer o banco Firestore criado no console (ver `FIREBASE.md`).
 - **2026-08-03 — v0.16.0 (login com Google):**
   - Em **Configurações → Conta**, o **"Entrar com Google"** agora **funciona** de verdade:
     entra com sua conta, mostra seu nome/e-mail e permite **Sair**.

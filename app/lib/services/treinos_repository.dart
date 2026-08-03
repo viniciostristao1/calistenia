@@ -7,7 +7,7 @@ import '../models/exercicio.dart';
 import '../models/treino.dart';
 import '../util/dias.dart';
 
-const _chave = 'treinos_v1';
+const chaveTreinos = 'treinos_v1';
 
 /// Fonte única dos treinos. Carrega/salva em `shared_preferences` (local, sem
 /// login/nuvem). O estado é a lista de treinos.
@@ -18,7 +18,7 @@ class TreinosNotifier extends AsyncNotifier<List<Treino>> {
   @override
   Future<List<Treino>> build() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_chave);
+    final raw = prefs.getString(chaveTreinos);
     if (raw == null) {
       // Primeiro uso: semeia um treino de exemplo (o usuário pode editar/excluir).
       final exemplo = _seed();
@@ -34,7 +34,7 @@ class TreinosNotifier extends AsyncNotifier<List<Treino>> {
 
   Future<void> _write(SharedPreferences prefs, List<Treino> list) async {
     await prefs.setString(
-      _chave,
+      chaveTreinos,
       jsonEncode(list.map((t) => t.toJson()).toList()),
     );
   }

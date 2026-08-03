@@ -46,6 +46,22 @@ Firebase Console** (Parte A) e **o que o Claude faz no código** (Parte B).
 
 ---
 
+## Sincronização (Firestore) — passos no console
+
+Para os treinos/check-ins/progressão ficarem na conta e voltarem em qualquer aparelho:
+
+1. Menu → **Criação/Build → Firestore Database → Criar banco de dados**.
+2. Escolhas:
+   - **Edição:** Standard.
+   - **Local:** `southamerica-east1` (São Paulo). ⚠️ **permanente**, não muda depois.
+   - **Modo:** **Produção** (não teste).
+3. Aba **Regras** (Rules) → cole o conteúdo de [`firestore.rules`](firestore.rules) →
+   **Publicar**. (Sem isso, o banco em modo produção bloqueia tudo e a sync não funciona.)
+
+Estrutura na nuvem: um doc por usuário `users/{uid}` com os campos `treinos`, `checkins`,
+`progressao` (o mesmo JSON do armazenamento local) + `updatedAt`. O código está em
+`app/lib/services/sync_service.dart`.
+
 ## Notas importantes
 
 - **Login ≠ sincronização.** Habilitar o login apenas **identifica** quem você é. Salvar

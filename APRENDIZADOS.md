@@ -436,3 +436,31 @@ integração real quando o Firebase for configurado.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Risco:** Firebase nativo — o
 build do CI é o teste real. Versão `0.16.0+16`.
+
+---
+
+## 2026-08-03 — v0.17.0: sincronização (Firestore)
+
+- **Dep:** `cloud_firestore ^6.7.1`. Banco `calis-timer` (São Paulo, produção); regras em
+  `firestore.rules` (cada uid só acessa `users/{uid}`), aplicadas no console pelo usuário.
+- **Modelo na nuvem:** doc `users/{uid}` com campos `treinos`/`checkins`/`progressao` = o
+  MESMO JSON do shared_preferences (reusa toJson) + `updatedAt`. Reusou as chaves dos repos,
+  tornadas públicas (`chaveTreinos`/`chaveCheckin`/`chaveProgressao`).
+- **`SyncController` + `syncProvider`** (`sync_service.dart`), ativado por
+  `ref.watch(syncProvider)` no app:
+  - Observa `authStateProvider`: `start(uid)`/`stop()`.
+  - **Pull:** `snapshots()` do doc. **1º snapshot** = UNIÃO por id (nuvem vence conflito,
+    itens só-locais preservados) → grava nos prefs + `invalidate` dos 3 providers + push do
+    resultado. Snapshots seguintes = aplica remoto (LWW por doc).
+  - **Push:** `ref.listen` nos 3 providers → `onLocalChange()` (debounce 800ms) → `set(...,
+    merge:true)`.
+  - **Anti-loop:** ignora snapshots com `metadata.hasPendingWrites` (eco das próprias
+    escritas); flag `_aplicandoRemoto` bloqueia push durante a aplicação do remoto.
+  - **Gotcha Riverpod:** `ref.listen` só no build do provider (não dentro de `start()`); o
+    controller só guarda a subscription do Firestore.
+- **Offline:** persistence nativa do cloud_firestore (cache) → funciona offline e reenvia.
+- **Limitação (comunicada):** LWW por documento — edições simultâneas offline em 2 aparelhos:
+  a última a sincronizar sobrescreve. Aceitável p/ uso pessoal.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Risco:** Firestore nativo +
+regras — testar com o banco criado. Versão `0.17.0+17`.

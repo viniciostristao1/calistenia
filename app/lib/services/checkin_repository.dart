@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/checkin.dart';
 import '../models/exercicio.dart';
 
-const _chave = 'checkin_v1';
+const chaveCheckin = 'checkin_v1';
 
 /// Fonte única dos check-ins (assiduidade). Local, sem login/nuvem.
 final checkinProvider =
@@ -16,7 +16,7 @@ class CheckinNotifier extends AsyncNotifier<List<CheckIn>> {
   @override
   Future<List<CheckIn>> build() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_chave);
+    final raw = prefs.getString(chaveCheckin);
     if (raw == null || raw.isEmpty) return [];
     return (jsonDecode(raw) as List)
         .map((e) => CheckIn.fromJson(e as Map<String, dynamic>))
@@ -26,7 +26,7 @@ class CheckinNotifier extends AsyncNotifier<List<CheckIn>> {
   Future<void> _persist(List<CheckIn> list) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      _chave,
+      chaveCheckin,
       jsonEncode(list.map((c) => c.toJson()).toList()),
     );
     state = AsyncData(list);

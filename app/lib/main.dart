@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/root/root_screen.dart';
 import 'firebase_options.dart';
+import 'services/sync_service.dart';
 import 'services/tema_repository.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
@@ -24,6 +25,7 @@ class CalisteniaApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
+    ref.watch(syncProvider); // mantém a sincronização ativa (conforme o login)
     return MaterialApp(
       title: 'Calis Timer',
       debugShowCheckedModeBanner: false,

@@ -25,7 +25,10 @@ NÃO mudar — Firebase/Play Store se registram pelo package). **Cor oficial = �
 é opção). **Firebase LIGADO** (projeto `calis-timer`): **login com Google funciona**
 (Config → Conta). `minSdk` agora **23**. Secrets `GOOGLE_SERVICES_JSON`/`FIREBASE_OPTIONS_DART`
 no CI; arquivos gitignored. Detalhe em [`APRENDIZADOS.md`](APRENDIZADOS.md) e [`FIREBASE.md`](FIREBASE.md).
-**Login ≠ sync:** sincronizar treinos (Firestore) é próximo passo, não feito.
+**Sincronização (v0.17.0):** treinos/check-ins/progressão sincronizam no Firestore
+(`users/{uid}`, JSON = shared_preferences) quando logado; `sync_service.dart`
+(`syncProvider`), união por id no 1º sync + LWW depois, offline via cache. **Requer o banco
+criado + `firestore.rules` publicadas** (ver `FIREBASE.md`).
 Fase = **usuário instalar e usar** → iterar pelo feedback real ([`IDEIAS.md`](IDEIAS.md)).
 
 **Novidades da v0.14.0:** **som real** (`audioplayers` + WAV próprios em `assets/sounds/`;

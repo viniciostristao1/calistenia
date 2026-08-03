@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/registro_progressao.dart';
 
-const _chave = 'progressao_v1';
+const chaveProgressao = 'progressao_v1';
 
 /// Fonte única dos registros de progressão (local, sem login/nuvem).
 final progressaoProvider =
@@ -17,7 +17,7 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
   @override
   Future<List<RegistroProgressao>> build() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_chave);
+    final raw = prefs.getString(chaveProgressao);
     if (raw == null || raw.isEmpty) return [];
     return (jsonDecode(raw) as List)
         .map((e) => RegistroProgressao.fromJson(e as Map<String, dynamic>))
@@ -28,7 +28,7 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
     list.sort((a, b) => a.data.compareTo(b.data));
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      _chave,
+      chaveProgressao,
       jsonEncode(list.map((r) => r.toJson()).toList()),
     );
     state = AsyncData(list);
