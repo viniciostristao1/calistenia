@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-03 — v0.16.0 (login com Google):**
+  - Em **Configurações → Conta**, o **"Entrar com Google"** agora **funciona** de verdade:
+    entra com sua conta, mostra seu nome/e-mail e permite **Sair**.
+  - Por ora o login apenas **identifica** você (prepara o terreno). A **sincronização** dos
+    treinos na conta chega numa próxima versão.
+  - Requer Android 6.0+ (a biblioteca do Google exige).
 - **2026-08-03 — v0.15.0 (novo nome: Calis Timer):**
   - O app agora se chama **Calis Timer** (nome de exibição, na tela inicial e sob o ícone).
     O identificador interno (`com.vinyapps.calistenia`) segue igual — nada de dados/instalação

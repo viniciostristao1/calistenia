@@ -408,3 +408,31 @@ integração real quando o Firebase for configurado.
   (item 7).
 
 **Validação:** `flutter analyze` limpo, `flutter test` **9/9**. Versão `0.14.0+14`.
+
+---
+
+## 2026-08-03 — v0.15.0/v0.16.0: rename "Calis Timer" + login com Google (Firebase)
+
+- **v0.15.0 — rename:** só nome de EXIBIÇÃO → "Calis Timer" (`android:label`, título da home,
+  `MaterialApp.title`, texto do compartilhar). **`applicationId`/package
+  `com.vinyapps.calistenia` INALTERADO** (Firebase/Play Store se registram por ele).
+- **v0.16.0 — login Google (Firebase), projeto `calis-timer`:** seguiu o lista_app.
+  - Deps: `firebase_core ^4.12.1`, `firebase_auth ^6.5.6`, `google_sign_in ^7.2.0`.
+  - `firebase_options.dart` (Android; gitignored) + `google-services.json` em
+    `app/android/app/` (gitignored). Secrets no GitHub: `GOOGLE_SERVICES_JSON`,
+    `FIREBASE_OPTIONS_DART` (base64); workflow os restaura antes do build.
+  - Gradle: `com.google.gms.google-services` (settings `version "4.5.0" apply false` + app
+    aplica). **`minSdk` 21→23** (firebase_auth exige Android 6.0+).
+  - `auth_service.dart`: `google_sign_in 7.x` — `GoogleSignIn.instance.initialize(
+    serverClientId: <web client type 3>)` → `authenticate()` → `idToken` →
+    `GoogleAuthProvider.credential` → `signInWithCredential`. `authStateProvider`
+    (StreamProvider<User?>). `main` faz `Firebase.initializeApp`.
+  - UI: `_SecaoConta` em Configurações (entrar / avatar+nome+email / sair).
+  - **Gotcha do setup:** 1º `google-services.json` veio com `oauth_client: []` (faltava o
+    SHA-1 no app + habilitar Google no Authentication). Só depois de ambos o arquivo trouxe
+    o Android client (type 1, com o SHA-1) e o **Web client (type 3 = serverClientId)**.
+  - **Login ≠ sync:** só autentica; sincronizar treinos (Firestore) é etapa futura.
+  - **SHA-1 usado:** o da keystore de upload. Play App Signing exigirá o SHA-1 do Google também.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Risco:** Firebase nativo — o
+build do CI é o teste real. Versão `0.16.0+16`.

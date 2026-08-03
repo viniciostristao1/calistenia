@@ -5,6 +5,8 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Firebase — processa o google-services.json (login com Google).
+    id("com.google.gms.google-services")
 }
 
 // Assinatura de release (chave de upload). Vem de android/key.properties, que
@@ -32,7 +34,7 @@ android {
         applicationId = "com.vinyapps.calistenia"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 23 // Firebase Auth exige minSdk 23 (Android 6.0+)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

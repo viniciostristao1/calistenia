@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../services/auth_service.dart';
 import '../../services/som_repository.dart';
 import '../../services/tema_repository.dart';
 import '../../theme/app_colors.dart';
@@ -55,40 +56,113 @@ class ConfigScreen extends ConsumerWidget {
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 4),
           const Text(
-            'Em breve: entrar com Google para salvar seus treinos na conta e '
-            'recuperar ao trocar de celular.',
+            'Entre com Google para preparar o backup dos seus treinos na conta '
+            '(a sincronização em si chega numa próxima versão).',
             style: TextStyle(color: AppColors.dim, fontSize: 13),
           ),
           const SizedBox(height: 12),
-          const _BotaoGoogle(),
+          const _SecaoConta(),
         ],
       ),
     );
   }
 }
 
-/// Botão "Entrar com Google" — visual pronto; a conexão real chega quando o
-/// Firebase for configurado (ver IDEIAS.md). Por ora, avisa "em breve".
-class _BotaoGoogle extends StatelessWidget {
-  const _BotaoGoogle();
+/// Login/logout com Google. Reage ao estado de autenticação em tempo real.
+class _SecaoConta extends ConsumerStatefulWidget {
+  const _SecaoConta();
+
+  @override
+  ConsumerState<_SecaoConta> createState() => _SecaoContaState();
+}
+
+class _SecaoContaState extends ConsumerState<_SecaoConta> {
+  bool _ocupado = false;
+
+  Future<void> _entrar() async {
+    setState(() => _ocupado = true);
+    try {
+      await ref.read(authServiceProvider).signInWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Não foi possível entrar: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
+    }
+  }
+
+  Future<void> _sair() async {
+    setState(() => _ocupado = true);
+    await ref.read(authServiceProvider).signOut();
+    if (mounted) setState(() => _ocupado = false);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(authStateProvider).asData?.value;
+
+    if (_ocupado) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 14),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (user != null) {
+      final nome = (user.displayName ?? '').trim();
+      final email = user.email ?? '';
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.line),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: AppColors.surface2,
+              foregroundImage:
+                  user.photoURL != null ? NetworkImage(user.photoURL!) : null,
+              child: const Icon(Icons.person, color: AppColors.dim),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(nome.isEmpty ? 'Conectado' : nome,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                      overflow: TextOverflow.ellipsis),
+                  if (email.isNotEmpty)
+                    Text(email,
+                        style: const TextStyle(
+                            color: AppColors.dim, fontSize: 12.5),
+                        overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: _sair,
+              child: const Text('Sair'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return OutlinedButton.icon(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.text,
         side: const BorderSide(color: AppColors.lineStrong),
         minimumSize: const Size.fromHeight(50),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
-      onPressed: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login com Google chega em breve.'),
-          ),
-        );
-      },
+      onPressed: _entrar,
       icon: const Icon(Icons.g_mobiledata, size: 28),
       label: const Text('Entrar com Google'),
     );
