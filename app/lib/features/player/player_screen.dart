@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soundpool/soundpool.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../models/exercicio.dart';
@@ -45,36 +45,33 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   int _ultimoBip = -1;
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
 
-  // Dois players PRÉ-CARREGADOS: em transições rápidas, recarregar o asset a
-  // cada play() falhava/atrasava. Com a source já pronta + modo baixa latência,
-  // tocar é instantâneo. `_beep` = troca de repetição; `_fim` = fim de série/treino.
-  final AudioPlayer _beep = AudioPlayer(playerId: 'calis_beep');
-  final AudioPlayer _fim = AudioPlayer(playerId: 'calis_fim');
-  bool _somPronto = false;
+  // Efeitos sonoros via Soundpool (SoundPool nativo) — feito para bips curtos e
+  // repetidos com baixa latência. O audioplayers falhava nas trocas rápidas.
+  Soundpool? _pool;
+  int? _idBeep; // troca de repetição
+  int? _idFim; // fim de série / treino
 
   Future<void> _prepararSom() async {
-    for (final (p, asset) in [
-      (_beep, 'sounds/beep.wav'),
-      (_fim, 'sounds/fim.wav'),
-    ]) {
-      await p.setReleaseMode(ReleaseMode.stop);
-      await p.setPlayerMode(PlayerMode.lowLatency);
-      await p.setVolume(0.9);
-      await p.setSource(AssetSource(asset));
+    final pool = Soundpool.fromOptions(
+      options: const SoundpoolOptions(streamType: StreamType.music),
+    );
+    final beep = await pool.load(await rootBundle.load('assets/sounds/beep.wav'));
+    final fim = await pool.load(await rootBundle.load('assets/sounds/fim.wav'));
+    if (!mounted) {
+      pool.dispose();
+      return;
     }
-    _somPronto = true;
+    _pool = pool;
+    _idBeep = beep;
+    _idFim = fim;
   }
 
-  /// Toca o som pré-carregado [p] (do início) se o som estiver ligado.
-  void _tocarSom(AudioPlayer p) {
+  /// Toca um efeito (fim de série ou bip) se o som estiver ligado.
+  void _tocarSom({required bool fim}) {
     if (!(ref.read(somProvider).value ?? true)) return;
-    if (_somPronto) {
-      p.seek(Duration.zero);
-      p.resume();
-    } else {
-      // fallback enquanto o pré-carregamento não terminou
-      p.play(AssetSource(p == _fim ? 'sounds/fim.wav' : 'sounds/beep.wav'));
-    }
+    final pool = _pool;
+    final id = fim ? _idFim : _idBeep;
+    if (pool != null && id != null) pool.play(id);
   }
 
   void _abrirAddProgressao() {
@@ -113,8 +110,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _beep.dispose();
-    _fim.dispose();
+    _pool?.release();
+    _pool?.dispose();
     WakelockPlus.disable();
     super.dispose();
   }
@@ -176,7 +173,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     // Última repetição da série = fim de série (som diferente); senão, bip.
     final fimDeSerie = faseTerm.tipo == FaseTipo.execucao &&
         faseTerm.rep == faseTerm.totalReps;
-    _tocarSom(fimDeSerie ? _fim : _beep);
+    _tocarSom(fim: fimDeSerie);
     setState(() {});
   }
 
@@ -198,7 +195,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _sw.stop();
     WakelockPlus.disable();
     HapticFeedback.heavyImpact();
-    _tocarSom(_fim); // som de fim marcando o término
+    _tocarSom(fim: true); // som de fim marcando o término
     _talvezMarcar(_fases[_idx].exercicioIndex); // último exercício concluído
     setState(() {
       _concluido = true;
@@ -360,14 +357,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   Widget _anel(Color cor, double fracao, int segundos, Fase fase) {
     return SizedBox(
-      width: 260,
-      height: 260,
+      width: 292,
+      height: 292,
       child: Stack(
         alignment: Alignment.center,
         children: [
           SizedBox(
-            width: 260,
-            height: 260,
+            width: 292,
+            height: 292,
             child: CircularProgressIndicator(
               value: fracao,
               strokeWidth: 14,
@@ -390,13 +387,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               ),
               const SizedBox(height: 6),
               SizedBox(
-                width: 224,
+                width: 250,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '$segundos',
                     style: const TextStyle(
-                      fontSize: 150,
+                      fontSize: 176,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
                     ),

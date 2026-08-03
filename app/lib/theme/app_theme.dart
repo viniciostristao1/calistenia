@@ -72,9 +72,11 @@ ThemeData buildAppTheme(TemaApp tema) {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     ),
-    snackBarTheme: const SnackBarThemeData(
+    snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.surface2,
-      contentTextStyle: TextStyle(color: AppColors.text),
+      contentTextStyle: const TextStyle(color: AppColors.text),
+      // "Desfazer" na cor de destaque (antes ficava escuro/quase invisível).
+      actionTextColor: AppColors.accentDoTema(tema),
       behavior: SnackBarBehavior.floating,
     ),
   );

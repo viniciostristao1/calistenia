@@ -485,3 +485,22 @@ regras — testar com o banco criado. Versão `0.17.0+17`.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Áudio:** só testável no
 aparelho (o CI/`flutter test` não valida som). Versão `0.18.0+18`.
+
+---
+
+## 2026-08-03 — v0.19.0: som via soundpool + Desfazer visível + fonte
+
+- **Som (item 1) — audioplayers NÃO serve p/ bips rápidos:** mesmo pré-carregado +
+  lowLatency + seek/resume, o `_beep` (a cada rep) não tocava; só o `_fim` (espaçado). Em
+  lowLatency o `seek` não é suportado e o `resume` não reinicia em sucessão rápida.
+  **Trocado por `soundpool ^2.4.1`** (SoundPool nativo, feito p/ SFX curtos e sobrepostos):
+  `pool.load(rootBundle.load(asset))` → `_idBeep`/`_idFim`; tocar = `pool.play(id)`
+  (fire-and-forget, baixíssima latência). Removido `audioplayers`. `StreamType.music`.
+  A lógica de "fim de série vs bip" (rep==totalReps) permanece.
+- **Desfazer visível (item 2):** o `SnackBarAction` ficava escuro (M3 usa `inversePrimary`
+  no dark) → invisível, e o usuário não conseguia tocar (o exercício "ficava permanente").
+  Fix: `snackBarTheme.actionTextColor = AppColors.accentDoTema(tema)`. Duração 3s já ok.
+- **Fonte (item 3):** anel 260→292, contador 150→176 (FittedBox width 224→250).
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. **Risco:** soundpool é plugin
+nativo novo — o build do CI valida; áudio só no aparelho. Versão `0.19.0+19`.

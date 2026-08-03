@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-03 — v0.19.0 (som de novo + Desfazer visível + fonte):**
+  - **Som (2ª tentativa):** troquei o motor de áudio por um feito para efeitos rápidos, pra
+    o bip tocar **em cada repetição** (na versão anterior só o som de fim de série tocava).
+  - **"Desfazer"** agora aparece na **cor de destaque** (antes ficava escuro e quase
+    invisível) — dá pra ver e tocar para reverter a exclusão.
+  - **Números do cronômetro** ainda maiores.
 - **2026-08-03 — v0.18.0 (som corrigido + fim de série + desfazer):**
   - **Som corrigido:** o bip agora toca **em cada repetição** durante o treino (antes falhava
     nas trocas automáticas). E o **fim de cada série** toca um **som diferente** (o mesmo do
