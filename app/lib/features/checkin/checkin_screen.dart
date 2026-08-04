@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/checkin.dart';
+import '../../models/conquista.dart';
 import '../../models/exercicio.dart';
 import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
+import '../../services/conclusao_repository.dart';
+import '../../services/conquistas_repository.dart';
+import '../../services/gamificacao_pref.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
+import '../../util/format.dart';
+import '../../util/gamificacao.dart';
 
 const _meses = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -25,6 +31,7 @@ class CheckinScreen extends ConsumerStatefulWidget {
 
 class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   late DateTime _mes; // primeiro dia do mês exibido
+  int _vista = 0; // 0 = calendário, 1 = conquistas
 
   @override
   void initState() {
@@ -38,7 +45,8 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(checkinProvider);
+    final gamiOn = ref.watch(gamificacaoProvider).value ?? true;
+    final mostrarConquistas = gamiOn && _vista == 1;
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -50,55 +58,90 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
           ],
         ),
       ),
-      body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erro ao carregar: $e')),
-        data: (todos) {
-          final hoje = DateTime.now();
-          final diasNoMes = DateTime(_mes.year, _mes.month + 1, 0).day;
-          final offset = _mes.weekday - 1; // seg=0 .. dom=6
-          final feitosNoMes = todos
-              .where((c) => c.data.year == _mes.year && c.data.month == _mes.month)
-              .map((c) => c.data.day)
-              .toSet()
-              .length;
-          return Column(
-            children: [
-              _Cabecalho(
-                titulo: '${_meses[_mes.month - 1]} ${_mes.year}',
-                subtitulo: feitosNoMes == 0
-                    ? 'Nenhum dia marcado'
-                    : '$feitosNoMes ${feitosNoMes == 1 ? 'dia' : 'dias'} treinados',
-                onAnterior: () => _mudarMes(-1),
-                onProximo: () => _mudarMes(1),
-              ),
-              const _LinhaDias(),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 16),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7,
-                    childAspectRatio: 0.78,
+      body: Column(
+        children: [
+          if (gamiOn)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+              child: SegmentedButton<int>(
+                segments: const [
+                  ButtonSegment(
+                    value: 0,
+                    label: Text('Calendário'),
+                    icon: Icon(Icons.calendar_month, size: 18),
                   ),
-                  itemCount: offset + diasNoMes,
-                  itemBuilder: (_, i) {
-                    if (i < offset) return const SizedBox.shrink();
-                    final dia = DateTime(_mes.year, _mes.month, i - offset + 1);
-                    final doDia = checkinsDoDia(todos, dia);
-                    return _Celula(
-                      dia: dia.day,
-                      cores: doDia.map((c) => c.corIndex).toList(),
-                      hoje: mesmoDia(dia, hoje),
-                      onTap: () => _editarDia(dia),
-                    );
-                  },
-                ),
+                  ButtonSegment(
+                    value: 1,
+                    label: Text('Conquistas'),
+                    icon: Icon(Icons.emoji_events, size: 18),
+                  ),
+                ],
+                selected: {_vista},
+                showSelectedIcon: false,
+                onSelectionChanged: (s) => setState(() => _vista = s.first),
               ),
-            ],
-          );
-        },
+            ),
+          Expanded(
+            child: mostrarConquistas
+                ? const _GaleriaConquistas()
+                : _calendario(gamiOn),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _calendario(bool gamiOn) {
+    final async = ref.watch(checkinProvider);
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Erro ao carregar: $e')),
+      data: (todos) {
+        final hoje = DateTime.now();
+        final diasNoMes = DateTime(_mes.year, _mes.month + 1, 0).day;
+        final offset = _mes.weekday - 1; // seg=0 .. dom=6
+        final feitosNoMes = todos
+            .where((c) => c.data.year == _mes.year && c.data.month == _mes.month)
+            .map((c) => c.data.day)
+            .toSet()
+            .length;
+        return Column(
+          children: [
+            _Cabecalho(
+              titulo: '${_meses[_mes.month - 1]} ${_mes.year}',
+              subtitulo: feitosNoMes == 0
+                  ? 'Nenhum dia marcado'
+                  : '$feitosNoMes ${feitosNoMes == 1 ? 'dia' : 'dias'} treinados',
+              onAnterior: () => _mudarMes(-1),
+              onProximo: () => _mudarMes(1),
+            ),
+            if (gamiOn)
+              _TeaserConquistas(onTap: () => setState(() => _vista = 1)),
+            const _LinhaDias(),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  childAspectRatio: 0.78,
+                ),
+                itemCount: offset + diasNoMes,
+                itemBuilder: (_, i) {
+                  if (i < offset) return const SizedBox.shrink();
+                  final dia = DateTime(_mes.year, _mes.month, i - offset + 1);
+                  final doDia = checkinsDoDia(todos, dia);
+                  return _Celula(
+                    dia: dia.day,
+                    cores: doDia.map((c) => c.corIndex).toList(),
+                    hoje: mesmoDia(dia, hoje),
+                    onTap: () => _editarDia(dia),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -387,4 +430,299 @@ List<Exercicio> _exerciciosDisponiveis(List<Treino> treinos) {
     }
   }
   return mapa.values.toList();
+}
+
+/// Faixa compacta abaixo do calendário: sequência atual + medalhas já obtidas.
+/// Tocar leva à galeria de Conquistas.
+class _TeaserConquistas extends ConsumerWidget {
+  const _TeaserConquistas({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final concs = ref.watch(conclusaoProvider).value ?? const [];
+    final treinos = ref.watch(treinosProvider).value ?? const [];
+    final conquistas = ref.watch(conquistasProvider).value ?? const [];
+    final streak = streakAtual(concs, treinos);
+    final emojis = [
+      for (final t in TipoConquista.values)
+        if (conquistas.any((c) => c.tipo == t.chave)) t.emoji,
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.line),
+          ),
+          child: Row(
+            children: [
+              const Text('🔥', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$streak ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800, color: context.accent),
+                    ),
+                    TextSpan(
+                      text: streak == 1 ? 'dia seguido' : 'dias seguidos',
+                      style: const TextStyle(color: AppColors.dim),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              if (emojis.isNotEmpty)
+                Text(emojis.join(' '), style: const TextStyle(fontSize: 16))
+              else
+                const Text('Conquistas',
+                    style: TextStyle(color: AppColors.dim, fontSize: 12)),
+              const Icon(Icons.chevron_right, color: AppColors.dim, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Galeria de conquistas: sequência, total, medalhas e troféus (o de Ouro fica
+/// oculto — "conquista secreta" — até ser desbloqueado).
+class _GaleriaConquistas extends ConsumerWidget {
+  const _GaleriaConquistas();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final concs = ref.watch(conclusaoProvider).value ?? const [];
+    final treinos = ref.watch(treinosProvider).value ?? const [];
+    final conquistas = ref.watch(conquistasProvider).value ?? const [];
+
+    final streak = streakAtual(concs, treinos);
+    final melhor = melhorStreak(concs, treinos);
+    final total = totalDiasConcluidos(concs);
+
+    bool tem(TipoConquista t) => conquistas.any((c) => c.tipo == t.chave);
+    DateTime? quando(TipoConquista t) => quandoConquistou(conquistas, t);
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        _StreakCard(streak: streak, melhor: melhor, total: total),
+        const SizedBox(height: 20),
+        const _TituloSecao('Medalhas', 'Prêmio por dias de treino seguidos'),
+        const SizedBox(height: 10),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _ConquistaCard(
+                  tipo: TipoConquista.medalhaPrata,
+                  earned: tem(TipoConquista.medalhaPrata),
+                  quando: quando(TipoConquista.medalhaPrata),
+                  progresso: 'Melhor sequência: $melhor/4',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ConquistaCard(
+                  tipo: TipoConquista.medalhaOuro,
+                  earned: tem(TipoConquista.medalhaOuro),
+                  quando: quando(TipoConquista.medalhaOuro),
+                  progresso: 'Melhor sequência: $melhor/8',
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        const _TituloSecao('Troféus', 'Marcos que ficam para sempre'),
+        const SizedBox(height: 10),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _ConquistaCard(
+                  tipo: TipoConquista.trofeuPrata,
+                  earned: tem(TipoConquista.trofeuPrata),
+                  quando: quando(TipoConquista.trofeuPrata),
+                  progresso: 'Concluídos: $total/15',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ConquistaCard(
+                  tipo: TipoConquista.trofeuOuro,
+                  earned: tem(TipoConquista.trofeuOuro),
+                  quando: quando(TipoConquista.trofeuOuro),
+                  progresso: '',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StreakCard extends StatelessWidget {
+  const _StreakCard({
+    required this.streak,
+    required this.melhor,
+    required this.total,
+  });
+
+  final int streak;
+  final int melhor;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Row(
+        children: [
+          const Text('🔥', style: TextStyle(fontSize: 34)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$streak ',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: context.accent,
+                        ),
+                      ),
+                      TextSpan(
+                        text: streak == 1 ? 'dia seguido' : 'dias seguidos',
+                        style: const TextStyle(color: AppColors.dim),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text('Melhor sequência: $melhor',
+                    style: const TextStyle(color: AppColors.dim, fontSize: 12)),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('$total',
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.w800)),
+              const Text('dias concluídos',
+                  style: TextStyle(color: AppColors.dim, fontSize: 11)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TituloSecao extends StatelessWidget {
+  const _TituloSecao(this.titulo, this.subtitulo);
+
+  final String titulo;
+  final String subtitulo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(titulo,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        const SizedBox(height: 2),
+        Text(subtitulo,
+            style: const TextStyle(color: AppColors.dim, fontSize: 12)),
+      ],
+    );
+  }
+}
+
+/// Um card de conquista: se obtida, mostra emoji + data; se bloqueada, mostra
+/// o progresso; a conquista-surpresa fica oculta ("???") até desbloquear.
+class _ConquistaCard extends StatelessWidget {
+  const _ConquistaCard({
+    required this.tipo,
+    required this.earned,
+    required this.quando,
+    required this.progresso,
+  });
+
+  final TipoConquista tipo;
+  final bool earned;
+  final DateTime? quando;
+  final String progresso;
+
+  @override
+  Widget build(BuildContext context) {
+    final oculta = tipo.surpresa && !earned;
+    final titulo = oculta ? '???' : tipo.titulo;
+    final subtitulo = earned
+        ? (quando != null ? 'Conquista em ${fmtDataCurta(quando!)}' : 'Conquistada')
+        : (oculta ? 'Conquista secreta' : progresso);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: earned ? context.accent : AppColors.line,
+          width: earned ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Opacity(
+            opacity: earned ? 1 : 0.35,
+            child: oculta
+                ? const Icon(Icons.help_outline, size: 38, color: AppColors.dim)
+                : Text(tipo.emoji, style: const TextStyle(fontSize: 38)),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            titulo,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: earned ? AppColors.text : AppColors.dim,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitulo,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.dim, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
 }

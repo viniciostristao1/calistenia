@@ -552,3 +552,50 @@ nativo novo — o build do CI valida; áudio só no aparelho. Versão `0.19.0+19
   "~HH:MM" no lugar de "termina".
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.21.0+21`.
+
+---
+
+## 2026-08-04 — v0.22.0: gamificação + modo unilateral + portão "treino completo?"
+
+Bloco de motivação/gamificação (plano discutido em `IDEIAS.md § Gamificação`). Três eixos.
+
+**1. Modo unilateral (um lado por vez).** `Exercicio.unilateral` (bool, default false;
+toJson só grava quando true → retro-compatível). `models/fase.dart`: `Fase.lado` (0=bilateral,
+1/2) e `montarLinhaDoTempoDe` refatorado com helpers `addPrep/addExec/addDescanso` — no
+unilateral cada série emite `prep(1) exec×reps(1) prep(2) exec×reps(2) descanso` (duas
+prep+exec, UM descanso). `Treino.duracaoTotalSeg` conta prep e exec ×2 no unilateral.
+Player mostra "Lado 1/2" no subtexto do anel. **Gotcha evitado:** o path bilateral ficou
+idêntico (prep serie=0, lado=0) → os 5 testes de timeline antigos passam sem mudança.
+
+**2. Portão de conclusão (base da gamificação).** Novo conceito a NÍVEL DE TREINO, distinto
+do check-in (que segue automático por exercício = assiduidade). `models/conclusao.dart` +
+`conclusao_repository.dart` (`conclusaoProvider`, chave `conclusao_v1`; `registrar(Treino)`
+deduplica por treino+dia). `PlayerScreen.treino` (opcional) marca "é treino inteiro" — só aí,
+e com a opção ligada, o fim pergunta "Você completou o treino?". Home e editor passam o
+`treino`; exercício avulso passa null. **Gotcha:** os notifiers novos não são observados por
+nenhuma tela sempre-montada no boot, então `registrar`/`registrarNovas` fazem `await future`
+antes de mutar (senão mutariam sobre `[]` ainda-carregando e perderiam dados). Frases de
+incentivo em `util/frases.dart` (as 15 do usuário), sorteadas quando "Não".
+
+**3. Medalhas & troféus.** `models/conquista.dart` (enum `TipoConquista` + metadados
+emoji/título/`surpresa`) + `conquistas_repository.dart` (`conquistas_v1`, permanentes;
+`registrarNovas` compara e devolve as novas p/ celebrar). Lógica PURA em `util/gamificacao.dart`:
+`streakAtual` (dias AGENDADOS via `Treino.dias`; descanso não quebra; hoje pendente não
+quebra; passado agendado sem conclusão quebra), `melhorStreak` (streak terminando em cada dia
+concluído → max, determinístico), `totalDiasConcluidos`, `exerciciosComRecorde`
+(≥2 registros e `maior>primeiro`), `conquistasObtidas` (🥈≥4 / 🥇≥8 seq; 🏆≥15 dias;
+👑 21 dias + recorde em ≥ceil(50%) dos exercícios distintos). Ouro = `surpresa`: card oculto
+"???" até desbloquear.
+
+**UI da galeria:** aba Check-in ganhou `SegmentedButton` [Calendário]/[Conquistas] (só com
+gamificação ligada), teaser de sequência abaixo do calendário, e `_GaleriaConquistas`
+(streak card + medalhas + troféus). Toggle global em Config (`gamificacao_pref.dart`,
+`gamificacao_v1`) — é PREFERÊNCIA local, **não** sincroniza (como som/tema).
+
+**Sync:** `sync_service.dart` ganhou `conclusao`+`conquistas` (merge por id, fingerprint,
+invalidate, listen). **Gotcha:** `Conquista.toJson` grava `'id': tipo` (não tinha id próprio)
+senão a união-por-id do sync descartava as conquistas.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 15/15 (6 novos: timeline unilateral,
+JSON unilateral, streak rest-day, streak quebra/pendente, medalha prata, troféu ouro).
+Versão `0.22.0+22`.

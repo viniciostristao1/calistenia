@@ -3,6 +3,20 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-04 — v0.22.0 (gamificação + "um lado por vez" + "treino completo?"):**
+  - **Exercício "um lado por vez"** (unilateral): no editor do exercício, ligue "Um lado por
+    vez" (ex.: flexão de um braço). Cada série roda **prep → lado 1 → prep → lado 2 →
+    descanso**, e o cronômetro mostra "Lado 1/2".
+  - **Pergunta no fim do treino:** "Você completou o treino?". **Sim** conta para a
+    gamificação; **Não** mostra uma frase de incentivo (o dia ainda entra no check-in). Só
+    aparece ao rodar um treino inteiro (não em exercício avulso).
+  - **Medalhas e troféus:** 🥈 4 dias seguidos · 🥇 8 dias seguidos · 🏆 15 dias concluídos ·
+    👑 troféu-surpresa (oculto até desbloquear). Sequência conta **dias agendados** —
+    descanso não quebra a corrente.
+  - **Galeria de Conquistas:** na aba **Check-in**, alterne no topo entre **Calendário** e
+    **Conquistas**; abaixo do calendário, uma faixa mostra sua sequência atual.
+  - **Ligar/desligar** tudo isso em **Config → Gamificação**.
+  - Conclusões e conquistas **sincronizam** na conta (como treinos/check-ins).
 - **2026-08-04 — v0.21.0 (fundo por exercício + relógio + correção de sync/undo):**
   - **Imagem de fundo agora é POR EXERCÍCIO** (não por treino): a escolha está no editor do
     exercício, antes de "Salvar exercício". No cronômetro, o fundo muda conforme o exercício.

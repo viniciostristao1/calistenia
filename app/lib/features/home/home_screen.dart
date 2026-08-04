@@ -288,10 +288,12 @@ class _TreinoCard extends StatelessWidget {
         ),
       );
 
-  void _rodar(BuildContext context, String titulo, List<Exercicio> exs) =>
+  void _rodar(BuildContext context, String titulo, List<Exercicio> exs,
+          {Treino? treino}) =>
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => PlayerScreen(titulo: titulo, exercicios: exs),
+          builder: (_) =>
+              PlayerScreen(titulo: titulo, exercicios: exs, treino: treino),
         ),
       );
 
@@ -376,8 +378,9 @@ class _TreinoCard extends StatelessWidget {
                 _PlayCircle(
                   grande: true,
                   habilitado: treino.exercicios.isNotEmpty,
-                  onTap: () =>
-                      _rodar(context, treino.nome, treino.exercicios),
+                  onTap: () => _rodar(
+                      context, treino.nome, treino.exercicios,
+                      treino: treino),
                 ),
               ],
             ),

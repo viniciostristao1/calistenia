@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/auth_service.dart';
+import '../../services/gamificacao_pref.dart';
 import '../../services/som_repository.dart';
 import '../../services/tema_repository.dart';
 import '../../theme/app_colors.dart';
@@ -14,6 +15,7 @@ class ConfigScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
     final som = ref.watch(somProvider).value ?? true;
+    final gami = ref.watch(gamificacaoProvider).value ?? true;
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações')),
       body: ListView(
@@ -48,6 +50,18 @@ class ConfigScreen extends ConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
             subtitle: const Text(
               'Bips nas transições e no fim do treino.',
+              style: TextStyle(color: AppColors.dim, fontSize: 13),
+            ),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: gami,
+            onChanged: (v) => ref.read(gamificacaoProvider.notifier).definir(v),
+            activeThumbColor: context.accent,
+            title: const Text('Gamificação',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            subtitle: const Text(
+              'Medalhas, troféus e a pergunta “treino completo?” no fim do treino.',
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
           ),

@@ -17,6 +17,12 @@ import '../util/ids.dart';
 ///
 /// Um tempo em 0 = "sem essa etapa". Isométrico (prancha) = `repeticoes: 1` com
 /// `execucaoSeg` = tempo da série.
+///
+/// `unilateral` = exercício feito um lado/membro por vez (ex.: flexão de um
+/// braço, agachamento numa perna só). Nesse caso cada série roda assim:
+///   preparação (lado 1) -> execução×reps (lado 1) -> preparação (lado 2)
+///   -> execução×reps (lado 2) -> descanso.
+/// Ou seja: duas preparações+execuções seguidas, com um descanso ao fim.
 class Exercicio {
   final String id;
   String nome;
@@ -29,6 +35,7 @@ class Exercicio {
   double pesoKg; // peso adicional usado; 0 = só o peso do corpo
   int corIndex; // índice na paleta de cores (marca do exercício)
   String? fundo; // imagem de fundo do cronômetro (asset); null = nenhum
+  bool unilateral; // um lado por vez (dois lados por série); false = bilateral
 
   Exercicio({
     String? id,
@@ -42,6 +49,7 @@ class Exercicio {
     this.pesoKg = 0,
     this.corIndex = 0,
     this.fundo,
+    this.unilateral = false,
   }) : id = id ?? novoId();
 
   /// Descanso após a série [s] (1-based). Usa o override por série se houver;
@@ -103,6 +111,7 @@ class Exercicio {
     pesoKg: pesoKg,
     corIndex: corIndex,
     fundo: fundo,
+    unilateral: unilateral,
   );
 
   /// Cópia independente (novo id) para reusar o exercício em outro treino.
@@ -117,6 +126,7 @@ class Exercicio {
     pesoKg: pesoKg,
     corIndex: corIndex,
     fundo: fundo,
+    unilateral: unilateral,
   );
 
   Map<String, dynamic> toJson() => {
@@ -131,6 +141,7 @@ class Exercicio {
     'pesoKg': pesoKg,
     'corIndex': corIndex,
     if (fundo != null) 'fundo': fundo,
+    if (unilateral) 'unilateral': true,
   };
 
   factory Exercicio.fromJson(Map<String, dynamic> j) {
@@ -154,6 +165,7 @@ class Exercicio {
       pesoKg: ((j['pesoKg'] ?? 0) as num).toDouble(),
       corIndex: (j['corIndex'] ?? 0) as int,
       fundo: j['fundo'] as String?,
+      unilateral: (j['unilateral'] ?? false) as bool,
     );
   }
 }

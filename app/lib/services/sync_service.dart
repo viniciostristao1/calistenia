@@ -7,12 +7,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'auth_service.dart';
 import 'checkin_repository.dart';
+import 'conclusao_repository.dart';
+import 'conquistas_repository.dart';
 import 'progressao_repository.dart';
 import 'treinos_repository.dart';
 
-/// Sincroniza treinos, check-ins e progressão com o Firestore quando o usuário
-/// está logado. Cada store é guardado como o MESMO JSON do shared_preferences,
-/// num campo do documento `users/{uid}`.
+/// Sincroniza treinos, check-ins, progressão, conclusões e conquistas com o
+/// Firestore quando o usuário está logado. Cada store é guardado como o MESMO
+/// JSON do shared_preferences, num campo do documento `users/{uid}`.
 ///
 /// Estratégia: no 1º carregamento faz **união por id** (não perde dados de
 /// nenhum lado); depois, "última escrita vence" por documento — o SDK do
@@ -85,6 +87,8 @@ class SyncController {
       _mergeChave(prefs, chaveTreinos, data['treinos']);
       _mergeChave(prefs, chaveCheckin, data['checkins']);
       _mergeChave(prefs, chaveProgressao, data['progressao']);
+      _mergeChave(prefs, chaveConclusao, data['conclusao']);
+      _mergeChave(prefs, chaveConquistas, data['conquistas']);
       _invalidar();
       _aplicandoRemoto = false;
       _ultimoSync = _estado(prefs);
@@ -93,14 +97,16 @@ class SyncController {
     }
     // Se o conteúdo remoto é o que já temos, ignora (evita o loop de
     // updatedAt: cada push muda o timestamp e voltaria como "mudança").
-    final estadoRemoto = _estadoDe(
-        data['treinos'], data['checkins'], data['progressao']);
+    final estadoRemoto = _estadoDe(data['treinos'], data['checkins'],
+        data['progressao'], data['conclusao'], data['conquistas']);
     if (estadoRemoto == _ultimoSync) return;
     // Outro aparelho editou de verdade: a nuvem manda.
     _aplicandoRemoto = true;
     _aplicarChave(prefs, chaveTreinos, data['treinos']);
     _aplicarChave(prefs, chaveCheckin, data['checkins']);
     _aplicarChave(prefs, chaveProgressao, data['progressao']);
+    _aplicarChave(prefs, chaveConclusao, data['conclusao']);
+    _aplicarChave(prefs, chaveConquistas, data['conquistas']);
     _invalidar();
     _aplicandoRemoto = false;
     _ultimoSync = _estado(prefs);
@@ -115,6 +121,8 @@ class SyncController {
         'treinos': prefs.getString(chaveTreinos) ?? '[]',
         'checkins': prefs.getString(chaveCheckin) ?? '[]',
         'progressao': prefs.getString(chaveProgressao) ?? '[]',
+        'conclusao': prefs.getString(chaveConclusao) ?? '[]',
+        'conquistas': prefs.getString(chaveConquistas) ?? '[]',
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (_) {
@@ -128,10 +136,12 @@ class SyncController {
         prefs.getString(chaveTreinos),
         prefs.getString(chaveCheckin),
         prefs.getString(chaveProgressao),
+        prefs.getString(chaveConclusao),
+        prefs.getString(chaveConquistas),
       );
 
-  String _estadoDe(dynamic t, dynamic c, dynamic p) =>
-      '${t ?? ''}§${c ?? ''}§${p ?? ''}';
+  String _estadoDe(dynamic t, dynamic c, dynamic p, dynamic cc, dynamic cq) =>
+      '${t ?? ''}§${c ?? ''}§${p ?? ''}§${cc ?? ''}§${cq ?? ''}';
 
   void _aplicarChave(SharedPreferences prefs, String chave, dynamic remoto) {
     if (remoto is String) prefs.setString(chave, remoto);
@@ -166,6 +176,8 @@ class SyncController {
     ref.invalidate(treinosProvider);
     ref.invalidate(checkinProvider);
     ref.invalidate(progressaoProvider);
+    ref.invalidate(conclusaoProvider);
+    ref.invalidate(conquistasProvider);
   }
 }
 
@@ -188,6 +200,8 @@ final syncProvider = Provider<SyncController>((ref) {
   ref.listen(treinosProvider, (_, _) => controller.onLocalChange());
   ref.listen(checkinProvider, (_, _) => controller.onLocalChange());
   ref.listen(progressaoProvider, (_, _) => controller.onLocalChange());
+  ref.listen(conclusaoProvider, (_, _) => controller.onLocalChange());
+  ref.listen(conquistasProvider, (_, _) => controller.onLocalChange());
 
   return controller;
 });

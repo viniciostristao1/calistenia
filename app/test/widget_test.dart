@@ -1,10 +1,13 @@
 import 'package:calistenia/models/checkin.dart';
+import 'package:calistenia/models/conclusao.dart';
+import 'package:calistenia/models/conquista.dart';
 import 'package:calistenia/models/exercicio.dart';
 import 'package:calistenia/models/fase.dart';
 import 'package:calistenia/models/registro_progressao.dart';
 import 'package:calistenia/models/treino.dart';
 import 'package:calistenia/services/checkin_repository.dart';
 import 'package:calistenia/services/progressao_repository.dart';
+import 'package:calistenia/util/gamificacao.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -185,5 +188,134 @@ void main() {
     expect(e.series, 3); // as 3 rodadas viram 3 séries
     expect(e.repeticoes, 1); // uma "execução" por série (comportamento antigo)
     expect(e.execucaoSeg, 30);
+  });
+
+  test('unilateral: prep(1) exec(1) prep(2) exec(2) descanso, por série', () {
+    final t = Treino(
+      nome: 'Teste',
+      exercicios: [
+        Exercicio(
+          nome: 'Flexão um braço',
+          preparacaoSeg: 10,
+          execucaoSeg: 3,
+          descansoSeg: 60,
+          repeticoes: 2,
+          series: 2,
+          unilateral: true,
+        ),
+      ],
+    );
+    final fases = montarLinhaDoTempo(t);
+    // Por série: 2 prep + 4 exec + 1 desc = 7; ×2 séries = 14; -1 desc final = 13.
+    expect(fases.length, 13);
+    // Preparação antes de cada lado, em cada série (2 lados × 2 séries).
+    expect(fases.where((f) => f.tipo == FaseTipo.preparacao).length, 4);
+    expect(fases.where((f) => f.tipo == FaseTipo.execucao).length, 8);
+    expect(fases.where((f) => f.tipo == FaseTipo.descanso).length, 1);
+    // A sequência começa no lado 1 e passa ao lado 2.
+    expect(fases[0].tipo, FaseTipo.preparacao);
+    expect(fases[0].lado, 1);
+    expect(fases[1].lado, 1); // execução do lado 1
+    final prepLado2 = fases.firstWhere((f) => f.lado == 2);
+    expect(prepLado2.tipo, FaseTipo.preparacao);
+    // Duração: prep 10×2×2 + exec 3×2×2×2 + descanso 60×2 = 40 + 24 + 120 = 184.
+    expect(t.duracaoTotalSeg, 184);
+  });
+
+  test('unilateral: JSON round-trip preserva a flag', () {
+    final e = Exercicio(nome: 'Agachamento uma perna', unilateral: true);
+    expect(Exercicio.fromJson(e.toJson()).unilateral, isTrue);
+    // Exercício antigo (sem a chave) migra para bilateral.
+    final antigo = Exercicio.fromJson({'nome': 'X', 'execucaoSeg': 3});
+    expect(antigo.unilateral, isFalse);
+  });
+
+  test('streak: dia de descanso (não agendado) não quebra a corrente', () {
+    final d = DateTime(2026, 8, 10);
+    final wdD = d.weekday - 1;
+    final wdD2 = d.subtract(const Duration(days: 2)).weekday - 1;
+    // Agenda pula o dia D-1 (descanso).
+    final treinos = [
+      Treino(nome: 't', dias: [wdD, wdD2], exercicios: [Exercicio(nome: 'F')]),
+    ];
+    final concs = [
+      Conclusao(data: d, treinoId: 't', treino: 't'),
+      Conclusao(
+          data: d.subtract(const Duration(days: 2)), treinoId: 't', treino: 't'),
+    ];
+    expect(streakAtual(concs, treinos, hoje: d), 2);
+  });
+
+  test('streak: dia agendado sem conclusão quebra; hoje pendente não quebra', () {
+    final d = DateTime(2026, 8, 10);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'F'),
+      ]),
+    ];
+    // Concluiu hoje e ontem, faltou anteontem (agendado) -> quebra em D-2.
+    final concs = [
+      Conclusao(data: d, treinoId: 't', treino: 't'),
+      Conclusao(
+          data: d.subtract(const Duration(days: 1)), treinoId: 't', treino: 't'),
+    ];
+    expect(streakAtual(concs, treinos, hoje: d), 2);
+    // Hoje ainda não concluído (pendente) não quebra: conta a partir de ontem.
+    final concsPendente = [
+      Conclusao(
+          data: d.subtract(const Duration(days: 1)), treinoId: 't', treino: 't'),
+    ];
+    expect(streakAtual(concsPendente, treinos, hoje: d), 1);
+  });
+
+  test('conquistas: 4 dias seguidos = Medalha de Prata (só ela)', () {
+    final d = DateTime(2026, 8, 10);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    final concs = [
+      for (var i = 0; i < 4; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    expect(melhorStreak(concs, treinos), 4);
+    final obt = conquistasObtidas(concs, treinos, const []);
+    expect(obt.contains(TipoConquista.medalhaPrata), isTrue);
+    expect(obt.contains(TipoConquista.medalhaOuro), isFalse);
+    expect(obt.contains(TipoConquista.trofeuPrata), isFalse);
+    expect(obt.contains(TipoConquista.trofeuOuro), isFalse);
+  });
+
+  test('conquistas: Troféu de Ouro = 21 dias + recorde em >=50% (surpresa)', () {
+    final d = DateTime(2026, 8, 10);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+        Exercicio(nome: 'B'),
+      ]),
+    ];
+    final concs = [
+      for (var i = 0; i < 21; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    // Recorde só em A (2 registros, o maior supera o primeiro): 1 de 2 = 50%.
+    final prog = [
+      RegistroProgressao(exercicio: 'A', valor: 10, data: DateTime(2026, 7, 1)),
+      RegistroProgressao(exercicio: 'A', valor: 15, data: DateTime(2026, 7, 20)),
+      RegistroProgressao(exercicio: 'B', valor: 20, data: DateTime(2026, 7, 5)),
+    ];
+    expect(exigenciaRecordeOuro(treinos), 1); // ceil(2/2)
+    expect(recordesParaOuro(treinos, prog), 1);
+    final obt = conquistasObtidas(concs, treinos, prog);
+    expect(obt.contains(TipoConquista.trofeuOuro), isTrue);
+    expect(obt.contains(TipoConquista.trofeuPrata), isTrue); // >=15 dias
+    expect(obt.contains(TipoConquista.medalhaOuro), isTrue); // sequência >=8
+    // Sem o recorde, o Ouro não sai (mas os demais sim).
+    final semRecorde = conquistasObtidas(concs, treinos, const []);
+    expect(semRecorde.contains(TipoConquista.trofeuOuro), isFalse);
+    expect(semRecorde.contains(TipoConquista.trofeuPrata), isTrue);
   });
 }

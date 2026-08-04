@@ -213,6 +213,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                       builder: (_) => PlayerScreen(
                         titulo: _t.nome,
                         exercicios: _t.exercicios,
+                        treino: _t,
                       ),
                     ),
                   ),

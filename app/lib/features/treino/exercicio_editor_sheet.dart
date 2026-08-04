@@ -42,6 +42,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
   late int _desc;
   late int _reps;
   late int _series;
+  late bool _unilateral; // um lado por vez (ex.: um braço)
   List<int>? _descansos; // descanso por série; null = descanso único (_desc)
   late double _peso;
   late int _cor;
@@ -57,6 +58,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     _desc = e?.descansoSeg ?? 60;
     _reps = e?.repeticoes ?? 10;
     _series = e?.series ?? 3;
+    _unilateral = e?.unilateral ?? false;
     _descansos = e?.descansos == null ? null : List<int>.of(e!.descansos!);
     _peso = e?.pesoKg ?? 0;
     _cor = e?.corIndex ?? 0;
@@ -99,6 +101,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
       ..descansoSeg = _desc
       ..repeticoes = _reps < 1 ? 1 : _reps
       ..series = _series < 1 ? 1 : _series
+      ..unilateral = _unilateral
       ..descansos = _descansos == null ? null : List<int>.of(_descansos!)
       ..pesoKg = _peso < 0 ? 0 : _peso
       ..corIndex = _cor
@@ -249,6 +252,19 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
                 if (v != null) setState(() => _reps = v);
               },
             ),
+            const SizedBox(height: 4),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _unilateral,
+              onChanged: (v) => setState(() => _unilateral = v),
+              activeThumbColor: context.accent,
+              title: const Text('Um lado por vez',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: const Text(
+                'Faz a série de um lado e depois do outro (ex.: um braço por vez).',
+                style: TextStyle(color: AppColors.dim, fontSize: 12),
+              ),
+            ),
             const Divider(height: 24),
             _TempoLinha(
               rotulo: 'Preparação',
@@ -292,6 +308,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               execSeg: _exec,
               descSeg: _desc,
               descansos: _descansos,
+              unilateral: _unilateral,
             ),
             const SizedBox(height: 18),
             FilledButton(
@@ -477,6 +494,7 @@ class _Resumo extends StatelessWidget {
     required this.execSeg,
     required this.descSeg,
     required this.descansos,
+    required this.unilateral,
   });
 
   final int series;
@@ -484,6 +502,7 @@ class _Resumo extends StatelessWidget {
   final int execSeg;
   final int descSeg;
   final List<int>? descansos;
+  final bool unilateral;
 
   String get _serieTxt {
     if (execSeg <= 0) return 'sem execução';
@@ -514,6 +533,7 @@ class _Resumo extends StatelessWidget {
     final serieTxt = _serieTxt;
     final descTxt = _descTxt;
     final vezes = series > 1 ? '$series séries' : '1 série';
+    final ladoTxt = unilateral ? ' · um lado por vez' : '';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -526,7 +546,7 @@ class _Resumo extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '$vezes de ($serieTxt)$descTxt',
+              '$vezes de ($serieTxt)$descTxt$ladoTxt',
               style: const TextStyle(color: AppColors.dim, fontSize: 13),
             ),
           ),

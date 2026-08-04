@@ -25,8 +25,14 @@ class Treino {
     for (final e in exercicios) {
       final series = e.series < 1 ? 1 : e.series;
       final reps = e.repeticoes < 1 ? 1 : e.repeticoes;
-      total += e.preparacaoSeg;
-      total += e.execucaoSeg * reps * series;
+      if (e.unilateral) {
+        // Preparação antes de cada lado, em cada série; execução dos dois lados.
+        total += e.preparacaoSeg * 2 * series;
+        total += e.execucaoSeg * reps * 2 * series;
+      } else {
+        total += e.preparacaoSeg;
+        total += e.execucaoSeg * reps * series;
+      }
       for (var s = 1; s <= series; s++) {
         total += e.descansoAposSerie(s);
       }

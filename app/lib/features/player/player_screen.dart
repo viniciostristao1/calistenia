@@ -6,15 +6,23 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../models/conquista.dart';
 import '../../models/exercicio.dart';
 import '../../models/fase.dart';
 import '../../models/registro_progressao.dart';
+import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
+import '../../services/conclusao_repository.dart';
+import '../../services/conquistas_repository.dart';
+import '../../services/gamificacao_pref.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
+import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
+import '../../util/frases.dart';
 import '../../util/fundos.dart';
+import '../../util/gamificacao.dart';
 
 /// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
 /// → descanso, por série) contando segundo a segundo, com pausa, pular/voltar
@@ -25,10 +33,15 @@ class PlayerScreen extends ConsumerStatefulWidget {
     super.key,
     required this.titulo,
     required this.exercicios,
+    this.treino,
   });
 
   final String titulo;
   final List<Exercicio> exercicios;
+
+  /// Quando presente, esta sessão é um TREINO inteiro (não um exercício avulso)
+  /// e, com a gamificação ligada, o fim pergunta se o treino foi concluído.
+  final Treino? treino;
 
   @override
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
@@ -45,6 +58,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   final Stopwatch _sw = Stopwatch();
   int _ultimoBip = -1;
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
+
+  // Gamificação (só quando é um treino inteiro e a opção está ligada).
+  bool? _respostaCompleto; // null = ainda não respondeu; true/false = respondeu
+  List<TipoConquista> _novasConquistas = const []; // conquistas recém-obtidas
+  String? _fraseIncompleto; // frase sorteada quando não completou
 
   // POOL de players (baixa latência): reusar UM player a cada repetição curta
   // fazia o som falhar. Com vários players em rodízio, cada bip usa um livre.
@@ -211,9 +229,43 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       _idx = 0;
       _concluido = false;
       _ultimoBip = -1;
+      _respostaCompleto = null;
+      _novasConquistas = const [];
+      _fraseIncompleto = null;
       _restanteMs = _fases.isEmpty ? 0 : _fases[0].segundos * 1000;
     });
     _iniciar();
+  }
+
+  /// Esta sessão pergunta "treino completo?" no fim? (Só para treino inteiro,
+  /// com a gamificação ligada.)
+  bool get _gamificaTreino =>
+      widget.treino != null && (ref.read(gamificacaoProvider).value ?? true);
+
+  /// "Sim, completei": registra a conclusão e avalia novas conquistas.
+  Future<void> _marcarCompleto() async {
+    final treino = widget.treino;
+    if (treino == null) return;
+    await ref.read(conclusaoProvider.notifier).registrar(treino);
+    final concs = ref.read(conclusaoProvider).value ?? const [];
+    final treinos = ref.read(treinosProvider).value ?? const [];
+    final prog = ref.read(progressaoProvider).value ?? const [];
+    final obtidas = conquistasObtidas(concs, treinos, prog);
+    final novas = await ref.read(conquistasProvider.notifier).registrarNovas(obtidas);
+    if (!mounted) return;
+    setState(() {
+      _respostaCompleto = true;
+      _novasConquistas = novas;
+    });
+  }
+
+  /// "Não consegui hoje": sorteia uma frase de incentivo (o dia já entrou no
+  /// check-in por exercício).
+  void _marcarIncompleto() {
+    setState(() {
+      _respostaCompleto = false;
+      _fraseIncompleto = fraseIncompletoAleatoria();
+    });
   }
 
   Color _cor(FaseTipo t) => switch (t) {
@@ -361,20 +413,21 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   /// Subtexto dentro do anel, conforme a fase.
   String _subtextoAnel(Fase f) {
+    final lado = f.lado > 0 ? 'Lado ${f.lado}/2 · ' : '';
     switch (f.tipo) {
       case FaseTipo.preparacao:
-        return 'Prepare-se';
+        return f.lado > 0 ? 'Prepare o lado ${f.lado}' : 'Prepare-se';
       case FaseTipo.descanso:
         return f.totalSeries > 1 ? 'Recupere · série ${f.serie}/${f.totalSeries}' : 'Recupere';
       case FaseTipo.execucao:
         final temReps = f.totalReps > 1;
         final temSeries = f.totalSeries > 1;
         if (temReps && temSeries) {
-          return 'Série ${f.serie}/${f.totalSeries} · rep ${f.rep}/${f.totalReps}';
+          return '${lado}Série ${f.serie}/${f.totalSeries} · rep ${f.rep}/${f.totalReps}';
         }
-        if (temReps) return 'Repetição ${f.rep}/${f.totalReps}';
-        if (temSeries) return 'Série ${f.serie}/${f.totalSeries}';
-        return 'Vai!';
+        if (temReps) return '${lado}Repetição ${f.rep}/${f.totalReps}';
+        if (temSeries) return '${lado}Série ${f.serie}/${f.totalSeries}';
+        return lado.isEmpty ? 'Vai!' : 'Lado ${f.lado}/2';
     }
   }
 
@@ -482,58 +535,195 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   Widget _telaConcluido() {
+    // Treino inteiro + gamificação ligada e ainda sem resposta -> pergunta.
+    if (_gamificaTreino && _respostaCompleto == null) return _telaPergunta();
+    if (_gamificaTreino && _respostaCompleto == false) return _telaIncompleto();
+    return _telaSucesso();
+  }
+
+  /// Moldura comum das telas de fim (fundo + centralização vertical, rolando
+  /// só quando o conteúdo não couber na tela).
+  Widget _molduraFim(List<Widget> filhos) {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle, size: 88, color: context.accent),
-                const SizedBox(height: 20),
-                const Text(
-                  'Check-in concluído',
-                  style:
-                      TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${widget.titulo} · ${fmtSeg(_duracaoTotal)}',
-                  style: const TextStyle(color: AppColors.dim),
-                ),
-                const SizedBox(height: 32),
-                FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: context.accent,
-                    foregroundColor: context.onAccent,
-                    minimumSize: const Size(220, 52),
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: filhos,
                   ),
-                  onPressed: _reiniciar,
-                  icon: const Icon(Icons.replay),
-                  label: const Text('Repetir treino'),
                 ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: context.accent,
-                    side: BorderSide(color: context.accent),
-                    minimumSize: const Size(220, 50),
-                  ),
-                  onPressed: _abrirAddProgressao,
-                  icon: const Icon(Icons.trending_up, size: 20),
-                  label: const Text('Adicionar à progressão'),
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Voltar'),
-                ),
-              ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _botoesFim({required String labelRepetir}) {
+    return Column(
+      children: [
+        FilledButton.icon(
+          style: FilledButton.styleFrom(
+            backgroundColor: context.accent,
+            foregroundColor: context.onAccent,
+            minimumSize: const Size(220, 52),
+          ),
+          onPressed: _reiniciar,
+          icon: const Icon(Icons.replay),
+          label: Text(labelRepetir),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: context.accent,
+            side: BorderSide(color: context.accent),
+            minimumSize: const Size(220, 50),
+          ),
+          onPressed: _abrirAddProgressao,
+          icon: const Icon(Icons.trending_up, size: 20),
+          label: const Text('Adicionar à progressão'),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Voltar'),
+        ),
+      ],
+    );
+  }
+
+  /// Pergunta de conclusão: "Você completou o treino?".
+  Widget _telaPergunta() {
+    return _molduraFim([
+      Icon(Icons.emoji_events_outlined, size: 80, color: context.accent),
+      const SizedBox(height: 20),
+      const Text(
+        'Você completou o treino?',
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 8),
+      Text(
+        'Todas as repetições, do jeito que você planejou.',
+        style: const TextStyle(color: AppColors.dim),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 28),
+      FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: context.accent,
+          foregroundColor: context.onAccent,
+          minimumSize: const Size(240, 54),
+        ),
+        onPressed: _marcarCompleto,
+        icon: const Icon(Icons.check_rounded),
+        label: const Text('Sim, completei'),
+      ),
+      const SizedBox(height: 12),
+      OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.text,
+          side: const BorderSide(color: AppColors.lineStrong),
+          minimumSize: const Size(240, 52),
+        ),
+        onPressed: _marcarIncompleto,
+        child: const Text('Não consegui hoje'),
+      ),
+    ]);
+  }
+
+  /// Treino concluído (respondeu "sim", ou sessão sem gamificação).
+  Widget _telaSucesso() {
+    final completou = _respostaCompleto == true;
+    return _molduraFim([
+      Icon(Icons.check_circle, size: 88, color: context.accent),
+      const SizedBox(height: 20),
+      Text(
+        completou ? 'Treino completo!' : 'Check-in concluído',
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        '${widget.titulo} · ${fmtSeg(_duracaoTotal)}',
+        style: const TextStyle(color: AppColors.dim),
+      ),
+      if (_novasConquistas.isNotEmpty) ...[
+        const SizedBox(height: 20),
+        _NovasConquistas(tipos: _novasConquistas),
+      ],
+      const SizedBox(height: 32),
+      _botoesFim(labelRepetir: 'Repetir treino'),
+    ]);
+  }
+
+  /// Treino não concluído: frase de incentivo (o dia já entrou no check-in).
+  Widget _telaIncompleto() {
+    return _molduraFim([
+      const Icon(Icons.self_improvement, size: 80, color: AppColors.prep),
+      const SizedBox(height: 20),
+      Text(
+        _fraseIncompleto ?? 'Faz parte do processo. O importante é não parar!',
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 12),
+      const Text(
+        'Seu esforço de hoje já entrou no check-in.',
+        style: TextStyle(color: AppColors.dim),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 32),
+      _botoesFim(labelRepetir: 'Tentar de novo'),
+    ]);
+  }
+}
+
+/// Faixa comemorativa das conquistas recém-desbloqueadas no fim do treino.
+class _NovasConquistas extends StatelessWidget {
+  const _NovasConquistas({required this.tipos});
+
+  final List<TipoConquista> tipos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.accent, width: 1.5),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            tipos.length > 1 ? '🎉 Novas conquistas!' : '🎉 Nova conquista!',
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: context.accent),
+          ),
+          const SizedBox(height: 10),
+          for (final t in tipos)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(t.emoji, style: const TextStyle(fontSize: 26)),
+                  const SizedBox(width: 10),
+                  Text(t.titulo,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
