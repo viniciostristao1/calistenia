@@ -19,6 +19,7 @@ import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
+import '../../util/conquista_badge.dart';
 import '../../util/format.dart';
 import '../../util/frases.dart';
 import '../../util/fundos.dart';
@@ -716,7 +717,7 @@ class _NovasConquistas extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(t.emoji, style: const TextStyle(fontSize: 26)),
+                  ConquistaBadge(tipo: t, size: 26),
                   const SizedBox(width: 10),
                   Text(t.titulo,
                       style: const TextStyle(fontWeight: FontWeight.w700)),

@@ -3,6 +3,15 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-04 — v0.23.0 (ajustes da gamificação: galeria, conquistas no calendário):**
+  - **Cor do tema** no seletor Calendário/Galeria (era azul fixo; agora segue âmbar/azul).
+  - **Conquistas no calendário:** no dia em que você ganhou uma medalha/troféu, o calendário
+    mostra a **medalha/troféu no lugar das bolinhas** dos exercícios (sem mudar o tamanho).
+  - Sub-aba renomeada para **Galeria**. No topo, caixa **"Conquistas atuais"** (o que você
+    sustenta agora): as **medalhas caem** se a sequência quebrar, o **Troféu de Prata**
+    (acúmulo de 15 dias) **permanece**, e a **Coroa** cai se você ficar >21 dias sem recorde
+    novo. Abaixo, as regras com "quanto falta".
+  - **Troféu de Prata** agora aparece **prateado** (ícone), combinando com o nome.
 - **2026-08-04 — v0.22.0 (gamificação + "um lado por vez" + "treino completo?"):**
   - **Exercício "um lado por vez"** (unilateral): no editor do exercício, ligue "Um lado por
     vez" (ex.: flexão de um braço). Cada série roda **prep → lado 1 → prep → lado 2 →

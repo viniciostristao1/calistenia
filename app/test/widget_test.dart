@@ -318,4 +318,61 @@ void main() {
     expect(semRecorde.contains(TipoConquista.trofeuOuro), isFalse);
     expect(semRecorde.contains(TipoConquista.trofeuPrata), isTrue);
   });
+
+  test('conquistas atuais: medalhas caem na quebra, troféu (acúmulo) permanece',
+      () {
+    final d = DateTime(2026, 8, 10);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    // 15 dias no total, mas os 2 últimos agendados foram perdidos: sequência = 0.
+    final concs = [
+      for (var i = 2; i < 17; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    final atuais = conquistasAtuais(concs, treinos, const [], hoje: d);
+    // Sequência quebrada -> sem medalhas; mas 15 dias no total -> Troféu de Prata.
+    expect(atuais.contains(TipoConquista.medalhaPrata), isFalse);
+    expect(atuais.contains(TipoConquista.trofeuPrata), isTrue);
+    expect(totalDiasConcluidos(concs), 15);
+  });
+
+  test('coroa atual cai se a progressão estagnar (>21 dias sem recorde novo)', () {
+    final d = DateTime(2026, 8, 10);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+        Exercicio(nome: 'B'),
+      ]),
+    ];
+    final concs = [
+      for (var i = 0; i < 25; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    // Recorde de A batido HÁ MUITO (fora da janela de 21 dias).
+    final progAntigo = [
+      RegistroProgressao(exercicio: 'A', valor: 10, data: DateTime(2026, 6, 1)),
+      RegistroProgressao(exercicio: 'A', valor: 15, data: DateTime(2026, 6, 20)),
+    ];
+    expect(recordesRecentes(treinos, progAntigo, hoje: d), 0);
+    expect(
+        conquistasAtuais(concs, treinos, progAntigo, hoje: d)
+            .contains(TipoConquista.trofeuOuro),
+        isFalse);
+    // Recorde recente (dentro dos 21 dias) -> coroa volta a ser atual.
+    final progRecente = [
+      RegistroProgressao(exercicio: 'A', valor: 10, data: DateTime(2026, 7, 1)),
+      RegistroProgressao(
+          exercicio: 'A', valor: 15, data: d.subtract(const Duration(days: 3))),
+    ];
+    expect(recordesRecentes(treinos, progRecente, hoje: d), 1);
+    expect(
+        conquistasAtuais(concs, treinos, progRecente, hoje: d)
+            .contains(TipoConquista.trofeuOuro),
+        isTrue);
+  });
 }

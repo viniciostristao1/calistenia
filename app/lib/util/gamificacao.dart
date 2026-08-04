@@ -95,7 +95,59 @@ int recordesParaOuro(
   return exerciciosComRecorde(progressao).intersection(distintos).length;
 }
 
-/// Avalia quais conquistas estão satisfeitas AGORA (para registrar novas).
+/// Exercícios distintos (nos treinos) cujo RECORDE foi batido nos últimos [dias]
+/// dias. Usado na regra "não progressão em N dias" da coroa (que faz o Troféu de
+/// Ouro deixar de ser "conquista atual" se a evolução estagnar).
+int recordesRecentes(
+  List<Treino> treinos,
+  List<RegistroProgressao> progressao, {
+  int dias = 21,
+  DateTime? hoje,
+}) {
+  final limite = (hoje ?? DateTime.now()).subtract(Duration(days: dias));
+  final distintos = exerciciosDistintos(treinos);
+  var n = 0;
+  for (final g in agruparPorExercicio(progressao)) {
+    final nome = g.exercicio.trim().toLowerCase();
+    if (!distintos.contains(nome)) continue;
+    if (g.registros.length < 2 || g.maior <= g.primeiro) continue;
+    // A data em que o maior valor foi atingido (última ocorrência do maior).
+    final dataDoMaior = g.registros
+        .where((r) => r.valor == g.maior)
+        .map((r) => r.data)
+        .reduce((a, b) => a.isAfter(b) ? a : b);
+    if (dataDoMaior.isAfter(limite)) n++;
+  }
+  return n;
+}
+
+/// Conquistas ATUAIS (sustentadas AGORA). Diferente das obtidas (histórico
+/// permanente): as medalhas caem quando a sequência quebra; o Troféu de Prata
+/// (acúmulo) permanece; a Coroa cai se a progressão estagnar (>21 dias sem
+/// recorde novo em >=50% dos exercícios).
+Set<TipoConquista> conquistasAtuais(
+  List<Conclusao> concs,
+  List<Treino> treinos,
+  List<RegistroProgressao> progressao, {
+  DateTime? hoje,
+}) {
+  final atuais = <TipoConquista>{};
+  final streak = streakAtual(concs, treinos, hoje: hoje);
+  final total = totalDiasConcluidos(concs);
+  if (streak >= 4) atuais.add(TipoConquista.medalhaPrata);
+  if (streak >= 8) atuais.add(TipoConquista.medalhaOuro);
+  if (total >= 15) atuais.add(TipoConquista.trofeuPrata);
+  final necessarios = exigenciaRecordeOuro(treinos);
+  if (total >= 21 &&
+      necessarios > 0 &&
+      recordesRecentes(treinos, progressao, hoje: hoje) >= necessarios) {
+    atuais.add(TipoConquista.trofeuOuro);
+  }
+  return atuais;
+}
+
+/// Avalia quais conquistas estão satisfeitas AGORA (para registrar novas —
+/// histórico permanente, usado no calendário e na celebração de fim de treino).
 Set<TipoConquista> conquistasObtidas(
   List<Conclusao> concs,
   List<Treino> treinos,

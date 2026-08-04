@@ -599,3 +599,39 @@ senão a união-por-id do sync descartava as conquistas.
 **Validação:** `flutter analyze` limpo, `flutter test` 15/15 (6 novos: timeline unilateral,
 JSON unilateral, streak rest-day, streak quebra/pendente, medalha prata, troféu ouro).
 Versão `0.22.0+22`.
+
+---
+
+## 2026-08-04 — v0.23.0: ajustes da gamificação (feedback de campo)
+
+5 pontos do usuário após testar a v0.22.0.
+
+**1. Cor do SegmentedButton.** Estava azul (default M3 = `secondaryContainer`). Fix:
+`SegmentedButton.styleFrom(selectedBackgroundColor: context.accent, selectedForegroundColor:
+context.onAccent, foregroundColor: dim)` → segue o tema (âmbar/azul).
+
+**2. Conquistas no calendário.** `_Celula` ganhou `conquistas: List<TipoConquista>`; no dia em
+que uma conquista foi obtida (mapa dia→tipos a partir do store permanente `conquistasProvider`,
+por `Conquista.data`), renderiza os badges NO LUGAR dos pontinhos (mesmo tamanho de célula).
+
+**3+4. Galeria (renomeada de "Conquistas") + "Conquistas atuais".** Modelo DUAL, a decisão de
+design desta rodada:
+- **Obtidas** (permanente, store `conquistas_v1`): histórico → calendário + celebração. Regra
+  inalterada (`conquistasObtidas`).
+- **Atuais** (`conquistasAtuais`, computado ao vivo, NÃO armazenado): o que se sustenta agora.
+  🥈≥4 / 🥇≥8 = **sequência atual** (caem na quebra); 🏆 = **15 dias no total** (acúmulo,
+  permanece); 👑 = 21 dias + `recordesRecentes(...,dias:21)≥ceil(50%)` → **cai se a progressão
+  estagnar** (regra sugerida pelo usuário para a coroa). Caixa no topo da galeria; regras com
+  progresso logo abaixo (cards `_ConquistaCard` reaproveitados).
+
+**5. Troféu prateado.** Não há emoji de troféu de prata → `util/conquista_badge.dart`
+(`ConquistaBadge`): medalhas/coroa como emoji; **Troféu de Prata como `Icons.emoji_events`
+tintado de prata** (`0xFFC0C7D2`). Usado na galeria, na caixa de atuais, no calendário e na
+celebração do player.
+
+**Ponto 5 do usuário ("como saber se funciona sem chegar nas conquistas"):** resolvido pela
+própria galeria — streak card + "Conquistas atuais" + regras com "faltam X" já se movem no 1º
+treino concluído, tornando o sistema legível antes de qualquer badge.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 17/17 (2 novos: atuais medalha-cai/
+troféu-permanece; coroa cai por estagnação). Versão `0.23.0+23`.

@@ -9,8 +9,10 @@ import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/conquistas_repository.dart';
 import '../../services/gamificacao_pref.dart';
+import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
+import '../../util/conquista_badge.dart';
 import '../../util/dias.dart';
 import '../../util/format.dart';
 import '../../util/gamificacao.dart';
@@ -64,6 +66,11 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
               child: SegmentedButton<int>(
+                style: SegmentedButton.styleFrom(
+                  selectedForegroundColor: context.onAccent,
+                  selectedBackgroundColor: context.accent,
+                  foregroundColor: AppColors.dim,
+                ),
                 segments: const [
                   ButtonSegment(
                     value: 0,
@@ -72,7 +79,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   ),
                   ButtonSegment(
                     value: 1,
-                    label: Text('Conquistas'),
+                    label: Text('Galeria'),
                     icon: Icon(Icons.emoji_events, size: 18),
                   ),
                 ],
@@ -98,6 +105,17 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       error: (e, _) => Center(child: Text('Erro ao carregar: $e')),
       data: (todos) {
         final hoje = DateTime.now();
+        // Conquistas por dia (miniatura no calendário, no lugar dos pontinhos).
+        final conquistas = gamiOn
+            ? (ref.watch(conquistasProvider).value ?? const <Conquista>[])
+            : const <Conquista>[];
+        final conqPorDia = <String, List<TipoConquista>>{};
+        for (final c in conquistas) {
+          final t = tipoConquistaDe(c.tipo);
+          if (t == null) continue;
+          (conqPorDia['${c.data.year}-${c.data.month}-${c.data.day}'] ??= [])
+              .add(t);
+        }
         final diasNoMes = DateTime(_mes.year, _mes.month + 1, 0).day;
         final offset = _mes.weekday - 1; // seg=0 .. dom=6
         final feitosNoMes = todos
@@ -133,6 +151,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   return _Celula(
                     dia: dia.day,
                     cores: doDia.map((c) => c.corIndex).toList(),
+                    conquistas:
+                        conqPorDia['${dia.year}-${dia.month}-${dia.day}'] ??
+                            const [],
                     hoje: mesmoDia(dia, hoje),
                     onTap: () => _editarDia(dia),
                   );
@@ -236,12 +257,14 @@ class _Celula extends StatelessWidget {
   const _Celula({
     required this.dia,
     required this.cores,
+    required this.conquistas,
     required this.hoje,
     required this.onTap,
   });
 
   final int dia;
   final List<int> cores; // corIndex dos check-ins do dia
+  final List<TipoConquista> conquistas; // conquistas obtidas nesse dia
   final bool hoje;
   final VoidCallback onTap;
 
@@ -249,13 +272,14 @@ class _Celula extends StatelessWidget {
   Widget build(BuildContext context) {
     final mostrar = cores.take(4).toList();
     final extra = cores.length - mostrar.length;
+    final temConteudo = cores.isNotEmpty || conquistas.isNotEmpty;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: cores.isNotEmpty ? AppColors.surface : Colors.transparent,
+          color: temConteudo ? AppColors.surface : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: hoje
               ? Border.all(color: context.accent, width: 1.5)
@@ -273,26 +297,37 @@ class _Celula extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Wrap(
-              spacing: 2,
-              runSpacing: 2,
-              alignment: WrapAlignment.center,
-              children: [
-                for (final c in mostrar)
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: AppColors.corExercicio(c),
-                      shape: BoxShape.circle,
+            // Dia com conquista: mostra a medalha/troféu no lugar dos pontinhos.
+            if (conquistas.isNotEmpty)
+              Wrap(
+                spacing: 1,
+                alignment: WrapAlignment.center,
+                children: [
+                  for (final t in conquistas.take(3))
+                    ConquistaBadge(tipo: t, size: 13),
+                ],
+              )
+            else
+              Wrap(
+                spacing: 2,
+                runSpacing: 2,
+                alignment: WrapAlignment.center,
+                children: [
+                  for (final c in mostrar)
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: AppColors.corExercicio(c),
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                if (extra > 0)
-                  Text('+$extra',
-                      style: const TextStyle(
-                          color: AppColors.dim, fontSize: 8)),
-              ],
-            ),
+                  if (extra > 0)
+                    Text('+$extra',
+                        style: const TextStyle(
+                            color: AppColors.dim, fontSize: 8)),
+                ],
+              ),
           ],
         ),
       ),
@@ -504,11 +539,13 @@ class _GaleriaConquistas extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final concs = ref.watch(conclusaoProvider).value ?? const [];
     final treinos = ref.watch(treinosProvider).value ?? const [];
+    final prog = ref.watch(progressaoProvider).value ?? const [];
     final conquistas = ref.watch(conquistasProvider).value ?? const [];
 
     final streak = streakAtual(concs, treinos);
     final melhor = melhorStreak(concs, treinos);
     final total = totalDiasConcluidos(concs);
+    final atuais = conquistasAtuais(concs, treinos, prog);
 
     bool tem(TipoConquista t) => conquistas.any((c) => c.tipo == t.chave);
     DateTime? quando(TipoConquista t) => quandoConquistou(conquistas, t);
@@ -516,6 +553,8 @@ class _GaleriaConquistas extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
+        _ConquistasAtuaisBox(atuais: atuais),
+        const SizedBox(height: 16),
         _StreakCard(streak: streak, melhor: melhor, total: total),
         const SizedBox(height: 20),
         const _TituloSecao('Medalhas', 'Prêmio por dias de treino seguidos'),
@@ -572,6 +611,66 @@ class _GaleriaConquistas extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Caixa "Conquistas atuais": o que você sustenta AGORA. Medalhas caem se a
+/// sequência quebrar; o Troféu de Prata permanece; a Coroa cai se a progressão
+/// estagnar. Vazia enquanto não houver nenhuma.
+class _ConquistasAtuaisBox extends StatelessWidget {
+  const _ConquistasAtuaisBox({required this.atuais});
+
+  final Set<TipoConquista> atuais;
+
+  @override
+  Widget build(BuildContext context) {
+    final tipos = [
+      for (final t in TipoConquista.values)
+        if (atuais.contains(t)) t,
+    ];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: tipos.isEmpty ? AppColors.line : context.accent,
+          width: tipos.isEmpty ? 1 : 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Conquistas atuais',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const SizedBox(height: 12),
+          if (tipos.isEmpty)
+            const Text(
+              'Nenhuma conquista ativa ainda. Complete treinos para conquistar!',
+              style: TextStyle(color: AppColors.dim, fontSize: 13),
+            )
+          else
+            Wrap(
+              spacing: 18,
+              runSpacing: 12,
+              children: [
+                for (final t in tipos)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ConquistaBadge(tipo: t, size: 34),
+                      const SizedBox(height: 4),
+                      Text(t.tituloCurto,
+                          style: const TextStyle(
+                              color: AppColors.dim, fontSize: 11)),
+                    ],
+                  ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
@@ -700,12 +799,9 @@ class _ConquistaCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Opacity(
-            opacity: earned ? 1 : 0.35,
-            child: oculta
-                ? const Icon(Icons.help_outline, size: 38, color: AppColors.dim)
-                : Text(tipo.emoji, style: const TextStyle(fontSize: 38)),
-          ),
+          oculta
+              ? const Icon(Icons.help_outline, size: 38, color: AppColors.dim)
+              : ConquistaBadge(tipo: tipo, size: 38, ativo: earned),
           const SizedBox(height: 8),
           Text(
             titulo,

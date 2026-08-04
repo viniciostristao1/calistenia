@@ -20,6 +20,14 @@ extension TipoConquistaInfo on TipoConquista {
         TipoConquista.trofeuOuro => 'Troféu de Ouro',
       };
 
+  /// Nome curto (para chips/legendas compactas).
+  String get tituloCurto => switch (this) {
+        TipoConquista.medalhaPrata => 'Prata',
+        TipoConquista.medalhaOuro => 'Ouro',
+        TipoConquista.trofeuPrata => 'Troféu',
+        TipoConquista.trofeuOuro => 'Coroa',
+      };
+
   /// Descrição da regra. Para a conquista-surpresa não é revelada até conquistar.
   String get descricao => switch (this) {
         TipoConquista.medalhaPrata => '4 dias de treino seguidos',

@@ -18,12 +18,17 @@ e ser lembrado destas. Ordem de recomendação do Claude:
 6. **🏅 Medalhas/conquistas** — `[FEITO v0.22.0]` 🥈/🥇 (sequência) + 🏆/👑 (marcos), galeria
    na aba Check-in.
 
-## 🎮 Gamificação + conclusão de treino + modo unilateral — `[FEITO v0.22.0]` (2026-08-04)
+## 🎮 Gamificação + conclusão de treino + modo unilateral — `[FEITO v0.22.0→v0.23.0]` (2026-08-04)
 Implementado conforme o plano abaixo (mantido como registro do desenho). Detalhe técnico em
-`APRENDIZADOS.md § v0.22.0`. Decisões travadas: streak = **dias agendados**; Ouro = **21 dias
-+ recorde em ≥50% (ceil) dos exercícios distintos**, oculto/surpresa; gamificação = toggle
-global em Config (ligado por padrão). Evoluções possíveis: animação/confete ao desbloquear;
-recorde pessoal (PR) como conquista própria; meta semanal; estatísticas de tempo total.
+`APRENDIZADOS.md § v0.22.0` e `§ v0.23.0`. Decisões travadas: streak = **dias agendados**;
+Ouro = **21 dias + recorde em ≥50% (ceil) dos exercícios distintos**, oculto/surpresa;
+gamificação = toggle global em Config (ligado por padrão).
+**Refino v0.23.0 (feedback):** modelo DUAL — *obtidas* (permanente, calendário/celebração) vs
+*atuais* (ao vivo, caixa "Conquistas atuais" na Galeria): medalhas caem na quebra da sequência,
+Troféu de Prata (15 dias no total) permanece, **Coroa cai se >21 dias sem recorde novo em ≥50%**
+(regra da coroa a confirmar com o usuário). Troféu de Prata renderizado como ícone prateado.
+Evoluções possíveis: animação/confete ao desbloquear; recorde pessoal (PR) como conquista
+própria; meta semanal; estatísticas de tempo total.
 
 ### A. Modo unilateral (um braço/perna por vez) — `[FEITO]`
 Alguns exercícios são por LADO (flexão um braço, agachamento uma perna). Sequência por
