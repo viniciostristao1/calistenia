@@ -291,11 +291,7 @@ class _TreinoCard extends StatelessWidget {
   void _rodar(BuildContext context, String titulo, List<Exercicio> exs) =>
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => PlayerScreen(
-            titulo: titulo,
-            exercicios: exs,
-            fundo: treino.fundo,
-          ),
+          builder: (_) => PlayerScreen(titulo: titulo, exercicios: exs),
         ),
       );
 
@@ -303,11 +299,7 @@ class _TreinoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final n = treino.exercicios.length;
     final dur = treino.duracaoTotalSeg;
-    final termina = dur > 0
-        ? ' · termina ~${fmtHora(DateTime.now().add(Duration(seconds: dur)))}'
-        : '';
-    final resumo =
-        '$n ${n == 1 ? 'exercício' : 'exercícios'} · ${fmtSeg(dur)}$termina';
+    final base = '$n ${n == 1 ? 'exercício' : 'exercícios'} · ${fmtSeg(dur)}';
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
@@ -350,10 +342,27 @@ class _TreinoCard extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  resumo,
-                                  style: const TextStyle(
-                                      color: AppColors.dim, fontSize: 13),
+                                Text.rich(
+                                  TextSpan(
+                                    style: const TextStyle(
+                                        color: AppColors.dim, fontSize: 13),
+                                    children: [
+                                      TextSpan(text: base),
+                                      if (dur > 0) ...[
+                                        const TextSpan(text: '   '),
+                                        const WidgetSpan(
+                                          alignment:
+                                              PlaceholderAlignment.middle,
+                                          child: Icon(Icons.access_time,
+                                              size: 13, color: AppColors.dim),
+                                        ),
+                                        TextSpan(
+                                          text:
+                                              ' ~${fmtHora(DateTime.now().add(Duration(seconds: dur)))}',
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),

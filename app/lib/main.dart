@@ -9,6 +9,7 @@ import 'services/sync_service.dart';
 import 'services/tema_repository.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
+import 'util/messenger.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,7 @@ class CalisteniaApp extends ConsumerWidget {
     ref.watch(syncProvider); // mantém a sincronização ativa (conforme o login)
     return MaterialApp(
       title: 'Calis Timer',
+      scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(tema),
       // Troca de tema instantânea (sem a animação padrão que dava "delay").

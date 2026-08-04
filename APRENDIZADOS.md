@@ -529,3 +529,26 @@ nativo novo — o build do CI valida; áudio só no aparelho. Versão `0.19.0+19
   barra-data 6→3.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.20.0+20`.
+
+---
+
+## 2026-08-04 — v0.21.0: fundo por exercício + relógio + correção de LOOP de sync
+
+- **Bug do LOOP de sync (item 2, o achado importante):** `_push` gravava `updatedAt:
+  serverTimestamp()` → cada push mudava o doc → snapshot → `_onRemote` aplicava → `_invalidar`
+  → `ref.listen` → `onLocalChange` → push → … loop infinito (rede/bateria/custo Firestore;
+  provavelmente também prendia o SnackBar). **Fix:** `_ultimoSync` = "impressão" dos 3 JSONs
+  (sem updatedAt); `_push` só envia se o conteúdo mudou; `_onRemote` ignora snapshot cujo
+  conteúdo == `_ultimoSync`. Corta o loop dos dois lados.
+- **SnackBar do desfazer (item 2):** `scaffoldMessengerKey` global (`util/messenger.dart`)
+  no MaterialApp; `_excluirExercicio`/`_excluirTreino` usam `scaffoldMessengerKey.currentState`
+  (messenger estável, não depende do context da tela).
+- **Fundo por EXERCÍCIO (item 3):** movido `fundo` de `Treino` → `Exercicio` (toJson/copy/
+  duplicar/fromJson). Seletor (`_SeletorFundo`+`_MiniaturaFundo`) no editor do EXERCÍCIO
+  (antes de "Salvar"). Player deriva o fundo de `widget.exercicios[fase.exercicioIndex].fundo`
+  → muda ao longo do treino; removido o param `PlayerScreen.fundo`. +3 imagens (8 total,
+  810px JPEG, PNGs removidos).
+- **Relógio no card (item 1):** `Text.rich` com `WidgetSpan(Icon(Icons.access_time))` +
+  "~HH:MM" no lugar de "termina".
+
+**Validação:** `flutter analyze` limpo, `flutter test` 9/9. Versão `0.21.0+21`.

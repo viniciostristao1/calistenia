@@ -6,6 +6,9 @@ const fundosDisponiveis = <String>[
   'fundo3.jpg',
   'fundo4.jpg',
   'fundo5.jpg',
+  'fundo6.jpg',
+  'fundo7.jpg',
+  'fundo8.jpg',
 ];
 
 /// Caminho do asset a partir do nome guardado no treino.

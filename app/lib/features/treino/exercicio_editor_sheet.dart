@@ -7,6 +7,7 @@ import '../../models/registro_progressao.dart';
 import '../../services/progressao_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
+import '../../util/fundos.dart';
 
 /// Abre a folha de edição de um exercício. Retorna o exercício editado
 /// (ou `null` se cancelado). Passe `existente` para editar; `null` para criar.
@@ -44,6 +45,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
   List<int>? _descansos; // descanso por série; null = descanso único (_desc)
   late double _peso;
   late int _cor;
+  String? _fundo; // imagem de fundo do cronômetro (asset); null = nenhum
 
   @override
   void initState() {
@@ -58,6 +60,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     _descansos = e?.descansos == null ? null : List<int>.of(e!.descansos!);
     _peso = e?.pesoKg ?? 0;
     _cor = e?.corIndex ?? 0;
+    _fundo = e?.fundo;
   }
 
   @override
@@ -98,7 +101,8 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
       ..series = _series < 1 ? 1 : _series
       ..descansos = _descansos == null ? null : List<int>.of(_descansos!)
       ..pesoKg = _peso < 0 ? 0 : _peso
-      ..corIndex = _cor;
+      ..corIndex = _cor
+      ..fundo = _fundo;
     Navigator.of(context).pop(e);
   }
 
@@ -275,6 +279,11 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             _SeletorCor(
               selecionado: _cor,
               onSelect: (i) => setState(() => _cor = i),
+            ),
+            const SizedBox(height: 18),
+            _SeletorFundo(
+              selecionado: _fundo,
+              onSelect: (f) => setState(() => _fundo = f),
             ),
             const SizedBox(height: 14),
             _Resumo(
@@ -650,6 +659,83 @@ class _SeletorCor extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Seletor de imagem de fundo do cronômetro (miniaturas; a 1ª é "nenhuma").
+class _SeletorFundo extends StatelessWidget {
+  const _SeletorFundo({required this.selecionado, required this.onSelect});
+
+  final String? selecionado;
+  final ValueChanged<String?> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Imagem de fundo do cronômetro',
+            style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 4),
+        const Text('Motivação atrás do contador deste exercício.',
+            style: TextStyle(color: AppColors.dim, fontSize: 13)),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 104,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _MiniaturaFundo(
+                selecionado: selecionado == null,
+                onTap: () => onSelect(null),
+              ),
+              for (final f in fundosDisponiveis)
+                _MiniaturaFundo(
+                  asset: fundoAsset(f),
+                  selecionado: selecionado == f,
+                  onTap: () => onSelect(f),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniaturaFundo extends StatelessWidget {
+  const _MiniaturaFundo({
+    this.asset,
+    required this.selecionado,
+    required this.onTap,
+  });
+
+  final String? asset;
+  final bool selecionado;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 58,
+        margin: const EdgeInsets.only(right: 10),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selecionado ? context.accent : AppColors.line,
+            width: selecionado ? 3 : 1,
+          ),
+        ),
+        child: asset == null
+            ? const Center(
+                child: Icon(Icons.block, color: AppColors.dim2, size: 22))
+            : Image.asset(asset!, fit: BoxFit.cover),
+      ),
     );
   }
 }

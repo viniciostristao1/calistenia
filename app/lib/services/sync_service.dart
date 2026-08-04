@@ -26,6 +26,7 @@ class SyncController {
   Timer? _debounce;
   bool _aplicandoRemoto = false;
   bool _primeiroSnapshot = true;
+  String? _ultimoSync; // "impressão" do último estado sincronizado (anti-loop)
 
   DocumentReference<Map<String, dynamic>> _doc(String uid) =>
       FirebaseFirestore.instance.collection('users').doc(uid);
@@ -36,6 +37,7 @@ class SyncController {
     stop();
     _uid = uid;
     _primeiroSnapshot = true;
+    _ultimoSync = null;
     _sub = _doc(uid).snapshots().listen(_onRemote, onError: (_) {});
   }
 
@@ -76,27 +78,38 @@ class SyncController {
     }
 
     final data = snap.data()!;
-    _aplicandoRemoto = true;
     if (_primeiroSnapshot) {
       // 1ª vez neste aparelho: une local + nuvem (não perde de nenhum lado).
       _primeiroSnapshot = false;
+      _aplicandoRemoto = true;
       _mergeChave(prefs, chaveTreinos, data['treinos']);
       _mergeChave(prefs, chaveCheckin, data['checkins']);
       _mergeChave(prefs, chaveProgressao, data['progressao']);
       _invalidar();
       _aplicandoRemoto = false;
+      _ultimoSync = _estado(prefs);
       await _push(uid, prefs); // grava o resultado da união na nuvem
       return;
     }
-    // Updates seguintes (outro aparelho editou): a nuvem manda.
+    // Se o conteúdo remoto é o que já temos, ignora (evita o loop de
+    // updatedAt: cada push muda o timestamp e voltaria como "mudança").
+    final estadoRemoto = _estadoDe(
+        data['treinos'], data['checkins'], data['progressao']);
+    if (estadoRemoto == _ultimoSync) return;
+    // Outro aparelho editou de verdade: a nuvem manda.
+    _aplicandoRemoto = true;
     _aplicarChave(prefs, chaveTreinos, data['treinos']);
     _aplicarChave(prefs, chaveCheckin, data['checkins']);
     _aplicarChave(prefs, chaveProgressao, data['progressao']);
     _invalidar();
     _aplicandoRemoto = false;
+    _ultimoSync = _estado(prefs);
   }
 
   Future<void> _push(String uid, SharedPreferences prefs) async {
+    final estado = _estado(prefs);
+    if (estado == _ultimoSync) return; // nada mudou de verdade -> não empurra
+    _ultimoSync = estado;
     try {
       await _doc(uid).set({
         'treinos': prefs.getString(chaveTreinos) ?? '[]',
@@ -108,6 +121,17 @@ class SyncController {
       // offline/sem permissão: o cache do Firestore reenvia quando possível.
     }
   }
+
+  /// "Impressão" do conteúdo dos 3 stores (sem o updatedAt), para detectar se
+  /// algo mudou de verdade e cortar o loop de sincronização.
+  String _estado(SharedPreferences prefs) => _estadoDe(
+        prefs.getString(chaveTreinos),
+        prefs.getString(chaveCheckin),
+        prefs.getString(chaveProgressao),
+      );
+
+  String _estadoDe(dynamic t, dynamic c, dynamic p) =>
+      '${t ?? ''}§${c ?? ''}§${p ?? ''}';
 
   void _aplicarChave(SharedPreferences prefs, String chave, dynamic remoto) {
     if (remoto is String) prefs.setString(chave, remoto);

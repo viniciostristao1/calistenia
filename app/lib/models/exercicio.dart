@@ -28,6 +28,7 @@ class Exercicio {
   List<int>? descansos; // descanso por série (tamanho = series); null = padrão
   double pesoKg; // peso adicional usado; 0 = só o peso do corpo
   int corIndex; // índice na paleta de cores (marca do exercício)
+  String? fundo; // imagem de fundo do cronômetro (asset); null = nenhum
 
   Exercicio({
     String? id,
@@ -40,6 +41,7 @@ class Exercicio {
     this.descansos,
     this.pesoKg = 0,
     this.corIndex = 0,
+    this.fundo,
   }) : id = id ?? novoId();
 
   /// Descanso após a série [s] (1-based). Usa o override por série se houver;
@@ -100,6 +102,7 @@ class Exercicio {
     descansos: descansos == null ? null : List<int>.of(descansos!),
     pesoKg: pesoKg,
     corIndex: corIndex,
+    fundo: fundo,
   );
 
   /// Cópia independente (novo id) para reusar o exercício em outro treino.
@@ -113,6 +116,7 @@ class Exercicio {
     descansos: descansos == null ? null : List<int>.of(descansos!),
     pesoKg: pesoKg,
     corIndex: corIndex,
+    fundo: fundo,
   );
 
   Map<String, dynamic> toJson() => {
@@ -126,6 +130,7 @@ class Exercicio {
     if (descansos != null) 'descansos': descansos,
     'pesoKg': pesoKg,
     'corIndex': corIndex,
+    if (fundo != null) 'fundo': fundo,
   };
 
   factory Exercicio.fromJson(Map<String, dynamic> j) {
@@ -148,6 +153,7 @@ class Exercicio {
           : (rawDescansos as List).map((e) => e as int).toList(),
       pesoKg: ((j['pesoKg'] ?? 0) as num).toDouble(),
       corIndex: (j['corIndex'] ?? 0) as int,
+      fundo: j['fundo'] as String?,
     );
   }
 }

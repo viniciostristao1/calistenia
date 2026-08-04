@@ -25,12 +25,10 @@ class PlayerScreen extends ConsumerStatefulWidget {
     super.key,
     required this.titulo,
     required this.exercicios,
-    this.fundo,
   });
 
   final String titulo;
   final List<Exercicio> exercicios;
-  final String? fundo; // imagem de fundo do treino (asset), ou null
 
   @override
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
@@ -244,7 +242,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final segundos = (_restanteMs / 1000).ceil().clamp(0, 99999);
     final proxima = _idx < _fases.length - 1 ? _fases[_idx + 1] : null;
 
-    final fundo = widget.fundo;
+    // Fundo do EXERCÍCIO da fase atual (muda ao longo do treino).
+    final ei = fase.exercicioIndex;
+    final fundo = (ei >= 0 && ei < widget.exercicios.length)
+        ? widget.exercicios[ei].fundo
+        : null;
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: Stack(

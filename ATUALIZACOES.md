@@ -3,6 +3,14 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-04 — v0.21.0 (fundo por exercício + relógio + correção de sync/undo):**
+  - **Imagem de fundo agora é POR EXERCÍCIO** (não por treino): a escolha está no editor do
+    exercício, antes de "Salvar exercício". No cronômetro, o fundo muda conforme o exercício.
+    **3 novas imagens** (8 no total).
+  - **Card do treino:** no lugar de "termina", um **ícone de relógio** + "~HH:MM".
+  - **Correção de bug (sync):** a sincronização entrava num **loop** (cada mudança gerava
+    outra), gastando bateria/rede e podendo prender notificações. Corrigido.
+  - **Desfazer exclusão:** notificação agora com messenger estável (aparece e some em 3s).
 - **2026-08-04 — v0.20.0 (imagem de fundo + horário de término + som + progressão):**
   - **Imagem de fundo motivacional** no cronômetro: no editor do treino, escolha uma das
     fotos (miniaturas) — ela aparece atrás do contador daquele treino. "Nenhuma" também é
