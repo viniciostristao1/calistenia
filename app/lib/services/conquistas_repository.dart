@@ -51,6 +51,31 @@ class ConquistasNotifier extends AsyncNotifier<List<Conquista>> {
     await _persist(list);
     return novas;
   }
+
+  /// Reconcilia o histórico com o estado atual: conquistas que caíram (não estão
+  /// mais em [atuais]) ganham `perdidaEm = agora`; as que voltaram a ser ativas
+  /// têm `perdidaEm` limpo. Assim cada conquista aparece OU em "atuais" OU no
+  /// histórico (nunca duplicada).
+  Future<void> reconciliar(Set<TipoConquista> atuais) async {
+    final list = await future;
+    final ativas = atuais.map((t) => t.chave).toSet();
+    final agora = DateTime.now();
+    var mudou = false;
+    final nova = <Conquista>[];
+    for (final c in list) {
+      final ativa = ativas.contains(c.tipo);
+      if (ativa && c.perdidaEm != null) {
+        nova.add(c.comPerdida(null)); // voltou a ser ativa
+        mudou = true;
+      } else if (!ativa && c.perdidaEm == null) {
+        nova.add(c.comPerdida(agora)); // acabou de cair
+        mudou = true;
+      } else {
+        nova.add(c);
+      }
+    }
+    if (mudou) await _persist(nova);
+  }
 }
 
 /// A data em que uma conquista foi obtida, ou `null` se ainda não foi.

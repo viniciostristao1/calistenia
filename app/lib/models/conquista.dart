@@ -49,9 +49,14 @@ TipoConquista? tipoConquistaDe(String chave) {
 /// Uma conquista já obtida (registrada no momento em que foi desbloqueada).
 class Conquista {
   final String tipo; // TipoConquista.name
-  final DateTime data; // quando foi conquistada
+  final DateTime data; // quando foi conquistada (1ª vez)
+  final DateTime? perdidaEm; // quando deixou de ser ativa; null = ativa agora
 
-  Conquista({required this.tipo, required this.data});
+  Conquista({required this.tipo, required this.data, this.perdidaEm});
+
+  /// Cópia com outro estado de "perdida" (null = voltou a ser ativa).
+  Conquista comPerdida(DateTime? quando) =>
+      Conquista(tipo: tipo, data: data, perdidaEm: quando);
 
   Map<String, dynamic> toJson() => {
     // 'id' = tipo: cada conquista é única por tipo. Serve à união por id do
@@ -59,10 +64,14 @@ class Conquista {
     'id': tipo,
     'tipo': tipo,
     'data': data.millisecondsSinceEpoch,
+    if (perdidaEm != null) 'perdidaEm': perdidaEm!.millisecondsSinceEpoch,
   };
 
   factory Conquista.fromJson(Map<String, dynamic> j) => Conquista(
         tipo: (j['tipo'] ?? '') as String,
         data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
+        perdidaEm: j['perdidaEm'] == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(j['perdidaEm'] as int),
       );
 }

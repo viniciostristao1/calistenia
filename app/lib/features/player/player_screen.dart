@@ -252,7 +252,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final treinos = ref.read(treinosProvider).value ?? const [];
     final prog = ref.read(progressaoProvider).value ?? const [];
     final atuais = conquistasAtuais(concs, treinos, prog);
-    final novas = await ref.read(conquistasProvider.notifier).registrarNovas(atuais);
+    final notifier = ref.read(conquistasProvider.notifier);
+    final novas = await notifier.registrarNovas(atuais);
+    await notifier.reconciliar(atuais); // move p/ histórico o que tiver caído
     if (!mounted) return;
     setState(() {
       _respostaCompleto = true;

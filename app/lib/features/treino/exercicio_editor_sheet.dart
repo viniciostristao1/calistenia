@@ -214,9 +214,25 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
                 ),
               ),
             ),
-            Text(
-              widget.existente == null ? 'Novo exercício' : 'Editar exercício',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Voltar',
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  widget.existente == null
+                      ? 'Novo exercício'
+                      : 'Editar exercício',
+                  style:
+                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextField(

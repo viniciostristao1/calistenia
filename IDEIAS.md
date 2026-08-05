@@ -28,9 +28,11 @@ agendados** — 🥈4 · 🥇8 · 🏆Prata15 · 🏆Ouro21 seguidos; pular um d
 O Ouro exige ainda progressão em ≥50% dos exercícios nos últimos 21 dias (cai por estagnação).
 Sem coroa (dois troféus prata/ouro, ícone tintado) e sem "surpresa"/oculto. Galeria: "Sequência
 atual" (dá prêmio) + "🏅 Recorde" (melhor sequência de todos os tempos, permanente) + regras
-com "Sequência: X/N". `conquistas_v1` guarda a 1ª obtenção (calendário/celebração); "atuais"
-recalcula ao vivo (`conquistasAtuais`). **Aberto:** Troféu de Ouro reaparece se voltar a
-progredir (dinâmico) — confirmar se deve ficar perdido até novo ciclo.
+com "Sequência: X/N". `conquistas_v1` guarda a 1ª obtenção (calendário/celebração) + `perdidaEm`;
+"atuais" recalcula ao vivo (`conquistasAtuais`). **v0.25.0:** barras de progresso nos cards;
+sub-aba **Histórico** (perdidas por mês da perda, via `perdidaEm`+`reconciliar`); novo ícone do
+app; botão voltar no editor. **Ouro = dinâmico confirmado** pelo usuário (reaparece ao voltar a
+progredir; só aparece com todas as anteriores ativas + progressão nos 21 dias).
 Evoluções possíveis: animação/confete ao desbloquear; recorde pessoal (PR) por exercício como
 conquista própria; meta semanal; estatísticas de tempo total; lembrete "você está a 1 dia de
 perder a sequência".

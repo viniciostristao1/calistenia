@@ -44,10 +44,31 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   void _mudarMes(int delta) =>
       setState(() => _mes = DateTime(_mes.year, _mes.month + delta, 1));
 
+  /// Move para o histórico as conquistas que caíram (e restaura as que voltaram).
+  /// Só roda com os dados carregados (senão marcaria tudo como perdido à toa).
+  void _reconciliar() {
+    final concsA = ref.read(conclusaoProvider);
+    final treinosA = ref.read(treinosProvider);
+    final progA = ref.read(progressaoProvider);
+    final conqA = ref.read(conquistasProvider);
+    if (concsA.isLoading ||
+        treinosA.isLoading ||
+        progA.isLoading ||
+        conqA.isLoading) {
+      return;
+    }
+    final atuais = conquistasAtuais(
+      concsA.value ?? const [],
+      treinosA.value ?? const [],
+      progA.value ?? const [],
+    );
+    ref.read(conquistasProvider.notifier).reconciliar(atuais);
+  }
+
   @override
   Widget build(BuildContext context) {
     final gamiOn = ref.watch(gamificacaoProvider).value ?? true;
-    final mostrarConquistas = gamiOn && _vista == 1;
+    final vista = gamiOn ? _vista : 0;
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -69,28 +90,28 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   selectedForegroundColor: context.onAccent,
                   selectedBackgroundColor: context.accent,
                   foregroundColor: AppColors.dim,
+                  textStyle: const TextStyle(
+                      fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
                 segments: const [
-                  ButtonSegment(
-                    value: 0,
-                    label: Text('Calendário'),
-                    icon: Icon(Icons.calendar_month, size: 18),
-                  ),
-                  ButtonSegment(
-                    value: 1,
-                    label: Text('Galeria'),
-                    icon: Icon(Icons.emoji_events, size: 18),
-                  ),
+                  ButtonSegment(value: 0, label: Text('Calendário')),
+                  ButtonSegment(value: 1, label: Text('Galeria')),
+                  ButtonSegment(value: 2, label: Text('Histórico')),
                 ],
-                selected: {_vista},
+                selected: {vista},
                 showSelectedIcon: false,
-                onSelectionChanged: (s) => setState(() => _vista = s.first),
+                onSelectionChanged: (s) {
+                  setState(() => _vista = s.first);
+                  if (s.first != 0) _reconciliar();
+                },
               ),
             ),
           Expanded(
-            child: mostrarConquistas
-                ? const _GaleriaConquistas()
-                : _calendario(gamiOn),
+            child: switch (vista) {
+              1 => const _GaleriaConquistas(),
+              2 => const _HistoricoConquistas(),
+              _ => _calendario(gamiOn),
+            },
           ),
         ],
       ),
@@ -550,16 +571,10 @@ class _GaleriaConquistas extends ConsumerWidget {
     final total = totalDiasConcluidos(concs);
     final atuais = conquistasAtuais(concs, treinos, prog);
 
-    String progresso(TipoConquista t) {
-      final alvo = limiarSequencia(t);
-      final extra = t == TipoConquista.trofeuOuro ? ' + progressão' : '';
-      return 'Sequência: $streak/$alvo$extra';
-    }
-
     Widget card(TipoConquista t) => _ConquistaCard(
           tipo: t,
           ativo: atuais.contains(t),
-          progresso: progresso(t),
+          streak: streak,
         );
 
     return ListView(
@@ -595,6 +610,117 @@ class _GaleriaConquistas extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Sub-aba "Histórico": conquistas que foram PERDIDAS, agrupadas pelo mês da
+/// perda (mais recente em cima), em miniatura. Uma conquista ativa não aparece
+/// aqui (fica em "Conquistas atuais") — nunca duplica.
+class _HistoricoConquistas extends ConsumerWidget {
+  const _HistoricoConquistas();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final conquistas = ref.watch(conquistasProvider).value ?? const <Conquista>[];
+    final perdidas = conquistas.where((c) => c.perdidaEm != null).toList();
+    if (perdidas.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.history, size: 56, color: AppColors.dim2),
+              SizedBox(height: 16),
+              Text('Histórico vazio',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              SizedBox(height: 6),
+              Text(
+                'Quando você perde um título (quebra a sequência), ele fica '
+                'guardado aqui, organizado por mês.',
+                style: TextStyle(color: AppColors.dim),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    // Agrupa pelo mês da perda; ordena mês mais recente primeiro.
+    final mapa = <String, List<TipoConquista>>{};
+    for (final c in perdidas) {
+      final t = tipoConquistaDe(c.tipo);
+      if (t == null) continue;
+      final d = c.perdidaEm!;
+      (mapa['${d.year}-${d.month.toString().padLeft(2, '0')}'] ??= []).add(t);
+    }
+    final chaves = mapa.keys.toList()..sort((a, b) => b.compareTo(a));
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        for (final k in chaves) ...[
+          _MesHistorico(chaveMes: k, tipos: mapa[k]!),
+          const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _MesHistorico extends StatelessWidget {
+  const _MesHistorico({required this.chaveMes, required this.tipos});
+
+  final String chaveMes; // 'YYYY-MM'
+  final List<TipoConquista> tipos;
+
+  String get _titulo {
+    final p = chaveMes.split('-');
+    final mes = int.tryParse(p[1]) ?? 1;
+    return '${_meses[(mes - 1).clamp(0, 11)]} ${p[0]}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Ordena pela ordem natural das conquistas (prata->ouro->troféus).
+    final ordenados = [
+      for (final t in TipoConquista.values)
+        if (tipos.contains(t)) t,
+    ];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(_titulo,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 14,
+            runSpacing: 10,
+            children: [
+              for (final t in ordenados)
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConquistaBadge(tipo: t, size: 26, ativo: false),
+                    const SizedBox(height: 3),
+                    Text(t.tituloCurto,
+                        style: const TextStyle(
+                            color: AppColors.dim, fontSize: 10)),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -750,28 +876,40 @@ class _TituloSecao extends StatelessWidget {
   }
 }
 
-/// Card de uma conquista (regra): badge + nome + status. Se ativa AGORA, borda
-/// de destaque e "Conquista ativa ✓"; senão, o progresso da sequência.
+/// Card de uma conquista (regra): badge + nome + barra de progresso da
+/// sequência. Enquanto não bate, a barra fica cinza; ao atingir (ativa), a barra
+/// e o badge ganham a cor da conquista (prata/ouro).
 class _ConquistaCard extends StatelessWidget {
   const _ConquistaCard({
     required this.tipo,
     required this.ativo,
-    required this.progresso,
+    required this.streak,
   });
 
   final TipoConquista tipo;
   final bool ativo;
-  final String progresso;
+  final int streak;
 
   @override
   Widget build(BuildContext context) {
+    final alvo = limiarSequencia(tipo);
+    final fracao = (streak / alvo).clamp(0.0, 1.0);
+    final cor = corConquista(tipo);
+    final ouroFaltaProgresso =
+        tipo == TipoConquista.trofeuOuro && streak >= alvo && !ativo;
+    final legenda = ativo
+        ? 'Conquista ativa ✓'
+        : ouroFaltaProgresso
+            ? 'Sequência ok · falta progressão'
+            : '$streak/$alvo dias'
+                '${tipo == TipoConquista.trofeuOuro ? ' + progressão' : ''}';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: ativo ? context.accent : AppColors.line,
+          color: ativo ? cor : AppColors.line,
           width: ativo ? 1.5 : 1,
         ),
       ),
@@ -788,12 +926,24 @@ class _ConquistaCard extends StatelessWidget {
               color: ativo ? AppColors.text : AppColors.dim,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: fracao,
+              minHeight: 7,
+              backgroundColor: AppColors.surface2,
+              // Sem cor enquanto não bate; cor da conquista quando ativa.
+              valueColor: AlwaysStoppedAnimation(
+                  ativo ? cor : AppColors.dim2),
+            ),
+          ),
+          const SizedBox(height: 6),
           Text(
-            ativo ? 'Conquista ativa ✓' : progresso,
+            legenda,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: ativo ? context.accent : AppColors.dim,
+              color: ativo ? cor : AppColors.dim,
               fontSize: 11,
             ),
           ),

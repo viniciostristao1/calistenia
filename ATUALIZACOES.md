@@ -3,6 +3,16 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-05 — v0.25.0 (novo ícone + histórico + barras + botão voltar):**
+  - **Novo ícone do app** (o cronômetro âmbar com a flexão).
+  - **Barrinha de progresso** em cada medalha/troféu na Galeria: cinza enquanto não bate,
+    colorida (prata/ouro) quando conquista.
+  - Nova sub-aba **Histórico**: as conquistas **perdidas** ficam guardadas por **mês** (mais
+    recente em cima), em miniatura. Uma conquista ativa não aparece no histórico (não duplica).
+  - **Botão de voltar** dentro de "Editar exercício".
+  - **Troféu de Ouro:** confirmado — só aparece com **todas as anteriores ativas** (21 dias
+    seguidos) **e** progressão em ≥50% nesses 21 dias; some se pular um dia agendado ou ficar
+    21 dias sem progredir.
 - **2026-08-05 — v0.24.0 (conquistas por sequência + recorde + número maior):**
   - **Regra unificada:** TODAS as conquistas são por **sequência** de dias agendados —
     🥈 4 · 🥇 8 · 🏆 Prata 15 · 🏆 Ouro 21 seguidos (o Ouro pede também **progressão em

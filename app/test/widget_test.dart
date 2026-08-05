@@ -313,6 +313,22 @@ void main() {
     expect(atuais.isEmpty, isTrue);
   });
 
+  test('conquista: JSON round-trip preserva perdidaEm (histórico)', () {
+    final perdida = Conquista(
+      tipo: 'medalhaPrata',
+      data: DateTime(2026, 8, 1),
+      perdidaEm: DateTime(2026, 8, 20),
+    );
+    final back = Conquista.fromJson(perdida.toJson());
+    expect(back.tipo, 'medalhaPrata');
+    expect(back.perdidaEm, DateTime(2026, 8, 20));
+    // Ativa (sem perdidaEm) não grava a chave.
+    final ativa = Conquista(tipo: 'x', data: DateTime(2026, 8, 1));
+    expect(ativa.toJson().containsKey('perdidaEm'), isFalse);
+    expect(Conquista.fromJson(ativa.toJson()).perdidaEm, isNull);
+    expect(ativa.comPerdida(DateTime(2026, 9, 1)).perdidaEm, DateTime(2026, 9, 1));
+  });
+
   test('troféu de ouro: 21 seguidos + progressão recente em >=50%', () {
     final d = DateTime(2026, 8, 10);
     final treinos = [

@@ -672,3 +672,42 @@ confirmar se deve ficar perdido até novo ciclo.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 16/16 (conquistas reescritas: escala
 4/8/15/21; quebra derruba todas; ouro por progressão recente). Versão `0.24.0+24`.
+
+---
+
+## 2026-08-05 — v0.25.0: novo ícone + histórico + barras de progresso (feedback)
+
+6 pontos do usuário sobre a v0.24.0.
+
+**1. Regra do Ouro (confirmação, sem código).** streak≥21 já implica 4/8/15 ativas → o Ouro só
+aparece com todas as anteriores ativas + progressão. Já era assim; mantido dinâmico (reaparece
+se voltar a progredir).
+
+**2. Novo ícone.** O usuário subiu `file_...png` (logo quadrado pronto) na raiz do repo.
+`tools/logo_para_icone.py` (Pillow, tools_venv) gera de lá: `icon_full`/`logo` (o logo),
+`icon_background` (âmbar sólido amostrado = #FCB225), `icon_foreground` (logo a 80% na safe
+zone, transparente). Depois `dart run flutter_launcher_icons` regenerou os mipmaps (res/) e iOS.
+
+**3. Barra de progresso nos cards (`_ConquistaCard`).** Trocado o texto "Sequência X/N" por
+`LinearProgressIndicator` (fração = streak/limiar): cinza (`dim2`) enquanto não bate, cor da
+conquista (`corConquista` — prata `C0C7D2`/ouro `F4C542`) quando ativa; badge idem. Ouro com
+streak≥21 mas sem progressão mostra "Sequência ok · falta progressão".
+
+**4. Sub-aba "Histórico".** 3º segmento (Calendário/Galeria/Histórico). Modelo: `Conquista`
+ganhou `perdidaEm` (null = ativa). `ConquistasNotifier.reconciliar(atuais)` seta `perdidaEm`
+nas que caíram e limpa nas que voltaram → cada conquista fica OU em "atuais" OU no histórico
+(nunca duplica, nunca em 2 meses). Reconciliação roda na troca p/ Galeria/Histórico e ao
+concluir treino, **com guarda `isLoading`** (senão marcaria tudo como perdido antes dos dados
+carregarem). `_HistoricoConquistas` agrupa por mês da perda (desc), miniaturas por mês.
+
+**5. Progressão (só sugestões — ver resposta).** Tela hoje = cards de barras por exercício;
+sugerido: recorde/PR em destaque, linha do tempo, métricas alternativas, sparkline, celebração.
+
+**6. Botão voltar no editor de exercício.** `IconButton(arrow_back)` no topo da folha
+(`showExercicioEditor`), popa sem salvar.
+
+**Gotcha (histórico):** reconciliação sem a guarda `isLoading` zeraria o histórico no boot
+(dados ainda não carregados → atuais vazio → tudo "perdido"). Sempre checar `isLoading` antes.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 17/17 (novo: round-trip `perdidaEm`).
+Versão `0.25.0+25`.
