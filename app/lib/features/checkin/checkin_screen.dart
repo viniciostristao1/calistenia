@@ -14,7 +14,6 @@ import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
 import '../../util/dias.dart';
-import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 
 const _meses = [
@@ -467,8 +466,8 @@ List<Exercicio> _exerciciosDisponiveis(List<Treino> treinos) {
   return mapa.values.toList();
 }
 
-/// Faixa compacta abaixo do calendário: sequência atual + medalhas já obtidas.
-/// Tocar leva à galeria de Conquistas.
+/// Faixa compacta abaixo do calendário: sequência atual + conquistas ativas.
+/// Tocar leva à Galeria.
 class _TeaserConquistas extends ConsumerWidget {
   const _TeaserConquistas({required this.onTap});
 
@@ -478,11 +477,12 @@ class _TeaserConquistas extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final concs = ref.watch(conclusaoProvider).value ?? const [];
     final treinos = ref.watch(treinosProvider).value ?? const [];
-    final conquistas = ref.watch(conquistasProvider).value ?? const [];
+    final prog = ref.watch(progressaoProvider).value ?? const [];
     final streak = streakAtual(concs, treinos);
-    final emojis = [
+    final atuais = conquistasAtuais(concs, treinos, prog);
+    final ativos = [
       for (final t in TipoConquista.values)
-        if (conquistas.any((c) => c.tipo == t.chave)) t.emoji,
+        if (atuais.contains(t)) t,
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
@@ -516,10 +516,14 @@ class _TeaserConquistas extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              if (emojis.isNotEmpty)
-                Text(emojis.join(' '), style: const TextStyle(fontSize: 16))
+              if (ativos.isNotEmpty)
+                for (final t in ativos)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: ConquistaBadge(tipo: t, size: 17),
+                  )
               else
-                const Text('Conquistas',
+                const Text('Galeria',
                     style: TextStyle(color: AppColors.dim, fontSize: 12)),
               const Icon(Icons.chevron_right, color: AppColors.dim, size: 20),
             ],
@@ -530,8 +534,8 @@ class _TeaserConquistas extends ConsumerWidget {
   }
 }
 
-/// Galeria de conquistas: sequência, total, medalhas e troféus (o de Ouro fica
-/// oculto — "conquista secreta" — até ser desbloqueado).
+/// Galeria: conquistas atuais, sequência/recorde e as regras (medalhas e
+/// troféus), cada uma com o progresso da sequência ("Sequência: X/N").
 class _GaleriaConquistas extends ConsumerWidget {
   const _GaleriaConquistas();
 
@@ -540,15 +544,23 @@ class _GaleriaConquistas extends ConsumerWidget {
     final concs = ref.watch(conclusaoProvider).value ?? const [];
     final treinos = ref.watch(treinosProvider).value ?? const [];
     final prog = ref.watch(progressaoProvider).value ?? const [];
-    final conquistas = ref.watch(conquistasProvider).value ?? const [];
 
     final streak = streakAtual(concs, treinos);
     final melhor = melhorStreak(concs, treinos);
     final total = totalDiasConcluidos(concs);
     final atuais = conquistasAtuais(concs, treinos, prog);
 
-    bool tem(TipoConquista t) => conquistas.any((c) => c.tipo == t.chave);
-    DateTime? quando(TipoConquista t) => quandoConquistou(conquistas, t);
+    String progresso(TipoConquista t) {
+      final alvo = limiarSequencia(t);
+      final extra = t == TipoConquista.trofeuOuro ? ' + progressão' : '';
+      return 'Sequência: $streak/$alvo$extra';
+    }
+
+    Widget card(TipoConquista t) => _ConquistaCard(
+          tipo: t,
+          ativo: atuais.contains(t),
+          progresso: progresso(t),
+        );
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -557,56 +569,28 @@ class _GaleriaConquistas extends ConsumerWidget {
         const SizedBox(height: 16),
         _StreakCard(streak: streak, melhor: melhor, total: total),
         const SizedBox(height: 20),
-        const _TituloSecao('Medalhas', 'Prêmio por dias de treino seguidos'),
+        const _TituloSecao('Medalhas', 'Dias de treino seguidos'),
         const SizedBox(height: 10),
         IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: _ConquistaCard(
-                  tipo: TipoConquista.medalhaPrata,
-                  earned: tem(TipoConquista.medalhaPrata),
-                  quando: quando(TipoConquista.medalhaPrata),
-                  progresso: 'Melhor sequência: $melhor/4',
-                ),
-              ),
+              Expanded(child: card(TipoConquista.medalhaPrata)),
               const SizedBox(width: 12),
-              Expanded(
-                child: _ConquistaCard(
-                  tipo: TipoConquista.medalhaOuro,
-                  earned: tem(TipoConquista.medalhaOuro),
-                  quando: quando(TipoConquista.medalhaOuro),
-                  progresso: 'Melhor sequência: $melhor/8',
-                ),
-              ),
+              Expanded(child: card(TipoConquista.medalhaOuro)),
             ],
           ),
         ),
         const SizedBox(height: 20),
-        const _TituloSecao('Troféus', 'Marcos que ficam para sempre'),
+        const _TituloSecao('Troféus', 'Sequências mais longas (o Ouro pede progressão)'),
         const SizedBox(height: 10),
         IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: _ConquistaCard(
-                  tipo: TipoConquista.trofeuPrata,
-                  earned: tem(TipoConquista.trofeuPrata),
-                  quando: quando(TipoConquista.trofeuPrata),
-                  progresso: 'Concluídos: $total/15',
-                ),
-              ),
+              Expanded(child: card(TipoConquista.trofeuPrata)),
               const SizedBox(width: 12),
-              Expanded(
-                child: _ConquistaCard(
-                  tipo: TipoConquista.trofeuOuro,
-                  earned: tem(TipoConquista.trofeuOuro),
-                  quando: quando(TipoConquista.trofeuOuro),
-                  progresso: '',
-                ),
-              ),
+              Expanded(child: card(TipoConquista.trofeuOuro)),
             ],
           ),
         ),
@@ -615,9 +599,9 @@ class _GaleriaConquistas extends ConsumerWidget {
   }
 }
 
-/// Caixa "Conquistas atuais": o que você sustenta AGORA. Medalhas caem se a
-/// sequência quebrar; o Troféu de Prata permanece; a Coroa cai se a progressão
-/// estagnar. Vazia enquanto não houver nenhuma.
+/// Caixa "Conquistas atuais": o que você sustenta AGORA. Tudo é por sequência —
+/// se pular um dia agendado, TODAS caem. O Troféu de Ouro também exige progressão
+/// recente. Vazia enquanto não houver nenhuma.
 class _ConquistasAtuaisBox extends StatelessWidget {
   const _ConquistasAtuaisBox({required this.atuais});
 
@@ -703,6 +687,8 @@ class _StreakCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text('Sequência atual',
+                    style: TextStyle(color: AppColors.dim, fontSize: 12)),
                 Text.rich(
                   TextSpan(
                     children: [
@@ -715,14 +701,14 @@ class _StreakCard extends StatelessWidget {
                         ),
                       ),
                       TextSpan(
-                        text: streak == 1 ? 'dia seguido' : 'dias seguidos',
+                        text: streak == 1 ? 'dia' : 'dias',
                         style: const TextStyle(color: AppColors.dim),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('Melhor sequência: $melhor',
+                Text('🏅 Recorde: $melhor ${melhor == 1 ? 'dia' : 'dias'}',
                     style: const TextStyle(color: AppColors.dim, fontSize: 12)),
               ],
             ),
@@ -733,7 +719,7 @@ class _StreakCard extends StatelessWidget {
               Text('$total',
                   style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w800)),
-              const Text('dias concluídos',
+              const Text('dias no total',
                   style: TextStyle(color: AppColors.dim, fontSize: 11)),
             ],
           ),
@@ -764,58 +750,52 @@ class _TituloSecao extends StatelessWidget {
   }
 }
 
-/// Um card de conquista: se obtida, mostra emoji + data; se bloqueada, mostra
-/// o progresso; a conquista-surpresa fica oculta ("???") até desbloquear.
+/// Card de uma conquista (regra): badge + nome + status. Se ativa AGORA, borda
+/// de destaque e "Conquista ativa ✓"; senão, o progresso da sequência.
 class _ConquistaCard extends StatelessWidget {
   const _ConquistaCard({
     required this.tipo,
-    required this.earned,
-    required this.quando,
+    required this.ativo,
     required this.progresso,
   });
 
   final TipoConquista tipo;
-  final bool earned;
-  final DateTime? quando;
+  final bool ativo;
   final String progresso;
 
   @override
   Widget build(BuildContext context) {
-    final oculta = tipo.surpresa && !earned;
-    final titulo = oculta ? '???' : tipo.titulo;
-    final subtitulo = earned
-        ? (quando != null ? 'Conquista em ${fmtDataCurta(quando!)}' : 'Conquistada')
-        : (oculta ? 'Conquista secreta' : progresso);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: earned ? context.accent : AppColors.line,
-          width: earned ? 1.5 : 1,
+          color: ativo ? context.accent : AppColors.line,
+          width: ativo ? 1.5 : 1,
         ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          oculta
-              ? const Icon(Icons.help_outline, size: 38, color: AppColors.dim)
-              : ConquistaBadge(tipo: tipo, size: 38, ativo: earned),
+          ConquistaBadge(tipo: tipo, size: 38, ativo: ativo),
           const SizedBox(height: 8),
           Text(
-            titulo,
+            tipo.titulo,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: earned ? AppColors.text : AppColors.dim,
+              color: ativo ? AppColors.text : AppColors.dim,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            subtitulo,
+            ativo ? 'Conquista ativa ✓' : progresso,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.dim, fontSize: 11),
+            style: TextStyle(
+              color: ativo ? context.accent : AppColors.dim,
+              fontSize: 11,
+            ),
           ),
         ],
       ),

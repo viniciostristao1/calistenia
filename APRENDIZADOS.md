@@ -635,3 +635,40 @@ treino concluído, tornando o sistema legível antes de qualquer badge.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 17/17 (2 novos: atuais medalha-cai/
 troféu-permanece; coroa cai por estagnação). Versão `0.23.0+23`.
+
+---
+
+## 2026-08-05 — v0.24.0: conquistas 100% por sequência + recorde (feedback)
+
+5 pontos do usuário sobre a v0.23.0. Decisão: **unificar TODAS as conquistas em sequência de
+dias agendados** (o modelo dual da v0.23 foi simplificado).
+
+**1. Modelo unificado (`conquistasAtuais`).** 🥈4 · 🥇8 · 🏆Prata15 · 🏆Ouro21, todas por
+`streakAtual` (consecutivo). Ouro exige ainda `recordesRecentes(...,dias:21) >= ceil(50%)`.
+Removidos `conquistasObtidas`, `recordesParaOuro`, `exerciciosComRecorde` (mortos). O store
+permanente (`conquistas_v1`) segue sendo alimentado, mas agora a partir de `conquistasAtuais`
+no fim do treino → registra a 1ª vez que cada uma foi atingida (calendário/celebração);
+"atuais" recalcula ao vivo. Novo helper `limiarSequencia(tipo)` = 4/8/15/21.
+
+**2. Recorde vs sequência atual (streak card).** "Melhor sequência" virou **"🏅 Recorde: N
+dias"** (melhor `melhorStreak` de todos os tempos — fica mesmo zerando, não interfere na
+sequência atual); e o número grande ganhou o rótulo **"Sequência atual"** (a que dá prêmio).
+
+**3. Troféus prata/ouro (fim da coroa).** `TipoConquista.trofeuOuro` deixou de ser 👑;
+`ConquistaBadge` desenha os DOIS troféus com `Icons.emoji_events` tintado — prata `0xFFC0C7D2`,
+ouro `0xFFF4C542`. Removida a mecânica `surpresa`/oculto ("???"): o Ouro agora é visível com a
+regra "21 dias seguidos + progressão". `tituloCurto` = "Medalha/Troféu Prata/Ouro".
+
+**4. Número do cronômetro maior.** `_anel`: fonte 176→210, largura do FittedBox 250→262
+(ainda cabe no anel de 292 com `BoxFit.scaleDown` para 3 dígitos).
+
+**5. Cards viraram "regra + status".** `_ConquistaCard` reescrito: sem `earned/quando/surpresa`;
+agora `ativo` (= está em `conquistasAtuais`) + `progresso` ("Sequência: X/N"). Ativo → borda de
+destaque + "Conquista ativa ✓". Teaser abaixo do calendário passou a mostrar os badges das
+conquistas ATIVAS (era emoji das obtidas).
+
+**Aberto p/ o usuário:** o Troféu de Ouro hoje **reaparece** se voltar a progredir (dinâmico);
+confirmar se deve ficar perdido até novo ciclo.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 16/16 (conquistas reescritas: escala
+4/8/15/21; quebra derruba todas; ouro por progressão recente). Versão `0.24.0+24`.

@@ -3,6 +3,18 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-05 — v0.24.0 (conquistas por sequência + recorde + número maior):**
+  - **Regra unificada:** TODAS as conquistas são por **sequência** de dias agendados —
+    🥈 4 · 🥇 8 · 🏆 Prata 15 · 🏆 Ouro 21 seguidos (o Ouro pede também **progressão em
+    ≥50%** dos exercícios nesses 21 dias). **Pulou um dia agendado → todas caem.** O Ouro
+    cai também se ficar 21 dias sem recorde novo.
+  - **Adeus coroa:** o Ouro agora é um **troféu dourado** (e o de Prata, prateado), com as
+    cores certas.
+  - **Recorde:** no lugar de "Melhor sequência", a Galeria mostra **"Sequência atual"** (a que
+    dá prêmio) + **"🏅 Recorde"** (sua melhor sequência de todos os tempos, que fica mesmo
+    zerando — um alvo a bater).
+  - **Cada regra** mostra o progresso da sua sequência ("Sequência: X/N").
+  - **Número do cronômetro** um pouco **maior**.
 - **2026-08-04 — v0.23.0 (ajustes da gamificação: galeria, conquistas no calendário):**
   - **Cor do tema** no seletor Calendário/Galeria (era azul fixo; agora segue âmbar/azul).
   - **Conquistas no calendário:** no dia em que você ganhou uma medalha/troféu, o calendário

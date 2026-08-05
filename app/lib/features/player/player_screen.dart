@@ -251,8 +251,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final concs = ref.read(conclusaoProvider).value ?? const [];
     final treinos = ref.read(treinosProvider).value ?? const [];
     final prog = ref.read(progressaoProvider).value ?? const [];
-    final obtidas = conquistasObtidas(concs, treinos, prog);
-    final novas = await ref.read(conquistasProvider.notifier).registrarNovas(obtidas);
+    final atuais = conquistasAtuais(concs, treinos, prog);
+    final novas = await ref.read(conquistasProvider.notifier).registrarNovas(atuais);
     if (!mounted) return;
     setState(() {
       _respostaCompleto = true;
@@ -464,13 +464,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               ),
               const SizedBox(height: 6),
               SizedBox(
-                width: 250,
+                width: 262,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '$segundos',
                     style: const TextStyle(
-                      fontSize: 176,
+                      fontSize: 210,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
                     ),

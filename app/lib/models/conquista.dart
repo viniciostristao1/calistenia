@@ -1,16 +1,18 @@
-/// As conquistas possíveis. Dois eixos: MEDALHAS premiam sequência (dias
-/// agendados seguidos) e TROFÉUS premiam marcos acumulados.
+/// As conquistas possíveis. Todas premiam SEQUÊNCIA (dias agendados seguidos):
+/// medalhas (4/8) e troféus (15/21). O Troféu de Ouro exige ainda progressão.
 enum TipoConquista { medalhaPrata, medalhaOuro, trofeuPrata, trofeuOuro }
 
 extension TipoConquistaInfo on TipoConquista {
   /// Chave estável para armazenar/sincronizar (não traduzir).
   String get chave => name;
 
+  /// Emoji das MEDALHAS (os troféus são desenhados como ícone colorido — não há
+  /// emoji de troféu prateado; ver `ConquistaBadge`).
   String get emoji => switch (this) {
         TipoConquista.medalhaPrata => '🥈',
         TipoConquista.medalhaOuro => '🥇',
         TipoConquista.trofeuPrata => '🏆',
-        TipoConquista.trofeuOuro => '👑',
+        TipoConquista.trofeuOuro => '🏆',
       };
 
   String get titulo => switch (this) {
@@ -22,22 +24,19 @@ extension TipoConquistaInfo on TipoConquista {
 
   /// Nome curto (para chips/legendas compactas).
   String get tituloCurto => switch (this) {
-        TipoConquista.medalhaPrata => 'Prata',
-        TipoConquista.medalhaOuro => 'Ouro',
-        TipoConquista.trofeuPrata => 'Troféu',
-        TipoConquista.trofeuOuro => 'Coroa',
+        TipoConquista.medalhaPrata => 'Medalha Prata',
+        TipoConquista.medalhaOuro => 'Medalha Ouro',
+        TipoConquista.trofeuPrata => 'Troféu Prata',
+        TipoConquista.trofeuOuro => 'Troféu Ouro',
       };
 
-  /// Descrição da regra. Para a conquista-surpresa não é revelada até conquistar.
+  /// Descrição da regra (mostrada na galeria).
   String get descricao => switch (this) {
-        TipoConquista.medalhaPrata => '4 dias de treino seguidos',
-        TipoConquista.medalhaOuro => '8 dias de treino seguidos',
-        TipoConquista.trofeuPrata => '15 dias de treino concluídos',
-        TipoConquista.trofeuOuro => 'Conquista secreta',
+        TipoConquista.medalhaPrata => '4 dias seguidos',
+        TipoConquista.medalhaOuro => '8 dias seguidos',
+        TipoConquista.trofeuPrata => '15 dias seguidos',
+        TipoConquista.trofeuOuro => '21 dias seguidos + progressão',
       };
-
-  /// Conquista-surpresa: fica oculta na galeria até ser desbloqueada.
-  bool get surpresa => this == TipoConquista.trofeuOuro;
 }
 
 TipoConquista? tipoConquistaDe(String chave) {

@@ -268,58 +268,32 @@ void main() {
     expect(streakAtual(concsPendente, treinos, hoje: d), 1);
   });
 
-  test('conquistas: 4 dias seguidos = Medalha de Prata (só ela)', () {
+  test('conquistas atuais escalam com a sequência (4/8/15/21)', () {
     final d = DateTime(2026, 8, 10);
     final treinos = [
       Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
         Exercicio(nome: 'A'),
       ]),
     ];
-    final concs = [
-      for (var i = 0; i < 4; i++)
-        Conclusao(
-            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
-    ];
-    expect(melhorStreak(concs, treinos), 4);
-    final obt = conquistasObtidas(concs, treinos, const []);
-    expect(obt.contains(TipoConquista.medalhaPrata), isTrue);
-    expect(obt.contains(TipoConquista.medalhaOuro), isFalse);
-    expect(obt.contains(TipoConquista.trofeuPrata), isFalse);
-    expect(obt.contains(TipoConquista.trofeuOuro), isFalse);
+    List<Conclusao> seq(int n) => [
+          for (var i = 0; i < n; i++)
+            Conclusao(
+                data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+        ];
+    // 4 seguidos = só Medalha de Prata.
+    final a4 = conquistasAtuais(seq(4), treinos, const [], hoje: d);
+    expect(a4, {TipoConquista.medalhaPrata});
+    // 8 seguidos = Prata + Ouro (medalhas).
+    final a8 = conquistasAtuais(seq(8), treinos, const [], hoje: d);
+    expect(a8.contains(TipoConquista.medalhaOuro), isTrue);
+    expect(a8.contains(TipoConquista.trofeuPrata), isFalse);
+    // 15 seguidos = + Troféu de Prata.
+    final a15 = conquistasAtuais(seq(15), treinos, const [], hoje: d);
+    expect(a15.contains(TipoConquista.trofeuPrata), isTrue);
+    expect(a15.contains(TipoConquista.trofeuOuro), isFalse); // falta 21 + progressão
   });
 
-  test('conquistas: Troféu de Ouro = 21 dias + recorde em >=50% (surpresa)', () {
-    final d = DateTime(2026, 8, 10);
-    final treinos = [
-      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
-        Exercicio(nome: 'A'),
-        Exercicio(nome: 'B'),
-      ]),
-    ];
-    final concs = [
-      for (var i = 0; i < 21; i++)
-        Conclusao(
-            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
-    ];
-    // Recorde só em A (2 registros, o maior supera o primeiro): 1 de 2 = 50%.
-    final prog = [
-      RegistroProgressao(exercicio: 'A', valor: 10, data: DateTime(2026, 7, 1)),
-      RegistroProgressao(exercicio: 'A', valor: 15, data: DateTime(2026, 7, 20)),
-      RegistroProgressao(exercicio: 'B', valor: 20, data: DateTime(2026, 7, 5)),
-    ];
-    expect(exigenciaRecordeOuro(treinos), 1); // ceil(2/2)
-    expect(recordesParaOuro(treinos, prog), 1);
-    final obt = conquistasObtidas(concs, treinos, prog);
-    expect(obt.contains(TipoConquista.trofeuOuro), isTrue);
-    expect(obt.contains(TipoConquista.trofeuPrata), isTrue); // >=15 dias
-    expect(obt.contains(TipoConquista.medalhaOuro), isTrue); // sequência >=8
-    // Sem o recorde, o Ouro não sai (mas os demais sim).
-    final semRecorde = conquistasObtidas(concs, treinos, const []);
-    expect(semRecorde.contains(TipoConquista.trofeuOuro), isFalse);
-    expect(semRecorde.contains(TipoConquista.trofeuPrata), isTrue);
-  });
-
-  test('conquistas atuais: medalhas caem na quebra, troféu (acúmulo) permanece',
+  test('conquistas atuais: quebrar a sequência derruba TODAS (inclui troféu)',
       () {
     final d = DateTime(2026, 8, 10);
     final treinos = [
@@ -334,13 +308,12 @@ void main() {
             data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
     ];
     final atuais = conquistasAtuais(concs, treinos, const [], hoje: d);
-    // Sequência quebrada -> sem medalhas; mas 15 dias no total -> Troféu de Prata.
-    expect(atuais.contains(TipoConquista.medalhaPrata), isFalse);
-    expect(atuais.contains(TipoConquista.trofeuPrata), isTrue);
     expect(totalDiasConcluidos(concs), 15);
+    // Tudo é por sequência: com o elo quebrado, nada fica ativo.
+    expect(atuais.isEmpty, isTrue);
   });
 
-  test('coroa atual cai se a progressão estagnar (>21 dias sem recorde novo)', () {
+  test('troféu de ouro: 21 seguidos + progressão recente em >=50%', () {
     final d = DateTime(2026, 8, 10);
     final treinos = [
       Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [

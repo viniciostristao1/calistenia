@@ -23,12 +23,17 @@ Implementado conforme o plano abaixo (mantido como registro do desenho). Detalhe
 `APRENDIZADOS.md § v0.22.0` e `§ v0.23.0`. Decisões travadas: streak = **dias agendados**;
 Ouro = **21 dias + recorde em ≥50% (ceil) dos exercícios distintos**, oculto/surpresa;
 gamificação = toggle global em Config (ligado por padrão).
-**Refino v0.23.0 (feedback):** modelo DUAL — *obtidas* (permanente, calendário/celebração) vs
-*atuais* (ao vivo, caixa "Conquistas atuais" na Galeria): medalhas caem na quebra da sequência,
-Troféu de Prata (15 dias no total) permanece, **Coroa cai se >21 dias sem recorde novo em ≥50%**
-(regra da coroa a confirmar com o usuário). Troféu de Prata renderizado como ícone prateado.
-Evoluções possíveis: animação/confete ao desbloquear; recorde pessoal (PR) como conquista
-própria; meta semanal; estatísticas de tempo total.
+**Refino v0.24.0 (final do modelo):** TODAS as conquistas são por **sequência de dias
+agendados** — 🥈4 · 🥇8 · 🏆Prata15 · 🏆Ouro21 seguidos; pular um dia agendado derruba todas.
+O Ouro exige ainda progressão em ≥50% dos exercícios nos últimos 21 dias (cai por estagnação).
+Sem coroa (dois troféus prata/ouro, ícone tintado) e sem "surpresa"/oculto. Galeria: "Sequência
+atual" (dá prêmio) + "🏅 Recorde" (melhor sequência de todos os tempos, permanente) + regras
+com "Sequência: X/N". `conquistas_v1` guarda a 1ª obtenção (calendário/celebração); "atuais"
+recalcula ao vivo (`conquistasAtuais`). **Aberto:** Troféu de Ouro reaparece se voltar a
+progredir (dinâmico) — confirmar se deve ficar perdido até novo ciclo.
+Evoluções possíveis: animação/confete ao desbloquear; recorde pessoal (PR) por exercício como
+conquista própria; meta semanal; estatísticas de tempo total; lembrete "você está a 1 dia de
+perder a sequência".
 
 ### A. Modo unilateral (um braço/perna por vez) — `[FEITO]`
 Alguns exercícios são por LADO (flexão um braço, agachamento uma perna). Sequência por
