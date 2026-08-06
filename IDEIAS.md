@@ -37,6 +37,17 @@ Evoluções possíveis: animação/confete ao desbloquear; recorde pessoal (PR) 
 conquista própria; meta semanal; estatísticas de tempo total; lembrete "você está a 1 dia de
 perder a sequência".
 
+**⏳ EM DISCUSSÃO (2026-08-06) — perda escalonada + barra de XP (ponto 4 do usuário):**
+- **Perda escalonada:** ao pular um dia agendado, perde SÓ o último prêmio (não zera tudo). O
+  "nível" cai para o limiar do prêmio anterior: perde 🥇(8)→volta a 4; perde 🏆Prata(15)→volta a
+  8 (7 dias p/ recuperar); perde 🏆Ouro(21)→volta a 15 (6-7 dias + progressão). Ratchet por
+  tiers [4,8,15,21] — muda `streakAtual`→`nivelAtual`. AINDA NÃO IMPLEMENTADO.
+- **Barra de XP (rating):** ~30 pts/semana por assiduidade (30 ÷ nº de exercícios agendados na
+  semana = pts por exercício) + pts de prêmio (=limiar: 4/8/15/21). Perder um dia = −pts do dia
+  −pts do último prêmio. **Problema aberto (o usuário reconhece):** tende a rating INFINITO; e
+  falta definir o que acontece se nunca progride (ganharia ~+6/dia p/ sempre). Precisa de um
+  mecanismo de dificuldade crescente / teto / decaimento antes de implementar. Claude a propor.
+
 ### A. Modo unilateral (um braço/perna por vez) — `[FEITO]`
 Alguns exercícios são por LADO (flexão um braço, agachamento uma perna). Sequência por
 **série**: **preparação → execução (lado 1) → preparação → execução (lado 2) → descanso**

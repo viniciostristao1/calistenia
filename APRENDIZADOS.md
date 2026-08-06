@@ -711,3 +711,24 @@ sugerido: recorde/PR em destaque, linha do tempo, métricas alternativas, sparkl
 
 **Validação:** `flutter analyze` limpo, `flutter test` 17/17 (novo: round-trip `perdidaEm`).
 Versão `0.25.0+25`.
+
+---
+
+## 2026-08-06 — v0.26.0: ícone sem moldura + selo de recorde + editar exercício
+
+Pontos 1/2/3/6 do feedback (o ponto 4 = prêmios+XP ficou em DISCUSSÃO, ver IDEIAS).
+
+**Ícone (ponto 2).** O logo enviado tinha **moldura PRETA nos cantos** (fora do quadrado
+arredondado âmbar) → era o "quadrado" reclamado. `tools/logo_para_icone.py` agora faz
+`ImageDraw.floodfill` dos 4 cantos (preto→âmbar #FCB225) antes de gerar `icon_full`/
+`icon_foreground` (âmbar full-bleed 90%) + `icon_background` (âmbar sólido). `logo.png` da home
+segue o original (cantos pretos somem no navy). `dart run flutter_launcher_icons` regenerou.
+
+**Editar exercício no topo (ponto 1).** A folha (`showExercicioEditor`) ganhou
+`useSafeArea: true` → não encosta na status bar (relógio/bateria).
+
+**Selo de recorde na Progressão (ponto 3).** `_GraficoBarras` calcula `recordeIdx` (última barra
+com o maior valor, só se ≥2 registros); `_Barra` mostra `Icons.workspace_premium` (ouro
+`F4C542`) ao lado do número da barra-recorde, **na mesma linha** (não aumenta a altura do card).
+
+**Validação:** `flutter analyze` limpo, `flutter test` 17/17. Versão `0.26.0+26`.

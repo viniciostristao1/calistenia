@@ -18,6 +18,7 @@ Future<Exercicio?> showExercicioEditor(
   return showModalBottomSheet<Exercicio>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true, // não encostar na barra de status (relógio/bateria)
     backgroundColor: AppColors.bg,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),

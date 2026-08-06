@@ -195,6 +195,17 @@ class _GraficoBarras extends StatelessWidget {
     final maxV = registros
         .map((r) => r.valor)
         .fold<int>(1, (a, b) => a > b ? a : b);
+    // Recorde = última barra com o maior valor (só destaca se houver ≥2 registros).
+    var recordeIdx = -1;
+    if (registros.length >= 2) {
+      var melhor = -1;
+      for (var i = 0; i < registros.length; i++) {
+        if (registros[i].valor >= melhor) {
+          melhor = registros[i].valor;
+          recordeIdx = i;
+        }
+      }
+    }
     return SizedBox(
       height: _trilho + 20,
       child: SingleChildScrollView(
@@ -209,6 +220,7 @@ class _GraficoBarras extends StatelessWidget {
                 trilho: _trilho,
                 alturaMaxBarra: _trilho - _reservaValor,
                 destaque: i == registros.length - 1,
+                ehRecorde: i == recordeIdx,
                 onTap: () => onTapBarra(registros[i]),
               ),
           ],
@@ -225,19 +237,27 @@ class _Barra extends StatelessWidget {
     required this.trilho,
     required this.alturaMaxBarra,
     required this.destaque,
+    required this.ehRecorde,
     required this.onTap,
   });
+
+  static const _corRecorde = Color(0xFFF4C542); // ouro do selo de recorde
 
   final RegistroProgressao registro;
   final double fracao;
   final double trilho;
   final double alturaMaxBarra;
   final bool destaque; // último registro em destaque
+  final bool ehRecorde; // maior valor de todos = recorde (selo)
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final h = (alturaMaxBarra * fracao).clamp(6.0, alturaMaxBarra);
+    // Cor do número: recorde (ouro) > último (accent) > normal.
+    final corValor = ehRecorde
+        ? _corRecorde
+        : (destaque ? context.accent : AppColors.text);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: InkWell(
@@ -252,13 +272,25 @@ class _Barra extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    '${registro.valor}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: destaque ? context.accent : AppColors.text,
-                    ),
+                  // Selo de recorde ao lado do número (não muda a altura).
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (ehRecorde) ...[
+                        const Icon(Icons.workspace_premium,
+                            size: 12, color: _corRecorde),
+                        const SizedBox(width: 1),
+                      ],
+                      Text(
+                        '${registro.valor}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight:
+                              ehRecorde ? FontWeight.w800 : FontWeight.w700,
+                          color: corValor,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 3),
                   Container(

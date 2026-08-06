@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-06 — v0.26.0 (ícone sem moldura + selo de recorde + editar exercício):**
+  - **Ícone sem o quadrado preto** em volta — agora é âmbar full-bleed com a arte.
+  - **Selo de recorde** (🏅) na barra do maior valor de cada exercício na Progressão (sem
+    aumentar a altura dos cards).
+  - **Editar exercício** não encosta mais no topo (relógio/bateria): abre com folga.
 - **2026-08-05 — v0.25.0 (novo ícone + histórico + barras + botão voltar):**
   - **Novo ícone do app** (o cronômetro âmbar com a flexão).
   - **Barrinha de progresso** em cada medalha/troféu na Galeria: cinza enquanto não bate,
