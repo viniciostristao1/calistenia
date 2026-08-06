@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-06 — v0.28.0 (fix do cronômetro + Rating na Progressão com gráfico):**
+  - **Correção do cronômetro:** se o app era suspenso (tela apagada / economia de bateria)
+    numa série longa, ele "pulava" as fases e podia fechar sozinho. Agora o avanço por tick é
+    limitado — não pula mais.
+  - **"Nível de forma" → "Rating"** e **movido para a aba Progressão**.
+  - A **Progressão** ganhou duas sub-abas: **Desenvolvimento** (as barras de sempre) e
+    **Rating** (o valor + um **gráfico de linha** com a tendência das últimas semanas).
 - **2026-08-06 — v0.27.0 (perda escalonada + barra "Nível de forma"):**
   - **Perda escalonada:** pular um dia agendado tira **só o último prêmio** (cai um degrau),
     não zera tudo. Ex.: perde o 🥇 e volta para 🥈; perde o 🏆 Ouro e fica com o de Prata. Cada

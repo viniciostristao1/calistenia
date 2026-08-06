@@ -208,3 +208,32 @@ RatingForma ratingForma(List<Conclusao> concs, List<Treino> treinos,
   final evol = (40 * (recentes / (recentes + 3))).round();
   return RatingForma(assid, evol);
 }
+
+/// Um ponto do gráfico de tendência do Rating (data + valor total).
+class PontoRating {
+  final DateTime data;
+  final int valor;
+  const PontoRating(this.data, this.valor);
+}
+
+/// Série (semanal) do Rating ao longo do tempo, para o gráfico de linha. Para
+/// cada data passada, recalcula o rating usando SÓ os dados até aquela data
+/// (sem "olhar o futuro").
+List<PontoRating> serieRating(
+  List<Conclusao> concs,
+  List<Treino> treinos,
+  List<RegistroProgressao> progressao, {
+  int semanas = 12,
+  DateTime? hoje,
+}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final pts = <PontoRating>[];
+  for (var w = semanas - 1; w >= 0; w--) {
+    final data = hj.subtract(Duration(days: w * 7));
+    final concsAte = concs.where((c) => !c.data.isAfter(data)).toList();
+    final progAte = progressao.where((r) => !r.data.isAfter(data)).toList();
+    pts.add(PontoRating(
+        data, ratingForma(concsAte, treinos, progAte, hoje: data).total));
+  }
+  return pts;
+}

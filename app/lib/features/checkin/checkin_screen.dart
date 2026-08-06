@@ -569,7 +569,6 @@ class _GaleriaConquistas extends ConsumerWidget {
     final nivel = nivelInfo(concs, treinos);
     final total = totalDiasConcluidos(concs);
     final atuais = conquistasAtuais(concs, treinos, prog);
-    final rating = ratingForma(concs, treinos, prog);
 
     Widget card(TipoConquista t) => _ConquistaCard(
           tipo: t,
@@ -580,8 +579,6 @@ class _GaleriaConquistas extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
-        _RatingBar(rating: rating),
-        const SizedBox(height: 16),
         _ConquistasAtuaisBox(atuais: atuais),
         const SizedBox(height: 16),
         _StreakCard(nivel: nivel.atual, recorde: nivel.recorde, total: total),
@@ -720,61 +717,6 @@ class _MesHistorico extends StatelessWidget {
                   ],
                 ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Barra "Nível de forma": rating contínuo (assiduidade recente + evolução) que
-/// não fica preso ao Troféu de Ouro. Decai se você para; só passa do platô com
-/// progressão (recordes).
-class _RatingBar extends StatelessWidget {
-  const _RatingBar({required this.rating});
-
-  final RatingForma rating;
-
-  @override
-  Widget build(BuildContext context) {
-    final frac = (rating.total / RatingForma.maximo).clamp(0.0, 1.0);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text('Nível de forma',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-              const Spacer(),
-              Text('${rating.total}',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18,
-                      color: context.accent)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: LinearProgressIndicator(
-              value: frac,
-              minHeight: 9,
-              backgroundColor: AppColors.surface2,
-              valueColor: AlwaysStoppedAnimation(context.accent),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Assiduidade ${rating.assiduidade}/100 · Evolução ${rating.evolucao}/40',
-            style: const TextStyle(color: AppColors.dim, fontSize: 12),
           ),
         ],
       ),

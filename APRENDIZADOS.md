@@ -755,3 +755,33 @@ da Galeria. **Não** é armazenado — computado ao vivo.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 18/18 (novos: perda escalonada 8→4;
 rating assiduidade+evolução). Versão `0.27.0+27`.
+
+---
+
+## 2026-08-06 — v0.28.0: fix do cronômetro (suspensão) + Rating na Progressão + gráfico
+
+**Bug do cronômetro (ponto 1 — reportado: "pulou números e fechou sozinho" numa série longa).**
+Causa: `_tick` faz `_restanteMs -= _sw.elapsedMilliseconds`. Se o app é suspenso (tela apagada /
+Doze / economia de bateria), o `Timer.periodic` para mas o `Stopwatch` segue; ao voltar, o 1º
+tick vê um `delta` gigante → `_restanteMs` muito negativo → `_avancar(auto)` carrega o estouro →
+cascata de fases a ~10/s até `_finalizar` (o "fechou sozinho"). **Fix:** `delta.clamp(0, 1000)`
+— uma suspensão não faz mais o cronômetro pular; ele retoma de onde estava (equivale a "pausado
+no background"). Não é bug do celular; era do app.
+
+**Ponto 2 (tela sempre ligada).** JÁ EXISTE e funciona agora (`wakelock_plus`, ligado enquanto
+o cronômetro roda; desliga ao pausar/terminar). Nada gated por Play Store. Se apagou no ponto 1,
+foi a suspensão do SO — o clamp acima protege esse caso.
+
+**Ponto 3 — Rating movido p/ Progressão + sub-abas + gráfico de linha.**
+- "Nível de forma" renomeado **Rating**; `_RatingBar` saiu do Check-in (Galeria) e virou
+  `_RatingCard` na Progressão.
+- `ProgressaoScreen` agora é `ConsumerStatefulWidget` com `SegmentedButton`
+  [Desenvolvimento | Rating] (gated pela gamificação). Desenvolvimento = as barras de sempre.
+- **Gráfico de linha** (`_GraficoLinha` + `_LinhaPainter` CustomPainter, sem lib): série semanal
+  via `serieRating` (12 semanas) — recalcula o rating em cada data **filtrando dados <= data**
+  (sem look-ahead). Eixo Y dinâmico (topo = max×1,15) p/ a tendência preencher a área; área sob
+  a curva + pontos + rótulo do topo.
+- `PontoRating`/`serieRating` em `gamificacao.dart`.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 19/19 (novo: serieRating sem look-ahead).
+Versão `0.28.0+28`.

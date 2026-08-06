@@ -159,7 +159,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   void _alternarPausa() => _running ? _pausar() : _iniciar();
 
   void _tick(Timer t) {
-    final delta = _sw.elapsedMilliseconds;
+    // Limita o avanço por tick: se o app foi suspenso (tela apagada / economia
+    // de bateria), o Stopwatch acumula segundos e o Timer volta com um delta
+    // gigante — sem o teto, isso faz o cronômetro "pular" as fases até o fim.
+    final delta = _sw.elapsedMilliseconds.clamp(0, 1000);
     _sw
       ..reset()
       ..start();

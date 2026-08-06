@@ -341,6 +341,31 @@ void main() {
     expect(r.total, 60);
   });
 
+  test('serieRating: série temporal sem olhar o futuro', () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    final concs = [
+      for (var i = 0; i < 28; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    final prog = [
+      RegistroProgressao(
+          exercicio: 'A', valor: 10, data: d.subtract(const Duration(days: 2))),
+      RegistroProgressao(exercicio: 'A', valor: 20, data: d), // recorde HOJE
+    ];
+    final serie = serieRating(concs, treinos, prog, semanas: 4, hoje: d);
+    expect(serie.length, 4);
+    // O último ponto = rating atual.
+    expect(serie.last.valor, ratingForma(concs, treinos, prog, hoje: d).total);
+    // O ponto mais antigo não conta o recorde recente (sem look-ahead).
+    expect(serie.first.valor < serie.last.valor, isTrue);
+  });
+
   test('conquista: JSON round-trip preserva perdidaEm (histórico)', () {
     final perdida = Conquista(
       tipo: 'medalhaPrata',
