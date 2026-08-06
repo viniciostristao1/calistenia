@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-06 — v0.29.0 (cronômetro com pontos de rep + progressão automática):**
+  - **Cronômetro:** na execução, o anel agora mostra **pontinhos das repetições** (as feitas
+    acesas) — você vê o tempo E quantas reps faltam de uma vez.
+  - **Progressão automática:** todo exercício **já entra na Progressão** ao salvar (linha de
+    base = repetições), como um **alvo a bater**. Exercícios antigos também entram. Removido o
+    botão "Adicionar à progressão" do editor (fim da edição sem treinar). O registro do
+    desempenho segue no **fim do treino**.
 - **2026-08-06 — v0.28.0 (fix do cronômetro + Rating na Progressão com gráfico):**
   - **Correção do cronômetro:** se o app era suspenso (tela apagada / economia de bateria)
     numa série longa, ele "pulava" as fases e podia fechar sozinho. Agora o avanço por tick é

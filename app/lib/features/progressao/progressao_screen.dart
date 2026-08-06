@@ -21,10 +21,31 @@ class ProgressaoScreen extends ConsumerStatefulWidget {
 
 class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
   int _vista = 0; // 0 = Desenvolvimento, 1 = Rating
+  bool _semeado = false; // baselines dos exercícios já existentes semeadas?
+
+  /// Semeia (uma vez) a linha de base dos exercícios já salvos que ainda não
+  /// têm registro — migração para quem criou treinos antes desta versão.
+  void _talvezSemearBaselines() {
+    if (_semeado) return;
+    final treinosA = ref.read(treinosProvider);
+    final progA = ref.read(progressaoProvider);
+    if (!treinosA.hasValue || !progA.hasValue) return;
+    _semeado = true;
+    final treinos = treinosA.value!;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(progressaoProvider.notifier).garantirBaselines(treinos);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final gamiOn = ref.watch(gamificacaoProvider).value ?? true;
+    // Observa os dois para reconstruir quando carregarem (dispara a semeadura).
+    ref.watch(treinosProvider);
+    ref.watch(progressaoProvider);
+    _talvezSemearBaselines();
     final vista = gamiOn ? _vista : 0;
     return Scaffold(
       appBar: AppBar(

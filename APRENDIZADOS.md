@@ -785,3 +785,29 @@ foi a suspensão do SO — o clamp acima protege esse caso.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 19/19 (novo: serieRating sem look-ahead).
 Versão `0.28.0+28`.
+
+---
+
+## 2026-08-06 — v0.29.0: cronômetro opção 2 (pontos de rep) + progressão automática
+
+**Ponto 4 (escolha do usuário) — cronômetro "anel + pontos de repetição".** `_anel` ganhou
+`_pontosRep`: na execução BILATERAL (`lado==0`) com 1<reps≤12, mostra pontinhos (reps feitas na
+cor da fase) no lugar do subtexto. Unilateral mantém o texto (que traz "Lado 1/2"); reps>12 cai
+no texto. Mockup das 5 opções ficou num artifact (fora do repo).
+
+**Pontos 1+2 — progressão automática (linha de base = repetições).** Decisão do usuário: todo
+exercício entra na Progressão ao salvar; remover o botão manual do editor (tira a tentação de
+editar sem treinar). Implementado:
+- `progressao_repository`: `garantirBaseline(nome, valor)` (cria 1 registro só se o exercício
+  ainda não tiver nenhum) + `garantirBaselines(treinos)` (migração dos já salvos).
+- Editor (`_salvar`): chama `garantirBaseline(e.nome, e.repeticoes)`; **removidos** o botão
+  "Adicionar à progressão", `_adicionarProgressao`, `_nomeExercicio` e o import de
+  `registro_progressao`.
+- `ProgressaoScreen`: `_talvezSemearBaselines` (uma vez, guarda `hasValue`) migra os exercícios
+  antigos ao abrir. **Mantido** o "Adicionar à progressão" do FIM do treino (registro honesto do
+  desempenho, cobre exercício avulso).
+
+**Ponto 3 (opinião, sem código):** split 100 assiduidade / 40 evolução mantido — consistência
+domina (habit-first); teto da evolução é tunável se quiserem que progressão pese mais.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 19/19. Versão `0.29.0+29`.

@@ -483,14 +483,42 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 ),
               ),
               const SizedBox(height: 6),
-              Text(
-                _subtextoAnel(fase),
-                style: const TextStyle(color: AppColors.dim, fontSize: 14),
-              ),
+              // Execução com repetições: pontinhos de rep (feitos vs restantes).
+              // No unilateral, mantém o texto (que mostra "Lado 1/2").
+              if (fase.tipo == FaseTipo.execucao &&
+                  fase.lado == 0 &&
+                  fase.totalReps > 1 &&
+                  fase.totalReps <= 12)
+                _pontosRep(fase, cor)
+              else
+                Text(
+                  _subtextoAnel(fase),
+                  style: const TextStyle(color: AppColors.dim, fontSize: 14),
+                ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  /// Pontinhos de repetição dentro do anel (a atual/feitas na cor da fase).
+  Widget _pontosRep(Fase f, Color cor) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      alignment: WrapAlignment.center,
+      children: [
+        for (var i = 1; i <= f.totalReps; i++)
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: i <= f.rep ? cor : AppColors.surface2,
+            ),
+          ),
+      ],
     );
   }
 

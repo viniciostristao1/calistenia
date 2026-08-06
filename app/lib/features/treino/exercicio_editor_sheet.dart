@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/exercicio.dart';
-import '../../models/registro_progressao.dart';
 import '../../services/progressao_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
@@ -107,31 +106,10 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
       ..pesoKg = _peso < 0 ? 0 : _peso
       ..corIndex = _cor
       ..fundo = _fundo;
+    // Todo exercício já entra na Progressão como "alvo a bater" (linha de base
+    // = repetições). Não duplica se já tiver registro.
+    ref.read(progressaoProvider.notifier).garantirBaseline(e.nome, e.repeticoes);
     Navigator.of(context).pop(e);
-  }
-
-  String get _nomeExercicio {
-    final n = _nomeCtrl.text.trim();
-    return n.isEmpty ? 'Exercício' : n;
-  }
-
-  /// Registra na Progressão quantas repetições a pessoa fez hoje. Sugere o
-  /// número de repetições atual, mas deixa editar (é o desempenho real).
-  Future<void> _adicionarProgressao() async {
-    final valor = await _pedirNumero(
-      context,
-      'Quantas você fez? ($_nomeExercicio)',
-      _reps,
-      0,
-    );
-    if (valor == null) return;
-    await ref.read(progressaoProvider.notifier).adicionar(
-          RegistroProgressao(exercicio: _nomeExercicio, valor: valor),
-        );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Adicionado à progressão: $valor reps')),
-    );
   }
 
   /// A seção de descanso: um descanso único (padrão) OU um por série.
@@ -336,17 +314,6 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               ),
               onPressed: _salvar,
               child: const Text('Salvar exercício'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: context.accent,
-                side: const BorderSide(color: AppColors.line),
-                minimumSize: const Size.fromHeight(48),
-              ),
-              onPressed: _adicionarProgressao,
-              icon: const Icon(Icons.trending_up, size: 20),
-              label: const Text('Adicionar à progressão'),
             ),
           ],
         ),

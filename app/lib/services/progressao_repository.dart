@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/registro_progressao.dart';
+import '../models/treino.dart';
 
 const chaveProgressao = 'progressao_v1';
 
@@ -40,6 +41,45 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
   Future<void> adicionar(RegistroProgressao r) async {
     final list = _atual..add(r);
     await _persist(list);
+  }
+
+  /// Garante uma "linha de base" (o alvo a bater) para um exercício: se ele
+  /// ainda não tem nenhum registro, cria um com o valor das repetições. Não
+  /// duplica se já existir qualquer registro do exercício.
+  Future<void> garantirBaseline(String exercicio, int valor) async {
+    final atuais = await future;
+    final nome = exercicio.trim();
+    if (nome.isEmpty) return;
+    final ja = atuais
+        .any((r) => r.exercicio.trim().toLowerCase() == nome.toLowerCase());
+    if (ja) return;
+    await _persist([
+      ...atuais,
+      RegistroProgressao(exercicio: nome, valor: valor < 0 ? 0 : valor),
+    ]);
+  }
+
+  /// Semeia a linha de base de todos os exercícios dos treinos que ainda não
+  /// têm registro (migração para exercícios já salvos).
+  Future<void> garantirBaselines(List<Treino> treinos) async {
+    final atuais = await future;
+    final existentes =
+        atuais.map((r) => r.exercicio.trim().toLowerCase()).toSet();
+    final novos = <RegistroProgressao>[];
+    final vistos = <String>{};
+    for (final t in treinos) {
+      for (final e in t.exercicios) {
+        final nome = e.nome.trim();
+        final key = nome.toLowerCase();
+        if (nome.isEmpty || existentes.contains(key) || vistos.contains(key)) {
+          continue;
+        }
+        vistos.add(key);
+        novos.add(RegistroProgressao(
+            exercicio: nome, valor: e.repeticoes < 0 ? 0 : e.repeticoes));
+      }
+    }
+    if (novos.isNotEmpty) await _persist([...atuais, ...novos]);
   }
 
   Future<void> remover(String id) async {
