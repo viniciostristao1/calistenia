@@ -3,6 +3,15 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-06 — v0.27.0 (perda escalonada + barra "Nível de forma"):**
+  - **Perda escalonada:** pular um dia agendado tira **só o último prêmio** (cai um degrau),
+    não zera tudo. Ex.: perde o 🥇 e volta para 🥈; perde o 🏆 Ouro e fica com o de Prata. Cada
+    dia agendado pulado desce um degrau.
+  - A **"Sequência atual"** passou a ser esse **nível** (com a aterrissagem suave); **Recorde**
+    = melhor nível de todos os tempos.
+  - Nova barra **"Nível de forma"** no topo da Galeria: **Assiduidade** recente (0–100) +
+    **Evolução** por recordes (0–40). Decai se você parar e **só passa do platô com progressão**
+    — assim você não fica preso ao Troféu de Ouro.
 - **2026-08-06 — v0.26.0 (ícone sem moldura + selo de recorde + editar exercício):**
   - **Ícone sem o quadrado preto** em volta — agora é âmbar full-bleed com a arte.
   - **Selo de recorde** (🏅) na barra do maior valor de cada exercício na Progressão (sem

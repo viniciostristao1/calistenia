@@ -499,7 +499,7 @@ class _TeaserConquistas extends ConsumerWidget {
     final concs = ref.watch(conclusaoProvider).value ?? const [];
     final treinos = ref.watch(treinosProvider).value ?? const [];
     final prog = ref.watch(progressaoProvider).value ?? const [];
-    final streak = streakAtual(concs, treinos);
+    final streak = nivelInfo(concs, treinos).atual;
     final atuais = conquistasAtuais(concs, treinos, prog);
     final ativos = [
       for (final t in TipoConquista.values)
@@ -566,23 +566,25 @@ class _GaleriaConquistas extends ConsumerWidget {
     final treinos = ref.watch(treinosProvider).value ?? const [];
     final prog = ref.watch(progressaoProvider).value ?? const [];
 
-    final streak = streakAtual(concs, treinos);
-    final melhor = melhorStreak(concs, treinos);
+    final nivel = nivelInfo(concs, treinos);
     final total = totalDiasConcluidos(concs);
     final atuais = conquistasAtuais(concs, treinos, prog);
+    final rating = ratingForma(concs, treinos, prog);
 
     Widget card(TipoConquista t) => _ConquistaCard(
           tipo: t,
           ativo: atuais.contains(t),
-          streak: streak,
+          nivel: nivel.atual,
         );
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
+        _RatingBar(rating: rating),
+        const SizedBox(height: 16),
         _ConquistasAtuaisBox(atuais: atuais),
         const SizedBox(height: 16),
-        _StreakCard(streak: streak, melhor: melhor, total: total),
+        _StreakCard(nivel: nivel.atual, recorde: nivel.recorde, total: total),
         const SizedBox(height: 20),
         const _TituloSecao('Medalhas', 'Dias de treino seguidos'),
         const SizedBox(height: 10),
@@ -725,6 +727,61 @@ class _MesHistorico extends StatelessWidget {
   }
 }
 
+/// Barra "Nível de forma": rating contínuo (assiduidade recente + evolução) que
+/// não fica preso ao Troféu de Ouro. Decai se você para; só passa do platô com
+/// progressão (recordes).
+class _RatingBar extends StatelessWidget {
+  const _RatingBar({required this.rating});
+
+  final RatingForma rating;
+
+  @override
+  Widget build(BuildContext context) {
+    final frac = (rating.total / RatingForma.maximo).clamp(0.0, 1.0);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('Nível de forma',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              const Spacer(),
+              Text('${rating.total}',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      color: context.accent)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: frac,
+              minHeight: 9,
+              backgroundColor: AppColors.surface2,
+              valueColor: AlwaysStoppedAnimation(context.accent),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Assiduidade ${rating.assiduidade}/100 · Evolução ${rating.evolucao}/40',
+            style: const TextStyle(color: AppColors.dim, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Caixa "Conquistas atuais": o que você sustenta AGORA. Tudo é por sequência —
 /// se pular um dia agendado, TODAS caem. O Troféu de Ouro também exige progressão
 /// recente. Vazia enquanto não houver nenhuma.
@@ -787,13 +844,13 @@ class _ConquistasAtuaisBox extends StatelessWidget {
 
 class _StreakCard extends StatelessWidget {
   const _StreakCard({
-    required this.streak,
-    required this.melhor,
+    required this.nivel,
+    required this.recorde,
     required this.total,
   });
 
-  final int streak;
-  final int melhor;
+  final int nivel;
+  final int recorde;
   final int total;
 
   @override
@@ -819,7 +876,7 @@ class _StreakCard extends StatelessWidget {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: '$streak ',
+                        text: '$nivel ',
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
@@ -827,14 +884,14 @@ class _StreakCard extends StatelessWidget {
                         ),
                       ),
                       TextSpan(
-                        text: streak == 1 ? 'dia' : 'dias',
+                        text: nivel == 1 ? 'dia' : 'dias',
                         style: const TextStyle(color: AppColors.dim),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('🏅 Recorde: $melhor ${melhor == 1 ? 'dia' : 'dias'}',
+                Text('🏅 Recorde: $recorde ${recorde == 1 ? 'dia' : 'dias'}',
                     style: const TextStyle(color: AppColors.dim, fontSize: 12)),
               ],
             ),
@@ -883,25 +940,25 @@ class _ConquistaCard extends StatelessWidget {
   const _ConquistaCard({
     required this.tipo,
     required this.ativo,
-    required this.streak,
+    required this.nivel,
   });
 
   final TipoConquista tipo;
   final bool ativo;
-  final int streak;
+  final int nivel;
 
   @override
   Widget build(BuildContext context) {
     final alvo = limiarSequencia(tipo);
-    final fracao = (streak / alvo).clamp(0.0, 1.0);
+    final fracao = (nivel / alvo).clamp(0.0, 1.0);
     final cor = corConquista(tipo);
     final ouroFaltaProgresso =
-        tipo == TipoConquista.trofeuOuro && streak >= alvo && !ativo;
+        tipo == TipoConquista.trofeuOuro && nivel >= alvo && !ativo;
     final legenda = ativo
         ? 'Conquista ativa ✓'
         : ouroFaltaProgresso
             ? 'Sequência ok · falta progressão'
-            : '$streak/$alvo dias'
+            : '$nivel/$alvo dias'
                 '${tipo == TipoConquista.trofeuOuro ? ' + progressão' : ''}';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),

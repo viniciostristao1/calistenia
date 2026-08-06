@@ -37,16 +37,12 @@ Evoluções possíveis: animação/confete ao desbloquear; recorde pessoal (PR) 
 conquista própria; meta semanal; estatísticas de tempo total; lembrete "você está a 1 dia de
 perder a sequência".
 
-**⏳ EM DISCUSSÃO (2026-08-06) — perda escalonada + barra de XP (ponto 4 do usuário):**
-- **Perda escalonada:** ao pular um dia agendado, perde SÓ o último prêmio (não zera tudo). O
-  "nível" cai para o limiar do prêmio anterior: perde 🥇(8)→volta a 4; perde 🏆Prata(15)→volta a
-  8 (7 dias p/ recuperar); perde 🏆Ouro(21)→volta a 15 (6-7 dias + progressão). Ratchet por
-  tiers [4,8,15,21] — muda `streakAtual`→`nivelAtual`. AINDA NÃO IMPLEMENTADO.
-- **Barra de XP (rating):** ~30 pts/semana por assiduidade (30 ÷ nº de exercícios agendados na
-  semana = pts por exercício) + pts de prêmio (=limiar: 4/8/15/21). Perder um dia = −pts do dia
-  −pts do último prêmio. **Problema aberto (o usuário reconhece):** tende a rating INFINITO; e
-  falta definir o que acontece se nunca progride (ganharia ~+6/dia p/ sempre). Precisa de um
-  mecanismo de dificuldade crescente / teto / decaimento antes de implementar. Claude a propor.
+**✅ FEITO v0.27.0 — perda escalonada + rating "Nível de forma" (ponto 4):**
+- **Perda escalonada** (ratchet `nivelInfo`, tiers [4,8,15,21]): pular um dia agendado tira só o
+  último prêmio (8→4, 15→8, 21→15). `conquistasAtuais` usa `nivel`.
+- **Rating "Nível de forma"** (Opção A, resolve o infinito): assiduidade recente 0–100 (decai) +
+  evolução 0–40 (recordes recentes, retorno decrescente). Sem progressão → platô; só passa com
+  recordes. Barra no topo da Galeria. Constantes tunáveis por feedback (janelas 28d/56d, teto 40).
 
 ### A. Modo unilateral (um braço/perna por vez) — `[FEITO]`
 Alguns exercícios são por LADO (flexão um braço, agachamento uma perna). Sequência por

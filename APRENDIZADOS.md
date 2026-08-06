@@ -732,3 +732,26 @@ com o maior valor, só se ≥2 registros); `_Barra` mostra `Icons.workspace_prem
 `F4C542`) ao lado do número da barra-recorde, **na mesma linha** (não aumenta a altura do card).
 
 **Validação:** `flutter analyze` limpo, `flutter test` 17/17. Versão `0.26.0+26`.
+
+---
+
+## 2026-08-06 — v0.27.0: perda escalonada (ratchet) + rating "Nível de forma"
+
+Ponto 4 do usuário, aprovado (4a como a tabela; 4b = Opção A). `util/gamificacao.dart`.
+
+**4a — Nível (ratchet) no lugar da sequência crua.** `tiersPremios=[4,8,15,21]`; `_dropTier`
+(perde só o último prêmio: 8→4, 15→8, 21→15, 4→0). `nivelInfo(concs,treinos)` itera do 1º dia
+concluído até hoje: +1 por dia concluído; dia agendado pulado no passado → `_dropTier`; descanso/
+hoje-pendente neutro. Retorna `atual`+`recorde`. `conquistasAtuais` passou a usar `nivel` (não
+`streakAtual`). UI (streak card/teaser/cards) usa `nivelInfo`. `melhorStreak` removido
+(substituído por `nivelInfo.recorde`); `streakAtual` mantido (base conceitual + testes).
+
+**4b — Rating "Nível de forma" (Opção A, bounded).** `ratingForma` = `assiduidadeRecente`
+(0–100 = % dos dias agendados completados nos últimos 28d; decai se parar) + `evolucao` (0–40 =
+`40·recentes/(recentes+3)` sobre `recordesRecentes(56d)` — retorno decrescente, fácil no começo,
+satura). Total ~140, limitado. Sem progressão → platô na assiduidade; só passa com recordes.
+Resolve os 2 furos que o usuário apontou (infinito / "e se não progride"). `_RatingBar` no topo
+da Galeria. **Não** é armazenado — computado ao vivo.
+
+**Validação:** `flutter analyze` limpo, `flutter test` 18/18 (novos: perda escalonada 8→4;
+rating assiduidade+evolução). Versão `0.27.0+27`.

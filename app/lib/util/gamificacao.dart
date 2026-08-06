@@ -43,15 +43,51 @@ int streakAtual(List<Conclusao> concs, List<Treino> treinos, {DateTime? hoje}) {
   return streak;
 }
 
-/// Melhor sequência já alcançada (para as medalhas, que são permanentes).
-int melhorStreak(List<Conclusao> concs, List<Treino> treinos) {
-  final dias = concs.map((c) => _dia(c.data)).toSet().toList()..sort();
-  var best = 0;
-  for (final d in dias) {
-    final s = streakAtual(concs, treinos, hoje: d);
-    if (s > best) best = s;
+/// Limiares dos prêmios (dias de sequência): 🥈4 · 🥇8 · 🏆Prata15 · 🏆Ouro21.
+const tiersPremios = <int>[4, 8, 15, 21];
+
+/// Ao pular um dia agendado, o nível cai para o degrau do prêmio ANTERIOR
+/// (perde só o último prêmio), não para 0. Ex.: 8→4, 15→8, 21→15, 4→0.
+int _dropTier(int nivel) {
+  var h = -1;
+  for (var i = 0; i < tiersPremios.length; i++) {
+    if (nivel >= tiersPremios[i]) h = i;
   }
-  return best;
+  if (h <= 0) return 0;
+  return tiersPremios[h - 1];
+}
+
+/// Nível atual (o que dá prêmio) + recorde de todos os tempos. Diferente de uma
+/// sequência crua: +1 por dia agendado concluído; ao pular um dia agendado, cai
+/// UM degrau de prêmio (perda escalonada), não zera.
+class NivelInfo {
+  final int atual;
+  final int recorde;
+  const NivelInfo(this.atual, this.recorde);
+}
+
+NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
+    {DateTime? hoje}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final agendados = diasAgendados(treinos);
+  final diasConc = concs.map((c) => _dia(c.data)).toSet();
+  if (diasConc.isEmpty) return const NivelInfo(0, 0);
+  final inicio = diasConc.reduce((a, b) => a.isBefore(b) ? a : b);
+  var nivel = 0, recorde = 0, i = 0;
+  var d = inicio;
+  while (!d.isAfter(hj) && i < 4000) {
+    final wd = d.weekday - 1;
+    if (diasConc.contains(d)) {
+      nivel += 1;
+      if (nivel > recorde) recorde = nivel;
+    } else if (agendados.contains(wd) && d.isBefore(hj)) {
+      nivel = _dropTier(nivel); // pulou um dia agendado -> cai um degrau
+    }
+    // dia de descanso (não agendado) ou hoje ainda pendente -> sem mudança
+    d = d.add(const Duration(days: 1));
+    i++;
+  }
+  return NivelInfo(nivel, recorde);
 }
 
 /// Total de DIAS distintos com treino concluído.
@@ -122,15 +158,53 @@ Set<TipoConquista> conquistasAtuais(
   DateTime? hoje,
 }) {
   final atuais = <TipoConquista>{};
-  final streak = streakAtual(concs, treinos, hoje: hoje);
-  if (streak >= 4) atuais.add(TipoConquista.medalhaPrata);
-  if (streak >= 8) atuais.add(TipoConquista.medalhaOuro);
-  if (streak >= 15) atuais.add(TipoConquista.trofeuPrata);
+  final nivel = nivelInfo(concs, treinos, hoje: hoje).atual;
+  if (nivel >= 4) atuais.add(TipoConquista.medalhaPrata);
+  if (nivel >= 8) atuais.add(TipoConquista.medalhaOuro);
+  if (nivel >= 15) atuais.add(TipoConquista.trofeuPrata);
   final necessarios = exigenciaRecordeOuro(treinos);
-  if (streak >= 21 &&
+  if (nivel >= 21 &&
       necessarios > 0 &&
       recordesRecentes(treinos, progressao, hoje: hoje) >= necessarios) {
     atuais.add(TipoConquista.trofeuOuro);
   }
   return atuais;
+}
+
+/// % de dias agendados completados nos últimos [dias] dias (0..100). É a base
+/// da "forma" — decai se você para, sobe se você mantém a assiduidade.
+int assiduidadeRecente(List<Conclusao> concs, List<Treino> treinos,
+    {int dias = 28, DateTime? hoje}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final agendados = diasAgendados(treinos);
+  if (agendados.isEmpty) return 0;
+  final diasConc = concs.map((c) => _dia(c.data)).toSet();
+  var total = 0, feitos = 0;
+  for (var k = 0; k < dias; k++) {
+    final d = hj.subtract(Duration(days: k));
+    if (!agendados.contains(d.weekday - 1)) continue;
+    total++;
+    if (diasConc.contains(d)) feitos++;
+  }
+  return total == 0 ? 0 : ((feitos / total) * 100).round();
+}
+
+/// Rating de "forma": consistência recente (0..100) + bônus de evolução por
+/// recordes recentes (0..40, com retorno decrescente — fácil no começo, satura
+/// depois). Limitado (~140), decai sem treino, só passa do platô com progressão.
+class RatingForma {
+  final int assiduidade; // 0..100
+  final int evolucao; // 0..40
+  const RatingForma(this.assiduidade, this.evolucao);
+  int get total => assiduidade + evolucao;
+  static const int maximo = 140;
+}
+
+RatingForma ratingForma(List<Conclusao> concs, List<Treino> treinos,
+    List<RegistroProgressao> progressao,
+    {DateTime? hoje}) {
+  final assid = assiduidadeRecente(concs, treinos, hoje: hoje);
+  final recentes = recordesRecentes(treinos, progressao, dias: 56, hoje: hoje);
+  final evol = (40 * (recentes / (recentes + 3))).round();
+  return RatingForma(assid, evol);
 }

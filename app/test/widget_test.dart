@@ -293,24 +293,52 @@ void main() {
     expect(a15.contains(TipoConquista.trofeuOuro), isFalse); // falta 21 + progressão
   });
 
-  test('conquistas atuais: quebrar a sequência derruba TODAS (inclui troféu)',
-      () {
-    final d = DateTime(2026, 8, 10);
+  test('perda escalonada: pular um dia agendado cai só um degrau (8->4)', () {
+    final d = DateTime(2026, 8, 20);
     final treinos = [
       Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
         Exercicio(nome: 'A'),
       ]),
     ];
-    // 15 dias no total, mas os 2 últimos agendados foram perdidos: sequência = 0.
+    // 8 dias concluídos (d-9..d-2), depois d-1 PULADO (agendado, no passado).
     final concs = [
-      for (var i = 2; i < 17; i++)
+      for (var i = 2; i <= 9; i++)
         Conclusao(
             data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
     ];
+    final info = nivelInfo(concs, treinos, hoje: d);
+    expect(info.recorde, 8); // chegou à medalha de ouro
+    expect(info.atual, 4); // pulou 1 -> caiu um degrau, para 4 (prata)
     final atuais = conquistasAtuais(concs, treinos, const [], hoje: d);
-    expect(totalDiasConcluidos(concs), 15);
-    // Tudo é por sequência: com o elo quebrado, nada fica ativo.
-    expect(atuais.isEmpty, isTrue);
+    expect(atuais.contains(TipoConquista.medalhaPrata), isTrue);
+    expect(atuais.contains(TipoConquista.medalhaOuro), isFalse);
+  });
+
+  test('rating de forma: assiduidade recente + bônus de evolução', () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    // Completou metade dos últimos 28 dias (14 de 28).
+    final concs = [
+      for (var i = 0; i < 28; i += 2)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    expect(assiduidadeRecente(concs, treinos, hoje: d), 50);
+    expect(ratingForma(concs, treinos, const [], hoje: d).evolucao, 0);
+    // 1 recorde recente -> evolução 40*1/(1+3) = 10.
+    final prog = [
+      RegistroProgressao(
+          exercicio: 'A', valor: 10, data: d.subtract(const Duration(days: 10))),
+      RegistroProgressao(
+          exercicio: 'A', valor: 12, data: d.subtract(const Duration(days: 2))),
+    ];
+    final r = ratingForma(concs, treinos, prog, hoje: d);
+    expect(r.evolucao, 10);
+    expect(r.total, 60);
   });
 
   test('conquista: JSON round-trip preserva perdidaEm (histórico)', () {
