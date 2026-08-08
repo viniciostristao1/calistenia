@@ -65,6 +65,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   List<TipoConquista> _novasConquistas = const []; // conquistas recém-obtidas
   String? _fraseIncompleto; // frase sorteada quando não completou
 
+  Map<String, int> _ultimaVez = const {}; // exercício (minúsculo) -> últimas reps
+  String? _carimbo; // "Série 2/3 ✓" mostrado ao concluir uma série
+  Timer? _carimboTimer;
+
   // POOL de players (baixa latência): reusar UM player a cada repetição curta
   // fazia o som falhar. Com vários players em rodízio, cada bip usa um livre.
   static const _nBeeps = 5;
@@ -121,6 +125,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _prepararSom();
     _fases = montarLinhaDoTempoDe(widget.exercicios);
     _duracaoTotal = _fases.fold(0, (a, f) => a + f.segundos);
+    // "Última vez" por exercício (referência a bater durante a série).
+    final regs = ref.read(progressaoProvider).value ?? const [];
+    _ultimaVez = {
+      for (final g in agruparPorExercicio(regs))
+        g.exercicio.trim().toLowerCase(): g.ultimo,
+    };
     if (_fases.isNotEmpty) {
       _restanteMs = _fases[0].segundos * 1000;
       WidgetsBinding.instance.addPostFrameCallback((_) => _iniciar());
@@ -130,6 +140,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _carimboTimer?.cancel();
     for (final p in _beeps) {
       p.dispose();
     }
@@ -199,7 +210,19 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final fimDeSerie = faseTerm.tipo == FaseTipo.execucao &&
         faseTerm.rep == faseTerm.totalReps;
     _tocarSom(fim: fimDeSerie);
+    if (fimDeSerie && faseTerm.totalSeries > 1) {
+      _mostrarCarimbo(faseTerm.serie, faseTerm.totalSeries);
+    }
     setState(() {});
+  }
+
+  /// Mostra o carimbo "Série X/Y ✓" por ~1,6s ao concluir uma série.
+  void _mostrarCarimbo(int serie, int total) {
+    _carimboTimer?.cancel();
+    _carimbo = 'Série $serie/$total ✓';
+    _carimboTimer = Timer(const Duration(milliseconds: 1600), () {
+      if (mounted) setState(() => _carimbo = null);
+    });
   }
 
   void _anterior() {
@@ -299,6 +322,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final fracao = (_restanteMs / totalMs).clamp(0.0, 1.0);
     final segundos = (_restanteMs / 1000).ceil().clamp(0, 99999);
     final proxima = _idx < _fases.length - 1 ? _fases[_idx + 1] : null;
+    final ultima = _ultimaVez[fase.exercicioNome.trim().toLowerCase()];
 
     // Fundo do EXERCÍCIO da fase atual (muda ao longo do treino).
     final ei = fase.exercicioIndex;
@@ -342,6 +366,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                         fontSize: 22, fontWeight: FontWeight.w700),
                     textAlign: TextAlign.center,
                   ),
+                  if (ultima != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'última vez: $ultima reps',
+                      style: const TextStyle(
+                          color: AppColors.dim, fontSize: 13),
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   _anel(cor, fracao, segundos, fase),
                   const SizedBox(height: 20),
@@ -353,6 +385,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               ),
             ),
           ),
+          if (_carimbo != null)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 60,
+              left: 0,
+              right: 0,
+              child: Center(child: _CarimboPill(texto: _carimbo!)),
+            ),
         ],
       ),
     );
@@ -900,6 +939,48 @@ class _AddProgressaoSheetState extends ConsumerState<_AddProgressaoSheet> {
             child: const Text('Salvar'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Carimbo "Série X/Y ✓" que aparece por um instante ao concluir uma série.
+class _CarimboPill extends StatelessWidget {
+  const _CarimboPill({required this.texto});
+
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutBack,
+      builder: (context, t, child) => Opacity(
+        opacity: t.clamp(0.0, 1.0),
+        child: Transform.scale(scale: 0.8 + 0.2 * t, child: child),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: context.accent,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          texto,
+          style: TextStyle(
+            color: context.onAccent,
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
+          ),
+        ),
       ),
     );
   }

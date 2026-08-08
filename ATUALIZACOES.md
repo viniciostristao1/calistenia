@@ -3,6 +3,16 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-08 — v0.30.0 (Rating repensado + feedback no cronômetro):**
+  - **Rating vira nota 0–100** ("nota de desempenho", estilo Elo): **Consistência (0–40)** +
+    **Frequência (0–20)** + **Progressão (0–40)**. A Consistência agora tem **"hoje neutro"**
+    (não cai de manhã antes de você treinar). A **Progressão mede a melhora REAL dos recordes**
+    (quanto você subiu), não só "bateu ou não". A Frequência premia volume sem punir quem treina
+    menos.
+  - **No cronômetro:** aparece **"última vez: X reps"** no exercício (a referência a bater) e um
+    **carimbo "Série 2/3 ✓"** a cada série concluída.
+  - *(Inclui também as novidades da v0.29.0 — pontinhos de repetição e progressão automática —
+    que não chegaram a virar APK por causa de um apagão do GitHub Actions.)*
 - **2026-08-06 — v0.29.0 (cronômetro com pontos de rep + progressão automática):**
   - **Cronômetro:** na execução, o anel agora mostra **pontinhos das repetições** (as feitas
     acesas) — você vê o tempo E quantas reps faltam de uma vez.

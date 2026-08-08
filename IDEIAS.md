@@ -37,6 +37,12 @@ Evoluções possíveis: animação/confete ao desbloquear; recorde pessoal (PR) 
 conquista própria; meta semanal; estatísticas de tempo total; lembrete "você está a 1 dia de
 perder a sequência".
 
+**✅ FEITO v0.30.0 — Rating repensado (0–100, "nota de desempenho"):** número único =
+Consistência(40)+Frequência(20)+Progressão(40). Consertou os 4 furos do usuário: agendar-pouco-
+grátis (Frequência = volume real), escala 140 confusa (agora 0–100), progressão sem magnitude
+(agora mede melhora real do recorde em 42d), "hoje pune" (hoje neutro). Constantes tunáveis
+(janelas 28d/42d, pesos 40/20/40). Player: "última vez: X" + carimbo "Série X/Y ✓".
+
 **✅ FEITO v0.27.0 — perda escalonada + rating "Nível de forma" (ponto 4):**
 - **Perda escalonada** (ratchet `nivelInfo`, tiers [4,8,15,21]): pular um dia agendado tira só o
   último prêmio (8→4, 15→8, 21→15). `conquistasAtuais` usa `nivel`.

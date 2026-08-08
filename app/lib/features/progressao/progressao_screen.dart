@@ -124,9 +124,10 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
         _GraficoLinha(pontos: serie),
         const SizedBox(height: 16),
         const Text(
-          'Rating = Assiduidade (0–100, últimos 28 dias) + Evolução (0–40, '
-          'recordes recentes com ganho decrescente). Cai se você parar de '
-          'treinar ou de bater recordes.',
+          'Rating 0–100 = Consistência (0–40, % dos dias agendados nos últimos '
+          '28 dias — hoje é neutro) + Frequência (0–20, seu volume de treino) + '
+          'Progressão (0–40, o quanto seus recordes melhoraram nos últimos ~42 '
+          'dias). Consistência é o alicerce; para passar do platô, bata recordes.',
           style: TextStyle(color: AppColors.dim, fontSize: 12),
         ),
       ],
@@ -454,7 +455,9 @@ class _RatingCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Assiduidade ${rating.assiduidade}/100 · Evolução ${rating.evolucao}/40',
+            'Consistência ${rating.consistencia}/40 · '
+            'Frequência ${rating.frequencia}/20 · '
+            'Progressão ${rating.progressao}/40',
             style: const TextStyle(color: AppColors.dim, fontSize: 12),
           ),
         ],

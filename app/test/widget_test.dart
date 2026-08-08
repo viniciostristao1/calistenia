@@ -314,31 +314,32 @@ void main() {
     expect(atuais.contains(TipoConquista.medalhaOuro), isFalse);
   });
 
-  test('rating de forma: assiduidade recente + bônus de evolução', () {
+  test('rating de forma: consistência + frequência + progressão (0-100)', () {
     final d = DateTime(2026, 8, 20);
     final treinos = [
       Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
         Exercicio(nome: 'A'),
       ]),
     ];
-    // Completou metade dos últimos 28 dias (14 de 28).
+    // Cumpriu todos os agendados dos últimos 28 dias (hoje pendente = neutro).
     final concs = [
-      for (var i = 0; i < 28; i += 2)
+      for (var i = 1; i <= 28; i++)
         Conclusao(
             data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
     ];
-    expect(assiduidadeRecente(concs, treinos, hoje: d), 50);
-    expect(ratingForma(concs, treinos, const [], hoje: d).evolucao, 0);
-    // 1 recorde recente -> evolução 40*1/(1+3) = 10.
+    final semProg = ratingForma(concs, treinos, const [], hoje: d);
+    expect(semProg.consistencia, 40); // agendados cumpridos, hoje neutro
+    expect(semProg.frequencia, 20); // volume alto -> teto
+    expect(semProg.progressao, 0);
+    expect(semProg.total, 60);
+    // Recorde subiu de 10 (antes da janela de 42d) para 15 -> +50% -> 40*0.5/2.5 = 8.
     final prog = [
       RegistroProgressao(
-          exercicio: 'A', valor: 10, data: d.subtract(const Duration(days: 10))),
+          exercicio: 'A', valor: 10, data: d.subtract(const Duration(days: 50))),
       RegistroProgressao(
-          exercicio: 'A', valor: 12, data: d.subtract(const Duration(days: 2))),
+          exercicio: 'A', valor: 15, data: d.subtract(const Duration(days: 5))),
     ];
-    final r = ratingForma(concs, treinos, prog, hoje: d);
-    expect(r.evolucao, 10);
-    expect(r.total, 60);
+    expect(ratingForma(concs, treinos, prog, hoje: d).progressao, 8);
   });
 
   test('serieRating: série temporal sem olhar o futuro', () {

@@ -811,3 +811,35 @@ editar sem treinar). Implementado:
 domina (habit-first); teto da evolução é tunável se quiserem que progressão pese mais.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 19/19. Versão `0.29.0+29`.
+
+> ⚠️ **v0.29.0 nunca virou APK:** o build caiu num **outage major do GitHub Actions** (08-06,
+> ~6h+). Código ficou na main; a v0.30.0 (abaixo) o inclui e é o que sai quando o Actions voltar.
+
+---
+
+## 2026-08-08 — v0.30.0: Rating repensado (0–100) + feedback no cronômetro
+
+Redesign do Rating validado pelo usuário (ele apontou 4 falhas reais do modelo anterior).
+
+**Rating 0–100 (`util/gamificacao.dart`).** `RatingForma` agora = `consistencia` (0–40) +
+`frequencia` (0–20) + `progressao` (0–40); `maximo=100`. Funções privadas:
+- `_consistencia`: % dos dias agendados (28d) ×0,4, **hoje neutro** (k==0 sem conclusão sai do
+  denominador — conserta o "cai de manhã").
+- `_frequencia`: dias treinados/semana (28d÷4), teto 5/sem → 20, só soma (conserta "agendar
+  pouco é grátis" — volume conta independ do tamanho da agenda).
+- `_progressao`: soma da melhora REAL por exercício na janela de **42d** (`(g.maior − base)/base`,
+  base = melhor antes do corte ou `g.primeiro`), fração capada em 1,0/ex, `40·soma/(soma+2)`.
+  Dá **magnitude** (conserta "+1 rep = +12"). `import 'dart:math' show max`.
+Removidos `assiduidadeRecente` e a `evolucao`. `recordesRecentes` **fica** (é do Troféu de Ouro,
+não do rating). `_RatingCard`/texto na Progressão mostram os 3 componentes.
+
+**Player — 2 feedbacks no momento.**
+- **"última vez: X reps"** sob o nome do exercício: `_ultimaVez` (mapa nome→`g.ultimo`) montado
+  no `initState` a partir da progressão; referência a bater. (O "bateu!" real cai no registro
+  pós-treino, que já ganha o selo de recorde.)
+- **Carimbo "Série X/Y ✓"** (`_CarimboPill`, pop 220ms) ao concluir cada série (`_avancar`, quando
+  `fimDeSerie && totalSeries>1`), some em 1,6s. Complementa os pontinhos de rep (que são
+  rep-a-rep; o carimbo marca o FIM da série).
+
+**Validação:** `flutter analyze` limpo, `flutter test` 19/19 (rating reescrito: 3 componentes +
+progressão por magnitude). Versão `0.30.0+30`.

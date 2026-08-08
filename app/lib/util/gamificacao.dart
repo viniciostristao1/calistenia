@@ -1,3 +1,5 @@
+import 'dart:math' show max;
+
 import '../models/conclusao.dart';
 import '../models/conquista.dart';
 import '../models/registro_progressao.dart';
@@ -171,42 +173,78 @@ Set<TipoConquista> conquistasAtuais(
   return atuais;
 }
 
-/// % de dias agendados completados nos últimos [dias] dias (0..100). É a base
-/// da "forma" — decai se você para, sobe se você mantém a assiduidade.
-int assiduidadeRecente(List<Conclusao> concs, List<Treino> treinos,
-    {int dias = 28, DateTime? hoje}) {
-  final hj = _dia(hoje ?? DateTime.now());
+/// Consistência (0..40): % dos dias AGENDADOS cumpridos nos últimos 28 dias,
+/// ×0,4. Hoje é NEUTRO — não entra no denominador enquanto você não treinar
+/// (não derruba a nota de manhã num dia agendado).
+int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj) {
   final agendados = diasAgendados(treinos);
   if (agendados.isEmpty) return 0;
   final diasConc = concs.map((c) => _dia(c.data)).toSet();
   var total = 0, feitos = 0;
-  for (var k = 0; k < dias; k++) {
+  for (var k = 0; k < 28; k++) {
     final d = hj.subtract(Duration(days: k));
     if (!agendados.contains(d.weekday - 1)) continue;
+    final fez = diasConc.contains(d);
+    if (k == 0 && !fez) continue; // hoje pendente = neutro
     total++;
-    if (diasConc.contains(d)) feitos++;
+    if (fez) feitos++;
   }
-  return total == 0 ? 0 : ((feitos / total) * 100).round();
+  return total == 0 ? 0 : ((feitos / total) * 40).round();
 }
 
-/// Rating de "forma": consistência recente (0..100) + bônus de evolução por
-/// recordes recentes (0..40, com retorno decrescente — fácil no começo, satura
-/// depois). Limitado (~140), decai sem treino, só passa do platô com progressão.
+/// Frequência (0..20): volume real — média de dias treinados por semana nas
+/// últimas 4 semanas, com teto em ~5/semana. Só SOMA (não pune quem treina menos).
+int _frequencia(List<Conclusao> concs, DateTime hj) {
+  final diasConc = concs.map((c) => _dia(c.data)).toSet();
+  var feitos = 0;
+  for (var k = 0; k < 28; k++) {
+    if (diasConc.contains(hj.subtract(Duration(days: k)))) feitos++;
+  }
+  final porSemana = feitos / 4.0;
+  return ((porSemana / 5).clamp(0.0, 1.0) * 20).round();
+}
+
+/// Progressão (0..40): melhora REAL do recorde de cada exercício na janela de
+/// [dias] (recorde agora vs. início da janela), fração capada em 100%/exercício;
+/// soma com retorno decrescente 40·soma/(soma+2).
+int _progressao(List<Treino> treinos, List<RegistroProgressao> progressao,
+    DateTime hj, int dias) {
+  final distintos = exerciciosDistintos(treinos);
+  final corte = hj.subtract(Duration(days: dias));
+  var soma = 0.0;
+  for (final g in agruparPorExercicio(progressao)) {
+    if (!distintos.contains(g.exercicio.trim().toLowerCase())) continue;
+    final antes =
+        g.registros.where((r) => r.data.isBefore(corte)).map((r) => r.valor);
+    final base = antes.isEmpty ? g.primeiro : antes.reduce(max);
+    if (base <= 0) continue;
+    soma += ((g.maior - base) / base).clamp(0.0, 1.0);
+  }
+  return (40 * (soma / (soma + 2))).round();
+}
+
+/// Rating de forma (0..100) = Consistência (40) + Frequência (20) + Progressão
+/// (40). Número único "nota de desempenho": consistência é o alicerce, mas só
+/// bater recordes (progressão) leva além do platô. Quem não evolui fica estável,
+/// não despenca.
 class RatingForma {
-  final int assiduidade; // 0..100
-  final int evolucao; // 0..40
-  const RatingForma(this.assiduidade, this.evolucao);
-  int get total => assiduidade + evolucao;
-  static const int maximo = 140;
+  final int consistencia; // 0..40
+  final int frequencia; // 0..20
+  final int progressao; // 0..40
+  const RatingForma(this.consistencia, this.frequencia, this.progressao);
+  int get total => consistencia + frequencia + progressao;
+  static const int maximo = 100;
 }
 
 RatingForma ratingForma(List<Conclusao> concs, List<Treino> treinos,
     List<RegistroProgressao> progressao,
     {DateTime? hoje}) {
-  final assid = assiduidadeRecente(concs, treinos, hoje: hoje);
-  final recentes = recordesRecentes(treinos, progressao, dias: 56, hoje: hoje);
-  final evol = (40 * (recentes / (recentes + 3))).round();
-  return RatingForma(assid, evol);
+  final hj = _dia(hoje ?? DateTime.now());
+  return RatingForma(
+    _consistencia(concs, treinos, hj),
+    _frequencia(concs, hj),
+    _progressao(treinos, progressao, hj, 42),
+  );
 }
 
 /// Um ponto do gráfico de tendência do Rating (data + valor total).
