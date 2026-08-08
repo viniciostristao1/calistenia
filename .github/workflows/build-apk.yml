@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # criar/atualizar releases
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,12 +55,21 @@ jobs:
         working-directory: app
         run: flutter build apk --release --split-per-abi
 
-      - name: Publica os APKs como artefato
-        uses: actions/upload-artifact@v4
-        with:
-          name: calistenia-apks
-          path: app/build/app/outputs/flutter-apk/*-release.apk
-          if-no-files-found: error
-          # Expira rápido: o APK é baixado e vira release logo após o build.
-          # Evita estourar a cota de artefatos (500 MB no plano free).
-          retention-days: 2
+      # Publica os APKs direto num Release (assets de release NÃO contam na cota
+      # de artefatos do Actions — que é limitada e vivia estourando). O tag vem
+      # da versão do pubspec; o release é criado ou atualizado (idempotente).
+      - name: Publica o Release com os APKs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(grep '^version:' app/pubspec.yaml | sed 's/version:[[:space:]]*//; s/+.*//')
+          TAG="v$VER"
+          APKS=$(ls app/build/app/outputs/flutter-apk/*-release.apk)
+          echo "Publicando $TAG com: $APKS"
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" $APKS -R "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" $APKS -R "$GITHUB_REPOSITORY" \
+              --title "Calis Timer $TAG" \
+              --notes "APKs por arquitetura. Instale o app-arm64-v8a-release.apk (celulares modernos) por cima do app."
+          fi
