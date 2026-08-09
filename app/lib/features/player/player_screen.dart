@@ -366,7 +366,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   _barraTopo(),
                   const SizedBox(height: 8),
                   _progressoGeral(),
-                  const Spacer(),
+                  const Spacer(flex: 2),
                   Text(
                     fase.exercicioNome.toUpperCase(),
                     style: const TextStyle(
@@ -389,7 +389,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   _anel(cor, fracao, segundos, fase),
                   const SizedBox(height: 20),
                   _legendaProxima(proxima),
-                  const Spacer(),
+                  const Spacer(flex: 3),
                   _controles(),
                   const SizedBox(height: 12),
                 ],
@@ -492,22 +492,22 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Widget _contadorReps(Fase f) {
     final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
     return SizedBox(
-      height: 40,
+      height: 54,
       child: mostra
           ? Center(
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
                   color: AppColors.accentAmbar, // amarelo (fixo)
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${f.rep}/${f.totalReps}',
                   style: const TextStyle(
                     color: AppColors.onAccentAmbar, // preto sobre o amarelo
                     fontWeight: FontWeight.w800,
-                    fontSize: 22,
+                    fontSize: 30,
                   ),
                 ),
               ),
@@ -546,7 +546,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   fontSize: 14,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 3),
               SizedBox(
                 width: 270,
                 child: FittedBox(
@@ -556,12 +556,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                     style: const TextStyle(
                       fontSize: 244,
                       fontWeight: FontWeight.w800,
-                      height: 1.0,
+                      height: 0.78,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 3),
               Text(
                 _subtextoAnel(fase),
                 style: const TextStyle(color: AppColors.dim, fontSize: 14),
