@@ -48,7 +48,8 @@ class PlayerScreen extends ConsumerStatefulWidget {
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
 }
 
-class _PlayerScreenState extends ConsumerState<PlayerScreen> {
+class _PlayerScreenState extends ConsumerState<PlayerScreen>
+    with WidgetsBindingObserver {
   late final List<Fase> _fases;
   late final int _duracaoTotal; // soma das fases, em segundos
   int _idx = 0;
@@ -65,7 +66,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   List<TipoConquista> _novasConquistas = const []; // conquistas recém-obtidas
   String? _fraseIncompleto; // frase sorteada quando não completou
 
-  Map<String, int> _ultimaVez = const {}; // exercício (minúsculo) -> últimas reps
   String? _carimbo; // "Série 2/3 ✓" mostrado ao concluir uma série
   Timer? _carimboTimer;
 
@@ -122,23 +122,31 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _prepararSom();
     _fases = montarLinhaDoTempoDe(widget.exercicios);
     _duracaoTotal = _fases.fold(0, (a, f) => a + f.segundos);
-    // "Última vez" por exercício (referência a bater durante a série).
-    final regs = ref.read(progressaoProvider).value ?? const [];
-    _ultimaVez = {
-      for (final g in agruparPorExercicio(regs))
-        g.exercicio.trim().toLowerCase(): g.ultimo,
-    };
     if (_fases.isNotEmpty) {
       _restanteMs = _fases[0].segundos * 1000;
       WidgetsBinding.instance.addPostFrameCallback((_) => _iniciar());
     }
   }
 
+  /// Ao ir para segundo plano, pausa (o cronômetro não deve correr escondido, e
+  /// isso evita o "travado" ao voltar); ao retomar, força um frame novo para o
+  /// botão responder na hora.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      if (_running) _pausar();
+    } else if (mounted && !_concluido) {
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _carimboTimer?.cancel();
     for (final p in _beeps) {
@@ -322,7 +330,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final fracao = (_restanteMs / totalMs).clamp(0.0, 1.0);
     final segundos = (_restanteMs / 1000).ceil().clamp(0, 99999);
     final proxima = _idx < _fases.length - 1 ? _fases[_idx + 1] : null;
-    final ultima = _ultimaVez[fase.exercicioNome.trim().toLowerCase()];
 
     // Fundo do EXERCÍCIO da fase atual (muda ao longo do treino).
     final ei = fase.exercicioIndex;
@@ -361,20 +368,24 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                   _progressoGeral(),
                   const Spacer(),
                   Text(
-                    fase.exercicioNome,
+                    fase.exercicioNome.toUpperCase(),
                     style: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.w700),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5),
                     textAlign: TextAlign.center,
                   ),
-                  if (ultima != null) ...[
+                  if (fase.totalReps > 1) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'última vez: $ultima reps',
+                      '${fase.totalReps} repetições',
                       style: const TextStyle(
-                          color: AppColors.dim, fontSize: 13),
+                          fontWeight: FontWeight.w800, fontSize: 15),
                     ),
                   ],
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
+                  _contadorReps(fase),
+                  const SizedBox(height: 10),
                   _anel(cor, fracao, segundos, fase),
                   const SizedBox(height: 20),
                   _legendaProxima(proxima),
@@ -456,24 +467,53 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     return '$ex$ser';
   }
 
-  /// Subtexto dentro do anel, conforme a fase.
+  /// Subtexto dentro do anel (só lado/série — as repetições viraram a caixa
+  /// amarela acima do cronômetro).
   String _subtextoAnel(Fase f) {
-    final lado = f.lado > 0 ? 'Lado ${f.lado}/2 · ' : '';
     switch (f.tipo) {
       case FaseTipo.preparacao:
         return f.lado > 0 ? 'Prepare o lado ${f.lado}' : 'Prepare-se';
       case FaseTipo.descanso:
-        return f.totalSeries > 1 ? 'Recupere · série ${f.serie}/${f.totalSeries}' : 'Recupere';
+        return f.totalSeries > 1
+            ? 'Recupere · série ${f.serie}/${f.totalSeries}'
+            : 'Recupere';
       case FaseTipo.execucao:
-        final temReps = f.totalReps > 1;
-        final temSeries = f.totalSeries > 1;
-        if (temReps && temSeries) {
-          return '${lado}Série ${f.serie}/${f.totalSeries} · rep ${f.rep}/${f.totalReps}';
-        }
-        if (temReps) return '${lado}Repetição ${f.rep}/${f.totalReps}';
-        if (temSeries) return '${lado}Série ${f.serie}/${f.totalSeries}';
-        return lado.isEmpty ? 'Vai!' : 'Lado ${f.lado}/2';
+        final partes = <String>[
+          if (f.lado > 0) 'Lado ${f.lado}/2',
+          if (f.totalSeries > 1) 'Série ${f.serie}/${f.totalSeries}',
+        ];
+        return partes.isEmpty ? 'Vai!' : partes.join(' · ');
     }
+  }
+
+  /// Caixa amarela com o contador de repetições ("5/22") acima do cronômetro,
+  /// que sobe a cada repetição executada. Reserva a altura fixa (não pula o
+  /// layout entre fases).
+  Widget _contadorReps(Fase f) {
+    final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
+    return SizedBox(
+      height: 40,
+      child: mostra
+          ? Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.accentAmbar, // amarelo (fixo)
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${f.rep}/${f.totalReps}',
+                  style: const TextStyle(
+                    color: AppColors.onAccentAmbar, // preto sobre o amarelo
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                  ),
+                ),
+              ),
+            )
+          : null,
+    );
   }
 
   Widget _anel(Color cor, double fracao, int segundos, Fase fase) {
@@ -508,13 +548,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
               ),
               const SizedBox(height: 6),
               SizedBox(
-                width: 262,
+                width: 270,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '$segundos',
                     style: const TextStyle(
-                      fontSize: 210,
+                      fontSize: 244,
                       fontWeight: FontWeight.w800,
                       height: 1.0,
                     ),
@@ -522,42 +562,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                 ),
               ),
               const SizedBox(height: 6),
-              // Execução com repetições: pontinhos de rep (feitos vs restantes).
-              // No unilateral, mantém o texto (que mostra "Lado 1/2").
-              if (fase.tipo == FaseTipo.execucao &&
-                  fase.lado == 0 &&
-                  fase.totalReps > 1 &&
-                  fase.totalReps <= 12)
-                _pontosRep(fase, cor)
-              else
-                Text(
-                  _subtextoAnel(fase),
-                  style: const TextStyle(color: AppColors.dim, fontSize: 14),
-                ),
+              Text(
+                _subtextoAnel(fase),
+                style: const TextStyle(color: AppColors.dim, fontSize: 14),
+              ),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  /// Pontinhos de repetição dentro do anel (a atual/feitas na cor da fase).
-  Widget _pontosRep(Fase f, Color cor) {
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      alignment: WrapAlignment.center,
-      children: [
-        for (var i = 1; i <= f.totalReps; i++)
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: i <= f.rep ? cor : AppColors.surface2,
-            ),
-          ),
-      ],
     );
   }
 

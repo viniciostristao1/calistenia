@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-09 — v0.31.0 (ajustes do cronômetro + correção do "travado"):**
+  - **Card do treino:** ponto antes do relógio ("3 exercícios · 14 min · 🕐 ~14:35").
+  - **Cronômetro:** nome do exercício em **MAIÚSCULAS**; abaixo, **"X repetições"** em negrito;
+    novo **contador "5/22" numa caixa amarela** acima do número (sobe a cada repetição); e o
+    **número do cronômetro ficou maior**.
+  - **Correção do bug:** pausar → minimizar → voltar **não trava mais** (o app auto-pausa ao ir
+    para segundo plano e volta respondendo).
 - **2026-08-08 — v0.30.0 (Rating repensado + feedback no cronômetro):**
   - **Rating vira nota 0–100** ("nota de desempenho", estilo Elo): **Consistência (0–40)** +
     **Frequência (0–20)** + **Progressão (0–40)**. A Consistência agora tem **"hoje neutro"**

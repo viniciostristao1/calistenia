@@ -351,7 +351,7 @@ class _TreinoCard extends StatelessWidget {
                                     children: [
                                       TextSpan(text: base),
                                       if (dur > 0) ...[
-                                        const TextSpan(text: '   '),
+                                        const TextSpan(text: ' · '),
                                         const WidgetSpan(
                                           alignment:
                                               PlaceholderAlignment.middle,

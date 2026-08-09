@@ -843,3 +843,29 @@ não do rating). `_RatingCard`/texto na Progressão mostram os 3 componentes.
 
 **Validação:** `flutter analyze` limpo, `flutter test` 19/19 (rating reescrito: 3 componentes +
 progressão por magnitude). Versão `0.30.0+30`.
+
+> 🛠️ **Pipeline (08-08/09):** o Actions teve **outage major** (~6h) e a **cota de artefatos**
+> estourou (796 MB > 500 MB free; deletar NÃO libera na hora — recalc a cada 6-12h). Fix
+> definitivo: o workflow agora **cria/atualiza o Release direto** (`gh release`, tag = versão do
+> pubspec, `permissions: contents: write`) — assets de release não contam na cota de artefatos.
+> `upload-artifact` removido. Eu só ajusto as notas depois (`gh release edit`).
+
+---
+
+## 2026-08-09 — v0.31.0: ajustes do cronômetro + fix do "travado" ao minimizar
+
+6 pedidos do usuário.
+
+1. **Card do treino:** separador antes do relógio `'   '`→`' · '` (home_screen).
+2. **Cronômetro — "X repetições" (negrito)** sob o nome (quando `totalReps>1`); **removida** a
+   linha "última vez" e o mapa `_ultimaVez` (substituídos).
+3. **Número do cronômetro maior:** 210→**244** (largura 262→270).
+4. **Contador de reps em caixa amarela** acima do anel: `_contadorReps` — `AppColors.accentAmbar`
+   + `onAccentAmbar`, "$rep/$totalReps", altura fixa 40 (não pula layout). **Removidos** os
+   pontinhos (`_pontosRep`) e a parte de reps do `_subtextoAnel` (agora só lado/série).
+5. **Bug "travado" (pausar→minimizar→voltar):** `_PlayerScreenState with WidgetsBindingObserver`;
+   `didChangeAppLifecycleState`: fora do `resumed` **auto-pausa** (`if(_running) _pausar()`), no
+   `resumed` **`setState`** (frame novo → botão responde). add/removeObserver no init/dispose.
+6. **Nome do exercício em MAIÚSCULAS** no player (`.toUpperCase()` + letter-spacing).
+
+**Validação:** `flutter analyze` limpo, `flutter test` 19/19. Versão `0.31.0+31`.
