@@ -385,7 +385,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   ],
                   const SizedBox(height: 14),
                   _contadorReps(fase),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 22),
                   _anel(cor, fracao, segundos, fase),
                   const SizedBox(height: 20),
                   _legendaProxima(proxima),
@@ -492,7 +492,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Widget _contadorReps(Fase f) {
     final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
     return SizedBox(
-      height: 54,
+      height: 56,
       child: mostra
           ? Center(
               child: Container(
@@ -503,11 +503,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${f.rep}/${f.totalReps}',
+                  // Conta as repetições CONCLUÍDAS: começa em 0 e vai até
+                  // totalReps-1 (ao "fechar" a última, a série encerra — o 12
+                  // cheio nunca fica girando na tela).
+                  '${f.rep - 1}/${f.totalReps}',
                   style: const TextStyle(
                     color: AppColors.onAccentAmbar, // preto sobre o amarelo
                     fontWeight: FontWeight.w800,
-                    fontSize: 30,
+                    fontSize: 34,
                   ),
                 ),
               ),
