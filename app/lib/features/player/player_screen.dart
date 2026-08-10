@@ -367,23 +367,24 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   const SizedBox(height: 8),
                   _progressoGeral(),
                   const Spacer(flex: 2),
-                  Text(
-                    fase.exercicioNome.toUpperCase(),
-                    style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (fase.totalReps > 1) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      '${fase.totalReps} repetições',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 15),
+                  // Nome do exercício numa "pílula" cinza-escuro arredondada.
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface2,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ],
-                  const SizedBox(height: 14),
+                    child: Text(
+                      fase.exercicioNome.toUpperCase(),
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   _contadorReps(fase),
                   const SizedBox(height: 22),
                   _anel(cor, fracao, segundos, fase),
@@ -492,15 +493,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Widget _contadorReps(Fase f) {
     final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
     return SizedBox(
-      height: 56,
+      height: 60,
       child: mostra
           ? Center(
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.accentAmbar, // amarelo (fixo)
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(999), // pílula
                 ),
                 child: Text(
                   // Conta as repetições CONCLUÍDAS: começa em 0 e vai até
@@ -510,7 +511,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   style: const TextStyle(
                     color: AppColors.onAccentAmbar, // preto sobre o amarelo
                     fontWeight: FontWeight.w800,
-                    fontSize: 34,
+                    fontSize: 40,
                   ),
                 ),
               ),
