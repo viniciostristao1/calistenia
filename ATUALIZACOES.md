@@ -3,6 +3,18 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-10 — v0.34.0 (cronômetro repaginado — nome em caixa + amarelo maior):**
+  - **Nome do exercício** agora dentro de uma **caixa cinza-escuro arredondada**; removido o
+    texto "X repetições" abaixo do nome (redundante).
+  - **Contador de reps maior** e em formato **pílula** (bordas bem arredondadas), com o número
+    centralizado e sem sobra de espaço em cima/baixo.
+- **2026-08-10 — v0.33.0 (contagem começa em 0 + mais respiro):**
+  - O **contador de reps conta as concluídas**: começa em **0** e vai até 11 (numa série de 12).
+    Ao fechar a última a série encerra — o "12" não fica girando na tela.
+  - **Mais espaço** entre o contador amarelo e o círculo do cronômetro.
+- **2026-08-10 — v0.32.0 (ajuste fino do cronômetro):**
+  - **"EXECUÇÃO/DESCANSO" e "Série X/Y" recolhidos para DENTRO** do círculo (não vazam mais por
+    cima/baixo); contador amarelo um pouco maior; nome e contador um pouco mais pra cima.
 - **2026-08-09 — v0.31.0 (ajustes do cronômetro + correção do "travado"):**
   - **Card do treino:** ponto antes do relógio ("3 exercícios · 14 min · 🕐 ~14:35").
   - **Cronômetro:** nome do exercício em **MAIÚSCULAS**; abaixo, **"X repetições"** em negrito;

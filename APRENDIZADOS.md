@@ -869,3 +869,41 @@ progressão por magnitude). Versão `0.30.0+30`.
 6. **Nome do exercício em MAIÚSCULAS** no player (`.toUpperCase()` + letter-spacing).
 
 **Validação:** `flutter analyze` limpo, `flutter test` 19/19. Versão `0.31.0+31`.
+
+---
+
+## 2026-08-10 — v0.32.0→v0.34.0: repaginação do cronômetro + organização/fluxo
+
+Sessão de polimento fino do player (só `player_screen.dart`) + arrumação dos docs.
+
+**v0.32.0 — rótulos das fases pra dentro do anel.** O rótulo "EXECUÇÃO/DESCANSO" (topo do miolo)
+e o subtexto "Série X/Y" (base do miolo) **vazavam** do círculo. Causa: o número gigante (fonte
+244) com `height: 1.0` tem "leading" enorme, empurrando os dois pras bordas. Fix: `height` do
+número `1.0→0.78` + gaps do anel `6→3px` → puxa rótulo e subtexto pra perto do número, dentro do
+anel. Também: contador amarelo `22→30`, e Spacer do bloco `2:3` (bloco sobe um pouco).
+
+**v0.33.0 — contador de reps 0-based.** Passou a mostrar reps **CONCLUÍDAS**: `'${f.rep-1}/N'`
+(era `'$rep/N'`, 1-based). Começa em `0/N`, vai até `(N-1)/N`; o "N cheio" nunca fica girando
+(fechar a última = fim da série, sinalizado por som + carimbo). `f.rep` é 1-based no modelo
+(`fase.dart` `for r=1..reps`), daí o `-1`. Só aparece na execução ⇒ nunca dá "-1". Contador
+`30→34`; espaço contador→anel `10→22`.
+
+**v0.34.0 — nome em pílula + amarelo redondo.** Removido o texto "N repetições" (redundante). Nome
+do exercício numa **pílula `surface2`** (radius 14, fonte 22→20). Contador amarelo `34→40`, caixa
+vira **pílula `radius 999`**, padding vertical enxuto (v8→v6) e altura reservada `56→60` — número
+centralizado sem sobra. Anatomia completa e valores → **`LAYOUT_CRONOMETRO.md`** (novo doc
+canônico; consultar/atualizar quando mexer no layout).
+
+**Entrega / link "latest" (gotcha de processo):** o usuário quer **um link fixo** e só atualizar a
+página — nada de link versionado. Solução: `/releases/latest` e
+`/releases/latest/download/app-arm64-v8a-release.apk` (repo privado ⇒ funciona logado). O
+`gh release create` já marca a nova como "latest". **Não** mandar `.../tag/vX.Y.0`. Registrado no
+`INICIO.md` (seção "Entrega & Release"). Versionamento: subir `pubspec` (`+N` crescente) → CI lê a
+tag do pubspec → cria o Release. Cada mudança desta sessão virou sua própria release (v0.32/33/34).
+
+**Organização:** docs já bem estruturados (INICIO/APRENDIZADOS/ATUALIZACOES/IDEIAS + FIREBASE);
+**não** reestruturei pastas (quebraria wikilinks, zero ganho). O que faltava e foi feito: refresh
+do "ESTADO ATUAL" do INICIO (estava travado na v0.21.0), fluxo de release/latest explícito, correção
+do nome de exibição (Calistenia→**Calis Timer**), e o novo `LAYOUT_CRONOMETRO.md`.
+
+**Validação:** `flutter analyze` limpo a cada passo. Versão final `0.34.0+34`.

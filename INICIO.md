@@ -9,17 +9,25 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 > NUNCA tocar em `/root/trading/`, `/root/trading_acoes/`, `/root/trading_opcoes/`,
 > `/root/lista_app/`.
 
-> 📓 **Fluxo fixo:** ao fim de cada bloco significativo, atualizar
-> [`APRENDIZADOS.md`](APRENDIZADOS.md) (diário técnico + lições) e dar **commit/push**.
-> **Toda melhoria visível ao usuário / release novo → UMA LINHA (resumo + data) em
-> [`ATUALIZACOES.md`](ATUALIZACOES.md)** (topo = mais recente). Planos futuros →
-> [`IDEIAS.md`](IDEIAS.md). Os três têm papéis distintos: técnico (`APRENDIZADOS`) ·
-> changelog do usuário (`ATUALIZACOES`) · futuro (`IDEIAS`).
+> 📓 **Fluxo fixo (harness):** ao fim de cada bloco significativo →
+> 1. `flutter analyze` (e `flutter test` se tocou lógica) limpo;
+> 2. **subir a versão** em `app/pubspec.yaml` (`X.Y.Z+N` → o `+N` é o versionCode, tem de
+>    crescer; a tag do release = `vX.Y.Z`);
+> 3. registrar no [`APRENDIZADOS.md`](APRENDIZADOS.md) (técnico) e, se for visível ao usuário,
+>    UMA LINHA em [`ATUALIZACOES.md`](ATUALIZACOES.md) (topo = mais recente);
+> 4. se mexeu no layout do cronômetro, atualizar [`LAYOUT_CRONOMETRO.md`](LAYOUT_CRONOMETRO.md);
+> 5. **commit + push na `main`** → o CI compila e publica o Release sozinho (ver "Entrega").
+>
+> Papéis dos docs: referência (`INICIO`) · técnico (`APRENDIZADOS`) · changelog do usuário
+> (`ATUALIZACOES`) · futuro (`IDEIAS`) · layout do player (`LAYOUT_CRONOMETRO`).
 
-## ⭐ ESTADO ATUAL (2026-07-30) — ler primeiro pós-/clear
+## ⭐ ESTADO ATUAL (2026-08-10) — ler primeiro pós-/clear
 
 **Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.21.0** (release com APKs por arquitetura). **Nome de exibição = "Calis
+atual = **v0.34.0** (fase de iteração pelo feedback real; último bloco = **repaginação do
+cronômetro** — nome em pílula cinza, contador de reps 0-based numa pílula amarela maior,
+rótulos das fases dentro do anel; ver [`LAYOUT_CRONOMETRO.md`](LAYOUT_CRONOMETRO.md) e
+[`ATUALIZACOES.md`](ATUALIZACOES.md)). **Nome de exibição = "Calis
 Timer"** (pacote/applicationId segue `com.vinyapps.calistenia`, pacote Dart `calistenia`;
 NÃO mudar — Firebase/Play Store se registram pelo package). **Cor oficial = âmbar** (azul
 é opção). **Firebase LIGADO** (projeto `calis-timer`): **login com Google funciona**
@@ -140,7 +148,8 @@ da série. Migração v0.1.0→v0.2.0: o antigo "repetições" (rodadas) vira **
 - Estado: **Riverpod** (`flutter_riverpod`), persistência: **shared_preferences**,
   tela ligada no treino: **wakelock_plus**.
 - Arquitetura feature-based: `app/lib/features/<feature>/`.
-- Pacote Android: **com.vinyapps.calistenia**. Nome de exibição: **Calistenia**.
+- Pacote Android: **com.vinyapps.calistenia** (applicationId — NÃO mudar). Nome de exibição:
+  **Calis Timer**.
 - **Build de release: na nuvem (GitHub Actions)** — a VPS é fraca p/ compilar Android.
 
 ## Estrutura do código (`app/lib/`)
@@ -151,16 +160,29 @@ da série. Migração v0.1.0→v0.2.0: o antigo "repetições" (rodadas) vira **
 - `features/player/` — o cronômetro em execução.
 - `theme/` — cores e tema escuro. `util/` — dias, formatação de tempo, ids.
 
-## Como gerar o APK (instalar no celular)
+## Entrega & Release (como o app chega no celular)
 A VPS não compila Android bem → o build sai na **nuvem** (GitHub Actions,
-`.github/workflows/build-apk.yml`). Fluxo:
-1. Repositório no GitHub (branch `main`) com este projeto.
-2. Push em `app/**` dispara o workflow → o step de assinatura escreve `key.properties`
-   a partir dos secrets e gera **APKs release por arquitetura** assinados com a **keystore
-   de upload FIXA** (desde a v0.4.0). Chave estável ⇒ atualiza por cima sem "conflito".
-3. Baixar o artefato `calistenia-apks`, pegar o **`app-arm64-v8a-release.apk`**
-   (celulares Android modernos) e instalar no telefone (permitir "fontes desconhecidas").
-   Alternativa: `gh run download` / criar um release com `gh release create`.
+`.github/workflows/build-apk.yml`). Ciclo por mudança:
+1. Editar o código; `flutter analyze`/`test` limpos.
+2. **Subir a versão** em `app/pubspec.yaml` (`X.Y.Z+N`, versionCode `+N` crescente). A tag do
+   release = `vX.Y.Z`, lida do pubspec pelo workflow.
+3. `git commit` + `git push origin main`. Push em `app/**` dispara o CI → assina com a
+   **keystore de upload FIXA** (secrets; desde v0.4.0 ⇒ instala por cima sem "conflito"),
+   compila os 3 APKs por arquitetura e **cria/atualiza o Release** direto (`gh release`, assets
+   de release não contam na cota de artefatos). ~12–13 min.
+
+### 🔗 Link "latest" perene (o jeito que o usuário quer receber)
+O usuário **não quer copiar link novo a cada versão** — ele favorita UM link e só **atualiza a
+página** pra baixar a mais nova. O GitHub serve isso via `/releases/latest` (repo privado ⇒ ele
+precisa estar logado no GitHub no navegador, o que já é o caso):
+
+- **Página:** `https://github.com/viniciostristao1/calistenia/releases/latest`
+- **APK arm64 direto (o do celular dele):**
+  `https://github.com/viniciostristao1/calistenia/releases/latest/download/app-arm64-v8a-release.apk`
+
+Esses links **sempre** resolvem pra release mais recente (o `gh release create` marca a nova como
+"latest"). Ao publicar, **avisar** que saiu a `vX.Y.0` e mandar ele atualizar a página — **não**
+mandar link versionado (`.../tag/vX.Y.0` ou `.../download/vX.Y.0/...`), que "envelhece".
 
 > **Assinatura (v0.4.0+):** keystore própria em `app/android/app/upload-keystore.jks` +
 > `app/android/key.properties` (**gitignored**, presentes na VPS); secrets no GitHub
