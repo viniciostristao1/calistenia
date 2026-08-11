@@ -387,7 +387,8 @@ class _TreinoCard extends StatelessWidget {
             // Lista de exercícios: toca em um -> roda só ele.
             if (treino.exercicios.isNotEmpty) ...[
               const SizedBox(height: 6),
-              const Divider(height: 1),
+              // Cor neutra/fraca, igual aos "6 pontinhos" do cabeçalho (dim2).
+              const Divider(height: 1, thickness: 1, color: AppColors.dim2),
               const SizedBox(height: 2),
               for (final e in treino.exercicios)
                 _ExercicioLinha(

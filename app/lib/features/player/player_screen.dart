@@ -59,6 +59,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Timer? _timer;
   final Stopwatch _sw = Stopwatch();
   int _ultimoBip = -1;
+  int _ultimoSegExibido = -1; // último segundo já pintado (throttle do rebuild)
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
 
   // Gamificação (só quando é um treino inteiro e a opção está ligada).
@@ -78,24 +79,40 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   int _beepIdx = 0;
 
   Future<void> _prepararSom() async {
-    for (final p in [..._beeps, _fim]) {
+    for (final p in _beeps) {
       await p.setPlayerMode(PlayerMode.lowLatency);
       await p.setReleaseMode(ReleaseMode.stop);
       await p.setVolume(1.0);
+      // Carrega o WAV UMA vez. Em lowLatency (SoundPool), dar play(AssetSource)
+      // a cada repetição re-prepara o som toda vez; com muitas reps isso vaza,
+      // trava progressivamente e o app fecha. Pré-carregado, cada bip vira só
+      // stop()+resume() (SoundPool.play) — sem recarregar.
+      await p.setSource(AssetSource('sounds/beep.wav'));
     }
+    await _fim.setPlayerMode(PlayerMode.lowLatency);
+    await _fim.setReleaseMode(ReleaseMode.stop);
+    await _fim.setVolume(1.0);
+    await _fim.setSource(AssetSource('sounds/fim.wav'));
   }
 
   /// Toca um efeito (fim de série ou bip) se o som estiver ligado.
   void _tocarSom({required bool fim}) {
     if (!(ref.read(somProvider).value ?? true)) return;
     if (fim) {
-      _fim.play(AssetSource('sounds/fim.wav'));
+      _replay(_fim);
       return;
     }
     // Rodízio: cada bip num player diferente (evita o "reuso rápido").
     final p = _beeps[_beepIdx];
     _beepIdx = (_beepIdx + 1) % _nBeeps;
-    p.play(AssetSource('sounds/beep.wav'));
+    _replay(p);
+  }
+
+  /// Re-toca um player JÁ carregado, do início, sem re-preparar o asset (ver
+  /// [_prepararSom]): stop() zera o stream, resume() dispara SoundPool.play.
+  /// Erros de áudio são engolidos — som nunca derruba o cronômetro.
+  void _replay(AudioPlayer p) {
+    p.stop().whenComplete(() => p.resume()).catchError((_) {});
   }
 
   void _abrirAddProgressao() {
@@ -195,7 +212,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 
     if (_restanteMs <= 0) {
       _avancar(auto: true);
-    } else {
+    } else if (segRestante != _ultimoSegExibido) {
+      // Só reconstrói quando o SEGUNDO exibido muda (não a cada 100ms) — corta
+      // ~10× os rebuilds do número/anel e evita a lentidão progressiva.
+      _ultimoSegExibido = segRestante;
       setState(() {});
     }
   }
@@ -329,7 +349,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final totalMs = (fase.segundos * 1000).clamp(1, 1 << 30);
     final fracao = (_restanteMs / totalMs).clamp(0.0, 1.0);
     final segundos = (_restanteMs / 1000).ceil().clamp(0, 99999);
-    final proxima = _idx < _fases.length - 1 ? _fases[_idx + 1] : null;
 
     // Fundo do EXERCÍCIO da fase atual (muda ao longo do treino).
     final ei = fase.exercicioIndex;
@@ -366,30 +385,36 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   _barraTopo(),
                   const SizedBox(height: 8),
                   _progressoGeral(),
-                  const Spacer(flex: 2),
-                  // Nome do exercício numa "pílula" cinza-escuro arredondada.
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface2,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      fase.exercicioNome.toUpperCase(),
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5),
-                      textAlign: TextAlign.center,
+                  const SizedBox(height: 12),
+                  // Nome do exercício como TARJA (faixa larga) logo abaixo do
+                  // progresso: fundo cinza, texto branco, centralizado, maiúsculo.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface2,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        fase.exercicioNome.toUpperCase(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: AppColors.text,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const Spacer(flex: 2),
                   _contadorReps(fase),
                   const SizedBox(height: 22),
                   _anel(cor, fracao, segundos, fase),
                   const SizedBox(height: 20),
-                  _legendaProxima(proxima),
+                  _legendaProxima(),
                   const Spacer(flex: 3),
                   _controles(),
                   const SizedBox(height: 12),
@@ -493,7 +518,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Widget _contadorReps(Fase f) {
     final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
     return SizedBox(
-      height: 60,
+      height: 68,
       child: mostra
           ? Center(
               child: Container(
@@ -511,7 +536,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   style: const TextStyle(
                     color: AppColors.onAccentAmbar, // preto sobre o amarelo
                     fontWeight: FontWeight.w800,
-                    fontSize: 40,
+                    fontSize: 46,
                   ),
                 ),
               ),
@@ -577,11 +602,45 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     );
   }
 
-  Widget _legendaProxima(Fase? proxima) {
-    final txt = proxima == null
+  /// Índice da fase que INICIA a próxima ETAPA — pulando as repetições restantes
+  /// da série atual (que são a MESMA etapa, mesmo movimento). -1 = fim do treino.
+  /// Assim, durante a execução o "A seguir" mostra o DESCANSO (a próxima etapa
+  /// diferente), não a próxima repetição do mesmo exercício.
+  int _proximaEtapaIdx() {
+    final cur = _fases[_idx];
+    var j = _idx + 1;
+    while (j < _fases.length &&
+        cur.tipo == FaseTipo.execucao &&
+        _fases[j].tipo == FaseTipo.execucao &&
+        _fases[j].exercicioIndex == cur.exercicioIndex &&
+        _fases[j].serie == cur.serie &&
+        _fases[j].lado == cur.lado) {
+      j++;
+    }
+    return j < _fases.length ? j : -1;
+  }
+
+  /// Descreve uma ETAPA para o "A seguir": descanso/preparação mostram o tempo;
+  /// execução mostra o exercício + nº de reps (ou o tempo, se isométrico=1 rep).
+  String _descricaoEtapa(Fase f) {
+    switch (f.tipo) {
+      case FaseTipo.preparacao:
+        return 'Preparação · ${fmtSeg(f.segundos)}';
+      case FaseTipo.descanso:
+        return 'Descanso · ${fmtSeg(f.segundos)}';
+      case FaseTipo.execucao:
+        final lado = f.lado > 0 ? ' (lado ${f.lado})' : '';
+        final quanto =
+            f.totalReps > 1 ? '${f.totalReps} reps' : fmtSeg(f.segundos);
+        return '${f.exercicioNome}$lado · $quanto';
+    }
+  }
+
+  Widget _legendaProxima() {
+    final j = _proximaEtapaIdx();
+    final txt = j < 0
         ? 'A seguir: fim do treino'
-        : 'A seguir: ${proxima.tipo.rotulo} · ${proxima.exercicioNome}'
-            ' (${fmtSeg(proxima.segundos)})';
+        : 'A seguir: ${_descricaoEtapa(_fases[j])}';
     return Text(
       txt,
       style: const TextStyle(color: AppColors.dim, fontSize: 13),

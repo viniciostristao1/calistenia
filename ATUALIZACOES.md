@@ -3,6 +3,17 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-11 — v0.35.0 (correção do travamento + "A seguir" por etapa + nome em tarja):**
+  - **Correção importante do travamento:** o cronômetro travava/fechava em exercícios de **muitas
+    repetições** (ex.: 22 reps × 4 séries) — o som era **recarregado a cada repetição**, vazando até
+    o app fechar. Agora o som é pré-carregado uma vez, e a tela reconstrói ~10× menos por segundo.
+  - **"A seguir" agora mostra a próxima ETAPA**, não a próxima repetição: durante a série diz
+    **"A seguir: Descanso · 1min 30s"**; no descanso diz **"A seguir: Flexão declinada · 12 reps"**.
+  - **Nome do exercício** virou uma **tarja larga** no topo (logo abaixo de "Exercício X · Série Y"),
+    **fonte maior**, branco, centralizado, em MAIÚSCULAS.
+  - **Contador de reps "5/12" maior** (fonte 46).
+  - **Home:** a linha entre o título do treino e a lista de exercícios ficou **mais neutra/fraca**
+    (igual à cor dos "6 pontinhos").
 - **2026-08-10 — v0.34.0 (cronômetro repaginado — nome em caixa + amarelo maior):**
   - **Nome do exercício** agora dentro de uma **caixa cinza-escuro arredondada**; removido o
     texto "X repetições" abaixo do nome (redundante).

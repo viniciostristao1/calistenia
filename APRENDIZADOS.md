@@ -907,3 +907,38 @@ do "ESTADO ATUAL" do INICIO (estava travado na v0.21.0), fluxo de release/latest
 do nome de exibição (Calistenia→**Calis Timer**), e o novo `LAYOUT_CRONOMETRO.md`.
 
 **Validação:** `flutter analyze` limpo a cada passo. Versão final `0.34.0+34`.
+
+---
+
+## 2026-08-11 — v0.35.0: fix do travamento (áudio SoundPool) + "A seguir" por etapa + tarja
+
+**🐛 Bug do travamento/crash (o mais importante).** Usuário relatou: exercício de 22 reps × 4
+séries roda liso 3 séries, na 4ª começa a travar e **piora** até o app fechar ("erro interno");
+correlaciona com o exercício de **maior repetição**; e às vezes trava ao voltar de pausa longa.
+Causa: `_tocarSom` fazia `player.play(AssetSource('beep.wav'))` a **cada** repetição. Em
+`PlayerMode.lowLatency` (Android = SoundPool), `play(AssetSource)` re-prepara/reataca o som toda
+vez; com ~90 disparos num exercício de 22×4 isso vaza recurso e trava progressivamente. **Fix:**
+`_prepararSom` agora faz `setSource` UMA vez por player (pool de 5 bips + fim), e `_replay(p)` toca
+via `p.stop().whenComplete(()=>p.resume()).catchError(...)` — `stop()` zera o `streamId`, `resume()`
+cai no ramo `soundPool.play(soundId)` do `SoundPoolPlayer.start()` (verificado no
+`audioplayers_android-5.3.0`), tocando do início SEM recarregar. Erros de áudio são engolidos (som
+nunca derruba o timer). **+Throttle de rebuild:** `_tick` roda a 100ms mas só faz `setState` quando
+o segundo exibido muda (`_ultimoSegExibido`) — ~10× menos reconstruções do número 244px + anel
+(alívio extra de main-thread). *Não reproduzível na VPS (headless); fix por diagnóstico do
+mecanismo. Se persistir, próximo suspeito = flood de `HapticFeedback` por rep.*
+
+**"A seguir" = próxima ETAPA, não próximo movimento.** Antes mostrava `_fases[_idx+1]` (a próxima
+repetição do mesmo exercício — inútil). Agora `_proximaEtapaIdx()` pula as reps restantes da mesma
+série/lado/exercício e aponta a próxima etapa diferente; `_descricaoEtapa` formata: descanso/prep =
+tempo; execução = `<Nome> (lado L) · N reps` (ou tempo se isométrico). Ex.: durante a série →
+"Descanso · 1min 30s"; no descanso → "Flexão declinada · 12 reps".
+
+**Layout (pedido do usuário).** Nome do exercício virou **tarja** (Container `width: infinity`,
+`surface2`, radius 12, inset h12) logo abaixo do progresso, **fonte 20→24 branca** centralizada
+MAIÚSCULA; movido do meio p/ o topo (Spacer agora fica ENTRE a tarja e o contador). Contador de reps
+**40→46** (altura reservada 60→68). Removida a var `proxima` (não usada). **Home:** `Divider` do card
+(título↔exercícios) ganhou `color: AppColors.dim2` (neutro, = cor do `drag_indicator`).
+
+**Docs:** `LAYOUT_CRONOMETRO.md` atualizado (ordem, valores, semântica do "A seguir", seção de
+performance/estabilidade). **Validação:** `flutter analyze` limpo + `flutter test` **19/19**. Versão
+`0.35.0+35`.
