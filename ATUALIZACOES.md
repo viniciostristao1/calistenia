@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-11 — v0.37.0 (anel do cronômetro fluido de novo):**
+  - O anel voltou a **drenar suave** durante a contagem (na v0.35 ele tinha passado a "saltar" a
+    cada segundo). O travamento que a gente corrigiu era do **áudio**, não do anel — então dá pra
+    manter a fluidez sem risco.
 - **2026-08-11 — v0.36.0 (interno: relatório de crashes + testes do cronômetro):**
   - **Sem mudança visível.** Internamente, o app agora **reporta erros automaticamente** (com
     detalhes técnicos) — se algo travar/fechar, a correção fica muito mais rápida, sem depender de

@@ -59,7 +59,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Timer? _timer;
   final Stopwatch _sw = Stopwatch();
   int _ultimoBip = -1;
-  int _ultimoSegExibido = -1; // último segundo já pintado (throttle do rebuild)
   final Set<int> _marcados = {}; // exercícios já registrados no check-in
 
   // Gamificação (só quando é um treino inteiro e a opção está ligada).
@@ -212,10 +211,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 
     if (_restanteMs <= 0) {
       _avancar(auto: true);
-    } else if (segRestante != _ultimoSegExibido) {
-      // Só reconstrói quando o SEGUNDO exibido muda (não a cada 100ms) — corta
-      // ~10× os rebuilds do número/anel e evita a lentidão progressiva.
-      _ultimoSegExibido = segRestante;
+    } else {
+      // Reconstrói a cada tick (100ms) para o ANEL drenar fluido. O travamento
+      // que existia NÃO era daqui — era o áudio (ver _prepararSom/_replay) —, então
+      // manter a fluidez é seguro.
       setState(() {});
     }
   }

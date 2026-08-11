@@ -69,8 +69,9 @@ série atual (são a mesma etapa/movimento) e aponta a próxima etapa DIFERENTE.
 
 ## Performance / estabilidade do cronômetro
 
-- **Rebuild throttle:** o `Timer` roda a 100ms (p/ bip/háptico), mas `setState` só dispara quando o
-  **segundo exibido muda** (`_ultimoSegExibido`) — ~10× menos rebuilds do número/anel.
+- **Anel fluido:** o `Timer` roda a 100ms e faz `setState` a **cada** tick → o anel drena suave.
+  (Uma tentativa de throttle por-segundo na v0.35 deixou o anel "saltando" e foi **revertida na
+  v0.37** — o travamento era do ÁUDIO, não do rebuild, então dá pra manter a fluidez sem risco.)
 - **Áudio (lowLatency/SoundPool):** os players de bip/fim são **pré-carregados 1×** (`setSource` no
   `_prepararSom`); cada disparo é `stop()+resume()` (`_replay`), NUNCA `play(AssetSource)` (que
   re-prepara e trava com muitas reps). Erros de áudio são engolidos (não derrubam o timer).
