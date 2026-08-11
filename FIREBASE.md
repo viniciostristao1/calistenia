@@ -73,3 +73,19 @@ Estrutura na nuvem: um doc por usuário `users/{uid}` com os campos `treinos`, `
   basta.
 - **Nome "Calis Timer":** é só o nome de **exibição** (`android:label` + título da home).
   Muda quando você quiser, sem afetar o Firebase. O package segue `com.vinyapps.calistenia`.
+
+## Crashlytics (relatório de crashes) — v0.36.0
+
+Pacote `firebase_crashlytics`. Em `main.dart`, `FlutterError.onError` e
+`platformDispatcher.onError` mandam todo erro (com **stack trace**) pro painel — assim um
+"erro interno" reportado pelo usuário chega diagnosticável, sem depender de reprodução.
+
+- **Onde ver:** Firebase Console → projeto `calis-timer` → **Crashlytics**. O produto
+  costuma "ativar" sozinho ao chegar o **primeiro** relatório (pode levar alguns minutos após
+  o crash, com o app reaberto).
+- **Escopo atual:** só relatório **Dart** (exceções do app). **Não** adicionamos o *plugin
+  Gradle* `com.google.firebase.crashlytics` — ele serve p/ símbolos **NDK** e p/
+  de-ofuscar mapping do R8, que hoje não precisamos (não ofuscamos o Dart). Se um dia
+  ofuscarmos ou quisermos crashes nativos legíveis, aí adicionamos o plugin.
+- **Teste rápido:** `FirebaseCrashlytics.instance.crash()` força um crash de teste (remover
+  depois). Sem isso, é só esperar um erro real.

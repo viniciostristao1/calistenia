@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,17 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Crashlytics: manda para o painel todo erro de Flutter e todo erro assíncrono
+  // não tratado, COM stack trace — assim um "erro interno" reportado pelo usuário
+  // chega diagnosticável, sem depender de repro. (Só relatório Dart; o plugin
+  // Gradle de símbolos NDK não é necessário para esses casos.)
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  WidgetsBinding.instance.platformDispatcher.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const ProviderScope(child: CalisteniaApp()));
 }

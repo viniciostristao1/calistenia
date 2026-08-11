@@ -1,3 +1,4 @@
+import '../util/format.dart';
 import 'exercicio.dart';
 import 'treino.dart';
 
@@ -131,4 +132,40 @@ List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
     fases.removeLast();
   }
   return fases;
+}
+
+/// Índice da fase que INICIA a próxima ETAPA a partir de [idx] — pulando as
+/// repetições restantes da série atual (que são a MESMA etapa/movimento).
+/// Retorna -1 se não houver próxima (fim do treino). Assim, durante a execução
+/// o "A seguir" aponta o DESCANSO seguinte, não a próxima repetição igual.
+int proximaEtapaIdx(List<Fase> fases, int idx) {
+  if (idx < 0 || idx >= fases.length) return -1;
+  final cur = fases[idx];
+  var j = idx + 1;
+  while (j < fases.length &&
+      cur.tipo == FaseTipo.execucao &&
+      fases[j].tipo == FaseTipo.execucao &&
+      fases[j].exercicioIndex == cur.exercicioIndex &&
+      fases[j].serie == cur.serie &&
+      fases[j].lado == cur.lado) {
+    j++;
+  }
+  return j < fases.length ? j : -1;
+}
+
+/// Descreve uma ETAPA para o "A seguir": descanso/preparação mostram o tempo;
+/// execução mostra o exercício + nº de reps (ou o tempo, se isométrico = 1 rep),
+/// com "(lado L)" quando unilateral.
+String descricaoEtapa(Fase f) {
+  switch (f.tipo) {
+    case FaseTipo.preparacao:
+      return 'Preparação · ${fmtSeg(f.segundos)}';
+    case FaseTipo.descanso:
+      return 'Descanso · ${fmtSeg(f.segundos)}';
+    case FaseTipo.execucao:
+      final lado = f.lado > 0 ? ' (lado ${f.lado})' : '';
+      final quanto =
+          f.totalReps > 1 ? '${f.totalReps} reps' : fmtSeg(f.segundos);
+      return '${f.exercicioNome}$lado · $quanto';
+  }
 }

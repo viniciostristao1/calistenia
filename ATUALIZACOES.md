@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-11 — v0.36.0 (interno: relatório de crashes + testes do cronômetro):**
+  - **Sem mudança visível.** Internamente, o app agora **reporta erros automaticamente** (com
+    detalhes técnicos) — se algo travar/fechar, a correção fica muito mais rápida, sem depender de
+    você lembrar o que aconteceu. E adicionei **testes automáticos do cronômetro** (inclusive o
+    caso de 22×4 que travava) pra pegar regressões antes de chegar no seu celular.
 - **2026-08-11 — v0.35.0 (correção do travamento + "A seguir" por etapa + nome em tarja):**
   - **Correção importante do travamento:** o cronômetro travava/fechava em exercícios de **muitas
     repetições** (ex.: 22 reps × 4 séries) — o som era **recarregado a cada repetição**, vazando até

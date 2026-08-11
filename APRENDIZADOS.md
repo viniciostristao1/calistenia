@@ -942,3 +942,32 @@ MAIÚSCULA; movido do meio p/ o topo (Spacer agora fica ENTRE a tarja e o contad
 **Docs:** `LAYOUT_CRONOMETRO.md` atualizado (ordem, valores, semântica do "A seguir", seção de
 performance/estabilidade). **Validação:** `flutter analyze` limpo + `flutter test` **19/19**. Versão
 `0.35.0+35`.
+
+---
+
+## 2026-08-11 — v0.36.0: Crashlytics (relatório de crashes) + testes do player
+
+Dois pedidos do usuário após a v0.35.0 (blindar contra "erros internos" + pegar regressões).
+
+**1) Firebase Crashlytics.** `flutter pub add firebase_crashlytics` (resolveu `^5.2.7`, alinhado
+ao firebase_core 4.x). Em `main.dart`, após `Firebase.initializeApp`:
+`FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;` e
+`WidgetsBinding.instance.platformDispatcher.onError = (e,s){ recordError(e,s,fatal:true); return true; }`.
+**Decisão de risco:** NÃO adicionei o plugin Gradle `com.google.firebase.crashlytics` — ele é p/
+símbolos NDK / de-ofuscação R8, desnecessário p/ crashes **Dart** (que é o caso), e como a VPS não
+compila Android eu não conseguiria validar um mismatch de versão do plugin no CI. Rota Dart-only =
+captura o que importa com risco mínimo de quebrar o build. Detalhe em `FIREBASE.md`.
+
+**2) Testes do player.** A classe de bug da v0.35 passou porque os 19 testes cobriam
+modelos/rating, mas **não o cronômetro**. Para testar sem depender dos plugins nativos
+(audioplayers/wakelock não existem em `flutter test`), **extraí a lógica pura** do "A seguir" de
+`player_screen.dart` para `fase.dart`: `proximaEtapaIdx(fases, idx)` e `descricaoEtapa(fase)` (o
+player só chama). Novo `test/player_logic_test.dart` (10 testes) cobre: linha do tempo **22×4** (o
+caso que travava — 92 fases, 88 exec, 3 descansos), contador 0-based nunca-negativo, e todas as
+transições do "A seguir" (prep→exec, exec→descanso pulando reps, descanso→próxima série, fim=-1,
+fora-do-limite=-1) + formatação (reps / isométrico=tempo / unilateral "(lado N)"). *Um teste puro
+não pega o vazamento de SoundPool em si (é runtime nativo), mas trava a lógica e a estrutura da
+linha do tempo — que é a parte reproduzível.*
+
+**Validação:** `flutter analyze` limpo + `flutter test` **29/29** (era 19 + 10 novos). Versão
+`0.36.0+36`.

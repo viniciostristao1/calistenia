@@ -602,45 +602,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     );
   }
 
-  /// Índice da fase que INICIA a próxima ETAPA — pulando as repetições restantes
-  /// da série atual (que são a MESMA etapa, mesmo movimento). -1 = fim do treino.
-  /// Assim, durante a execução o "A seguir" mostra o DESCANSO (a próxima etapa
-  /// diferente), não a próxima repetição do mesmo exercício.
-  int _proximaEtapaIdx() {
-    final cur = _fases[_idx];
-    var j = _idx + 1;
-    while (j < _fases.length &&
-        cur.tipo == FaseTipo.execucao &&
-        _fases[j].tipo == FaseTipo.execucao &&
-        _fases[j].exercicioIndex == cur.exercicioIndex &&
-        _fases[j].serie == cur.serie &&
-        _fases[j].lado == cur.lado) {
-      j++;
-    }
-    return j < _fases.length ? j : -1;
-  }
-
-  /// Descreve uma ETAPA para o "A seguir": descanso/preparação mostram o tempo;
-  /// execução mostra o exercício + nº de reps (ou o tempo, se isométrico=1 rep).
-  String _descricaoEtapa(Fase f) {
-    switch (f.tipo) {
-      case FaseTipo.preparacao:
-        return 'Preparação · ${fmtSeg(f.segundos)}';
-      case FaseTipo.descanso:
-        return 'Descanso · ${fmtSeg(f.segundos)}';
-      case FaseTipo.execucao:
-        final lado = f.lado > 0 ? ' (lado ${f.lado})' : '';
-        final quanto =
-            f.totalReps > 1 ? '${f.totalReps} reps' : fmtSeg(f.segundos);
-        return '${f.exercicioNome}$lado · $quanto';
-    }
-  }
-
   Widget _legendaProxima() {
-    final j = _proximaEtapaIdx();
+    final j = proximaEtapaIdx(_fases, _idx);
     final txt = j < 0
         ? 'A seguir: fim do treino'
-        : 'A seguir: ${_descricaoEtapa(_fases[j])}';
+        : 'A seguir: ${descricaoEtapa(_fases[j])}';
     return Text(
       txt,
       style: const TextStyle(color: AppColors.dim, fontSize: 13),
