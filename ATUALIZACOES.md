@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-12 — v0.39.0 (copiar nome do exercício + editor uniforme + compartilhar detalhado):**
+  - **Editar exercício:** botão de **copiar o nome** no canto superior direito — pra mandar rápido
+    pra alguém.
+  - **Editor mais uniforme:** todos os rótulos (séries, repetições, um lado por vez, preparação…)
+    ficaram com a **mesma fonte**; tirei o "(por série)" de Repetições.
+  - **Compartilhar treino** ficou **detalhado**: por exercício mostra séries×reps, execução/rep,
+    descanso/série e (preparação), além da duração total.
 - **2026-08-12 — v0.38.0 (progressão automática + placar no cronômetro + novos fundos):**
   - **Progressão sem fricção:** ao responder **"Sim, completei"**, se você fez mais reps que o seu
     recorde (porque subiu o plano), o app **registra o novo recorde sozinho** — com uma comemoração

@@ -1003,3 +1003,27 @@ PNGs soltas (12 + 1 órfã antiga; preservadas no histórico) a pedido do usuár
 `fundo1..8.jpg` sobrescritos; `fundosDisponiveis` (util/fundos.dart) agora lista 12.
 
 **Validação:** `flutter analyze` limpo + `flutter test` **29/29**. Versão `0.38.0+38`.
+
+---
+
+## 2026-08-12 — v0.39.0: copiar nome + rótulos uniformes no editor + compartilhar detalhado
+
+Três pedidos no editor de exercício + share.
+
+**1) Copiar nome (editor).** Botão `Icons.copy_rounded` no topo-direito do header (título vira
+`Expanded`). `_copiarNome`: `Clipboard.setData` + feedback via `scaffoldMessengerKey` global (o
+SnackBar de `ScaffoldMessenger.of(context)` ficaria atrás da bottom sheet).
+
+**2) Rótulos uniformes.** Achado: os labels de `_StepperLinha`/`_TempoLinha`/`_PesoLinha` eram
+`TextStyle(w600)` sem fontSize (≈14 do bodyMedium), mas o título do `SwitchListTile` ("Um lado por
+vez") herda o `bodyLarge` do ListTile (≈16) → destoava. Fix: `const _kLabelEditor =
+TextStyle(fontSize: 15, w600)` no topo do arquivo, aplicado aos 7 rótulos (2 replace_all: variante
+`const TextStyle(...)` e variante não-const dentro de `const Text`). Removido "(por série)" de
+Repetições.
+
+**3) Compartilhar detalhado.** `exportar_treino.dart` reescrito: por exercício, linha própria
+`"N. Nome:"` + detalhes `"SxR repetições · execução Es/rep · descanso D/série | (preparação Ps)"`;
+descanso variável vira faixa `min–max` (`_descansoTexto`); isométrico (reps=1) mostra tempo; inclui
+peso e "um lado por vez" quando houver. Novo `test/export_test.dart` (2 testes) trava o formato.
+
+**Validação:** `flutter analyze` limpo + `flutter test` **31/31** (29 + 2). Versão `0.39.0+39`.

@@ -7,6 +7,11 @@ import '../../services/progressao_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
 import '../../util/fundos.dart';
+import '../../util/messenger.dart';
+
+/// Estilo único dos rótulos do editor (séries, repetições, um lado por vez,
+/// preparação, etc.) — todos com a MESMA fonte e tamanho.
+const _kLabelEditor = TextStyle(fontSize: 15, fontWeight: FontWeight.w600);
 
 /// Abre a folha de edição de um exercício. Retorna o exercício editado
 /// (ou `null` se cancelado). Passe `existente` para editar; `null` para criar.
@@ -112,6 +117,21 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     Navigator.of(context).pop(e);
   }
 
+  /// Copia o nome do exercício para a área de transferência (p/ mandar a alguém).
+  void _copiarNome() {
+    final nome = _nomeCtrl.text.trim();
+    if (nome.isEmpty) {
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(content: Text('Escreva o nome do exercício primeiro.')),
+      );
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: nome));
+    scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(content: Text('Copiado: $nome')),
+    );
+  }
+
   /// A seção de descanso: um descanso único (padrão) OU um por série.
   List<Widget> _descansoSection() {
     final d = _descansos;
@@ -151,7 +171,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             ),
             const Expanded(
               child: Text('Descanso por série',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+                  style: _kLabelEditor),
             ),
             TextButton(
               onPressed: () => setState(() => _descansos = null),
@@ -204,12 +224,20 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  widget.existente == null
-                      ? 'Novo exercício'
-                      : 'Editar exercício',
-                  style:
-                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                Expanded(
+                  child: Text(
+                    widget.existente == null
+                        ? 'Novo exercício'
+                        : 'Editar exercício',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Copiar o nome do exercício',
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.copy_rounded),
+                  onPressed: _copiarNome,
                 ),
               ],
             ),
@@ -237,7 +265,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             ),
             const SizedBox(height: 6),
             _StepperLinha(
-              rotulo: 'Repetições (por série)',
+              rotulo: 'Repetições',
               cor: AppColors.text,
               valorTexto: '$_reps',
               onMenos: () => setState(() => _reps = (_reps - 1).clamp(1, 999)),
@@ -254,7 +282,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               onChanged: (v) => setState(() => _unilateral = v),
               activeThumbColor: context.accent,
               title: const Text('Um lado por vez',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+                  style: _kLabelEditor),
               subtitle: const Text(
                 'Faz a série de um lado e depois do outro (ex.: um braço por vez).',
                 style: TextStyle(color: AppColors.dim, fontSize: 12),
@@ -381,7 +409,7 @@ class _TempoLinha extends StatelessWidget {
           ),
           Expanded(
             child: Text(rotulo,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+                style: _kLabelEditor),
           ),
           _Redondo(
             icon: Icons.remove,
@@ -448,7 +476,7 @@ class _StepperLinha extends StatelessWidget {
       children: [
         Expanded(
           child: Text(rotulo,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+              style: _kLabelEditor),
         ),
         _Redondo(icon: Icons.remove, onTap: onMenos),
         GestureDetector(
@@ -581,7 +609,7 @@ class _PesoLinha extends StatelessWidget {
           ),
           const Expanded(
             child: Text('Peso',
-                style: TextStyle(fontWeight: FontWeight.w600)),
+                style: _kLabelEditor),
           ),
           _Redondo(
             icon: Icons.remove,
@@ -632,7 +660,7 @@ class _SeletorCor extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Cor do exercício',
-            style: TextStyle(fontWeight: FontWeight.w600)),
+            style: _kLabelEditor),
         const SizedBox(height: 12),
         Wrap(
           spacing: 12,
@@ -680,7 +708,7 @@ class _SeletorFundo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Imagem de fundo do cronômetro',
-            style: TextStyle(fontWeight: FontWeight.w600)),
+            style: _kLabelEditor),
         const SizedBox(height: 4),
         const Text('Motivação atrás do contador deste exercício.',
             style: TextStyle(color: AppColors.dim, fontSize: 13)),
