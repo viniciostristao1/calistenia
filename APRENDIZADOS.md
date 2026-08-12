@@ -1027,3 +1027,13 @@ descanso variável vira faixa `min–max` (`_descansoTexto`); isométrico (reps=
 peso e "um lado por vez" quando houver. Novo `test/export_test.dart` (2 testes) trava o formato.
 
 **Validação:** `flutter analyze` limpo + `flutter test` **31/31** (29 + 2). Versão `0.39.0+39`.
+
+---
+
+## 2026-08-12 — v0.40.0: nome do exercício em 1 linha (auto-fit) + placar colado
+
+Ajuste de layout no `_tarja` (player). **Nome sempre em UMA linha:** o `Text` virou
+`FittedBox(scaleDown)` + `maxLines:1`/`softWrap:false`, com `Container(alignment: center)` p/
+centralizar — nomes longos encolhem a fonte, não quebram; texto curto fica em `_fonteTarja` (34).
+**Contador colado:** removido o `SizedBox(6)` entre `_tarjaNome` e `_contadorReps` (as duas tarjas
+ficam sem espaço, como um placar). `analyze` limpo. Versão `0.40.0+40`.

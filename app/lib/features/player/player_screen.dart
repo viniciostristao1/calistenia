@@ -413,8 +413,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   const SizedBox(height: 12),
                   // Nome + contador = duas TARJAS empilhadas (um "placar" do
                   // exercício): mesma largura e mesma fonte.
+                  // Contador colado no nome (sem espaço) — placar do exercício.
                   _tarjaNome(fase),
-                  const SizedBox(height: 6),
                   _contadorReps(fase),
                   const Spacer(flex: 2),
                   _anel(cor, fracao, segundos, fase),
@@ -528,19 +528,26 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Container(
         width: double.infinity,
+        alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: fundo,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(
-          texto,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: cor,
-            fontSize: _fonteTarja,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
+        // Auto-ajuste: encolhe a fonte p/ caber SEMPRE em UMA linha (nomes longos
+        // não quebram em duas). Texto curto fica no tamanho normal (_fonteTarja).
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            texto,
+            maxLines: 1,
+            softWrap: false,
+            style: TextStyle(
+              color: cor,
+              fontSize: _fonteTarja,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ),

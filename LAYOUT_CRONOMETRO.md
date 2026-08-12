@@ -13,10 +13,9 @@ Quando o usuário pedir "aumenta/diminui/mais espaço/mais pra cima", **consulta
 | 1 | Barra topo (✕ + título) | `_barraTopo` | título fonte 15 |
 | 2 | Barra de progresso geral + rótulo | `_progressoGeral` | barra `minHeight 6`; rótulo "Exercício X/Y · Série S/T" (dim, 12) |
 | 3 | gap | `SizedBox` | 12 |
-| 4 | **Nome do exercício = TARJA** | `_tarjaNome`/`_tarja` | logo abaixo do progresso; largura total (inset h12), `surface2`, radius 12, padding h14/v8, texto **branco**, **fonte 34** (`_fonteTarja`) w800, MAIÚSCULO, centralizado |
-| 5 | gap nome → contador | `SizedBox` | 6 |
-| 6 | **Contador de reps = TARJA amarela** | `_contadorReps`/`_tarja` | logo abaixo do nome (placar); MESMA largura e MESMA **fonte 34**; `accentAmbar`/`onAccentAmbar`; só na execução (fora dela invisível via `Opacity 0`, mesma altura); reps CONCLUÍDAS (`f.rep-1`) |
-| 7 | **Espaçador de cima** | `Spacer(flex: 2)` | empurra o anel p/ baixo |
+| 4 | **Nome do exercício = TARJA** | `_tarjaNome`/`_tarja` | logo abaixo do progresso; largura total (inset h12), `surface2`, radius 12, padding h14/v8, **branco**, **fonte 34** (`_fonteTarja`) w800, MAIÚSCULO, centralizado; **auto-fit em UMA linha** (`FittedBox scaleDown` + `maxLines:1` — nomes longos encolhem, não quebram) |
+| 5 | **Contador de reps = TARJA amarela** | `_contadorReps`/`_tarja` | **colado no nome (sem gap)**, como placar; MESMA largura e MESMA **fonte 34**; `accentAmbar`/`onAccentAmbar`; só na execução (fora dela invisível via `Opacity 0`, mesma altura); reps CONCLUÍDAS (`f.rep-1`) |
+| 6 | **Espaçador de cima** | `Spacer(flex: 2)` | empurra o anel p/ baixo |
 | 8 | **Anel + miolo** | `_anel` | ver bloco abaixo |
 | 9 | Espaço anel → "A seguir" | `SizedBox` | 20 |
 | 10 | **"A seguir"** (próxima ETAPA) | `_legendaProxima` | dim, 13 (lógica abaixo) |
@@ -82,7 +81,8 @@ série atual (são a mesma etapa/movimento) e aponta a próxima etapa DIFERENTE.
 - **Número maior/menor** → fonte 244 (mexer junto no `height 0.78` e na largura 270 do FittedBox).
 - **Tarjas nome+contador maior/menor** → `_fonteTarja` (34) — muda AS DUAS juntas (mesma fonte).
 - **Cor/forma das tarjas** → `_tarja` (nome=`surface2`/branco; contador=`accentAmbar`/preto; radius 12).
-- **Gap entre as duas tarjas** → `SizedBox 6` (#5).
+- **Nome longo** → auto-fit (`FittedBox scaleDown`) mantém 1 linha; não há o que ajustar.
+- **Tarjas nome/contador coladas** (sem gap) — se quiser espaço de novo, `SizedBox` entre elas.
 - **Bloco do timer mais pra cima/baixo** → Spacer `2:3` (#7/#11).
 - **Divisória do card na home** (título↔exercícios) → `Divider(color: AppColors.dim2)` em `home_screen.dart`.
 - **Fundos do cronômetro** → `fundosDisponiveis` em `util/fundos.dart` (12 JPGs em `assets/fundos/`).

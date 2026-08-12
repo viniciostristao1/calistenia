@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-12 — v0.40.0 (nome do exercício em 1 linha + placar colado):**
+  - **Nome do exercício sempre em UMA linha** no cronômetro: nomes longos **encolhem a fonte
+    automaticamente** em vez de quebrar em duas linhas.
+  - A **tarja amarela da contagem** agora vem **colada** logo abaixo do nome (sem espaço) — um
+    placar só.
 - **2026-08-12 — v0.39.0 (copiar nome do exercício + editor uniforme + compartilhar detalhado):**
   - **Editar exercício:** botão de **copiar o nome** no canto superior direito — pra mandar rápido
     pra alguém.
