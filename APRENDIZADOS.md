@@ -971,3 +971,35 @@ linha do tempo — que é a parte reproduzível.*
 
 **Validação:** `flutter analyze` limpo + `flutter test` **29/29** (era 19 + 10 novos). Versão
 `0.36.0+36`.
+
+---
+
+## 2026-08-12 — v0.38.0: progressão automática por recorde + placar (tarjas) + novos fundos
+
+**Progressão sem fricção (recorde automático).** Decisão de design com o usuário: o app não sabe
+quantas reps você fez (conta tempo, não movimento), então o sinal honesto é o **"Sim, completei"**
+(= fiz o planejado). Novo `_registrarRecordes()` em `_marcarCompleto`: para cada exercício da
+sessão, se `repeticoes` (plano) > recorde atual (`agruparPorExercicio(...).maior`), grava um
+`RegistroProgressao` = novo recorde; junta os "Nome · N reps" batidos. Só conta como "recorde" se já
+havia baseline (o 1º registro é linha de base). **Removida** a folha manual `_AddProgressaoSheet` +
+botão "Adicionar à progressão" + `_abrirAddProgressao` (progressão deixou de ser manual; o "último
+recurso" é subir o plano no editor e dar "Sim"). Baseline automática (`garantirBaseline` no editor /
+`garantirBaselines` na aba) permanece.
+
+**Comemoração.** `_IconeComemora` (Tween `elasticOut`, o ícone "salta") no `_telaSucesso` — vale com
+ou sem recorde. `_NovosRecordes` (card `easeOutBack` com 🎉 + troféus) quando há PR. Frases: novas
+`frasesTreinoCompleto`/`fraseCompletoAleatoria()` em `frases.dart` (paralelo às de "não consegui"),
+sorteada no sucesso.
+
+**Layout — "placar" (item 2).** Nome e contador viraram **duas tarjas empilhadas** de mesma largura
+e **mesma fonte** (`_fonteTarja = 34`, no meio dos antigos 24/46). Helper `_tarja({texto,fundo,cor})`
+compartilhado; `_tarjaNome` (surface2/branco) + `_contadorReps` (accentAmbar/preto, invisível via
+`Opacity 0` fora da execução p/ não pular). Ordem nova: nome → gap 6 → contador → `Spacer(2)` → anel.
+
+**Fundos (item 3).** Usuário subiu 12 PNGs (~2,5MB cada, ~30MB) soltos na raiz via GitHub web
+(commit `8a9bd99`). Convertidos p/ JPG q82 com Pillow (venv de scratch) → `assets/fundos/fundo1..12.jpg`
+= **3,4MB** total (economia ~27MB no APK; imperceptível atrás do escurecimento 55%). `git rm` das 13
+PNGs soltas (12 + 1 órfã antiga; preservadas no histórico) a pedido do usuário ("organizar"). Antigos
+`fundo1..8.jpg` sobrescritos; `fundosDisponiveis` (util/fundos.dart) agora lista 12.
+
+**Validação:** `flutter analyze` limpo + `flutter test` **29/29**. Versão `0.38.0+38`.

@@ -3,6 +3,16 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-12 — v0.38.0 (progressão automática + placar no cronômetro + novos fundos):**
+  - **Progressão sem fricção:** ao responder **"Sim, completei"**, se você fez mais reps que o seu
+    recorde (porque subiu o plano), o app **registra o novo recorde sozinho** — com uma comemoração
+    "🎉 Novo recorde". Acabou o botão manual "Adicionar à progressão".
+  - **Comemoração no fim do treino:** o ícone de concluído **salta** (com ou sem recorde) e aparece
+    uma **frase de incentivo aleatória** — como já existia no "não consegui hoje".
+  - **Cronômetro:** o nome do exercício e a contagem **"5/12"** viraram **duas tarjas empilhadas**
+    (um placar), com a **mesma largura e a mesma fonte**.
+  - **Novos fundos:** troquei todas as imagens motivacionais pelas **12 novas** (soldados em treino)
+    que você subiu.
 - **2026-08-11 — v0.37.0 (anel do cronômetro fluido de novo):**
   - O anel voltou a **drenar suave** durante a contagem (na v0.35 ele tinha passado a "saltar" a
     cada segundo). O travamento que a gente corrigiu era do **áudio**, não do anel — então dá pra

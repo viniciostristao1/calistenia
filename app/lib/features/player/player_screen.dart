@@ -65,6 +65,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   bool? _respostaCompleto; // null = ainda não respondeu; true/false = respondeu
   List<TipoConquista> _novasConquistas = const []; // conquistas recém-obtidas
   String? _fraseIncompleto; // frase sorteada quando não completou
+  List<String> _novosRecordes = const []; // "Nome · N reps" batidos ao completar
+  String? _fraseCompleto; // frase sorteada quando completou
 
   String? _carimbo; // "Série 2/3 ✓" mostrado ao concluir uma série
   Timer? _carimboTimer;
@@ -112,18 +114,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// Erros de áudio são engolidos — som nunca derruba o cronômetro.
   void _replay(AudioPlayer p) {
     p.stop().whenComplete(() => p.resume()).catchError((_) {});
-  }
-
-  void _abrirAddProgressao() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.bg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => _AddProgressaoSheet(exercicios: widget.exercicios),
-    );
   }
 
   /// Check-in automático quando o exercício [ei] termina (uma vez por sessão).
@@ -286,6 +276,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _respostaCompleto = null;
       _novasConquistas = const [];
       _fraseIncompleto = null;
+      _novosRecordes = const [];
+      _fraseCompleto = null;
       _restanteMs = _fases.isEmpty ? 0 : _fases[0].segundos * 1000;
     });
     _iniciar();
@@ -296,11 +288,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   bool get _gamificaTreino =>
       widget.treino != null && (ref.read(gamificacaoProvider).value ?? true);
 
-  /// "Sim, completei": registra a conclusão e avalia novas conquistas.
+  /// "Sim, completei": registra a conclusão, grava recordes automáticos e avalia
+  /// novas conquistas.
   Future<void> _marcarCompleto() async {
     final treino = widget.treino;
     if (treino == null) return;
     await ref.read(conclusaoProvider.notifier).registrar(treino);
+    // Progressão automática: completar = fez o planejado; se as reps do plano
+    // superam o recorde, vira recorde novo (sem folha manual).
+    final novosRecordes = await _registrarRecordes();
     final concs = ref.read(conclusaoProvider).value ?? const [];
     final treinos = ref.read(treinosProvider).value ?? const [];
     final prog = ref.read(progressaoProvider).value ?? const [];
@@ -312,7 +308,37 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     setState(() {
       _respostaCompleto = true;
       _novasConquistas = novas;
+      _novosRecordes = novosRecordes;
+      _fraseCompleto = fraseCompletoAleatoria();
     });
+  }
+
+  /// Para cada exercício da sessão, se as reps PLANEJADAS superam o recorde
+  /// atual, grava um novo registro de progressão (o novo recorde). Retorna
+  /// "Nome · N reps" dos recordes batidos (só quando já havia recorde anterior —
+  /// o primeiro registro é a linha de base, não uma comemoração).
+  Future<List<String>> _registrarRecordes() async {
+    final notifier = ref.read(progressaoProvider.notifier);
+    final grupos =
+        agruparPorExercicio(ref.read(progressaoProvider).value ?? const []);
+    final recorde = {
+      for (final g in grupos) g.exercicio.trim().toLowerCase(): g.maior,
+    };
+    final batidos = <String>[];
+    final vistos = <String>{};
+    for (final e in widget.exercicios) {
+      final nome = e.nome.trim();
+      final key = nome.toLowerCase();
+      if (nome.isEmpty || e.repeticoes < 1 || vistos.contains(key)) continue;
+      vistos.add(key);
+      final rec = recorde[key];
+      if (rec == null || e.repeticoes > rec) {
+        await notifier
+            .adicionar(RegistroProgressao(exercicio: nome, valor: e.repeticoes));
+        if (rec != null) batidos.add('$nome · ${e.repeticoes} reps');
+      }
+    }
+    return batidos;
   }
 
   /// "Não consegui hoje": sorteia uma frase de incentivo (o dia já entrou no
@@ -385,32 +411,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   const SizedBox(height: 8),
                   _progressoGeral(),
                   const SizedBox(height: 12),
-                  // Nome do exercício como TARJA (faixa larga) logo abaixo do
-                  // progresso: fundo cinza, texto branco, centralizado, maiúsculo.
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface2,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        fase.exercicioNome.toUpperCase(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: AppColors.text,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5),
-                      ),
-                    ),
-                  ),
-                  const Spacer(flex: 2),
+                  // Nome + contador = duas TARJAS empilhadas (um "placar" do
+                  // exercício): mesma largura e mesma fonte.
+                  _tarjaNome(fase),
+                  const SizedBox(height: 6),
                   _contadorReps(fase),
-                  const SizedBox(height: 22),
+                  const Spacer(flex: 2),
                   _anel(cor, fracao, segundos, fase),
                   const SizedBox(height: 20),
                   _legendaProxima(),
@@ -511,37 +517,54 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     }
   }
 
-  /// Caixa amarela com o contador de repetições ("5/22") acima do cronômetro,
-  /// que sobe a cada repetição executada. Reserva a altura fixa (não pula o
-  /// layout entre fases).
+  /// Fonte compartilhada pelas tarjas do topo (nome e contador) — "placar" do
+  /// exercício: ambas com a MESMA fonte (no meio dos tamanhos antigos).
+  static const double _fonteTarja = 34;
+
+  /// Tarja larga (faixa) do topo. Nome e contador usam a mesma forma e fonte.
+  Widget _tarja(
+      {required String texto, required Color fundo, required Color cor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: fundo,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          texto,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: cor,
+            fontSize: _fonteTarja,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Tarja do NOME do exercício (cinza, texto branco, maiúsculas).
+  Widget _tarjaNome(Fase f) => _tarja(
+        texto: f.exercicioNome.toUpperCase(),
+        fundo: AppColors.surface2,
+        cor: AppColors.text,
+      );
+
+  /// Tarja AMARELA do contador de reps CONCLUÍDAS ("5/12") — logo abaixo do nome,
+  /// como um placar. Começa em 0 e vai até totalReps-1 (a última fecha a série).
+  /// Fora da execução fica invisível (mesma altura) p/ não pular o layout.
   Widget _contadorReps(Fase f) {
     final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
-    return SizedBox(
-      height: 68,
-      child: mostra
-          ? Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.accentAmbar, // amarelo (fixo)
-                  borderRadius: BorderRadius.circular(999), // pílula
-                ),
-                child: Text(
-                  // Conta as repetições CONCLUÍDAS: começa em 0 e vai até
-                  // totalReps-1 (ao "fechar" a última, a série encerra — o 12
-                  // cheio nunca fica girando na tela).
-                  '${f.rep - 1}/${f.totalReps}',
-                  style: const TextStyle(
-                    color: AppColors.onAccentAmbar, // preto sobre o amarelo
-                    fontWeight: FontWeight.w800,
-                    fontSize: 46,
-                  ),
-                ),
-              ),
-            )
-          : null,
+    final tarja = _tarja(
+      texto: mostra ? '${f.rep - 1}/${f.totalReps}' : '0/0',
+      fundo: AppColors.accentAmbar, // amarelo (fixo)
+      cor: AppColors.onAccentAmbar, // preto sobre o amarelo
     );
+    return mostra ? tarja : Opacity(opacity: 0, child: tarja);
   }
 
   Widget _anel(Color cor, double fracao, int segundos, Fase fase) {
@@ -694,17 +717,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           label: Text(labelRepetir),
         ),
         const SizedBox(height: 12),
-        OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: context.accent,
-            side: BorderSide(color: context.accent),
-            minimumSize: const Size(220, 50),
-          ),
-          onPressed: _abrirAddProgressao,
-          icon: const Icon(Icons.trending_up, size: 20),
-          label: const Text('Adicionar à progressão'),
-        ),
-        const SizedBox(height: 12),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Voltar'),
@@ -757,17 +769,33 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Widget _telaSucesso() {
     final completou = _respostaCompleto == true;
     return _molduraFim([
-      Icon(Icons.check_circle, size: 88, color: context.accent),
+      // Ícone que "salta" ao entrar — comemora todo treino concluído, com ou
+      // sem recorde.
+      _IconeComemora(Icons.check_circle, size: 88, color: context.accent),
       const SizedBox(height: 20),
       Text(
         completou ? 'Treino completo!' : 'Check-in concluído',
         style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+        textAlign: TextAlign.center,
       ),
       const SizedBox(height: 8),
+      if (_fraseCompleto != null) ...[
+        Text(
+          _fraseCompleto!,
+          style: const TextStyle(color: AppColors.text),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 6),
+      ],
       Text(
         '${widget.titulo} · ${fmtSeg(_duracaoTotal)}',
-        style: const TextStyle(color: AppColors.dim),
+        style: const TextStyle(color: AppColors.dim, fontSize: 13),
+        textAlign: TextAlign.center,
       ),
+      if (_novosRecordes.isNotEmpty) ...[
+        const SizedBox(height: 20),
+        _NovosRecordes(recordes: _novosRecordes),
+      ],
       if (_novasConquistas.isNotEmpty) ...[
         const SizedBox(height: 20),
         _NovasConquistas(tipos: _novasConquistas),
@@ -842,143 +870,80 @@ class _NovasConquistas extends StatelessWidget {
   }
 }
 
-/// Folha para registrar na progressão as repetições feitas de cada exercício
-/// (aberta no fim do treino). Pré-preenche com as repetições configuradas.
-class _AddProgressaoSheet extends ConsumerStatefulWidget {
-  const _AddProgressaoSheet({required this.exercicios});
+/// Ícone que "salta" ao entrar — comemora o fim do treino (com ou sem recorde).
+class _IconeComemora extends StatelessWidget {
+  const _IconeComemora(this.icon, {required this.size, required this.color});
 
-  final List<Exercicio> exercicios;
-
-  @override
-  ConsumerState<_AddProgressaoSheet> createState() =>
-      _AddProgressaoSheetState();
-}
-
-class _AddProgressaoSheetState extends ConsumerState<_AddProgressaoSheet> {
-  late final List<TextEditingController> _ctrls;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrls = widget.exercicios
-        .map((e) => TextEditingController(text: '${e.repeticoes}'))
-        .toList();
-  }
-
-  @override
-  void dispose() {
-    for (final c in _ctrls) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  void _salvar() {
-    final messenger = ScaffoldMessenger.of(context);
-    final notifier = ref.read(progressaoProvider.notifier);
-    var n = 0;
-    for (var i = 0; i < widget.exercicios.length; i++) {
-      final v = int.tryParse(_ctrls[i].text);
-      if (v == null || v < 0) continue;
-      final e = widget.exercicios[i];
-      final nome = e.nome.trim().isEmpty ? 'Exercício' : e.nome.trim();
-      notifier.adicionar(RegistroProgressao(exercicio: nome, valor: v));
-      n++;
-    }
-    Navigator.pop(context);
-    messenger.showSnackBar(
-      SnackBar(content: Text('Adicionado à progressão ($n)')),
-    );
-  }
+  final IconData icon;
+  final double size;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 14),
-              decoration: BoxDecoration(
-                color: AppColors.lineStrong,
-                borderRadius: BorderRadius.circular(2),
-              ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.elasticOut,
+      builder: (context, t, child) => Opacity(
+        opacity: t.clamp(0.0, 1.0),
+        child: Transform.scale(
+            scale: (0.4 + 0.6 * t).clamp(0.0, 1.2), child: child),
+      ),
+      child: Icon(icon, size: size, color: color),
+    );
+  }
+}
+
+/// Faixa comemorativa dos recordes recém-batidos ("Nome · N reps").
+class _NovosRecordes extends StatelessWidget {
+  const _NovosRecordes({required this.recordes});
+
+  final List<String> recordes;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeOutBack,
+      builder: (context, t, child) => Opacity(
+        opacity: t.clamp(0.0, 1.0),
+        child: Transform.scale(
+            scale: 0.85 + 0.15 * t.clamp(0.0, 1.0), child: child),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: context.accent.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.accent, width: 1.5),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              recordes.length > 1 ? '🎉 Novos recordes!' : '🎉 Novo recorde!',
+              style:
+                  TextStyle(fontWeight: FontWeight.w800, color: context.accent),
             ),
-          ),
-          const Text('Adicionar à progressão',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          const Text('Quantas repetições você fez de cada um?',
-              style: TextStyle(color: AppColors.dim, fontSize: 13)),
-          const SizedBox(height: 12),
-          Flexible(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  for (var i = 0; i < widget.exercicios.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            margin: const EdgeInsets.only(right: 10),
-                            decoration: BoxDecoration(
-                              color: AppColors.corExercicio(
-                                  widget.exercicios[i].corIndex),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              widget.exercicios[i].nome.trim().isEmpty
-                                  ? 'Exercício'
-                                  : widget.exercicios[i].nome,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 68,
-                            child: TextField(
-                              controller: _ctrls[i],
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              decoration: const InputDecoration(
-                                isDense: true,
-                                contentPadding:
-                                    EdgeInsets.symmetric(vertical: 10),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+            const SizedBox(height: 10),
+            for (final r in recordes)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.emoji_events, size: 20, color: context.accent),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(r,
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
                     ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: context.accent,
-              foregroundColor: context.onAccent,
-              minimumSize: const Size.fromHeight(52),
-            ),
-            onPressed: _salvar,
-            child: const Text('Salvar'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

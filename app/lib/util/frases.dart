@@ -24,3 +24,24 @@ const frasesTreinoIncompleto = <String>[
 /// Uma frase aleatória para o fim de um treino não concluído.
 String fraseIncompletoAleatoria() =>
     frasesTreinoIncompleto[Random().nextInt(frasesTreinoIncompleto.length)];
+
+/// Frases mostradas quando a pessoa COMPLETA o treino. Comemoram o esforço.
+/// Uma é sorteada aleatoriamente ao fim do treino concluído.
+const frasesTreinoCompleto = <String>[
+  'Missão cumprida! Você foi até o fim. 💪',
+  'Isso! Mais um treino na conta. Orgulhe-se!',
+  'Disciplina em ação — você apareceu e fez acontecer!',
+  'Forte hoje, mais forte amanhã. Excelente treino!',
+  'Concluído! É assim que se constrói consistência.',
+  'Você não negociou com a preguiça. Respeito!',
+  'Mais um tijolo na sua evolução. Muito bem!',
+  'Treino fechado! Seu "eu" do futuro agradece.',
+  'Suou, resistiu, terminou. Guerreiro(a)!',
+  'Feito é melhor que perfeito — e você fez. Parabéns!',
+  'A régua subiu de novo. Bora manter o ritmo!',
+  'Cada série te aproxima da sua melhor versão. 🔥',
+];
+
+/// Uma frase aleatória para o fim de um treino concluído.
+String fraseCompletoAleatoria() =>
+    frasesTreinoCompleto[Random().nextInt(frasesTreinoCompleto.length)];

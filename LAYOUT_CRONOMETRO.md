@@ -4,7 +4,7 @@ Anatomia e **valores atuais** da tela do player (`app/lib/features/player/player
 Quando o usuário pedir "aumenta/diminui/mais espaço/mais pra cima", **consultar e atualizar aqui**
 — evita re-derivar. Atualizar esta tabela SEMPRE que mexer nos números.
 
-> Fonte de verdade = o código. Este doc é o mapa rápido. Última sync: **2026-08-11 (v0.35.0)**.
+> Fonte de verdade = o código. Este doc é o mapa rápido. Última sync: **2026-08-12 (v0.38.0)**.
 
 ## Ordem dos elementos (topo → base) na fase de EXECUÇÃO
 
@@ -13,18 +13,19 @@ Quando o usuário pedir "aumenta/diminui/mais espaço/mais pra cima", **consulta
 | 1 | Barra topo (✕ + título) | `_barraTopo` | título fonte 15 |
 | 2 | Barra de progresso geral + rótulo | `_progressoGeral` | barra `minHeight 6`; rótulo "Exercício X/Y · Série S/T" (dim, 12) |
 | 3 | gap | `SizedBox` | 12 |
-| 4 | **Nome do exercício = TARJA** (faixa larga) | inline `Container` | logo abaixo do progresso; **largura total** (inset h12), fundo `AppColors.surface2`, `radius 12`, padding h14/v10, texto **branco** (`AppColors.text`), **fonte 24** w800, MAIÚSCULO, centralizado |
-| 5 | **Espaçador de cima** | `Spacer(flex: 2)` | empurra o bloco do timer p/ baixo (ver #12) |
-| 6 | **Contador de reps** (pílula amarela) | `_contadorReps` | só na execução c/ `totalReps>1`; **fonte 46** w800, pílula `radius 999`, padding h24/v6, cores `accentAmbar`/`onAccentAmbar`; **altura reservada 68**; mostra reps CONCLUÍDAS (`f.rep-1`, ver abaixo) |
-| 7 | Espaço contador → anel | `SizedBox` | 22 |
+| 4 | **Nome do exercício = TARJA** | `_tarjaNome`/`_tarja` | logo abaixo do progresso; largura total (inset h12), `surface2`, radius 12, padding h14/v8, texto **branco**, **fonte 34** (`_fonteTarja`) w800, MAIÚSCULO, centralizado |
+| 5 | gap nome → contador | `SizedBox` | 6 |
+| 6 | **Contador de reps = TARJA amarela** | `_contadorReps`/`_tarja` | logo abaixo do nome (placar); MESMA largura e MESMA **fonte 34**; `accentAmbar`/`onAccentAmbar`; só na execução (fora dela invisível via `Opacity 0`, mesma altura); reps CONCLUÍDAS (`f.rep-1`) |
+| 7 | **Espaçador de cima** | `Spacer(flex: 2)` | empurra o anel p/ baixo |
 | 8 | **Anel + miolo** | `_anel` | ver bloco abaixo |
 | 9 | Espaço anel → "A seguir" | `SizedBox` | 20 |
 | 10 | **"A seguir"** (próxima ETAPA) | `_legendaProxima` | dim, 13 (lógica abaixo) |
 | 11 | **Espaçador de baixo** | `Spacer(flex: 3)` | flex 3 |
 | 12 | Controles (‹ · ⏸/▶ · ›) | `_controles` | botão central = `accent` |
 
-**#5 vs #11 (Spacer 2:3):** centralizam o bloco contador+anel+"A seguir" entre a tarja do nome e
-os controles, com viés pra cima. O **nome (tarja) fica fixo no topo**, logo abaixo do progresso.
+**Placar (nome + contador):** duas tarjas empilhadas no topo, mesma largura e **mesma fonte
+(34 = `_fonteTarja`)** — nome (cinza `surface2`) e a contagem (amarela) logo abaixo. **Spacer 2:3**
+(#7 e #11) centraliza o anel+"A seguir" abaixo delas, com viés pra cima.
 
 ## Miolo do anel (`_anel`) — Column centralizada
 
@@ -79,9 +80,9 @@ série atual (são a mesma etapa/movimento) e aponta a próxima etapa DIFERENTE.
 ## Cheat-sheet dos "botões de ajuste" mais pedidos
 
 - **Número maior/menor** → fonte 244 (mexer junto no `height 0.78` e na largura 270 do FittedBox).
-- **Amarelo maior/menor** → fonte 46 + altura reservada 68.
-- **Amarelo mais/menos redondo** → `radius 999` (pílula).
-- **Nome (tarja) maior/menor** → fonte 24; largura/inset via `Padding(horizontal:12)`.
-- **Mais/menos espaço contador↔anel** → `SizedBox 22` (#7).
-- **Bloco do timer mais pra cima/baixo** → Spacer `2:3` (#5/#11).
+- **Tarjas nome+contador maior/menor** → `_fonteTarja` (34) — muda AS DUAS juntas (mesma fonte).
+- **Cor/forma das tarjas** → `_tarja` (nome=`surface2`/branco; contador=`accentAmbar`/preto; radius 12).
+- **Gap entre as duas tarjas** → `SizedBox 6` (#5).
+- **Bloco do timer mais pra cima/baixo** → Spacer `2:3` (#7/#11).
 - **Divisória do card na home** (título↔exercícios) → `Divider(color: AppColors.dim2)` em `home_screen.dart`.
+- **Fundos do cronômetro** → `fundosDisponiveis` em `util/fundos.dart` (12 JPGs em `assets/fundos/`).

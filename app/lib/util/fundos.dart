@@ -1,5 +1,5 @@
 /// Imagens de fundo (motivacionais) disponíveis para o cronômetro.
-/// São assets em `assets/fundos/`. Formato stories (9:16).
+/// São assets em `assets/fundos/` (soldados em treino, 1122×1402, JPG otimizado).
 const fundosDisponiveis = <String>[
   'fundo1.jpg',
   'fundo2.jpg',
@@ -9,6 +9,10 @@ const fundosDisponiveis = <String>[
   'fundo6.jpg',
   'fundo7.jpg',
   'fundo8.jpg',
+  'fundo9.jpg',
+  'fundo10.jpg',
+  'fundo11.jpg',
+  'fundo12.jpg',
 ];
 
 /// Caminho do asset a partir do nome guardado no treino.
