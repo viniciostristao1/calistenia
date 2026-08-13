@@ -1,6 +1,9 @@
 import '../models/exercicio.dart';
 import '../models/treino.dart';
+import 'dias.dart';
 import 'format.dart';
+
+const _assinatura = '— feito no Calis Timer';
 
 /// Descanso em texto: "1min" ou, se variável por série, "1min–1min 30s".
 /// Vazio quando não há descanso.
@@ -48,9 +51,8 @@ String _detalhesExercicio(Exercicio e) {
   return linha;
 }
 
-/// Gera um treino em texto (para copiar/compartilhar), com detalhes por
-/// exercício e a duração total.
-String treinoParaTexto(Treino t) {
+/// Corpo de um treino (nome + exercícios + duração), SEM a assinatura.
+String _corpoTreino(Treino t) {
   final buf = StringBuffer();
   buf.writeln(t.nome.trim().isEmpty ? 'Treino' : t.nome.trim());
   buf.writeln('─────────────────');
@@ -60,12 +62,34 @@ String treinoParaTexto(Treino t) {
     buf.writeln('${i + 1}. $nome:');
     buf.writeln(_detalhesExercicio(e));
   }
-  buf.writeln('');
-  buf.writeln('Duração ⏱️ ~${fmtSeg(t.duracaoTotalSeg)}');
-  buf.writeln('— feito no Calis Timer');
+  buf.write('Duração ⏱️ ~${fmtSeg(t.duracaoTotalSeg)}');
   return buf.toString();
 }
 
-/// Junta vários treinos num texto só.
+/// Um treino em texto (para copiar/compartilhar), com assinatura.
+String treinoParaTexto(Treino t) => '${_corpoTreino(t)}\n$_assinatura\n';
+
+/// Os treinos de UM dia (pode haver mais de um) em texto, com uma assinatura.
 String treinosParaTexto(List<Treino> treinos) =>
-    treinos.map(treinoParaTexto).join('\n\n');
+    '${treinos.map(_corpoTreino).join('\n\n')}\n$_assinatura\n';
+
+/// TODOS os treinos da semana, separados por dia (Segunda→Domingo). Dias sem
+/// treino aparecem como "(descanso)". Uma única assinatura no fim.
+String semanaParaTexto(List<Treino> todos) {
+  final buf = StringBuffer();
+  buf.writeln('MINHA SEMANA');
+  buf.writeln('═════════════════');
+  for (var d = 0; d < 7; d++) {
+    final doDia = todos.where((t) => t.dias.contains(d)).toList();
+    buf.writeln('');
+    buf.writeln('▶ ${nomesDiasLongos[d].toUpperCase()}');
+    if (doDia.isEmpty) {
+      buf.writeln('(descanso)');
+    } else {
+      buf.writeln(doDia.map(_corpoTreino).join('\n\n'));
+    }
+  }
+  buf.writeln('');
+  buf.writeln(_assinatura);
+  return buf.toString();
+}

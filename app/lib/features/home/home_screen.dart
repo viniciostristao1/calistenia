@@ -42,16 +42,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .toList();
     if (treinos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nenhum treino neste dia para compartilhar.')),
+        const SnackBar(
+            content: Text('Nenhum treino neste dia para compartilhar.')),
       );
       return;
     }
-    final texto = treinosParaTexto(treinos);
+    _mostrarCompartilhar('Compartilhar o dia', treinosParaTexto(treinos));
+  }
+
+  void _compartilharSemana() {
+    final todos = ref.read(treinosProvider).value ?? const <Treino>[];
+    if (todos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nenhum treino cadastrado ainda.')),
+      );
+      return;
+    }
+    _mostrarCompartilhar('Compartilhar a semana', semanaParaTexto(todos));
+  }
+
+  void _mostrarCompartilhar(String titulo, String texto) {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Compartilhar treino'),
+        title: Text(titulo),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -76,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (!mounted) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Treino copiado!')),
+                const SnackBar(content: Text('Copiado!')),
               );
             },
             icon: const Icon(Icons.copy, size: 18),
@@ -131,10 +146,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.settings_outlined),
             onPressed: _abrirConfig,
           ),
-          IconButton(
-            tooltip: 'Compartilhar treino',
+          PopupMenuButton<String>(
+            tooltip: 'Compartilhar',
             icon: const Icon(Icons.share_outlined),
-            onPressed: _compartilharDia,
+            onSelected: (v) =>
+                v == 'dia' ? _compartilharDia() : _compartilharSemana(),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'dia', child: Text('Compartilhar o dia')),
+              PopupMenuItem(
+                  value: 'semana', child: Text('Compartilhar a semana toda')),
+            ],
           ),
           IconButton(
             tooltip: 'Sair',

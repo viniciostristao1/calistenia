@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-13 — v0.41.0 (compartilhar a semana toda):**
+  - O botão de compartilhar (topo da home) agora tem **duas opções**: **"Compartilhar o dia"** e
+    **"Compartilhar a semana toda"**. A semana sai **separada por dia** (Segunda→Domingo, com
+    "(descanso)" nos dias livres), no mesmo formato detalhado.
 - **2026-08-12 — v0.40.0 (nome do exercício em 1 linha + placar colado):**
   - **Nome do exercício sempre em UMA linha** no cronômetro: nomes longos **encolhem a fonte
     automaticamente** em vez de quebrar em duas linhas.

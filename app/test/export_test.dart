@@ -46,4 +46,24 @@ void main() {
     ]);
     expect(treinoParaTexto(t), contains('descanso 1min–1min 30s/série'));
   });
+
+  test('compartilhar semana: agrupa por dia (Seg→Dom), dias vazios = descanso',
+      () {
+    final t = Treino(nome: 'Peito', dias: [0, 3], exercicios: [
+      Exercicio(
+          nome: 'Flexão',
+          preparacaoSeg: 10,
+          execucaoSeg: 5,
+          descansoSeg: 60,
+          repeticoes: 6,
+          series: 3),
+    ]);
+    final txt = semanaParaTexto([t]);
+    expect(txt, contains('MINHA SEMANA'));
+    expect(txt, contains('▶ SEGUNDA'));
+    expect(txt, contains('▶ QUINTA'));
+    expect(txt, contains('Peito')); // aparece nos dias agendados
+    // Seg (0) e Qui (3) têm treino; os outros 5 dias = descanso.
+    expect('(descanso)'.allMatches(txt).length, 5);
+  });
 }

@@ -1037,3 +1037,15 @@ Ajuste de layout no `_tarja` (player). **Nome sempre em UMA linha:** o `Text` vi
 centralizar — nomes longos encolhem a fonte, não quebram; texto curto fica em `_fonteTarja` (34).
 **Contador colado:** removido o `SizedBox(6)` entre `_tarjaNome` e `_contadorReps` (as duas tarjas
 ficam sem espaço, como um placar). `analyze` limpo. Versão `0.40.0+40`.
+
+---
+
+## 2026-08-13 — v0.41.0: compartilhar a semana toda
+
+`exportar_treino.dart` refatorado: extraí `_corpoTreino` (sem assinatura) e uma `_assinatura`
+única; `treinoParaTexto`/`treinosParaTexto` anexam 1 assinatura. Novo `semanaParaTexto(todos)`
+percorre os 7 dias (`nomesDiasLongos`, Seg→Dom), agrupa `todos.where((t)=>t.dias.contains(d))` sob
+"▶ DIA"; dias vazios = "(descanso)". Na home, o `IconButton` de compartilhar virou `PopupMenuButton`
+("Compartilhar o dia" / "…a semana toda"); `_compartilharDia`/`_compartilharSemana` chamam um
+`_mostrarCompartilhar(titulo, texto)` comum. `test/export_test.dart` +1. `analyze` limpo,
+`flutter test` **32/32**. Versão `0.41.0+41`.
