@@ -361,7 +361,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     if (_fases.isEmpty) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(
+        body: Center(
           child: Text('Este treino não tem etapas.',
               style: TextStyle(color: AppColors.dim)),
         ),
@@ -474,13 +474,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               minHeight: 6,
               backgroundColor: AppColors.surface2,
               valueColor:
-                  const AlwaysStoppedAnimation(AppColors.text),
+                  AlwaysStoppedAnimation(AppColors.text),
             ),
           ),
           const SizedBox(height: 6),
           Text(
             _rotuloProgresso(),
-            style: const TextStyle(color: AppColors.dim, fontSize: 12),
+            style: TextStyle(color: AppColors.dim, fontSize: 12),
           ),
         ],
       ),
@@ -521,7 +521,16 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// exercício: ambas com a MESMA fonte (no meio dos tamanhos antigos).
   static const double _fonteTarja = 34;
 
-  /// Tarja larga (faixa) do topo. Nome e contador usam a mesma forma e fonte.
+  /// Sombras neumórficas de RELEVO (elemento elevado do fundo): luz em
+  /// cima-esquerda, escuro em baixo-direita. Escala com a paleta atual.
+  List<BoxShadow> _relevo({double d = 5, double blur = 11}) => [
+        BoxShadow(color: AppColors.neuLo, offset: Offset(d, d), blurRadius: blur),
+        BoxShadow(
+            color: AppColors.neuHi, offset: Offset(-d, -d), blurRadius: blur),
+      ];
+
+  /// Tarja larga (faixa) do topo. Nome e contador usam a mesma forma e fonte,
+  /// em relevo neumórfico.
   Widget _tarja(
       {required String texto, required Color fundo, required Color cor}) {
     return Padding(
@@ -529,10 +538,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       child: Container(
         width: double.infinity,
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: fundo,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: _relevo(d: 3, blur: 8),
         ),
         // Auto-ajuste: encolhe a fonte p/ caber SEMPRE em UMA linha (nomes longos
         // não quebram em duas). Texto curto fica no tamanho normal (_fonteTarja).
@@ -568,8 +578,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
     final tarja = _tarja(
       texto: mostra ? '${f.rep - 1}/${f.totalReps}' : '0/0',
-      fundo: AppColors.accentAmbar, // amarelo (fixo)
-      cor: AppColors.onAccentAmbar, // preto sobre o amarelo
+      fundo: context.accent, // segue o accent do tema
+      cor: context.onAccent,
     );
     return mostra ? tarja : Opacity(opacity: 0, child: tarja);
   }
@@ -581,6 +591,26 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // Disco base em RELEVO: o anel inteiro parece saltar do fundo.
+          Container(
+            width: 292,
+            height: 292,
+            decoration: BoxDecoration(
+              color: AppColors.bg,
+              shape: BoxShape.circle,
+              boxShadow: _relevo(d: 9, blur: 20),
+            ),
+          ),
+          // Miolo elevado (backing do número), dá o efeito de anel esculpido.
+          Container(
+            width: 214,
+            height: 214,
+            decoration: BoxDecoration(
+              color: AppColors.bg,
+              shape: BoxShape.circle,
+              boxShadow: _relevo(d: 6, blur: 14),
+            ),
+          ),
           SizedBox(
             width: 292,
             height: 292,
@@ -622,7 +652,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               const SizedBox(height: 3),
               Text(
                 _subtextoAnel(fase),
-                style: const TextStyle(color: AppColors.dim, fontSize: 14),
+                style: TextStyle(color: AppColors.dim, fontSize: 14),
               ),
             ],
           ),
@@ -638,7 +668,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         : 'A seguir: ${descricaoEtapa(_fases[j])}';
     return Text(
       txt,
-      style: const TextStyle(color: AppColors.dim, fontSize: 13),
+      style: TextStyle(color: AppColors.dim, fontSize: 13),
       textAlign: TextAlign.center,
     );
   }
@@ -652,18 +682,24 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           onTap: _anterior,
         ),
         const SizedBox(width: 28),
-        Material(
-          color: context.accent,
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: _alternarPausa,
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Icon(
-                _running ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: 40,
-                color: context.onAccent,
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: _relevo(d: 5, blur: 12),
+          ),
+          child: Material(
+            color: context.accent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: _alternarPausa,
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Icon(
+                  _running ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  size: 40,
+                  color: context.onAccent,
+                ),
               ),
             ),
           ),
@@ -745,7 +781,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       const SizedBox(height: 8),
       Text(
         'Todas as repetições, do jeito que você planejou.',
-        style: const TextStyle(color: AppColors.dim),
+        style: TextStyle(color: AppColors.dim),
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: 28),
@@ -763,7 +799,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       OutlinedButton(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.text,
-          side: const BorderSide(color: AppColors.lineStrong),
+          side: BorderSide(color: AppColors.lineStrong),
           minimumSize: const Size(240, 52),
         ),
         onPressed: _marcarIncompleto,
@@ -789,14 +825,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       if (_fraseCompleto != null) ...[
         Text(
           _fraseCompleto!,
-          style: const TextStyle(color: AppColors.text),
+          style: TextStyle(color: AppColors.text),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 6),
       ],
       Text(
         '${widget.titulo} · ${fmtSeg(_duracaoTotal)}',
-        style: const TextStyle(color: AppColors.dim, fontSize: 13),
+        style: TextStyle(color: AppColors.dim, fontSize: 13),
         textAlign: TextAlign.center,
       ),
       if (_novosRecordes.isNotEmpty) ...[
@@ -823,7 +859,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: 12),
-      const Text(
+      Text(
         'Seu esforço de hoje já entrou no check-in.',
         style: TextStyle(color: AppColors.dim),
         textAlign: TextAlign.center,
@@ -1006,15 +1042,30 @@ class _CtrlSecundario extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Icon(icon, size: 28, color: AppColors.text),
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.neuLo,
+              offset: const Offset(4, 4),
+              blurRadius: 9),
+          BoxShadow(
+              color: AppColors.neuHi,
+              offset: const Offset(-4, -4),
+              blurRadius: 9),
+        ],
+      ),
+      child: Material(
+        color: AppColors.surface,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Icon(icon, size: 28, color: AppColors.text),
+          ),
         ),
       ),
     );

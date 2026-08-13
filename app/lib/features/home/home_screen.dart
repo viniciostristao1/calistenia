@@ -342,7 +342,7 @@ class _TreinoCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // "6 pontinhos": pista de que o título abre a edição.
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.only(top: 2, right: 6),
                             child: Icon(Icons.drag_indicator,
                                 size: 20, color: AppColors.dim2),
@@ -367,13 +367,13 @@ class _TreinoCard extends StatelessWidget {
                                 const SizedBox(height: 4),
                                 Text.rich(
                                   TextSpan(
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: AppColors.dim, fontSize: 13),
                                     children: [
                                       TextSpan(text: base),
                                       if (dur > 0) ...[
                                         const TextSpan(text: ' · '),
-                                        const WidgetSpan(
+                                        WidgetSpan(
                                           alignment:
                                               PlaceholderAlignment.middle,
                                           child: Icon(Icons.access_time,
@@ -409,7 +409,7 @@ class _TreinoCard extends StatelessWidget {
             if (treino.exercicios.isNotEmpty) ...[
               const SizedBox(height: 6),
               // Cor neutra/fraca, igual aos "6 pontinhos" do cabeçalho (dim2).
-              const Divider(height: 1, thickness: 1, color: AppColors.dim2),
+              Divider(height: 1, thickness: 1, color: AppColors.dim2),
               const SizedBox(height: 2),
               for (final e in treino.exercicios)
                 _ExercicioLinha(
@@ -465,7 +465,7 @@ class _ExercicioLinha extends StatelessWidget {
                   Text(
                     detalhe,
                     style:
-                        const TextStyle(color: AppColors.dim, fontSize: 12),
+                        TextStyle(color: AppColors.dim, fontSize: 12),
                   ),
                 ],
               ),
@@ -514,7 +514,7 @@ class _PlayCircle extends StatelessWidget {
     }
     return Material(
       color: Colors.transparent,
-      shape: const CircleBorder(
+      shape: CircleBorder(
         side: BorderSide(color: AppColors.line),
       ),
       child: InkWell(
@@ -546,7 +546,7 @@ class _Vazio extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.fitness_center, size: 56, color: AppColors.dim2),
+            Icon(Icons.fitness_center, size: 56, color: AppColors.dim2),
             const SizedBox(height: 16),
             Text(
               'Nenhum treino em ${nomesDiasLongos[dia]}',
@@ -554,7 +554,7 @@ class _Vazio extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Toque em “Novo treino” para criar.',
               style: TextStyle(color: AppColors.dim),
               textAlign: TextAlign.center,

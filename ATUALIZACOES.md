@@ -3,6 +3,15 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-13 — v0.42.0 (3 temas novos: Grafite, Espresso e Madeira — neumorphism):**
+  - **3 temas novos** em Config (além de Azul e Âmbar): **Grafite** (escuro grafite), **Espresso**
+    (escuro amadeirado) e **Madeira** (bege claro amadeirado) — no estilo **neumorphism** (relevo
+    por luz e sombra). O seletor mostra um mini-preview de cada.
+  - O **cronômetro** ganhou o **relevo neumórfico**: o anel, o placar (nome + contagem) e os botões
+    parecem esculpidos/elevados. O contador agora segue a **cor do tema**.
+  - O tema muda as **cores do app inteiro** (fundo, texto, cards). **Madeira é um tema claro.**
+  - Azul e Âmbar continuam como estavam. As **outras telas** ainda vão ganhar o relevo completo nas
+    próximas versões (por ora já adotam as cores novas).
 - **2026-08-13 — v0.41.0 (compartilhar a semana toda):**
   - O botão de compartilhar (topo da home) agora tem **duas opções**: **"Compartilhar o dia"** e
     **"Compartilhar a semana toda"**. A semana sai **separada por dia** (Segunda→Domingo, com

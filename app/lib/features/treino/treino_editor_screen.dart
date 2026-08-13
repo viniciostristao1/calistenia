@@ -132,7 +132,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                 title: Text(e.nome),
                 subtitle: Text(e.resumoCurto,
                     style:
-                        const TextStyle(color: AppColors.dim, fontSize: 12.5)),
+                        TextStyle(color: AppColors.dim, fontSize: 12.5)),
                 onTap: () => Navigator.pop(context, e),
               ),
           ],
@@ -258,7 +258,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                         : AppColors.text,
                     fontWeight: FontWeight.w600,
                   ),
-                  side: const BorderSide(color: AppColors.line),
+                  side: BorderSide(color: AppColors.line),
                   onSelected: (sel) {
                     setState(() {
                       if (sel) {
@@ -280,13 +280,13 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
               const Spacer(),
               Text(
                 fmtSeg(_t.duracaoTotalSeg),
-                style: const TextStyle(color: AppColors.dim),
+                style: TextStyle(color: AppColors.dim),
               ),
             ],
           ),
           const SizedBox(height: 10),
           if (_t.exercicios.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Text(
                 'Nenhum exercício ainda. Adicione o primeiro abaixo.',
@@ -379,7 +379,7 @@ class _ExercicioRow extends StatelessWidget {
           onTap: onTap,
           leading: ReorderableDragStartListener(
             index: index,
-            child: const Icon(Icons.drag_indicator, color: AppColors.dim2),
+            child: Icon(Icons.drag_indicator, color: AppColors.dim2),
           ),
           title: Row(
             children: [
@@ -402,10 +402,10 @@ class _ExercicioRow extends StatelessWidget {
           ),
           subtitle: Text(
             partes.join(' · '),
-            style: const TextStyle(color: AppColors.dim, fontSize: 12.5),
+            style: TextStyle(color: AppColors.dim, fontSize: 12.5),
           ),
           trailing: IconButton(
-            icon: const Icon(Icons.close, color: AppColors.dim2, size: 20),
+            icon: Icon(Icons.close, color: AppColors.dim2, size: 20),
             onPressed: onDelete,
           ),
         ),

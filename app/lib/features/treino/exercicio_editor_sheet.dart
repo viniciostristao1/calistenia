@@ -283,7 +283,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               activeThumbColor: context.accent,
               title: const Text('Um lado por vez',
                   style: _kLabelEditor),
-              subtitle: const Text(
+              subtitle: Text(
                 'Faz a série de um lado e depois do outro (ex.: um braço por vez).',
                 style: TextStyle(color: AppColors.dim, fontSize: 12),
               ),
@@ -441,7 +441,7 @@ class _TempoLinha extends StatelessWidget {
             child: removivel
                 ? IconButton(
                     tooltip: 'Remover $rotulo',
-                    icon: const Icon(Icons.close,
+                    icon: Icon(Icons.close,
                         size: 18, color: AppColors.dim2),
                     onPressed: () => onChanged(0),
                   )
@@ -554,12 +554,12 @@ class _Resumo extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.timer_outlined, size: 18, color: AppColors.dim),
+          Icon(Icons.timer_outlined, size: 18, color: AppColors.dim),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               '$vezes de ($serieTxt)$descTxt$ladoTxt',
-              style: const TextStyle(color: AppColors.dim, fontSize: 13),
+              style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
           ),
         ],
@@ -604,7 +604,7 @@ class _PesoLinha extends StatelessWidget {
             width: 10,
             height: 10,
             margin: const EdgeInsets.only(right: 10),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
                 color: AppColors.dim2, shape: BoxShape.circle),
           ),
           const Expanded(
@@ -622,7 +622,7 @@ class _PesoLinha extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 fmtPeso(peso),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppColors.text),
@@ -637,7 +637,7 @@ class _PesoLinha extends StatelessWidget {
             width: 40,
             child: IconButton(
               tooltip: 'Remover peso',
-              icon: const Icon(Icons.close, size: 18, color: AppColors.dim2),
+              icon: Icon(Icons.close, size: 18, color: AppColors.dim2),
               onPressed: () => onChanged(0),
             ),
           ),
@@ -710,7 +710,7 @@ class _SeletorFundo extends StatelessWidget {
         const Text('Imagem de fundo do cronômetro',
             style: _kLabelEditor),
         const SizedBox(height: 4),
-        const Text('Motivação atrás do contador deste exercício.',
+        Text('Motivação atrás do contador deste exercício.',
             style: TextStyle(color: AppColors.dim, fontSize: 13)),
         const SizedBox(height: 10),
         SizedBox(
@@ -764,7 +764,7 @@ class _MiniaturaFundo extends StatelessWidget {
           ),
         ),
         child: asset == null
-            ? const Center(
+            ? Center(
                 child: Icon(Icons.block, color: AppColors.dim2, size: 22))
             : Image.asset(asset!, fit: BoxFit.cover),
       ),

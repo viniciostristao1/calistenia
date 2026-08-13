@@ -2,33 +2,37 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Tema escuro do app. Ponto único de verdade visual.
+/// Tema do app (ponto único de verdade visual). Aplica a paleta do [tema]
+/// escolhido — inclusive o brilho (Madeira é claro; os demais, escuros).
 ThemeData buildAppTheme(TemaApp tema) {
-  final base = ThemeData.dark(useMaterial3: true);
+  // Define a paleta atual ANTES de ler os tokens (fundo/superfície/sombra).
+  AppColors.aplicarTema(tema);
+  final claro = AppColors.brilho == Brightness.light;
+  final base = ThemeData(useMaterial3: true, brightness: AppColors.brilho);
+  final scheme =
+      (claro ? const ColorScheme.light() : const ColorScheme.dark()).copyWith(
+    primary: AppColors.accentDoTema(tema),
+    onPrimary: AppColors.onAccentDoTema(tema),
+    secondary: AppColors.rest,
+    surface: AppColors.surface,
+    onSurface: AppColors.text,
+    error: AppColors.danger,
+  );
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.bg,
-    colorScheme: ColorScheme.dark(
-      primary: AppColors.accentDoTema(tema),
-      onPrimary: AppColors.onAccentDoTema(tema),
-      secondary: AppColors.rest,
-      surface: AppColors.surface,
-      onSurface: AppColors.text,
-      error: AppColors.danger,
-    ),
+    colorScheme: scheme,
+    iconTheme: IconThemeData(color: AppColors.text),
     textTheme: base.textTheme
-        .apply(
-          bodyColor: AppColors.text,
-          displayColor: AppColors.text,
-        )
+        .apply(bodyColor: AppColors.text, displayColor: AppColors.text)
         .copyWith(
-          titleLarge: const TextStyle(
+          titleLarge: TextStyle(
             color: AppColors.text,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.2,
           ),
         ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: AppColors.bg,
       foregroundColor: AppColors.text,
       elevation: 0,
@@ -45,7 +49,7 @@ ThemeData buildAppTheme(TemaApp tema) {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: AppColors.line),
+        side: BorderSide(color: AppColors.line),
       ),
       margin: EdgeInsets.zero,
     ),
@@ -54,17 +58,14 @@ ThemeData buildAppTheme(TemaApp tema) {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
-        textStyle: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-        ),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       ),
     ),
     dividerColor: AppColors.line,
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.surface2,
-      hintStyle: const TextStyle(color: AppColors.dim2), // "Ex.:…" bem fraco
+      hintStyle: TextStyle(color: AppColors.dim2),
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -74,8 +75,7 @@ ThemeData buildAppTheme(TemaApp tema) {
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.surface2,
-      contentTextStyle: const TextStyle(color: AppColors.text),
-      // "Desfazer" na cor de destaque (antes ficava escuro/quase invisível).
+      contentTextStyle: TextStyle(color: AppColors.text),
       actionTextColor: AppColors.accentDoTema(tema),
       behavior: SnackBarBehavior.floating,
     ),

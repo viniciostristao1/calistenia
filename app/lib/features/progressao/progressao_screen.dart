@@ -118,12 +118,12 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
         const Text('Tendência',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         const SizedBox(height: 2),
-        const Text('Seu Rating nas últimas semanas.',
+        Text('Seu Rating nas últimas semanas.',
             style: TextStyle(color: AppColors.dim, fontSize: 12)),
         const SizedBox(height: 12),
         _GraficoLinha(pontos: serie),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Rating 0–100 = Consistência (0–40, % dos dias agendados nos últimos '
           '28 dias — hoje é neutro) + Frequência (0–20, seu volume de treino) + '
           'Progressão (0–40, o quanto seus recordes melhoraram nos últimos ~42 '
@@ -228,7 +228,7 @@ class _ExercicioProgressoCard extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
                   constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.delete_outline,
+                  icon: Icon(Icons.delete_outline,
                       size: 20, color: AppColors.dim2),
                   onPressed: () => _confirmarLimpar(context, ref),
                 ),
@@ -402,7 +402,7 @@ class _Barra extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               fmtDataCurta(registro.data),
-              style: const TextStyle(color: AppColors.dim, fontSize: 11),
+              style: TextStyle(color: AppColors.dim, fontSize: 11),
             ),
           ],
         ),
@@ -458,7 +458,7 @@ class _RatingCard extends StatelessWidget {
             'Consistência ${rating.consistencia}/40 · '
             'Frequência ${rating.frequencia}/20 · '
             'Progressão ${rating.progressao}/40',
-            style: const TextStyle(color: AppColors.dim, fontSize: 12),
+            style: TextStyle(color: AppColors.dim, fontSize: 12),
           ),
         ],
       ),
@@ -501,10 +501,10 @@ class _GraficoLinha extends StatelessWidget {
             Row(
               children: [
                 Text(fmtDataCurta(pontos.first.data),
-                    style: const TextStyle(color: AppColors.dim, fontSize: 10)),
+                    style: TextStyle(color: AppColors.dim, fontSize: 10)),
                 const Spacer(),
                 Text(fmtDataCurta(pontos.last.data),
-                    style: const TextStyle(color: AppColors.dim, fontSize: 10)),
+                    style: TextStyle(color: AppColors.dim, fontSize: 10)),
               ],
             ),
           ],
@@ -613,7 +613,7 @@ class _Vazio extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.trending_up, size: 56, color: AppColors.dim2),
+            Icon(Icons.trending_up, size: 56, color: AppColors.dim2),
             const SizedBox(height: 16),
             const Text(
               'Nenhuma progressão ainda',
@@ -621,7 +621,7 @@ class _Vazio extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Ao editar um exercício, toque em '
               '“Adicionar à progressão” para registrar quantas repetições '
               'você fez. A evolução aparece aqui em barras.',

@@ -232,7 +232,7 @@ class _Cabecalho extends StatelessWidget {
                 ),
                 Text(subtitulo,
                     style:
-                        const TextStyle(color: AppColors.dim, fontSize: 12)),
+                        TextStyle(color: AppColors.dim, fontSize: 12)),
               ],
             ),
           ),
@@ -260,7 +260,7 @@ class _LinhaDias extends StatelessWidget {
               child: Center(
                 child: Text(
                   d,
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: AppColors.dim,
                       fontSize: 11,
                       fontWeight: FontWeight.w600),
@@ -344,7 +344,7 @@ class _Celula extends StatelessWidget {
                     ),
                   if (extra > 0)
                     Text('+$extra',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.dim, fontSize: 8)),
                 ],
               ),
@@ -388,7 +388,7 @@ class _EditarDiaSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           if (doDia.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Text('Nenhum exercício marcado neste dia.',
                   style: TextStyle(color: AppColors.dim)),
@@ -407,7 +407,7 @@ class _EditarDiaSheet extends ConsumerWidget {
                 ),
                 title: Text(c.exercicio),
                 trailing: IconButton(
-                  icon: const Icon(Icons.close,
+                  icon: Icon(Icons.close,
                       size: 20, color: AppColors.dim2),
                   onPressed: () =>
                       ref.read(checkinProvider.notifier).remover(c.id),
@@ -531,7 +531,7 @@ class _TeaserConquistas extends ConsumerWidget {
                     ),
                     TextSpan(
                       text: streak == 1 ? 'dia seguido' : 'dias seguidos',
-                      style: const TextStyle(color: AppColors.dim),
+                      style: TextStyle(color: AppColors.dim),
                     ),
                   ],
                 ),
@@ -544,9 +544,9 @@ class _TeaserConquistas extends ConsumerWidget {
                     child: ConquistaBadge(tipo: t, size: 17),
                   )
               else
-                const Text('Galeria',
+                Text('Galeria',
                     style: TextStyle(color: AppColors.dim, fontSize: 12)),
-              const Icon(Icons.chevron_right, color: AppColors.dim, size: 20),
+              Icon(Icons.chevron_right, color: AppColors.dim, size: 20),
             ],
           ),
         ),
@@ -624,7 +624,7 @@ class _HistoricoConquistas extends ConsumerWidget {
     final conquistas = ref.watch(conquistasProvider).value ?? const <Conquista>[];
     final perdidas = conquistas.where((c) => c.perdidaEm != null).toList();
     if (perdidas.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(32),
           child: Column(
@@ -712,7 +712,7 @@ class _MesHistorico extends StatelessWidget {
                     ConquistaBadge(tipo: t, size: 26, ativo: false),
                     const SizedBox(height: 3),
                     Text(t.tituloCurto,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.dim, fontSize: 10)),
                   ],
                 ),
@@ -756,7 +756,7 @@ class _ConquistasAtuaisBox extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           const SizedBox(height: 12),
           if (tipos.isEmpty)
-            const Text(
+            Text(
               'Nenhuma conquista ativa ainda. Complete treinos para conquistar!',
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             )
@@ -772,7 +772,7 @@ class _ConquistasAtuaisBox extends StatelessWidget {
                       ConquistaBadge(tipo: t, size: 34),
                       const SizedBox(height: 4),
                       Text(t.tituloCurto,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.dim, fontSize: 11)),
                     ],
                   ),
@@ -812,7 +812,7 @@ class _StreakCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Sequência atual',
+                Text('Sequência atual',
                     style: TextStyle(color: AppColors.dim, fontSize: 12)),
                 Text.rich(
                   TextSpan(
@@ -827,14 +827,14 @@ class _StreakCard extends StatelessWidget {
                       ),
                       TextSpan(
                         text: nivel == 1 ? 'dia' : 'dias',
-                        style: const TextStyle(color: AppColors.dim),
+                        style: TextStyle(color: AppColors.dim),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text('🏅 Recorde: $recorde ${recorde == 1 ? 'dia' : 'dias'}',
-                    style: const TextStyle(color: AppColors.dim, fontSize: 12)),
+                    style: TextStyle(color: AppColors.dim, fontSize: 12)),
               ],
             ),
           ),
@@ -844,7 +844,7 @@ class _StreakCard extends StatelessWidget {
               Text('$total',
                   style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w800)),
-              const Text('dias no total',
+              Text('dias no total',
                   style: TextStyle(color: AppColors.dim, fontSize: 11)),
             ],
           ),
@@ -869,7 +869,7 @@ class _TituloSecao extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         const SizedBox(height: 2),
         Text(subtitulo,
-            style: const TextStyle(color: AppColors.dim, fontSize: 12)),
+            style: TextStyle(color: AppColors.dim, fontSize: 12)),
       ],
     );
   }

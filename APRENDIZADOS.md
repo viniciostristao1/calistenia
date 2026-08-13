@@ -1049,3 +1049,33 @@ percorre os 7 dias (`nomesDiasLongos`, Seg→Dom), agrupa `todos.where((t)=>t.di
 ("Compartilhar o dia" / "…a semana toda"); `_compartilharDia`/`_compartilharSemana` chamam um
 `_mostrarCompartilhar(titulo, texto)` comum. `test/export_test.dart` +1. `analyze` limpo,
 `flutter test` **32/32**. Versão `0.41.0+41`.
+
+---
+
+## 2026-08-13 — v0.42.0: 5 temas (engine de paleta) + cronômetro neumórfico (ETAPA 1)
+
+Usuário escolheu (link de 4 conceitos): **Grafite, Espresso, Madeira** (neumorphism), ADITIVOS a
+azul/âmbar → **5 temas**. Escopo desta 1ª release (decisão dele): **cores certas no app todo**
+(Madeira é CLARO) + **cronômetro 100% neumórfico**; relevo das outras telas vem depois.
+
+**Engine de paleta (o refactor-mãe).** Antes só o *accent* era temável; `bg/surface/text/dim/...`
+eram `static const` (fixos) usados em ~160 lugares. Tornei-os **getters** em `AppColors` que lêem uma
+`Paleta` atual (`_pal`), trocada por `AppColors.aplicarTema(tema)` (chamado no topo de
+`buildAppTheme`). Isso quebrou **72 usos em contexto `const`**. **Fix automático e seguro:** script
+`fix_const.py` — lê os erros `invalid_constant` do analyze e remove SÓ o `const` que ENVOLVE cada cor
+(casamento de brackets), iterando até zerar (72→0 em 1 passada). Declarações `const` válidas
+(`_kLabelEditor`, cores de fase) ficaram intactas.
+
+**5 paletas** (bg, surface, surface2, line, text, dim, dim2, accent, onAccent, **neuHi/neuLo**,
+brilho): navy (azul/âmbar, só muda accent), grafite (#262A32), espresso (#2A2620), madeira (#D8C7AC,
+**Brightness.light**). `buildAppTheme` escolhe base por brilho (`ThemeData.light/dark`) e usa a
+paleta. `tema_repository` persiste pelo `enum.name` (compat com 'azul'/'ambar'). Config lista os 5
+com mini-preview (`_OpcaoTema` + `fundoDoTema`).
+
+**Cronômetro neumórfico.** Helper `_relevo({d,blur})` = par de `BoxShadow` (neuLo baixo-dir, neuHi
+cima-esq). Aplicado às tarjas (relevo; contador segue `context.accent` do tema em vez do âmbar fixo),
+anel (disco base 292 + miolo 214 atrás do número) e botões. **Limitação:** `BoxDecoration.boxShadow`
+não faz inset (esculpido) sem package → só RELEVO; grooves/inset p/ depois. **Não verificável na VPS
+(headless)** — lapidar por prints. Staleness ao trocar tema: Config e tudo via Theme repinta na hora;
+telas atrás repintam ao navegar (aceitável v1). **Validação:** `analyze` limpo, `flutter test`
+**32/32**. Versão `0.42.0+42`.

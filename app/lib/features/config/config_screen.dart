@@ -21,26 +21,31 @@ class ConfigScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          const Text('Tema de destaque',
+          const Text('Tema',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 4),
-          const Text('A cor dos botões e destaques do app.',
+          Text('Muda as cores e o visual do app inteiro.',
               style: TextStyle(color: AppColors.dim, fontSize: 13)),
           const SizedBox(height: 14),
-          _OpcaoTema(
-            titulo: 'Azul',
-            cor: AppColors.accentAzul,
-            selecionado: tema == TemaApp.azul,
-            onTap: () => ref.read(temaProvider.notifier).definir(TemaApp.azul),
-          ),
-          const SizedBox(height: 10),
-          _OpcaoTema(
-            titulo: 'Âmbar',
-            cor: AppColors.accentAmbar,
-            selecionado: tema == TemaApp.ambar,
-            onTap: () => ref.read(temaProvider.notifier).definir(TemaApp.ambar),
-          ),
-          const SizedBox(height: 24),
+          for (final o in const [
+            (TemaApp.ambar, 'Âmbar', 'Âmbar sobre navy escuro (padrão)'),
+            (TemaApp.azul, 'Azul', 'Azul sobre navy escuro'),
+            (TemaApp.grafite, 'Grafite', 'Escuro grafite · relevo (neumorphism)'),
+            (TemaApp.espresso, 'Espresso', 'Escuro amadeirado · relevo'),
+            (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado · relevo'),
+          ])
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _OpcaoTema(
+                titulo: o.$2,
+                subtitulo: o.$3,
+                cor: AppColors.accentDoTema(o.$1),
+                fundo: AppColors.fundoDoTema(o.$1),
+                selecionado: tema == o.$1,
+                onTap: () => ref.read(temaProvider.notifier).definir(o.$1),
+              ),
+            ),
+          const SizedBox(height: 14),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             value: som,
@@ -48,7 +53,7 @@ class ConfigScreen extends ConsumerWidget {
             activeThumbColor: context.accent,
             title: const Text('Som',
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            subtitle: const Text(
+            subtitle: Text(
               'Bips nas transições e no fim do treino.',
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
@@ -60,7 +65,7 @@ class ConfigScreen extends ConsumerWidget {
             activeThumbColor: context.accent,
             title: const Text('Gamificação',
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            subtitle: const Text(
+            subtitle: Text(
               'Medalhas, troféus e a pergunta “treino completo?” no fim do treino.',
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
@@ -69,7 +74,7 @@ class ConfigScreen extends ConsumerWidget {
           const Text('Conta',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Entre com Google para preparar o backup dos seus treinos na conta '
             '(a sincronização em si chega numa próxima versão).',
             style: TextStyle(color: AppColors.dim, fontSize: 13),
@@ -142,7 +147,7 @@ class _SecaoContaState extends ConsumerState<_SecaoConta> {
               backgroundColor: AppColors.surface2,
               foregroundImage:
                   user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-              child: const Icon(Icons.person, color: AppColors.dim),
+              child: Icon(Icons.person, color: AppColors.dim),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -154,7 +159,7 @@ class _SecaoContaState extends ConsumerState<_SecaoConta> {
                       overflow: TextOverflow.ellipsis),
                   if (email.isNotEmpty)
                     Text(email,
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.dim, fontSize: 12.5),
                         overflow: TextOverflow.ellipsis),
                 ],
@@ -172,7 +177,7 @@ class _SecaoContaState extends ConsumerState<_SecaoConta> {
     return OutlinedButton.icon(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.text,
-        side: const BorderSide(color: AppColors.lineStrong),
+        side: BorderSide(color: AppColors.lineStrong),
         minimumSize: const Size.fromHeight(50),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
@@ -186,13 +191,17 @@ class _SecaoContaState extends ConsumerState<_SecaoConta> {
 class _OpcaoTema extends StatelessWidget {
   const _OpcaoTema({
     required this.titulo,
+    required this.subtitulo,
     required this.cor,
+    required this.fundo,
     required this.selecionado,
     required this.onTap,
   });
 
   final String titulo;
-  final Color cor;
+  final String subtitulo;
+  final Color cor; // accent do tema
+  final Color fundo; // fundo do tema (mini-preview)
   final bool selecionado;
   final VoidCallback onTap;
 
@@ -202,7 +211,7 @@ class _OpcaoTema extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
@@ -213,15 +222,33 @@ class _OpcaoTema extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // Mini-preview: o fundo do tema com uma bolinha do accent.
             Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+              width: 42,
+              height: 32,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: fundo,
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: AppColors.line),
+              ),
+              child: Container(
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(titulo,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(titulo,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(subtitulo,
+                      style: TextStyle(color: AppColors.dim, fontSize: 12)),
+                ],
+              ),
             ),
             if (selecionado) Icon(Icons.check_circle, color: cor),
           ],
