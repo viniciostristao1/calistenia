@@ -1079,3 +1079,21 @@ não faz inset (esculpido) sem package → só RELEVO; grooves/inset p/ depois. 
 (headless)** — lapidar por prints. Staleness ao trocar tema: Config e tudo via Theme repinta na hora;
 telas atrás repintam ao navegar (aceitável v1). **Validação:** `analyze` limpo, `flutter test`
 **32/32**. Versão `0.42.0+42`.
+
+---
+
+## 2026-08-14 — v0.43.0/v0.44.0: remove Grafite + crédito parcial pra "não consegui"
+
+**v0.43.0:** removido o tema Grafite (a pedido) → 4 temas. `TemaApp.grafite` + `_grafite` + entrada
+do Config fora; quem tinha salvo cai no âmbar (`tema_repository` lê por `enum.name`, `orElse: ambar`).
+
+**v0.44.0 — crédito parcial (decisão de produto do usuário: peso 0,5).** Antes, "Não consegui hoje"
+não registrava nada → zero consistência/sequência e ainda quebrava a corrente = punia igual a faltar
+(e incentivava clicar "Sim" falso, corrompendo os recordes). Agora: `_marcarIncompleto` registra uma
+`Conclusao(completo: false)` (**tentativa**). Modelo ganhou `bool completo` (default true, back-compat
+no JSON). `registrar` aceita `completo` e faz **upgrade tentativa→completo** se repetir e fechar no
+mesmo dia (dedupe por treino/dia). No rating (`gamificacao.dart`): **só a consistência pondera**
+(completo=1,0 / tentativa=0,5, via mapa peso-por-dia); **sequência e frequência** já contam qualquer
+`Conclusao` → tentativa mantém a corrente e conta como treino, sem tocar nessas funções. Texto da tela
+"não consegui" passou a comunicar o crédito. Teste novo (3 estados + JSON). `analyze` limpo,
+`flutter test` **33/33**. Versão `0.44.0+44`.

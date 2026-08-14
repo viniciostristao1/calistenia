@@ -341,9 +341,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     return batidos;
   }
 
-  /// "Não consegui hoje": sorteia uma frase de incentivo (o dia já entrou no
-  /// check-in por exercício).
-  void _marcarIncompleto() {
+  /// "Não consegui hoje": registra uma TENTATIVA (não completou, mas manteve o
+  /// hábito → meia consistência no rating + mantém a sequência) e sorteia uma
+  /// frase de incentivo.
+  Future<void> _marcarIncompleto() async {
+    final treino = widget.treino;
+    if (treino != null) {
+      await ref
+          .read(conclusaoProvider.notifier)
+          .registrar(treino, completo: false);
+    }
+    if (!mounted) return;
     setState(() {
       _respostaCompleto = false;
       _fraseIncompleto = fraseIncompletoAleatoria();
@@ -860,7 +868,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       ),
       const SizedBox(height: 12),
       Text(
-        'Seu esforço de hoje já entrou no check-in.',
+        'Seu esforço conta: metade da consistência e a sua sequência mantida.',
         style: TextStyle(color: AppColors.dim),
         textAlign: TextAlign.center,
       ),

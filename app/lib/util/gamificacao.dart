@@ -179,15 +179,22 @@ Set<TipoConquista> conquistasAtuais(
 int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj) {
   final agendados = diasAgendados(treinos);
   if (agendados.isEmpty) return 0;
-  final diasConc = concs.map((c) => _dia(c.data)).toSet();
-  var total = 0, feitos = 0;
+  // Peso por dia: completou tudo = 1,0; só tentou ("não consegui") = 0,5.
+  final pesoDia = <DateTime, double>{};
+  for (final c in concs) {
+    final d = _dia(c.data);
+    final p = c.completo ? 1.0 : 0.5;
+    if (p > (pesoDia[d] ?? 0)) pesoDia[d] = p;
+  }
+  var total = 0;
+  var feitos = 0.0;
   for (var k = 0; k < 28; k++) {
     final d = hj.subtract(Duration(days: k));
     if (!agendados.contains(d.weekday - 1)) continue;
-    final fez = diasConc.contains(d);
-    if (k == 0 && !fez) continue; // hoje pendente = neutro
+    final peso = pesoDia[d] ?? 0.0;
+    if (k == 0 && peso == 0) continue; // hoje pendente = neutro
     total++;
-    if (fez) feitos++;
+    feitos += peso;
   }
   return total == 0 ? 0 : ((feitos / total) * 40).round();
 }

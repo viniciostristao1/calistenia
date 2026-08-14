@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-14 — v0.44.0 (crédito parcial pra quem tenta):**
+  - Marcar **"Não consegui hoje"** agora **conta**: vale **metade da consistência** e **mantém a
+    sua sequência** (antes zerava e ainda podia quebrar a corrente). Recompensa quem apareceu e
+    tentou — ex.: foi atrás de um recorde e não fechou. **Completar continua valendo mais**
+    (consistência cheia + chance de recorde). Se você repetir e completar no mesmo dia, vira completo.
 - **2026-08-14 — v0.43.0 (removido o tema Grafite):**
   - Tirei o tema **Grafite** (a seu pedido). Ficam **4 temas**: Âmbar, Azul, Espresso e Madeira.
     (Se você estava usando o Grafite, o app volta pro Âmbar.)

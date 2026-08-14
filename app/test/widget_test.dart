@@ -342,6 +342,42 @@ void main() {
     expect(ratingForma(concs, treinos, prog, hoje: d).progressao, 8);
   });
 
+  test('"não consegui" (tentativa) vale meia consistência; mantém freq/sequência',
+      () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    // Todos os 28 dias agendados foram TENTATIVAS (completo: false).
+    final tentativas = [
+      for (var i = 1; i <= 28; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)),
+            treinoId: 't',
+            treino: 't',
+            completo: false),
+    ];
+    final r = ratingForma(tentativas, treinos, const [], hoje: d);
+    expect(r.consistencia, 20); // metade de 40 (0,5 por dia tentado)
+    expect(r.frequencia, 20); // tentativa conta como treino
+    // A sequência NÃO quebra com tentativas (mantém o hábito).
+    expect(streakAtual(tentativas, treinos, hoje: d), 28);
+
+    // Completo vale o dobro da tentativa na consistência.
+    final completos = [
+      for (var i = 1; i <= 28; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    expect(ratingForma(completos, treinos, const [], hoje: d).consistencia, 40);
+
+    // Round-trip do JSON preserva o campo `completo`.
+    final rt = Conclusao.fromJson(tentativas.first.toJson());
+    expect(rt.completo, isFalse);
+  });
+
   test('serieRating: série temporal sem olhar o futuro', () {
     final d = DateTime(2026, 8, 20);
     final treinos = [

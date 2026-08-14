@@ -35,20 +35,34 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
     state = AsyncData(list);
   }
 
-  /// Marca o treino como concluído hoje (ou em [dia]). Não duplica a mesma
-  /// conclusão (mesmo treino, mesmo dia). Retorna a conclusão registrada, ou
-  /// `null` se já existia.
-  Future<Conclusao?> registrar(Treino t, {DateTime? dia}) async {
+  /// Marca o treino como concluído ([completo] true) ou TENTADO ([completo]
+  /// false, "não consegui hoje") no dia. Não duplica (mesmo treino/dia); mas se
+  /// já havia uma TENTATIVA e agora vem uma conclusão completa, faz o upgrade.
+  /// Retorna o registro criado/atualizado, ou `null` se nada mudou.
+  Future<Conclusao?> registrar(Treino t,
+      {DateTime? dia, bool completo = true}) async {
     final atuais = await future; // garante carregado antes de mutar
     final d = dia ?? DateTime.now();
-    final ja = atuais.any((c) =>
+    final nome = t.nome.trim().isEmpty ? 'Treino' : t.nome.trim();
+    final idx = atuais.indexWhere((c) =>
         c.treinoId == t.id &&
         c.data.year == d.year &&
         c.data.month == d.month &&
         c.data.day == d.day);
-    if (ja) return null;
-    final nome = t.nome.trim().isEmpty ? 'Treino' : t.nome.trim();
-    final nova = Conclusao(data: d, treinoId: t.id, treino: nome);
+    if (idx >= 0) {
+      final ex = atuais[idx];
+      // Só faz upgrade de tentativa → completo (nunca o contrário).
+      if (completo && !ex.completo) {
+        final upg = Conclusao(
+            id: ex.id, data: d, treinoId: t.id, treino: nome, completo: true);
+        final list = List<Conclusao>.of(atuais)..[idx] = upg;
+        await _persist(list);
+        return upg;
+      }
+      return null;
+    }
+    final nova =
+        Conclusao(data: d, treinoId: t.id, treino: nome, completo: completo);
     await _persist([...atuais, nova]);
     return nova;
   }
