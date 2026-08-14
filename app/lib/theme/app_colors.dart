@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Tema visual do app. Azul/âmbar = navy escuro (só muda o accent); grafite,
-/// espresso e madeira = sistemas neumórficos próprios (grafite/espresso escuros,
-/// madeira claro). O usuário escolhe nas configurações.
-enum TemaApp { azul, ambar, grafite, espresso, madeira }
+/// Tema visual do app. Azul/âmbar = navy escuro (só muda o accent); espresso e
+/// madeira = sistemas neumórficos próprios (espresso escuro, madeira claro).
+/// O usuário escolhe nas configurações.
+enum TemaApp { azul, ambar, espresso, madeira }
 
 /// Uma paleta completa (tokens de cor de um tema). Fundo, superfícies e sombras
 /// mudam por tema — por isso `AppColors` os expõe como getters que leem a
@@ -83,7 +83,6 @@ abstract final class AppColors {
   static Paleta _palDe(TemaApp t) => switch (t) {
         TemaApp.azul => _navy(const Color(0xFF3B82F6), const Color(0xFFF2F7FF)),
         TemaApp.ambar => _navy(accentAmbar, onAccentAmbar),
-        TemaApp.grafite => _grafite,
         TemaApp.espresso => _espresso,
         TemaApp.madeira => _madeira,
       };
@@ -104,22 +103,6 @@ abstract final class AppColors {
         neuLo: const Color(0xFF05080A),
         brilho: Brightness.dark,
       );
-
-  static const Paleta _grafite = Paleta(
-    bg: Color(0xFF262A32),
-    surface: Color(0xFF2B303A),
-    surface2: Color(0xFF313742),
-    line: Color(0x0FFFFFFF),
-    lineStrong: Color(0x1FFFFFFF),
-    text: Color(0xFFE8EBF1),
-    dim: Color(0xFF868FA1),
-    dim2: Color(0xFF5B6377),
-    accent: Color(0xFFF5A524),
-    onAccent: Color(0xFF231400),
-    neuHi: Color(0xFF2F353F),
-    neuLo: Color(0xFF171A20),
-    brilho: Brightness.dark,
-  );
 
   static const Paleta _espresso = Paleta(
     bg: Color(0xFF2A2620),

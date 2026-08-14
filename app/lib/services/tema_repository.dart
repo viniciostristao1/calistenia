@@ -5,7 +5,7 @@ import '../theme/app_colors.dart';
 
 const _chave = 'tema_v1';
 
-/// Preferência de tema (azul/âmbar/grafite/espresso/madeira), persistida localmente.
+/// Preferência de tema (azul/âmbar/espresso/madeira), persistida localmente.
 final temaProvider =
     AsyncNotifierProvider<TemaNotifier, TemaApp>(TemaNotifier.new);
 

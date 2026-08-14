@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-14 — v0.43.0 (removido o tema Grafite):**
+  - Tirei o tema **Grafite** (a seu pedido). Ficam **4 temas**: Âmbar, Azul, Espresso e Madeira.
+    (Se você estava usando o Grafite, o app volta pro Âmbar.)
 - **2026-08-13 — v0.42.0 (3 temas novos: Grafite, Espresso e Madeira — neumorphism):**
   - **3 temas novos** em Config (além de Azul e Âmbar): **Grafite** (escuro grafite), **Espresso**
     (escuro amadeirado) e **Madeira** (bege claro amadeirado) — no estilo **neumorphism** (relevo
