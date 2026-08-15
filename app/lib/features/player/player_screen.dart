@@ -529,16 +529,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// exercício: ambas com a MESMA fonte (no meio dos tamanhos antigos).
   static const double _fonteTarja = 34;
 
-  /// Sombras neumórficas de RELEVO (elemento elevado do fundo): luz em
-  /// cima-esquerda, escuro em baixo-direita. Escala com a paleta atual.
-  List<BoxShadow> _relevo({double d = 5, double blur = 11}) => [
-        BoxShadow(color: AppColors.neuLo, offset: Offset(d, d), blurRadius: blur),
-        BoxShadow(
-            color: AppColors.neuHi, offset: Offset(-d, -d), blurRadius: blur),
-      ];
-
-  /// Tarja larga (faixa) do topo. Nome e contador usam a mesma forma e fonte,
-  /// em relevo neumórfico.
+  /// Tarja larga (faixa) do topo. Nome e contador usam a mesma forma e fonte.
   Widget _tarja(
       {required String texto, required Color fundo, required Color cor}) {
     return Padding(
@@ -546,11 +537,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       child: Container(
         width: double.infinity,
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: fundo,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: _relevo(d: 3, blur: 8),
+          borderRadius: BorderRadius.circular(12),
         ),
         // Auto-ajuste: encolhe a fonte p/ caber SEMPRE em UMA linha (nomes longos
         // não quebram em duas). Texto curto fica no tamanho normal (_fonteTarja).
@@ -586,8 +576,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final mostra = f.tipo == FaseTipo.execucao && f.totalReps > 1;
     final tarja = _tarja(
       texto: mostra ? '${f.rep - 1}/${f.totalReps}' : '0/0',
-      fundo: context.accent, // segue o accent do tema
-      cor: context.onAccent,
+      fundo: AppColors.accentAmbar, // amarelo (fixo)
+      cor: AppColors.onAccentAmbar,
     );
     return mostra ? tarja : Opacity(opacity: 0, child: tarja);
   }
@@ -599,26 +589,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Disco base em RELEVO: o anel inteiro parece saltar do fundo.
-          Container(
-            width: 292,
-            height: 292,
-            decoration: BoxDecoration(
-              color: AppColors.bg,
-              shape: BoxShape.circle,
-              boxShadow: _relevo(d: 9, blur: 20),
-            ),
-          ),
-          // Miolo elevado (backing do número), dá o efeito de anel esculpido.
-          Container(
-            width: 214,
-            height: 214,
-            decoration: BoxDecoration(
-              color: AppColors.bg,
-              shape: BoxShape.circle,
-              boxShadow: _relevo(d: 6, blur: 14),
-            ),
-          ),
           SizedBox(
             width: 292,
             height: 292,
@@ -690,24 +660,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           onTap: _anterior,
         ),
         const SizedBox(width: 28),
-        Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: _relevo(d: 5, blur: 12),
-          ),
-          child: Material(
-            color: context.accent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: _alternarPausa,
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Icon(
-                  _running ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  size: 40,
-                  color: context.onAccent,
-                ),
+        Material(
+          color: context.accent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: _alternarPausa,
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Icon(
+                _running ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                size: 40,
+                color: context.onAccent,
               ),
             ),
           ),
@@ -1050,30 +1014,15 @@ class _CtrlSecundario extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-              color: AppColors.neuLo,
-              offset: const Offset(4, 4),
-              blurRadius: 9),
-          BoxShadow(
-              color: AppColors.neuHi,
-              offset: const Offset(-4, -4),
-              blurRadius: 9),
-        ],
-      ),
-      child: Material(
-        color: AppColors.surface,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Icon(icon, size: 28, color: AppColors.text),
-          ),
+    return Material(
+      color: AppColors.surface,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Icon(icon, size: 28, color: AppColors.text),
         ),
       ),
     );

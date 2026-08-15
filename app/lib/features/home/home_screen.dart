@@ -267,11 +267,9 @@ class _DiaPill extends StatelessWidget {
         decoration: BoxDecoration(
           color: selecionado ? context.accent : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: relevoNeu(d: 3, blur: 7),
-          // Borda só p/ marcar o dia de HOJE; o resto é definido pelo relevo.
-          border: hoje && !selecionado
-              ? Border.all(color: context.accent)
-              : null,
+          border: Border.all(
+            color: hoje && !selecionado ? context.accent : AppColors.line,
+          ),
         ),
         child: Column(
           children: [
@@ -325,12 +323,7 @@ class _TreinoCard extends StatelessWidget {
     final n = treino.exercicios.length;
     final dur = treino.duracaoTotalSeg;
     final base = '$n ${n == 1 ? 'exercício' : 'exercícios'} · ${fmtSeg(dur)}';
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: relevoNeu(d: 5, blur: 12),
-      ),
+    return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
         child: Column(

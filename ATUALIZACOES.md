@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-15 — v0.46.0 (removida a profundidade — visual chapado de volta):**
+  - Tirei o **relevo (neumorphism)** de **todos** os temas (âmbar, azul, espresso, madeira), no
+    cronômetro e na home. Voltou o visual **chapado, com as linhas sutis** de antes. Os **4 temas
+    continuam** — mudam só as cores, sem profundidade. (O contador do cronômetro voltou a ser amarelo.)
 - **2026-08-15 — v0.45.0 (relevo na home — etapa 2 do neumorphism):**
   - A **home** ganhou profundidade: os **cards de treino** e as **pílulas de dia** agora têm
     **relevo** (parecem elevados do fundo). As outras telas (editor, check-in, progressão) recebem o

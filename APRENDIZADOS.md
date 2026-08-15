@@ -1110,3 +1110,17 @@ mas **navegação chapada** (etapa 1 só tinha feito o cronômetro). Etapa 2 com
 prints:** o cronômetro tem foto de fundo (os soldados) que dilui um pouco o neumorphism, mas o relevo
 ainda lê; navegação não tem foto → relevo lê bem. `analyze` limpo. Versão `0.45.0+45`. (Prints
 removidos do repo após análise.)
+
+---
+
+## 2026-08-15 — v0.46.0: REVERTIDO o neumorphism (usuário não gostou da profundidade)
+
+Usuário: "não gostei, volte como era antes, sem profundidade nos temas, linhas sutis". Removido TODO
+o relevo (de todos os temas, âmbar/azul inclusos): no player, `_relevo` + `boxShadow` das tarjas +
+os 2 discos do anel + wrappers `Container(boxShadow)` do botão principal e `_CtrlSecundario`; contador
+voltou a `AppColors.accentAmbar` (fixo). Na home, `_DiaPill` volta à borda e `_TreinoCard` volta a
+`Card`. `relevoNeu` removido de `app_colors`. **MANTIDO:** o motor de paletas + os 4 temas
+(azul/âmbar/espresso/madeira) como esquemas de cor CHAPADOS (madeira segue claro). Tokens `neuHi/neuLo`
+ficaram na `Paleta` mas sem uso (dead code inofensivo, caso a profundidade volte). `analyze` limpo,
+`flutter test` **33/33**. Versão `0.46.0+46`. **Lição:** neumorphism foi uma aposta estética que o
+usuário rejeitou — cores dos temas OK, profundidade não.
