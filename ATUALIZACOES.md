@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-15 — v0.45.0 (relevo na home — etapa 2 do neumorphism):**
+  - A **home** ganhou profundidade: os **cards de treino** e as **pílulas de dia** agora têm
+    **relevo** (parecem elevados do fundo). As outras telas (editor, check-in, progressão) recebem o
+    relevo nas próximas versões.
 - **2026-08-14 — v0.44.0 (crédito parcial pra quem tenta):**
   - Marcar **"Não consegui hoje"** agora **conta**: vale **metade da consistência** e **mantém a
     sua sequência** (antes zerava e ainda podia quebrar a corrente). Recompensa quem apareceu e

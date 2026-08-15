@@ -1097,3 +1097,16 @@ mesmo dia (dedupe por treino/dia). No rating (`gamificacao.dart`): **só a consi
 `Conclusao` → tentativa mantém a corrente e conta como treino, sem tocar nessas funções. Texto da tela
 "não consegui" passou a comunicar o crédito. Teste novo (3 estados + JSON). `analyze` limpo,
 `flutter test` **33/33**. Versão `0.44.0+44`.
+
+---
+
+## 2026-08-15 — v0.45.0: relevo neumórfico na home (etapa 2, via prints)
+
+Usuário mandou 4 prints (Espresso/Madeira): cores certas em tudo, cronômetro COM relevo (aceito),
+mas **navegação chapada** (etapa 1 só tinha feito o cronômetro). Etapa 2 começa pela home. Helper
+`relevoNeu({d,blur})` (top-level em `app_colors.dart`, usa neuHi/neuLo da paleta). Aplicado a
+`_DiaPill` (pílulas de dia — relevo + borda só p/ marcar HOJE) e `_TreinoCard` (era `Card` chapado →
+`Container` com `surface` + relevo). Editor/check-in/progressão ficam p/ as próximas. **Achado dos
+prints:** o cronômetro tem foto de fundo (os soldados) que dilui um pouco o neumorphism, mas o relevo
+ainda lê; navegação não tem foto → relevo lê bem. `analyze` limpo. Versão `0.45.0+45`. (Prints
+removidos do repo após análise.)

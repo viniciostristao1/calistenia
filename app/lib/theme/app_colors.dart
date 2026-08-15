@@ -143,3 +143,10 @@ extension AccentContext on BuildContext {
   Color get accent => Theme.of(this).colorScheme.primary;
   Color get onAccent => Theme.of(this).colorScheme.onPrimary;
 }
+
+/// Sombras neumórficas de RELEVO (elemento elevado do fundo) da paleta atual:
+/// luz em cima-esquerda, escuro em baixo-direita. Uso app-wide (cards, pílulas).
+List<BoxShadow> relevoNeu({double d = 4, double blur = 9}) => [
+      BoxShadow(color: AppColors.neuLo, offset: Offset(d, d), blurRadius: blur),
+      BoxShadow(color: AppColors.neuHi, offset: Offset(-d, -d), blurRadius: blur),
+    ];
