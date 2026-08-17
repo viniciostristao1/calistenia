@@ -69,6 +69,10 @@ abstract final class AppColors {
   static const onFase = Color(0xFF06111F); // texto sobre cor de fase clara
   static const danger = Color(0xFFFF6B6B);
 
+  /// Amarelo fixo das INSÍGNIAS (estrela) — não muda com o tema (a estrela é
+  /// sempre amarela, por definição do usuário).
+  static const estrela = Color(0xFFFFC93C);
+
   /// 10 cores para marcar exercícios (o "pontinho" antes do nome).
   static const paletaExercicio = <Color>[
     Color(0xFF5B9CFF), Color(0xFF31C971), Color(0xFFF5A524), Color(0xFFFF6B6B),

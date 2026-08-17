@@ -11,10 +11,12 @@ import '../../models/exercicio.dart';
 import '../../models/fase.dart';
 import '../../models/registro_progressao.dart';
 import '../../models/treino.dart';
+import '../../services/auth_service.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/conquistas_repository.dart';
 import '../../services/gamificacao_pref.dart';
+import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
 import '../../services/treinos_repository.dart';
@@ -24,6 +26,7 @@ import '../../util/format.dart';
 import '../../util/frases.dart';
 import '../../util/fundos.dart';
 import '../../util/gamificacao.dart';
+import '../../util/insignias.dart';
 
 /// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
 /// → descanso, por série) contando segundo a segundo, com pausa, pular/voltar
@@ -67,6 +70,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   String? _fraseIncompleto; // frase sorteada quando não completou
   List<String> _novosRecordes = const []; // "Nome · N reps" batidos ao completar
   String? _fraseCompleto; // frase sorteada quando completou
+  bool _ganhouInsignia = false; // caiu num dia de insígnia e ganhou a estrela
 
   String? _carimbo; // "Série 2/3 ✓" mostrado ao concluir uma série
   Timer? _carimboTimer;
@@ -278,6 +282,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _fraseIncompleto = null;
       _novosRecordes = const [];
       _fraseCompleto = null;
+      _ganhouInsignia = false;
       _restanteMs = _fases.isEmpty ? 0 : _fases[0].segundos * 1000;
     });
     _iniciar();
@@ -304,12 +309,21 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final notifier = ref.read(conquistasProvider.notifier);
     final novas = await notifier.registrarNovas(atuais);
     await notifier.reconciliar(atuais); // move p/ histórico o que tiver caído
+    // Insígnia do dia (surpresa): só ao concluir de verdade, e só se hoje é um
+    // dos dias sorteados do mês (entre os dias com treino agendado).
+    final uid = ref.read(authStateProvider).value?.uid;
+    final hoje = DateTime.now();
+    final ganhouInsignia = ehDiaDeInsignia(
+            hoje, diasAgendados(treinos), sementeInsignia(uid))
+        ? await ref.read(insigniasProvider.notifier).registrarSeNova(hoje)
+        : false;
     if (!mounted) return;
     setState(() {
       _respostaCompleto = true;
       _novasConquistas = novas;
       _novosRecordes = novosRecordes;
       _fraseCompleto = fraseCompletoAleatoria();
+      _ganhouInsignia = ganhouInsignia;
     });
   }
 
@@ -815,6 +829,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         const SizedBox(height: 20),
         _NovasConquistas(tipos: _novasConquistas),
       ],
+      if (_ganhouInsignia) ...[
+        const SizedBox(height: 20),
+        const _InsigniaGanha(),
+      ],
       const SizedBox(height: 32),
       _botoesFim(labelRepetir: 'Repetir treino'),
     ]);
@@ -879,6 +897,39 @@ class _NovasConquistas extends StatelessWidget {
                 ],
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Faixa da INSÍGNIA (estrela) ganha — surpresa revelada depois dos parabéns, só
+/// nos dias sorteados do mês. A estrela é sempre amarela (independe do tema).
+class _InsigniaGanha extends StatelessWidget {
+  const _InsigniaGanha();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.estrela, width: 1.5),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _IconeComemora(Icons.star_rounded, size: 52, color: AppColors.estrela),
+          const SizedBox(height: 8),
+          const Text('Insígnia do dia!',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const SizedBox(height: 4),
+          Text(
+            'Você caiu num dia sorteado e concluiu — estrela rara garantida.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.dim, fontSize: 12.5),
+          ),
         ],
       ),
     );

@@ -8,6 +8,7 @@ import 'package:calistenia/models/treino.dart';
 import 'package:calistenia/services/checkin_repository.dart';
 import 'package:calistenia/services/progressao_repository.dart';
 import 'package:calistenia/util/gamificacao.dart';
+import 'package:calistenia/util/insignias.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -293,25 +294,110 @@ void main() {
     expect(a15.contains(TipoConquista.trofeuOuro), isFalse); // falta 21 + progressão
   });
 
-  test('perda escalonada: pular um dia agendado cai só um degrau (8->4)', () {
+  test('tolerância: faltar UM dia agendado não derruba o nível', () {
     final d = DateTime(2026, 8, 20);
     final treinos = [
       Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
         Exercicio(nome: 'A'),
       ]),
     ];
-    // 8 dias concluídos (d-9..d-2), depois d-1 PULADO (agendado, no passado).
+    // 8 dias concluídos (d-9..d-2), d-1 FALTADO (1 só), hoje pendente.
     final concs = [
       for (var i = 2; i <= 9; i++)
         Conclusao(
             data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
     ];
     final info = nivelInfo(concs, treinos, hoje: d);
+    expect(info.atual, 8); // 1 falta é tolerada -> mantém o ouro
+  });
+
+  test('perda escalonada: faltar DOIS dias agendados seguidos cai um degrau (8->4)',
+      () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    // 8 concluídos (d-10..d-3), depois d-2 e d-1 FALTADOS (agendados, passados).
+    final concs = [
+      for (var i = 3; i <= 10; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+    ];
+    final info = nivelInfo(concs, treinos, hoje: d);
     expect(info.recorde, 8); // chegou à medalha de ouro
-    expect(info.atual, 4); // pulou 1 -> caiu um degrau, para 4 (prata)
+    expect(info.atual, 4); // faltou 2 seguidos -> caiu um degrau, para 4 (prata)
     final atuais = conquistasAtuais(concs, treinos, const [], hoje: d);
     expect(atuais.contains(TipoConquista.medalhaPrata), isTrue);
     expect(atuais.contains(TipoConquista.medalhaOuro), isFalse);
+  });
+
+  test('não consegui: 2 tentativas ok, 3ª derruba um degrau', () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    // 4 completos (d-6..d-3) -> prata (4); depois 2 tentativas (d-2, d-1).
+    final base = [
+      for (var i = 3; i <= 6; i++)
+        Conclusao(
+            data: d.subtract(Duration(days: i)), treinoId: 't', treino: 't'),
+      Conclusao(
+          data: d.subtract(const Duration(days: 2)),
+          treinoId: 't',
+          treino: 't',
+          completo: false),
+      Conclusao(
+          data: d.subtract(const Duration(days: 1)),
+          treinoId: 't',
+          treino: 't',
+          completo: false),
+    ];
+    // Duas tentativas seguidas são toleradas -> mantém a prata.
+    expect(nivelInfo(base, treinos, hoje: d).atual, 4);
+    // A 3ª tentativa (hoje) estoura o orçamento -> prata (4) cai para 0.
+    final tres = [
+      ...base,
+      Conclusao(data: d, treinoId: 't', treino: 't', completo: false),
+    ];
+    expect(nivelInfo(tres, treinos, hoje: d).atual, 0);
+  });
+
+  test('insígnias: 7 por mês, determinístico e só em dias agendados', () {
+    final agendados = {0, 1, 2, 3, 4}; // seg..sex
+    final s = sementeInsignia('user-123');
+    final dias = diasInsigniaDoMes(2026, 8, agendados, s);
+    expect(dias.length, 7);
+    // Determinístico: recomputar dá o MESMO conjunto.
+    expect(diasInsigniaDoMes(2026, 8, agendados, s), dias);
+    // Só caem em dias agendados (seg..sex).
+    for (final dia in dias) {
+      expect(agendados.contains(DateTime(2026, 8, dia).weekday - 1), isTrue);
+    }
+    // Muda de mês (não é o mesmo sorteio todo mês).
+    expect(diasInsigniaDoMes(2026, 9, agendados, s) == dias, isFalse);
+  });
+
+  test('insígnia dá peso 1,5 na consistência (vs 1,0 do completo)', () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    final concs = [
+      Conclusao(
+          data: d.subtract(const Duration(days: 1)),
+          treinoId: 't',
+          treino: 't'),
+    ];
+    final semIns = ratingForma(concs, treinos, const [], hoje: d).consistencia;
+    final comIns = ratingForma(concs, treinos, const [], hoje: d,
+        diasInsignia: {DateTime(2026, 8, 19)}).consistencia;
+    expect(comIns > semIns, isTrue);
   });
 
   test('rating de forma: consistência + frequência + progressão (0-100)', () {

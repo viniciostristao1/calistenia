@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/checkin.dart';
 import '../../models/conquista.dart';
 import '../../models/exercicio.dart';
+import '../../models/insignia.dart';
 import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/conquistas_repository.dart';
 import '../../services/gamificacao_pref.dart';
+import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
@@ -154,7 +156,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               onProximo: () => _mudarMes(1),
             ),
             if (gamiOn)
-              _TeaserConquistas(onTap: () => setState(() => _vista = 1)),
+              _QuadroInsignias(onTap: () => setState(() => _vista = 2)),
             const _LinhaDias(),
             Expanded(
               child: GridView.builder(
@@ -487,31 +489,26 @@ List<Exercicio> _exerciciosDisponiveis(List<Treino> treinos) {
   return mapa.values.toList();
 }
 
-/// Faixa compacta abaixo do calendário: sequência atual + conquistas ativas.
-/// Tocar leva à Galeria.
-class _TeaserConquistas extends ConsumerWidget {
-  const _TeaserConquistas({required this.onTap});
+/// Quadro compacto (baixo e largo) abaixo do calendário: as INSÍGNIAS (estrelas)
+/// GANHAS no mês corrente. Mostra só as ganhas — as que faltam ficam em segredo.
+/// Tocar leva ao Histórico (onde ficam as estrelas dos meses anteriores).
+class _QuadroInsignias extends ConsumerWidget {
+  const _QuadroInsignias({required this.onTap});
 
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final concs = ref.watch(conclusaoProvider).value ?? const [];
-    final treinos = ref.watch(treinosProvider).value ?? const [];
-    final prog = ref.watch(progressaoProvider).value ?? const [];
-    final streak = nivelInfo(concs, treinos).atual;
-    final atuais = conquistasAtuais(concs, treinos, prog);
-    final ativos = [
-      for (final t in TipoConquista.values)
-        if (atuais.contains(t)) t,
-    ];
+    final lista = ref.watch(insigniasProvider).value ?? const <Insignia>[];
+    final agora = DateTime.now();
+    final doMes = insigniasDoMes(lista, agora.year, agora.month);
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
@@ -519,33 +516,27 @@ class _TeaserConquistas extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              const Text('🔥', style: TextStyle(fontSize: 18)),
+              Icon(Icons.star_rounded, size: 18, color: AppColors.estrela),
               const SizedBox(width: 8),
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '$streak ',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800, color: context.accent),
-                    ),
-                    TextSpan(
-                      text: streak == 1 ? 'dia seguido' : 'dias seguidos',
-                      style: TextStyle(color: AppColors.dim),
-                    ),
-                  ],
-                ),
-              ),
+              Text('Insígnias do mês',
+                  style: TextStyle(color: AppColors.dim, fontSize: 12.5)),
               const Spacer(),
-              if (ativos.isNotEmpty)
-                for (final t in ativos)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: ConquistaBadge(tipo: t, size: 17),
-                  )
+              if (doMes.isEmpty)
+                Text('—', style: TextStyle(color: AppColors.dim2, fontSize: 14))
               else
-                Text('Galeria',
-                    style: TextStyle(color: AppColors.dim, fontSize: 12)),
+                Flexible(
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 1,
+                    runSpacing: 1,
+                    children: [
+                      for (var i = 0; i < doMes.length; i++)
+                        Icon(Icons.star_rounded,
+                            size: 18, color: AppColors.estrela),
+                    ],
+                  ),
+                ),
+              const SizedBox(width: 4),
               Icon(Icons.chevron_right, color: AppColors.dim, size: 20),
             ],
           ),
@@ -613,17 +604,29 @@ class _GaleriaConquistas extends ConsumerWidget {
   }
 }
 
-/// Sub-aba "Histórico": conquistas que foram PERDIDAS, agrupadas pelo mês da
-/// perda (mais recente em cima), em miniatura. Uma conquista ativa não aparece
-/// aqui (fica em "Conquistas atuais") — nunca duplica.
+/// Sub-aba "Histórico": as INSÍGNIAS (estrelas) ganhas em meses anteriores e os
+/// títulos (medalhas/troféus) PERDIDOS, agrupados por mês (mais recente em cima).
+/// O mês corrente das insígnias vive no quadro do calendário, não aqui.
 class _HistoricoConquistas extends ConsumerWidget {
   const _HistoricoConquistas();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final conquistas = ref.watch(conquistasProvider).value ?? const <Conquista>[];
+    final insignias = ref.watch(insigniasProvider).value ?? const <Insignia>[];
     final perdidas = conquistas.where((c) => c.perdidaEm != null).toList();
-    if (perdidas.isEmpty) {
+
+    // Insígnias por mês (só meses PASSADOS — o mês atual está no quadro).
+    final agora = DateTime.now();
+    final insigniasPorMes = <String, int>{};
+    for (final ins in insignias) {
+      if (ins.data.year == agora.year && ins.data.month == agora.month) continue;
+      final k =
+          '${ins.data.year}-${ins.data.month.toString().padLeft(2, '0')}';
+      insigniasPorMes[k] = (insigniasPorMes[k] ?? 0) + 1;
+    }
+
+    if (perdidas.isEmpty && insigniasPorMes.isEmpty) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(32),
@@ -637,8 +640,8 @@ class _HistoricoConquistas extends ConsumerWidget {
                       TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               SizedBox(height: 6),
               Text(
-                'Quando você perde um título (quebra a sequência), ele fica '
-                'guardado aqui, organizado por mês.',
+                'As estrelas ganhas em meses anteriores e os títulos perdidos '
+                '(quebra de sequência) ficam guardados aqui, por mês.',
                 style: TextStyle(color: AppColors.dim),
                 textAlign: TextAlign.center,
               ),
@@ -647,23 +650,94 @@ class _HistoricoConquistas extends ConsumerWidget {
         ),
       );
     }
-    // Agrupa pelo mês da perda; ordena mês mais recente primeiro.
-    final mapa = <String, List<TipoConquista>>{};
+
+    // Títulos perdidos, agrupados pelo mês da perda.
+    final mapaConq = <String, List<TipoConquista>>{};
     for (final c in perdidas) {
       final t = tipoConquistaDe(c.tipo);
       if (t == null) continue;
       final d = c.perdidaEm!;
-      (mapa['${d.year}-${d.month.toString().padLeft(2, '0')}'] ??= []).add(t);
+      (mapaConq['${d.year}-${d.month.toString().padLeft(2, '0')}'] ??= [])
+          .add(t);
     }
-    final chaves = mapa.keys.toList()..sort((a, b) => b.compareTo(a));
+    final chavesIns = insigniasPorMes.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
+    final chavesConq = mapaConq.keys.toList()..sort((a, b) => b.compareTo(a));
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
-        for (final k in chaves) ...[
-          _MesHistorico(chaveMes: k, tipos: mapa[k]!),
-          const SizedBox(height: 12),
+        if (chavesIns.isNotEmpty) ...[
+          const _TituloSecao('Insígnias', 'Estrelas ganhas em meses anteriores'),
+          const SizedBox(height: 10),
+          for (final k in chavesIns) ...[
+            _MesInsignias(chaveMes: k, quantas: insigniasPorMes[k]!),
+            const SizedBox(height: 12),
+          ],
+          if (chavesConq.isNotEmpty) const SizedBox(height: 12),
+        ],
+        if (chavesConq.isNotEmpty) ...[
+          const _TituloSecao(
+              'Títulos perdidos', 'Medalhas e troféus por quebra de sequência'),
+          const SizedBox(height: 10),
+          for (final k in chavesConq) ...[
+            _MesHistorico(chaveMes: k, tipos: mapaConq[k]!),
+            const SizedBox(height: 12),
+          ],
         ],
       ],
+    );
+  }
+}
+
+/// Título "Mês Ano" a partir de uma chave 'YYYY-MM'.
+String _tituloMes(String chaveMes) {
+  final p = chaveMes.split('-');
+  final mes = int.tryParse(p[1]) ?? 1;
+  return '${_meses[(mes - 1).clamp(0, 11)]} ${p[0]}';
+}
+
+/// Linha de um mês no histórico de insígnias: nome do mês + estrelas ganhas.
+class _MesInsignias extends StatelessWidget {
+  const _MesInsignias({required this.chaveMes, required this.quantas});
+
+  final String chaveMes; // 'YYYY-MM'
+  final int quantas;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(_tituloMes(chaveMes),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          ),
+          Flexible(
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 1,
+              runSpacing: 1,
+              children: [
+                for (var i = 0; i < quantas; i++)
+                  Icon(Icons.star_rounded, size: 18, color: AppColors.estrela),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text('$quantas',
+              style: TextStyle(
+                  fontWeight: FontWeight.w800, color: AppColors.estrela)),
+        ],
+      ),
     );
   }
 }

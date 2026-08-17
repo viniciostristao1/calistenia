@@ -5,6 +5,56 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-17 — Insígnias + sequência "orçamento de falhas" + versão no título (v0.47.0)
+
+**Contexto:** feedback do usuário sobre a gamificação. Três frentes: (1) copy do tema; (2)
+regra de sequência mais justa; (3) sistema novo de **insígnias** (estrelas mensais). Mais um
+pedido de fluxo (mostrar a versão).
+
+**Regra de sequência — "orçamento de falhas" (`util/gamificacao.dart::nivelInfo`).** Antes:
+faltar UM dia agendado já derrubava um degrau (da Prata=4 ia direto a 0). Novo modelo: cada
+corrente tem um **orçamento = 2**; um dia **concluído zera** o orçamento; **"não consegui"
+gasta 1**; **faltar gasta 2**; ao **passar de 2**, cai um degrau (`_dropTier`, ex.: 8→4) e o
+orçamento zera. Resultado pedido pelo usuário: "não consegui" 2 dias ok / 3º quebra; faltar 1
+ok / 2º quebra (falta pesa o dobro). Caso misto (falta + qualquer outra falha no dia seguinte)
+quebra no 2º — consequência natural do peso. **Gotcha:** `nivelInfo` agora distingue
+`completo` por dia (`completoPorDia`), pois "não consegui" **deixou de contar como +1** (antes
+qualquer conclusão contava). `streakAtual` (sequência crua) ficou como estava — é **código
+morto** (só usado em teste), a UI usa `nivelInfo`.
+
+**Diagnóstico do bug relatado ("sequência 0 no domingo"):** o usuário marcou **"não consegui"**
+no sábado. Até a **v0.44.0**, "não consegui" **zerava** a sequência → provável que o aparelho
+dele esteja numa versão < v0.44.0. Como a sequência é **sempre recalculada do histórico** (não
+é contador salvo), atualizar já recompõe. Confirma que `FIREBASE.md` está **desatualizado** (diz
+que a nuvem só guarda treinos/checkins/progressao), mas o `sync_service` **sincroniza também**
+`conclusao`/`conquistas`/`insignias` — não era bug de sync.
+
+**Insígnias (feature nova).** `models/insignia.dart` (1 por dia; `id` = 'YYYY-MM-DD' p/ dedup no
+sync), `util/insignias.dart` (sorteio **puro e determinístico**), `services/insignias_repository.dart`.
+- **Determinismo:** as 7 datas do mês saem de `diasInsigniaDoMes(ano, mes, agendados, semente)`,
+  que ordena os dias-candidatos por um hash de `(semente, ano, mês, dia)` e pega os 7 primeiros.
+  **Gotcha crítico:** **NÃO** usar `String.hashCode` p/ a semente (varia entre execuções/
+  plataformas → mudaria o sorteio); usei **FNV-1a** próprio. Semente = `sementeInsignia(uid)`
+  (por conta → igual nos dois celulares); deslogado usa constante fixa. Tudo em 31 bits positivos.
+- **Só dias agendados** entram no pool (se cair em dia sem treino seria impossível de ganhar).
+- **Avaliação:** só em `_marcarCompleto` (player) → `registrarSeNova(hoje)` (retorna se ganhou);
+  revelado em `_telaSucesso` **depois** das conquistas. "Não consegui"/falta nunca avalia (silêncio).
+- **Peso 1,5 no rating:** `_consistencia` aceita `Set<DateTime> diasInsignia`; dia completo que é
+  de insígnia pesa 1,5 (vs 1,0/0,5). Componente **clampado a 40** (a estrela ajuda a bater o teto).
+  Threading via `ratingForma`/`serieRating` (param opcional, retrocompatível) — só `progressao_screen`
+  passa o set real (`diasComInsignia`).
+- **UI:** o quadro de estrelas do mês (só as **ganhas**) **substituiu** a faixa "🔥 dias seguidos"
+  no Check-in (a pedido: era redundante com a Galeria). Histórico ganhou seção "Insígnias" por mês
+  (só meses passados; o atual vive no quadro).
+
+**Versão no título:** `util/versao.dart::kVersao` (constante, sem novo plugin) exibida ao lado de
+"Calis Timer" na home. **Subir junto com o pubspec** — virou passo 2/6 do fluxo no `INICIO.md`.
+
+**Gotcha de lint:** doc comment `///` no TOPO de um arquivo sem import/declaração colada dispara
+`dangling_library_doc_comments`. Fix: `library;` logo após o doc (feito em `util/insignias.dart`).
+
+---
+
 ## 2026-07-30 — Bootstrap do projeto (v0.1.0)
 
 **Contexto:** app novo de cronômetros de calistenia, espelhando as convenções do

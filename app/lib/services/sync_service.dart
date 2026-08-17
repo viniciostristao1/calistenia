@@ -9,12 +9,13 @@ import 'auth_service.dart';
 import 'checkin_repository.dart';
 import 'conclusao_repository.dart';
 import 'conquistas_repository.dart';
+import 'insignias_repository.dart';
 import 'progressao_repository.dart';
 import 'treinos_repository.dart';
 
-/// Sincroniza treinos, check-ins, progressão, conclusões e conquistas com o
-/// Firestore quando o usuário está logado. Cada store é guardado como o MESMO
-/// JSON do shared_preferences, num campo do documento `users/{uid}`.
+/// Sincroniza treinos, check-ins, progressão, conclusões, conquistas e insígnias
+/// com o Firestore quando o usuário está logado. Cada store é guardado como o
+/// MESMO JSON do shared_preferences, num campo do documento `users/{uid}`.
 ///
 /// Estratégia: no 1º carregamento faz **união por id** (não perde dados de
 /// nenhum lado); depois, "última escrita vence" por documento — o SDK do
@@ -89,6 +90,7 @@ class SyncController {
       _mergeChave(prefs, chaveProgressao, data['progressao']);
       _mergeChave(prefs, chaveConclusao, data['conclusao']);
       _mergeChave(prefs, chaveConquistas, data['conquistas']);
+      _mergeChave(prefs, chaveInsignias, data['insignias']);
       _invalidar();
       _aplicandoRemoto = false;
       _ultimoSync = _estado(prefs);
@@ -98,7 +100,8 @@ class SyncController {
     // Se o conteúdo remoto é o que já temos, ignora (evita o loop de
     // updatedAt: cada push muda o timestamp e voltaria como "mudança").
     final estadoRemoto = _estadoDe(data['treinos'], data['checkins'],
-        data['progressao'], data['conclusao'], data['conquistas']);
+        data['progressao'], data['conclusao'], data['conquistas'],
+        data['insignias']);
     if (estadoRemoto == _ultimoSync) return;
     // Outro aparelho editou de verdade: a nuvem manda.
     _aplicandoRemoto = true;
@@ -107,6 +110,7 @@ class SyncController {
     _aplicarChave(prefs, chaveProgressao, data['progressao']);
     _aplicarChave(prefs, chaveConclusao, data['conclusao']);
     _aplicarChave(prefs, chaveConquistas, data['conquistas']);
+    _aplicarChave(prefs, chaveInsignias, data['insignias']);
     _invalidar();
     _aplicandoRemoto = false;
     _ultimoSync = _estado(prefs);
@@ -123,6 +127,7 @@ class SyncController {
         'progressao': prefs.getString(chaveProgressao) ?? '[]',
         'conclusao': prefs.getString(chaveConclusao) ?? '[]',
         'conquistas': prefs.getString(chaveConquistas) ?? '[]',
+        'insignias': prefs.getString(chaveInsignias) ?? '[]',
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (_) {
@@ -138,10 +143,12 @@ class SyncController {
         prefs.getString(chaveProgressao),
         prefs.getString(chaveConclusao),
         prefs.getString(chaveConquistas),
+        prefs.getString(chaveInsignias),
       );
 
-  String _estadoDe(dynamic t, dynamic c, dynamic p, dynamic cc, dynamic cq) =>
-      '${t ?? ''}§${c ?? ''}§${p ?? ''}§${cc ?? ''}§${cq ?? ''}';
+  String _estadoDe(dynamic t, dynamic c, dynamic p, dynamic cc, dynamic cq,
+          dynamic ci) =>
+      '${t ?? ''}§${c ?? ''}§${p ?? ''}§${cc ?? ''}§${cq ?? ''}§${ci ?? ''}';
 
   void _aplicarChave(SharedPreferences prefs, String chave, dynamic remoto) {
     if (remoto is String) prefs.setString(chave, remoto);
@@ -178,6 +185,7 @@ class SyncController {
     ref.invalidate(progressaoProvider);
     ref.invalidate(conclusaoProvider);
     ref.invalidate(conquistasProvider);
+    ref.invalidate(insigniasProvider);
   }
 }
 
@@ -202,6 +210,7 @@ final syncProvider = Provider<SyncController>((ref) {
   ref.listen(progressaoProvider, (_, _) => controller.onLocalChange());
   ref.listen(conclusaoProvider, (_, _) => controller.onLocalChange());
   ref.listen(conquistasProvider, (_, _) => controller.onLocalChange());
+  ref.listen(insigniasProvider, (_, _) => controller.onLocalChange());
 
   return controller;
 });

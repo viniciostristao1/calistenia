@@ -60,32 +60,61 @@ int _dropTier(int nivel) {
 }
 
 /// Nível atual (o que dá prêmio) + recorde de todos os tempos. Diferente de uma
-/// sequência crua: +1 por dia agendado concluído; ao pular um dia agendado, cai
-/// UM degrau de prêmio (perda escalonada), não zera.
+/// sequência crua: +1 por dia concluído; falhas gastam um "orçamento" e, ao
+/// estourá-lo, cai UM degrau de prêmio (perda escalonada), não zera.
 class NivelInfo {
   final int atual;
   final int recorde;
   const NivelInfo(this.atual, this.recorde);
 }
 
+/// Orçamento de falhas por corrente. Um dia CONCLUÍDO ("consegui") zera o
+/// orçamento; uma TENTATIVA ("não consegui") gasta 1; FALTAR (dia agendado sem
+/// registro) gasta 2. Ao gasto PASSAR de [_orcamentoFalhas], cai um degrau e o
+/// orçamento zera. Assim: "não consegui" 2 dias ok / 3º quebra; faltar 1 dia ok
+/// / 2º quebra (falta pesa o dobro).
+const int _orcamentoFalhas = 2;
+
 NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
     {DateTime? hoje}) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
-  final diasConc = concs.map((c) => _dia(c.data)).toSet();
-  if (diasConc.isEmpty) return const NivelInfo(0, 0);
-  final inicio = diasConc.reduce((a, b) => a.isBefore(b) ? a : b);
-  var nivel = 0, recorde = 0, i = 0;
+  // Por dia: houve alguma conclusão COMPLETA? (completo vence tentativa no dia)
+  final completoPorDia = <DateTime, bool>{};
+  for (final c in concs) {
+    final d = _dia(c.data);
+    completoPorDia[d] = (completoPorDia[d] ?? false) || c.completo;
+  }
+  if (completoPorDia.isEmpty) return const NivelInfo(0, 0);
+  final inicio =
+      completoPorDia.keys.reduce((a, b) => a.isBefore(b) ? a : b);
+  var nivel = 0, recorde = 0, gasto = 0, i = 0;
   var d = inicio;
   while (!d.isAfter(hj) && i < 4000) {
     final wd = d.weekday - 1;
-    if (diasConc.contains(d)) {
+    final registro = completoPorDia[d];
+    if (registro == true) {
+      // Concluiu de verdade: avança e zera o orçamento de falhas.
       nivel += 1;
+      gasto = 0;
       if (nivel > recorde) recorde = nivel;
-    } else if (agendados.contains(wd) && d.isBefore(hj)) {
-      nivel = _dropTier(nivel); // pulou um dia agendado -> cai um degrau
+    } else if (registro == false && agendados.contains(wd)) {
+      // "Não consegui" num dia agendado: falha leve (custa 1).
+      gasto += 1;
+      if (gasto > _orcamentoFalhas) {
+        nivel = _dropTier(nivel);
+        gasto = 0;
+      }
+    } else if (registro == null && agendados.contains(wd) && d.isBefore(hj)) {
+      // Faltou num dia agendado já passado: falha pesada (custa 2).
+      gasto += 2;
+      if (gasto > _orcamentoFalhas) {
+        nivel = _dropTier(nivel);
+        gasto = 0;
+      }
     }
-    // dia de descanso (não agendado) ou hoje ainda pendente -> sem mudança
+    // Descanso (não agendado), tentativa fora de dia agendado, ou hoje ainda
+    // pendente (sem registro) -> neutro.
     d = d.add(const Duration(days: 1));
     i++;
   }
@@ -175,15 +204,17 @@ Set<TipoConquista> conquistasAtuais(
 
 /// Consistência (0..40): % dos dias AGENDADOS cumpridos nos últimos 28 dias,
 /// ×0,4. Hoje é NEUTRO — não entra no denominador enquanto você não treinar
-/// (não derruba a nota de manhã num dia agendado).
-int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj) {
+/// (não derruba a nota de manhã num dia agendado). Peso por dia: completou = 1,0;
+/// só tentou ("não consegui") = 0,5; completou num dia de INSÍGNIA = 1,5 (vale
+/// mais). O componente é limitado ao teto de 40 (a insígnia ajuda a batê-lo).
+int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj,
+    Set<DateTime> diasInsignia) {
   final agendados = diasAgendados(treinos);
   if (agendados.isEmpty) return 0;
-  // Peso por dia: completou tudo = 1,0; só tentou ("não consegui") = 0,5.
   final pesoDia = <DateTime, double>{};
   for (final c in concs) {
     final d = _dia(c.data);
-    final p = c.completo ? 1.0 : 0.5;
+    final p = c.completo ? (diasInsignia.contains(d) ? 1.5 : 1.0) : 0.5;
     if (p > (pesoDia[d] ?? 0)) pesoDia[d] = p;
   }
   var total = 0;
@@ -196,7 +227,7 @@ int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj) {
     total++;
     feitos += peso;
   }
-  return total == 0 ? 0 : ((feitos / total) * 40).round();
+  return total == 0 ? 0 : ((feitos / total) * 40).round().clamp(0, 40);
 }
 
 /// Frequência (0..20): volume real — média de dias treinados por semana nas
@@ -245,10 +276,10 @@ class RatingForma {
 
 RatingForma ratingForma(List<Conclusao> concs, List<Treino> treinos,
     List<RegistroProgressao> progressao,
-    {DateTime? hoje}) {
+    {DateTime? hoje, Set<DateTime> diasInsignia = const {}}) {
   final hj = _dia(hoje ?? DateTime.now());
   return RatingForma(
-    _consistencia(concs, treinos, hj),
+    _consistencia(concs, treinos, hj, diasInsignia),
     _frequencia(concs, hj),
     _progressao(treinos, progressao, hj, 42),
   );
@@ -270,6 +301,7 @@ List<PontoRating> serieRating(
   List<RegistroProgressao> progressao, {
   int semanas = 12,
   DateTime? hoje,
+  Set<DateTime> diasInsignia = const {},
 }) {
   final hj = _dia(hoje ?? DateTime.now());
   final pts = <PontoRating>[];
@@ -277,8 +309,13 @@ List<PontoRating> serieRating(
     final data = hj.subtract(Duration(days: w * 7));
     final concsAte = concs.where((c) => !c.data.isAfter(data)).toList();
     final progAte = progressao.where((r) => !r.data.isAfter(data)).toList();
+    final insigAte =
+        diasInsignia.where((d) => !d.isAfter(data)).toSet();
     pts.add(PontoRating(
-        data, ratingForma(concsAte, treinos, progAte, hoje: data).total));
+        data,
+        ratingForma(concsAte, treinos, progAte,
+                hoje: data, diasInsignia: insigAte)
+            .total));
   }
   return pts;
 }

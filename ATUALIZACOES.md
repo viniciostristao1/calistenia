@@ -3,6 +3,23 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-17 — v0.47.0 (insígnias + sequência mais justa + número da versão):**
+  - **Insígnias ⭐ (novo):** todo mês, **7 estrelas** caem em dias sorteados (só em dias com
+    treino agendado). Você **não sabe** quais — a estrela só é revelada ao **concluir** o treino
+    ("Sim, completei"), **depois** dos parabéns. Se marcar "não consegui" ou faltar num dia
+    sorteado, não ganha (e o app não avisa). Dia com insígnia **vale mais** no Rating (peso 1,5,
+    vs. 1,0 do completo e 0,5 da tentativa). O **quadro das estrelas do mês** fica na aba
+    **Check-in** (substituiu a faixa "🔥 dias seguidos" — a sequência segue na Galeria); no fim
+    do mês ele zera e as ganhas vão para o **Histórico**. Sorteio determinístico: **igual nos
+    dois celulares** e estável a cada abertura.
+  - **Sequência mais justa:** faltar/tentar **1 dia** não derruba mais o prêmio. Agora:
+    **"não consegui" 2 dias** seguidos ok (o 3º derruba um degrau); **faltar 1 dia** ok (o 2º
+    derruba). Ao cair, perde só o **último** prêmio (ex.: Ouro→volta pra 4/Prata).
+  - **Número da versão** aparece ao lado de "Calis Timer" na home — pra você confirmar num
+    relance que está no build mais novo.
+  - O tema **Espresso** passou a se chamar **Expresso**; removida a menção a "neumorphism" (os
+    temas já são chapados desde a v0.46).
+
 - **2026-08-15 — v0.46.0 (removida a profundidade — visual chapado de volta):**
   - Tirei o **relevo (neumorphism)** de **todos** os temas (âmbar, azul, espresso, madeira), no
     cronômetro e na home. Voltou o visual **chapado, com as linhas sutis** de antes. Os **4 temas

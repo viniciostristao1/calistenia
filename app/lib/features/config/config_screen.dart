@@ -30,8 +30,8 @@ class ConfigScreen extends ConsumerWidget {
           for (final o in const [
             (TemaApp.ambar, 'Âmbar', 'Âmbar sobre navy escuro (padrão)'),
             (TemaApp.azul, 'Azul', 'Azul sobre navy escuro'),
-            (TemaApp.espresso, 'Espresso', 'Escuro amadeirado · relevo (neumorphism)'),
-            (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado · relevo'),
+            (TemaApp.espresso, 'Expresso', 'Escuro amadeirado'),
+            (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado'),
           ])
             Padding(
               padding: const EdgeInsets.only(bottom: 10),

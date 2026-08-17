@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/registro_progressao.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/gamificacao_pref.dart';
+import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
@@ -108,8 +109,10 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
     final concs = ref.watch(conclusaoProvider).value ?? const [];
     final treinos = ref.watch(treinosProvider).value ?? const [];
     final prog = ref.watch(progressaoProvider).value ?? const [];
-    final rating = ratingForma(concs, treinos, prog);
-    final serie = serieRating(concs, treinos, prog);
+    final insignias = ref.watch(insigniasProvider).value ?? const [];
+    final diasIns = diasComInsignia(insignias);
+    final rating = ratingForma(concs, treinos, prog, diasInsignia: diasIns);
+    final serie = serieRating(concs, treinos, prog, diasInsignia: diasIns);
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [

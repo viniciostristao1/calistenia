@@ -12,11 +12,14 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 > 📓 **Fluxo fixo (harness):** ao fim de cada bloco significativo →
 > 1. `flutter analyze` (e `flutter test` se tocou lógica) limpo;
 > 2. **subir a versão** em `app/pubspec.yaml` (`X.Y.Z+N` → o `+N` é o versionCode, tem de
->    crescer; a tag do release = `vX.Y.Z`);
+>    crescer; a tag do release = `vX.Y.Z`) **E** em `app/lib/util/versao.dart` (`kVersao` =
+>    o mesmo `X.Y.Z` — ele aparece ao lado do título "Calis Timer" na home; DEVE casar);
 > 3. registrar no [`APRENDIZADOS.md`](APRENDIZADOS.md) (técnico) e, se for visível ao usuário,
 >    UMA LINHA em [`ATUALIZACOES.md`](ATUALIZACOES.md) (topo = mais recente);
 > 4. se mexeu no layout do cronômetro, atualizar [`LAYOUT_CRONOMETRO.md`](LAYOUT_CRONOMETRO.md);
-> 5. **commit + push na `main`** → o CI compila e publica o Release sozinho (ver "Entrega").
+> 5. **commit + push na `main`** → o CI compila e publica o Release sozinho (ver "Entrega");
+> 6. **escrever o nome da versão no terminal** ao terminar (ex.: "saiu a **v0.47.0**"), para o
+>    usuário confirmar que está rodando o build mais novo (o número também aparece na home).
 >
 > Papéis dos docs: referência (`INICIO`) · técnico (`APRENDIZADOS`) · changelog do usuário
 > (`ATUALIZACOES`) · futuro (`IDEIAS`) · layout do player (`LAYOUT_CRONOMETRO`).

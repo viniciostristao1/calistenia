@@ -9,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
 import '../../util/exportar_treino.dart';
 import '../../util/format.dart';
+import '../../util/versao.dart';
 import '../config/config_screen.dart';
 import '../player/player_screen.dart';
 import '../treino/treino_editor_screen.dart';
@@ -137,6 +138,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(width: 8),
             const Flexible(
               child: Text('Calis Timer', overflow: TextOverflow.ellipsis),
+            ),
+            const SizedBox(width: 6),
+            // Número da versão ao lado do título: confirma, num relance, que o
+            // build instalado é o mais novo (sobe junto com o pubspec).
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text('v$kVersao',
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.dim)),
             ),
           ],
         ),
