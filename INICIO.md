@@ -24,13 +24,24 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 > Papéis dos docs: referência (`INICIO`) · técnico (`APRENDIZADOS`) · changelog do usuário
 > (`ATUALIZACOES`) · futuro (`IDEIAS`) · layout do player (`LAYOUT_CRONOMETRO`).
 
-## ⭐ ESTADO ATUAL (2026-08-10) — ler primeiro pós-/clear
+## ⭐ ESTADO ATUAL (2026-08-17) — ler primeiro pós-/clear
 
-**Publicado no GitHub** (repo privado `viniciostristao1/calistenia`, CI verde). Versão
-atual = **v0.34.0** (fase de iteração pelo feedback real; último bloco = **repaginação do
-cronômetro** — nome em pílula cinza, contador de reps 0-based numa pílula amarela maior,
-rótulos das fases dentro do anel; ver [`LAYOUT_CRONOMETRO.md`](LAYOUT_CRONOMETRO.md) e
-[`ATUALIZACOES.md`](ATUALIZACOES.md)). **Nome de exibição = "Calis
+**Publicado no GitHub** (repo `viniciostristao1/calistenia`, CI verde). Versão
+atual = **v0.47.0** (fase de iteração pelo feedback real; último bloco = **insígnias ⭐
+mensais** — 7 estrelas/mês em dias sorteados, só reveladas ao concluir o treino, quadro na
+aba Check-in; **sequência mais justa** com "orçamento de falhas" (1 falha/falta não derruba);
+**número da versão na home**; ver [`ATUALIZACOES.md`](ATUALIZACOES.md)).
+
+> ⚠️ **Repo virou PÚBLICO em 2026-08-17.** Motivo: Actions em repo privado travou por
+> billing (pagamento/limite da conta falhou) e barrou o build da v0.47.0; público = CI grátis
+> e ilimitado + `releases/latest` baixa sem estar logado. **Nenhum segredo no git** (keystore,
+> `key.properties`, `google-services.json`, `firebase_options.dart` gitignored; secrets no
+> cofre do GitHub; `firestore.rules` restringe cada user ao próprio `users/{uid}`). Voltar a
+> privado no futuro = regularizar o billing e flipar o MESMO repo — **NÃO migrar** p/ repo
+> novo (quebraria o link `latest` e o histórico de releases; e migrar não desfaz clones já
+> feitos, então só faz sentido se houvesse segredo/IP — não é o caso).
+
+**Nome de exibição = "Calis
 Timer"** (pacote/applicationId segue `com.vinyapps.calistenia`, pacote Dart `calistenia`;
 NÃO mudar — Firebase/Play Store se registram pelo package). **Cor oficial = âmbar** (azul
 é opção). **Firebase LIGADO** (projeto `calis-timer`): **login com Google funciona**
