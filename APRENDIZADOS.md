@@ -5,6 +5,50 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-17 — Estrelas viram bônus separado no Rating (v0.48.0)
+
+**Contexto:** debate de design com o usuário (registro em `IDEIAS.md § Estrelas no Rating`). O peso
+**1,5 da insígnia DENTRO da consistência** (v0.47.0) tinha dois defeitos, ambos confirmados na
+auditoria da nota anterior deste diário: (1) **redundância** — quem já batia 40/40 tinha o +0,5
+comido pelo `.clamp(0,40)`, então o prêmio valia **zero justamente pra quem é consistente**; (2)
+**"comprar faltas"** — na janela de 28 dias, `feitos ≥ total ⟺ #insígnias ≥ #tentativas + 2·#faltas`,
+então um mês de sorte mascarava até ~3 faltas mostrando 40/40.
+
+**Decisão (do usuário):** tirar a estrela de dentro da consistência e criar um **band de bônus
+LINEAR, fora dos 100** — cada estrela do **mês-calendário** corrente = **+1** (capado em 7).
+Motivo: simples ("bônus = nº de estrelas do mês"), sem zonas mortas, e um prêmio que o **consistente
+sente** (não é diluído pelo teto). Considerado e descartado: curva escalonada 2/4/6/7 (tinha zonas
+mortas) e manter dentro da consistência (não resolvia nenhum dos dois defeitos).
+
+**Mudanças (`util/gamificacao.dart`):**
+- `_consistencia` **perdeu o param** `Set<DateTime> diasInsignia` e o peso 1,5 → volta a
+  completo=1,0 / tentativa=0,5. Consistência voltou a ser **honesta** (falta = falta).
+- Nova `_bonusEstrelas(diasInsignia, hj)` = conta estrelas com `year/month == hj` (`clamp(0,7)`).
+  **Reseta no dia 1º** (bate com o quadro mensal do Check-in).
+- `RatingForma` ganhou 4º campo `bonusEstrelas` (default 0, retrocompatível) + getter
+  `totalComBonus` (= `total` + bônus, **pode passar de 100**). `total` (0..100) e `maximo=100`
+  **intactos** — a "nota de forma" base não mexe; o bônus é adorno à parte.
+- `serieRating` passou a plotar `.totalComBonus`. **Gotcha do gráfico:** o `_LinhaPainter` já
+  auto-escala o eixo Y por `maxObs*1.15` (não tem 100 hard-coded), então valores >100 **não
+  clipam**. Sem look-ahead: `insigAte` já filtra estrelas ≤ data e `_bonusEstrelas` filtra ao mês
+  do ponto → conta só as estrelas daquele mês até aquela data.
+
+**UI (`progressao_screen.dart`):** número base fica "/100" (o anel usa `rating.total`); ao lado,
+selo dourado **"+N ⭐"** (`AppColors.estrela`, só quando N>0) e "· Bônus ⭐ +N" no detalhamento.
+
+**Testes:** o antigo "insígnia dá peso 1,5" virou **"não mexe na consistência; vira bônus separado"**
+(consistência igual com/sem estrela; `total` igual; `bonusEstrelas` 0→1; `totalComBonus = total+1`).
+Novo teste do band: **linear, só mês corrente** (julho/setembro ignorados), **capa em 7**.
+`flutter analyze` limpo + **38 testes verdes**.
+
+**Números travados (podem crescer):** 7 estrelas/mês, +1 cada (teto +7). O usuário cogita
+**aumentar** no futuro — é só esticar o band, sem tocar no núcleo (consistência→progressão).
+
+**Deferido (`IDEIAS.md`):** celebrar **mês perfeito (7/7)** como selo/animação — **não** como ponto
+extra (manteria a linearidade honesta).
+
+---
+
 ## 2026-08-17 — Insígnias + sequência "orçamento de falhas" + versão no título (v0.47.0)
 
 **Contexto:** feedback do usuário sobre a gamificação. Três frentes: (1) copy do tema; (2)

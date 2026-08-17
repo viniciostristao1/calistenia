@@ -444,6 +444,17 @@ class _RatingCard extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                       fontSize: 20,
                       color: context.accent)),
+              if (rating.bonusEstrelas > 0) ...[
+                const SizedBox(width: 8),
+                Text('+${rating.bonusEstrelas}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                        color: AppColors.estrela)),
+                const SizedBox(width: 2),
+                const Icon(Icons.star_rounded,
+                    size: 18, color: AppColors.estrela),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -460,7 +471,8 @@ class _RatingCard extends StatelessWidget {
           Text(
             'Consistência ${rating.consistencia}/40 · '
             'Frequência ${rating.frequencia}/20 · '
-            'Progressão ${rating.progressao}/40',
+            'Progressão ${rating.progressao}/40'
+            '${rating.bonusEstrelas > 0 ? ' · Bônus ⭐ +${rating.bonusEstrelas}' : ''}',
             style: TextStyle(color: AppColors.dim, fontSize: 12),
           ),
         ],

@@ -205,16 +205,18 @@ Set<TipoConquista> conquistasAtuais(
 /// Consistência (0..40): % dos dias AGENDADOS cumpridos nos últimos 28 dias,
 /// ×0,4. Hoje é NEUTRO — não entra no denominador enquanto você não treinar
 /// (não derruba a nota de manhã num dia agendado). Peso por dia: completou = 1,0;
-/// só tentou ("não consegui") = 0,5; completou num dia de INSÍGNIA = 1,5 (vale
-/// mais). O componente é limitado ao teto de 40 (a insígnia ajuda a batê-lo).
-int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj,
-    Set<DateTime> diasInsignia) {
+/// só tentou ("não consegui") = 0,5. O componente é limitado ao teto de 40.
+///
+/// v0.48.0: a INSÍGNIA SAIU daqui — não pesa mais na consistência. Dentro do teto
+/// ela era diluída (quem já estava em 40/40 não ganhava nada) e podia "comprar"
+/// faltas. Virou um bônus separado, fora dos 100 (ver [_bonusEstrelas]).
+int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj) {
   final agendados = diasAgendados(treinos);
   if (agendados.isEmpty) return 0;
   final pesoDia = <DateTime, double>{};
   for (final c in concs) {
     final d = _dia(c.data);
-    final p = c.completo ? (diasInsignia.contains(d) ? 1.5 : 1.0) : 0.5;
+    final p = c.completo ? 1.0 : 0.5;
     if (p > (pesoDia[d] ?? 0)) pesoDia[d] = p;
   }
   var total = 0;
@@ -261,16 +263,36 @@ int _progressao(List<Treino> treinos, List<RegistroProgressao> progressao,
   return (40 * (soma / (soma + 2))).round();
 }
 
-/// Rating de forma (0..100) = Consistência (40) + Frequência (20) + Progressão
-/// (40). Número único "nota de desempenho": consistência é o alicerce, mas só
-/// bater recordes (progressão) leva além do platô. Quem não evolui fica estável,
-/// não despenca.
+/// Bônus de estrelas (0..7): EXTRA fora dos 100, LINEAR — cada insígnia ganha no
+/// MÊS-CALENDÁRIO corrente vale +1. Prêmio limpo: não dilui a consistência nem
+/// mascara faltas (só quem CONCLUIU dias sorteados soma). Capado em 7 (limite/mês).
+/// Reseta no dia 1º de cada mês (bate com o quadro de estrelas do Check-in).
+int _bonusEstrelas(Set<DateTime> diasInsignia, DateTime hj) {
+  var n = 0;
+  for (final d in diasInsignia) {
+    if (d.year == hj.year && d.month == hj.month) n++;
+  }
+  return n.clamp(0, 7);
+}
+
+/// Rating de forma = Consistência (40) + Frequência (20) + Progressão (40) =
+/// base 0..100, MAIS o bônus de estrelas (0..7) como EXTRA fora do teto. Número
+/// único "nota de desempenho": consistência é o alicerce, mas só bater recordes
+/// (progressão) leva além do platô. Quem não evolui fica estável, não despenca.
 class RatingForma {
   final int consistencia; // 0..40
   final int frequencia; // 0..20
   final int progressao; // 0..40
-  const RatingForma(this.consistencia, this.frequencia, this.progressao);
+  final int bonusEstrelas; // 0..7 — EXTRA de insígnias do mês, fora dos 100
+  const RatingForma(this.consistencia, this.frequencia, this.progressao,
+      [this.bonusEstrelas = 0]);
+
+  /// Nota-base "de forma" (0..100): consistência + frequência + progressão.
   int get total => consistencia + frequencia + progressao;
+
+  /// Nota com o bônus de estrelas somado (pode passar de 100 — é o extra).
+  int get totalComBonus => total + bonusEstrelas;
+
   static const int maximo = 100;
 }
 
@@ -279,9 +301,10 @@ RatingForma ratingForma(List<Conclusao> concs, List<Treino> treinos,
     {DateTime? hoje, Set<DateTime> diasInsignia = const {}}) {
   final hj = _dia(hoje ?? DateTime.now());
   return RatingForma(
-    _consistencia(concs, treinos, hj, diasInsignia),
+    _consistencia(concs, treinos, hj),
     _frequencia(concs, hj),
     _progressao(treinos, progressao, hj, 42),
+    _bonusEstrelas(diasInsignia, hj),
   );
 }
 
@@ -315,7 +338,7 @@ List<PontoRating> serieRating(
         data,
         ratingForma(concsAte, treinos, progAte,
                 hoje: data, diasInsignia: insigAte)
-            .total));
+            .totalComBonus));
   }
   return pts;
 }

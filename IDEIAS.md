@@ -2,6 +2,18 @@
 
 Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 
+## ⭐ Estrelas (insígnias) no Rating — `[FEITO v0.48.0]` (2026-08-17)
+Debate de design sobre como as estrelas entram no Rating. **Decidido e shipado na v0.48.0:** a
+estrela saiu de dentro da consistência (onde era diluída pelo teto e podia mascarar faltas) e virou
+um **bônus LINEAR, fora dos 100** — cada estrela do mês-calendário = **+1** (capado em 7), exibido
+em dourado ao lado da nota ("72 +3⭐"). Detalhe técnico em `APRENDIZADOS.md § v0.48.0`. Números
+travados: **7 estrelas/mês**, **+1 cada** — o usuário cogita **aumentar** no futuro (é só esticar o
+band, sem tocar no núcleo consistência→progressão).
+- **[A DISCUTIR] Mês perfeito (7/7):** celebrar capturar as 7 estrelas do mês com um **selo/animação
+  especial** — mas **NÃO** como ponto extra (manteria a linearidade honesta do bônus).
+- **[A DISCUTIR] Coleção que desbloqueia:** estrelas acumuladas destravarem cosmético (tema / skin do
+  cronômetro / selo na home) — motivador não-numérico que escala sem inflar o Rating.
+
 ## ⭐ Motivação / desempenho — A DISCUTIR (pedido do usuário 2026-08-04)
 O usuário perguntou que ideias aumentariam a motivação/desempenho. Ele já tem os 2 pilares:
 **assiduidade** (Check-in) e **evolução** (Progressão) + fundos motivacionais. Quer discutir

@@ -381,7 +381,7 @@ void main() {
     expect(diasInsigniaDoMes(2026, 9, agendados, s) == dias, isFalse);
   });
 
-  test('insígnia dá peso 1,5 na consistência (vs 1,0 do completo)', () {
+  test('insígnia (v0.48.0): não mexe na consistência; vira bônus separado', () {
     final d = DateTime(2026, 8, 20);
     final treinos = [
       Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
@@ -394,10 +394,44 @@ void main() {
           treinoId: 't',
           treino: 't'),
     ];
-    final semIns = ratingForma(concs, treinos, const [], hoje: d).consistencia;
+    final semIns = ratingForma(concs, treinos, const [], hoje: d);
     final comIns = ratingForma(concs, treinos, const [], hoje: d,
-        diasInsignia: {DateTime(2026, 8, 19)}).consistencia;
-    expect(comIns > semIns, isTrue);
+        diasInsignia: {DateTime(2026, 8, 19)});
+    // A estrela NÃO altera mais a consistência (peso 1,5 removido).
+    expect(comIns.consistencia, semIns.consistencia);
+    expect(comIns.total, semIns.total); // nota-base intacta
+    // Ela vira bônus LINEAR (1 estrela = +1), fora dos 100.
+    expect(semIns.bonusEstrelas, 0);
+    expect(comIns.bonusEstrelas, 1);
+    expect(comIns.totalComBonus, comIns.total + 1);
+  });
+
+  test('bônus de estrelas: linear, só do mês corrente, capado em 7', () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(nome: 't', dias: [0, 1, 2, 3, 4, 5, 6], exercicios: [
+        Exercicio(nome: 'A'),
+      ]),
+    ];
+    // 3 em agosto (conta) + 2 em julho + 1 em setembro (fora do mês → ignora).
+    final ins = {
+      DateTime(2026, 8, 3),
+      DateTime(2026, 8, 10),
+      DateTime(2026, 8, 17),
+      DateTime(2026, 7, 5),
+      DateTime(2026, 7, 12),
+      DateTime(2026, 9, 1),
+    };
+    expect(
+        ratingForma(const [], treinos, const [], hoje: d, diasInsignia: ins)
+            .bonusEstrelas,
+        3);
+    // Capa em 7 mesmo com 9 estrelas no mesmo mês.
+    final nove = {for (var i = 1; i <= 9; i++) DateTime(2026, 8, i)};
+    expect(
+        ratingForma(const [], treinos, const [], hoje: d, diasInsignia: nove)
+            .bonusEstrelas,
+        7);
   });
 
   test('rating de forma: consistência + frequência + progressão (0-100)', () {

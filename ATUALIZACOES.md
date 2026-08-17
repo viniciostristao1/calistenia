@@ -3,6 +3,16 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-17 — v0.48.0 (estrelas viram um bônus de verdade no Rating):**
+  - As **estrelas ⭐ agora valem pontos**, como um **bônus à parte** no Rating: **cada estrela do
+    mês = +1 ponto**, em dourado ao lado da nota (ex.: **72 +3⭐**). O bônus zera no dia 1º de cada
+    mês, junto com o quadro de estrelas.
+  - **Por que mudou:** antes a estrela pesava "por dentro" da consistência — mas quem já estava com
+    a consistência cheia (40/40) **não ganhava nada**, o prêmio sumia. Agora é um extra limpo, **fora
+    dos 100**, então **sempre** recompensa quem pega estrela. E ela deixou de poder "mascarar" faltas:
+    a sua consistência volta a refletir exatamente os dias que você fez.
+  - Nada muda em **como** se ganha a estrela (concluir um dia sorteado do mês).
+
 - **2026-08-17 — v0.47.0 (insígnias + sequência mais justa + número da versão):**
   - **Insígnias ⭐ (novo):** todo mês, **7 estrelas** caem em dias sorteados (só em dias com
     treino agendado). Você **não sabe** quais — a estrela só é revelada ao **concluir** o treino

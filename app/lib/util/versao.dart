@@ -3,4 +3,4 @@
 ///
 /// ⚠️ **Subir junto com a `version:` do `pubspec.yaml` a cada release** — faz
 /// parte do fluxo de entrega (ver `INICIO.md`). Deve casar com a tag do Release.
-const kVersao = '0.47.0';
+const kVersao = '0.48.0';
