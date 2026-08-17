@@ -53,6 +53,28 @@ sync), `util/insignias.dart` (sorteio **puro e determinístico**), `services/ins
 **Gotcha de lint:** doc comment `///` no TOPO de um arquivo sem import/declaração colada dispara
 `dangling_library_doc_comments`. Fix: `library;` logo após o doc (feito em `util/insignias.dart`).
 
+**Invariantes do Rating — insígnias (auditado 2026-08-17, a pedido do usuário; NENHUM código
+alterado — só verificação).** O Rating (`ratingForma`, 0..100) é uma **porcentagem de janela
+deslizante recalculada do zero**, NÃO uma soma que acumula. Três invariantes confirmados:
+- **Não fura 100.** Consistência = `((feitos/total)*40).round().clamp(0,40)` (`gamificacao.dart:230`):
+  o peso 1,5 pode levar `feitos/total` acima de 1,0, mas o `.clamp(0,40)` corta em 40. Frequência
+  (≤20) e Progressão (`40·soma/(soma+2)`, assintótica a 40) idem. **Total ≤ 100 por construção** —
+  a estrela ajuda a *bater* o teto, nunca a ultrapassá-lo.
+- **Não acumula pelo ano (não vira nota gigante/mentirosa).** Consistência/Frequência só olham os
+  **últimos 28 dias** (`gamificacao.dart:222` e `:238`); Progressão, 42. `diasComInsignia`
+  (`insignias_repository.dart:55`) devolve **todas** as estrelas já ganhas (persistem p/ o Histórico),
+  mas uma estrela mais velha que 28 dias **nunca é consultada** no loop → contribui zero. O "reset
+  mensal" do quadro é só visual; o Rating se auto-limpa pela janela. O único totalizador que cresce o
+  ano todo é a **contagem de estrelas** no Histórico (acervo honesto), coisa separada do Rating.
+- **Insígnia pode "comprar de volta" faltas — bounded, por design.** Como o dia-insígnia pesa 1,5
+  (surplus de +0,5 sobre o 1,0 normal), na janela de 28 dias: `feitos ≥ total ⟺
+  #insígnias ≥ #tentativas + 2·#faltas`. Ou seja, um mês de sorte (até ~7 estrelas capturadas) pode
+  mascarar **até ~3 faltas** e ainda mostrar 40/40 de consistência. É intencional (a estrela "vale
+  mais"), com efeito colateral limitado: exige ter **concluído** os dias sorteados (auto-limitante —
+  quem falta perde a estrela), então a distorção máx ≈ 3 dias-fantasma, e só para alguém já bem ativo.
+  Se um dia for julgado generoso demais, o fix mínimo é impedir `feitos > total` por dia (clampar a
+  soma), sem mexer no resto.
+
 ---
 
 ## 2026-07-30 — Bootstrap do projeto (v0.1.0)
