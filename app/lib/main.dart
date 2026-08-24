@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/root/root_screen.dart';
 import 'firebase_options.dart';
+import 'services/lembretes_service.dart';
 import 'services/sync_service.dart';
 import 'services/tema_repository.dart';
 import 'theme/app_colors.dart';
@@ -28,6 +29,12 @@ Future<void> main() async {
     return true;
   };
 
+  // Lembretes de treino (notificação local): inicializa o plugin + timezone.
+  // Best-effort — nunca deve derrubar o boot do app.
+  try {
+    await LembretesService.instance.init();
+  } catch (_) {}
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const ProviderScope(child: CalisteniaApp()));
 }
@@ -39,6 +46,7 @@ class CalisteniaApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
     ref.watch(syncProvider); // mantém a sincronização ativa (conforme o login)
+    ref.watch(lembretesControllerProvider); // reagenda lembretes conforme mudam
     return MaterialApp(
       title: 'Calis Timer',
       scaffoldMessengerKey: scaffoldMessengerKey,

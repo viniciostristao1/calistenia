@@ -45,3 +45,24 @@ const frasesTreinoCompleto = <String>[
 /// Uma frase aleatória para o fim de um treino concluído.
 String fraseCompletoAleatoria() =>
     frasesTreinoCompleto[Random().nextInt(frasesTreinoCompleto.length)];
+
+/// Frases dos LEMBRETES de treino (notificação agendada nos dias com treino).
+/// Chamam para a ação — uma é sorteada ao (re)agendar cada lembrete da semana.
+const frasesLembrete = <String>[
+  'Bora, guerreiro(a)! Sua melhora de potencial te espera. 💪',
+  'Hora do treino. Seu "eu" do futuro agradece por você aparecer!',
+  'Levanta e vai: 20 minutos hoje valem mais que a intenção de amanhã.',
+  'A régua sobe com quem aparece. Bora treinar! 🔥',
+  'Disciplina é fazer mesmo sem vontade. Seu treino te espera!',
+  'Mais um dia, mais um tijolo na sua evolução. Vamos?',
+  'Seu corpo pediu movimento. Atenda o chamado! 💪',
+  'Consistência vence talento. Hoje é dia de somar mais um.',
+  'Não negocie com a preguiça. 3, 2, 1... treino!',
+  'Cada série te aproxima da sua melhor versão. Bora fechar mais uma!',
+  'Guerreiro(a) não falta ao próprio propósito. Hora de treinar!',
+  'O treino de hoje é a força de amanhã. Vamos com tudo!',
+];
+
+/// Uma frase aleatória para o lembrete de treino.
+String fraseLembreteAleatoria() =>
+    frasesLembrete[Random().nextInt(frasesLembrete.length)];

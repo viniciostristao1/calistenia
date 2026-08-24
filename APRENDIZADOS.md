@@ -5,6 +5,70 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-24 — Lembretes de treino + backup em arquivo + status da sync (v0.49.0)
+
+**Contexto (pedido do usuário):** (1) notificação motivacional **recorrente** nos dias de treino
+(inspirada no Taskix, mas repetindo semanalmente); (2) verificar se a sync do Firebase salva de
+verdade; (3) uma **segunda via** de backup em arquivo `.json`. Também levantou a medalha de ouro de
+17/08 ("contou domingo?").
+
+**Achado — sync já funcionava, o TEXTO é que mentia.** `sync_service.dart` (v0.17.0) sobe os 6
+stores para `users/{uid}` e `main.dart` já fazia `ref.watch(syncProvider)`. Mas
+`config_screen.dart` ainda dizia *"a sincronização em si chega numa próxima versão"* — resquício
+pré-sync. **Corrigido o texto** + adicionado **status observável** (`syncEstadoProvider`): o
+`SyncController` marca `enviando`/`ok`+timestamp/`erro`. Como o `.set()` do Firestore só **resolve
+o Future quando o servidor confirma** (offline fica pendente; regra/permissão negada **lança**), o
+"erro" na UI aponta problema real de regras/permissão, não offline transitório.
+
+**Achado — medalha de ouro / "domingo" (mantido por decisão do usuário).** 17/08/2026 foi **segunda**.
+`nivelInfo` (`gamificacao.dart:96`) soma **+1 por QUALQUER dia concluído**, inclusive dia **não
+agendado** (folga) — então um treino extra no domingo empurra a sequência 7→8 = ouro. O texto do
+design fala "sequência de dias agendados", mas o código conta o extra. **Decisão do usuário:
+MANTER** ("qualquer treino conta"); ficou só o diagnóstico. NÃO alterar `nivelInfo` sem novo aval.
+
+**Lembretes (`services/lembretes_service.dart`, novo):**
+- `LembretesConfig` (persist. `lembretes_v1`): `ativo` + `Map<dia,minutosDoDia>` (**horário POR dia**
+  da semana, por escolha do usuário). Só dispara nos dias com treino (`diasAgendados`).
+- `LembretesService`: `flutter_local_notifications` v19 + `timezone`. **Recorrência semanal** via
+  `zonedSchedule(..., matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime)` — 1 id por dia
+  (`_idBase`=4200+dia). Reagendar = cancelar os 7 slots e recriar os ativos (idempotente).
+- **Horário**: mesmo truque do Taskix/lista_app — `TZDateTime` em **UTC reinterpretando o relógio
+  local** (BR sem horário de verão) → dia-da-semana e HH:MM batem com a parede. Frase sorteada de
+  `frasesLembrete` a cada (re)agendamento.
+- `lembretesControllerProvider` (Provider observado no `main`): `ref.listen` em config + treinos →
+  reagenda. A permissão (Android 13+) só é pedida quando `ativo` e ainda não decidida.
+
+**GOTCHAS deste bloco:**
+- **Riverpod 3:** `StateProvider` saiu do export padrão de `flutter_riverpod` → usei
+  `NotifierProvider<SyncEstadoNotifier, SyncEstado>` no lugar. (Se precisar de StateProvider legado,
+  é `package:flutter_riverpod/legacy.dart`.)
+- **Desugaring obrigatório:** `flutter_local_notifications` v19 exige
+  `isCoreLibraryDesugaringEnabled = true` + `coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")`
+  no `build.gradle.kts` (sintaxe **Kotlin DSL**, diferente do Groovy do Taskix). Sem isso o build de
+  release quebra.
+- **Ícone de notificação:** criado `res/drawable/ic_stat_notif.xml` (vetor **branco monocromático**,
+  senão vira quadrado). Precisa de **referência estática** por `meta-data` no manifest, senão o R8
+  faz shrink do drawable (só é usado por string em runtime) → `invalid_icon` em release. Mesmo
+  gotcha do Taskix.
+- **Manifest:** POST_NOTIFICATIONS / USE_EXACT_ALARM / SCHEDULE_EXACT_ALARM / RECEIVE_BOOT_COMPLETED
+  + os receivers `ScheduledNotificationReceiver` e `ScheduledNotificationBootReceiver` (os lembretes
+  semanais precisam reagendar após reboot). Sem snooze → não precisa do `ActionBroadcastReceiver`.
+- **pub get** rebaixou transitivos (`wakelock_plus` 1.7.0→1.5.2, `package_info_plus`, `win32`) para
+  caber com `share_plus`/`file_picker` — sem impacto observado; testes 38/38 + 5 novos verdes.
+
+**Backup (`services/backup_service.dart`, novo):** envelope `{app, formato, versao, exportadoEm,
+stores}` — cada store é a **string JSON crua** do `shared_preferences` (6 de dados + 4 de config).
+`exportarBackup` grava em `getTemporaryDirectory` e abre `SharePlus.instance.share(ShareParams(...))`.
+`importarBackup(WidgetRef)` usa `FilePicker` (`withData:true`, valida `app=='calis-timer'`),
+sobrescreve os stores e `ref.invalidate` em todos os providers → cada `build()` relê do disco (mesmo
+mecanismo do sync). Se logado, a mudança sobe pra nuvem sozinha. UI: **diálogo de confirmação** antes
+de restaurar (substitui os dados locais).
+
+**Testes:** `test/lembretes_test.dart` (round-trip + mutators + clamp do `LembretesConfig`). Suíte
+antiga intacta (38/38).
+
+---
+
 ## 2026-08-17 — Estrelas viram bônus separado no Rating (v0.48.0)
 
 **Contexto:** debate de design com o usuário (registro em `IDEIAS.md § Estrelas no Rating`). O peso

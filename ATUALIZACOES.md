@@ -3,6 +3,22 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-24 — v0.49.0 (lembretes de treino + backup em arquivo + status da sync):**
+  - **Lembretes de treino (novo):** em **Configurações → Lembretes de treino**, ligue a chave e
+    o app dispara uma **notificação motivacional** ("Bora, guerreiro(a)! …") nos dias em que você
+    tem treino agendado. **Horário por dia da semana** (toque no dia para escolher a hora). Toca
+    **sozinha toda semana**, offline, mesmo com o app fechado. *(Ao ligar, o Android pede permissão
+    de notificação — aceite.)*
+  - **Backup em arquivo (novo):** em **Configurações → Backup em arquivo**, **Exportar** gera um
+    `.json` com tudo (treinos, progressão, check-ins, conquistas) para você guardar onde quiser
+    (Drive, e-mail, WhatsApp…); **Importar** restaura de um desses arquivos. É a "segunda via",
+    além do backup na sua conta Google.
+  - **Sincronização com a conta (correção):** o texto antigo dizia "chega numa próxima versão" —
+    **estava errado**: a sync com o Firebase **já funciona**. Agora a tela de **Conta** mostra o
+    **status real** ("Sincronizado · agora", "Sincronizando…", ou um aviso se falhar).
+  - **Re-testar:** ligar o lembrete e conferir se chega no horário/dia certo; exportar e importar
+    um backup; logar com Google e ver o status "Sincronizado".
+
 - **2026-08-17 — v0.48.0 (estrelas viram um bônus de verdade no Rating):**
   - As **estrelas ⭐ agora valem pontos**, como um **bônus à parte** no Rating: **cada estrela do
     mês = +1 ponto**, em dourado ao lado da nota (ex.: **72 +3⭐**). O bônus zera no dia 1º de cada

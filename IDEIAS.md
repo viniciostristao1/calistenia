@@ -2,6 +2,24 @@
 
 Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 
+## 🔔 Lembretes de treino — `[FEITO v0.49.0]` (2026-08-24)
+Notificação motivacional **recorrente** nos dias com treino agendado, **horário por dia da semana**
+(Config → Lembretes de treino). Toca sozinha toda semana, offline (`flutter_local_notifications`).
+Detalhe técnico em `APRENDIZADOS.md § v0.49.0`.
+- **[A DISCUTIR] Lembrete de risco de sequência:** "você está a 1 dia de perder a corrente" —
+  gatilho por ESTADO (não por horário fixo), diferente deste. Ainda aberto.
+- **[A DISCUTIR] Frase por progresso:** puxar a frase do lembrete pelo Rating/recorde recente
+  ("faltam 2 flexões pro seu recorde") em vez de sorteio.
+
+## 💾 Backup em arquivo (.json) — `[FEITO v0.49.0]` (2026-08-24)
+Exportar/importar tudo num `.json` (Config → Backup em arquivo) como segunda via, além do
+Firebase. Envelope `{app, formato, versao, exportadoEm, stores}`.
+
+## 🥇 Sequência conta dia NÃO agendado? — `[DECIDIDO: manter]` (2026-08-24)
+Usuário notou que a medalha de ouro (8) de 17/08 contou um treino em dia de folga. `nivelInfo` soma
++1 por qualquer dia concluído (não só agendado). **Decisão do usuário: MANTER** (qualquer treino
+conta). Registrado caso reabra. NÃO mexer em `gamificacao.dart` sem novo aval.
+
 ## ⭐ Estrelas (insígnias) no Rating — `[FEITO v0.48.0]` (2026-08-17)
 Debate de design sobre como as estrelas entram no Rating. **Decidido e shipado na v0.48.0:** a
 estrela saiu de dentro da consistência (onde era diluída pelo teto e podia mascarar faltas) e virou

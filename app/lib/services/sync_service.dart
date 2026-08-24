@@ -13,6 +13,27 @@ import 'insignias_repository.dart';
 import 'progressao_repository.dart';
 import 'treinos_repository.dart';
 
+/// Fase da sincronização com a nuvem, para a tela de Conta mostrar o status real
+/// (antes o app dizia "chega numa próxima versão" — o que já não era verdade).
+enum SyncFase { desligado, conectado, enviando, ok, erro }
+
+/// Status observável da sincronização: a fase + o instante do último sucesso.
+class SyncEstado {
+  final SyncFase fase;
+  final DateTime? ultima;
+  const SyncEstado(this.fase, [this.ultima]);
+}
+
+/// Estado atual da sync (a UI observa; o [SyncController] escreve).
+final syncEstadoProvider =
+    NotifierProvider<SyncEstadoNotifier, SyncEstado>(SyncEstadoNotifier.new);
+
+class SyncEstadoNotifier extends Notifier<SyncEstado> {
+  @override
+  SyncEstado build() => const SyncEstado(SyncFase.desligado);
+  void definir(SyncEstado e) => state = e;
+}
+
 /// Sincroniza treinos, check-ins, progressão, conclusões, conquistas e insígnias
 /// com o Firestore quando o usuário está logado. Cada store é guardado como o
 /// MESMO JSON do shared_preferences, num campo do documento `users/{uid}`.
@@ -30,9 +51,23 @@ class SyncController {
   bool _aplicandoRemoto = false;
   bool _primeiroSnapshot = true;
   String? _ultimoSync; // "impressão" do último estado sincronizado (anti-loop)
+  DateTime? _ultimaOk; // instante do último push bem-sucedido
 
   DocumentReference<Map<String, dynamic>> _doc(String uid) =>
       FirebaseFirestore.instance.collection('users').doc(uid);
+
+  /// Atualiza o status observável. Via microtask porque `start`/`stop` são
+  /// chamados de dentro do `ref.listen` (fireImmediately) durante o build do
+  /// provider — modificar outro provider ali direto dispararia aviso.
+  void _setFase(SyncFase fase, {bool sucesso = false}) {
+    if (sucesso) _ultimaOk = DateTime.now();
+    final estado = SyncEstado(fase, _ultimaOk);
+    Future.microtask(() {
+      try {
+        ref.read(syncEstadoProvider.notifier).definir(estado);
+      } catch (_) {}
+    });
+  }
 
   /// Liga a sincronização para [uid].
   void start(String uid) {
@@ -41,7 +76,10 @@ class SyncController {
     _uid = uid;
     _primeiroSnapshot = true;
     _ultimoSync = null;
-    _sub = _doc(uid).snapshots().listen(_onRemote, onError: (_) {});
+    _sub = _doc(uid).snapshots().listen(_onRemote, onError: (_) {
+      _setFase(SyncFase.erro);
+    });
+    _setFase(SyncFase.conectado);
   }
 
   /// Desliga (logout).
@@ -50,6 +88,7 @@ class SyncController {
     _sub = null;
     _debounce?.cancel();
     _uid = null;
+    _setFase(SyncFase.desligado);
   }
 
   void dispose() => stop();
@@ -120,6 +159,7 @@ class SyncController {
     final estado = _estado(prefs);
     if (estado == _ultimoSync) return; // nada mudou de verdade -> não empurra
     _ultimoSync = estado;
+    _setFase(SyncFase.enviando);
     try {
       await _doc(uid).set({
         'treinos': prefs.getString(chaveTreinos) ?? '[]',
@@ -130,8 +170,10 @@ class SyncController {
         'insignias': prefs.getString(chaveInsignias) ?? '[]',
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+      _setFase(SyncFase.ok, sucesso: true);
     } catch (_) {
       // offline/sem permissão: o cache do Firestore reenvia quando possível.
+      _setFase(SyncFase.erro);
     }
   }
 
