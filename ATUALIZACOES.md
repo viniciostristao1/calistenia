@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-24 — v0.49.1 (corrige o Exportar backup):** o **Exportar** dava erro
+  ("bool is not a subtype of String?") e não gerava o arquivo. Corrigido — agora exporta e
+  importa tudo (inclusive as preferências som/gamificação, que são true/false). Re-testar:
+  Config → Backup em arquivo → Exportar e depois Importar.
+
 - **2026-08-24 — v0.49.0 (lembretes de treino + backup em arquivo + status da sync):**
   - **Lembretes de treino (novo):** em **Configurações → Lembretes de treino**, ligue a chave e
     o app dispara uma **notificação motivacional** ("Bora, guerreiro(a)! …") nos dias em que você

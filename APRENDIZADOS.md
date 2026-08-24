@@ -5,6 +5,26 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-24 — Fix: Exportar backup estourava em chave bool (v0.49.1)
+
+**Bug (reportado pelo usuário):** *"Não foi possível exportar: type 'bool' is not a subtype of type
+'String?' in type cast."* O `exportarBackup` fazia `prefs.getString(k)` para TODAS as chaves, mas as
+chaves são de **tipos mistos**: `som_v1` e `gamificacao_v1` são **bool** (`setBool`), enquanto
+dados/`tema_v1`/`lembretes_v1` são String. `getString` numa chave bool lança o cast. Estourava no
+`som_v1` (após os stores de dados, todos String — por isso passou no meu teste inicial, que só tinha
+strings).
+
+**Fix (`backup_service.dart`):** usar `prefs.get(k)` (genérico, `Object?`) na coleta — todos os
+valores são serializáveis em JSON — e, na restauração, **dispatch por tipo** de volta ao setter
+certo (`setString`/`setBool`/`setInt`/`setDouble`/`setStringList`). Extraídas duas funções PURAS
+`coletarStores`/`aplicarStores` para dar pra testar sem os plugins (share/file_picker).
+
+**Lição:** `SharedPreferences.getString` só serve para chaves comprovadamente String. Backup que
+varre chaves heterogêneas tem que ser **type-agnostic** (`get` + dispatch). Teste novo
+`test/backup_test.dart` cobre o round-trip com **tipos mistos** (String + bool) — o que faltava.
+
+---
+
 ## 2026-08-24 — Lembretes de treino + backup em arquivo + status da sync (v0.49.0)
 
 **Contexto (pedido do usuário):** (1) notificação motivacional **recorrente** nos dias de treino

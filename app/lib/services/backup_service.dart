@@ -58,14 +58,49 @@ class ResultadoImport {
 
 String _pad2(int n) => n.toString().padLeft(2, '0');
 
+/// Lê todos os stores de backup do prefs, PRESERVANDO os tipos. As chaves são
+/// MISTAS — dados/tema/lembretes são String (JSON), mas som/gamificação são
+/// bool; `getString()` num bool estoura ("bool is not a subtype of String?"),
+/// então usamos `get()` genérico (tudo é serializável em JSON). Puro/testável.
+Map<String, dynamic> coletarStores(SharedPreferences prefs) {
+  final stores = <String, dynamic>{};
+  for (final k in [..._chavesDados, ..._chavesConfig]) {
+    final v = prefs.get(k);
+    if (v != null) stores[k] = v;
+  }
+  return stores;
+}
+
+/// Aplica os stores de volta ao prefs, com o setter do TIPO certo. Retorna
+/// quantas chaves foram restauradas. Puro/testável.
+Future<int> aplicarStores(
+    SharedPreferences prefs, Map<String, dynamic> stores) async {
+  var n = 0;
+  for (final k in [..._chavesDados, ..._chavesConfig]) {
+    if (!stores.containsKey(k)) continue;
+    final v = stores[k];
+    if (v is String) {
+      await prefs.setString(k, v);
+    } else if (v is bool) {
+      await prefs.setBool(k, v);
+    } else if (v is int) {
+      await prefs.setInt(k, v);
+    } else if (v is double) {
+      await prefs.setDouble(k, v);
+    } else if (v is List) {
+      await prefs.setStringList(k, v.map((e) => e.toString()).toList());
+    } else {
+      continue;
+    }
+    n++;
+  }
+  return n;
+}
+
 /// Monta o arquivo de backup e abre o share sheet do sistema.
 Future<void> exportarBackup() async {
   final prefs = await SharedPreferences.getInstance();
-  final stores = <String, dynamic>{};
-  for (final k in [..._chavesDados, ..._chavesConfig]) {
-    final v = prefs.getString(k);
-    if (v != null) stores[k] = v; // guarda a string JSON crua de cada store
-  }
+  final stores = coletarStores(prefs);
 
   final agora = DateTime.now();
   final envelope = {
@@ -132,14 +167,7 @@ Future<ResultadoImport> importarBackup(WidgetRef ref) async {
 
   final stores = (env['stores'] as Map).cast<String, dynamic>();
   final prefs = await SharedPreferences.getInstance();
-  var n = 0;
-  for (final k in [..._chavesDados, ..._chavesConfig]) {
-    final v = stores[k];
-    if (v is String) {
-      await prefs.setString(k, v);
-      n++;
-    }
-  }
+  final n = await aplicarStores(prefs, stores);
 
   if (n == 0) {
     return const ResultadoImport(
