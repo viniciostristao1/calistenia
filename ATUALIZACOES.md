@@ -3,6 +3,16 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-25 — v0.51.0 (aumentar PESO também é progressão):**
+  - Agora cada exercício progride por **duas vias**: **repetições** OU **peso**. Bater um **peso
+    maior** (ex.: 40 → 42,5 kg) vira **recorde** (comemora no fim do treino) e **sobe o Rating** —
+    mesmo que as repetições caiam (dupla progressão). O peso é pego **automático** do campo do
+    exercício ao concluir; no gráfico da aba Desenvolvimento aparece o kg abaixo de cada barra.
+  - **Não muda nada pra quem treina só peso do corpo:** sem carga, a progressão segue medindo as
+    **repetições**, igual antes. É "o **melhor dos dois**", sem converter kg em reps.
+  - Re-testar: num exercício com peso, aumente a carga no editor e conclua o treino → deve aparecer
+    "🎉 Novo recorde: Xkg" e o Rating/Progressão subir.
+
 - **2026-08-25 — v0.50.0 (cronômetro do treino todo + galeria alinhada):**
   - **Cronômetro:** na linha "Exercício X/N · Série Y/Z", agora há no **canto direito** um
     **⏱ tempo restante do treino inteiro** (contagem regressiva mm:ss até o fim), mesma fonte.

@@ -129,8 +129,9 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
         Text(
           'Rating 0–100 = Consistência (0–40, % dos dias agendados nos últimos '
           '28 dias — hoje é neutro) + Frequência (0–20, seu volume de treino) + '
-          'Progressão (0–40, o quanto seus recordes melhoraram nos últimos ~42 '
-          'dias). Consistência é o alicerce; para passar do platô, bata recordes.',
+          'Progressão (0–40, o quanto seus recordes — de repetições OU de peso — '
+          'melhoraram nos últimos ~42 dias). Consistência é o alicerce; para '
+          'passar do platô, bata recordes.',
           style: TextStyle(color: AppColors.dim, fontSize: 12),
         ),
       ],
@@ -153,7 +154,8 @@ class _ExercicioProgressoCard extends ConsumerWidget {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: const Text('Remover este registro?'),
-        content: Text('${fmtDataAno(r.data)} · ${r.valor} reps'),
+        content: Text('${fmtDataAno(r.data)} · ${r.valor} reps'
+            '${r.peso > 0 ? ' · ${fmtPeso(r.peso)}' : ''}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -302,7 +304,7 @@ class _GraficoBarras extends StatelessWidget {
       }
     }
     return SizedBox(
-      height: _trilho + 20,
+      height: _trilho + 34,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -407,6 +409,15 @@ class _Barra extends StatelessWidget {
               fmtDataCurta(registro.data),
               style: TextStyle(color: AppColors.dim, fontSize: 11),
             ),
+            // Peso do registro (só quando há carga) — a segunda dimensão.
+            if (registro.peso > 0)
+              Text(
+                fmtPeso(registro.peso),
+                style: TextStyle(
+                    color: context.accent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600),
+              ),
           ],
         ),
       ),

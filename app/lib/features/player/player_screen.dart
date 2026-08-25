@@ -327,16 +327,20 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     });
   }
 
-  /// Para cada exercício da sessão, se as reps PLANEJADAS superam o recorde
-  /// atual, grava um novo registro de progressão (o novo recorde). Retorna
-  /// "Nome · N reps" dos recordes batidos (só quando já havia recorde anterior —
-  /// o primeiro registro é a linha de base, não uma comemoração).
+  /// Para cada exercício da sessão, grava um novo recorde quando as reps OU o
+  /// PESO planejados superam o recorde atual daquela dimensão (dupla progressão).
+  /// Retorna "Nome · N reps" / "Nome · Xkg" dos recordes batidos — só quando já
+  /// havia recorde anterior naquela dimensão (o primeiro é linha de base, não
+  /// comemoração; um peso saindo de 0 = estabelece a base, sem alarde).
   Future<List<String>> _registrarRecordes() async {
     final notifier = ref.read(progressaoProvider.notifier);
     final grupos =
         agruparPorExercicio(ref.read(progressaoProvider).value ?? const []);
-    final recorde = {
+    final recReps = {
       for (final g in grupos) g.exercicio.trim().toLowerCase(): g.maior,
+    };
+    final recPeso = {
+      for (final g in grupos) g.exercicio.trim().toLowerCase(): g.maiorPeso,
     };
     final batidos = <String>[];
     final vistos = <String>{};
@@ -345,11 +349,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       final key = nome.toLowerCase();
       if (nome.isEmpty || e.repeticoes < 1 || vistos.contains(key)) continue;
       vistos.add(key);
-      final rec = recorde[key];
-      if (rec == null || e.repeticoes > rec) {
-        await notifier
-            .adicionar(RegistroProgressao(exercicio: nome, valor: e.repeticoes));
-        if (rec != null) batidos.add('$nome · ${e.repeticoes} reps');
+      final rr = recReps[key]; // recorde de reps (null = sem base ainda)
+      final rp = recPeso[key]; // recorde de peso
+      final baterReps = rr == null || e.repeticoes > rr;
+      final baterPeso = e.pesoKg > 0 && (rp == null || e.pesoKg > rp);
+      if (baterReps || baterPeso) {
+        await notifier.adicionar(RegistroProgressao(
+            exercicio: nome, valor: e.repeticoes, peso: e.pesoKg));
+        final partes = <String>[
+          if (baterReps && rr != null) '${e.repeticoes} reps',
+          if (baterPeso && rp != null && rp > 0) fmtPeso(e.pesoKg),
+        ];
+        if (partes.isNotEmpty) batidos.add('$nome · ${partes.join(' · ')}');
       }
     }
     return batidos;

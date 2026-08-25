@@ -2,6 +2,12 @@
 
 Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 
+## 🏋️ Peso como progressão (dupla progressão) — `[FEITO v0.51.0]` (2026-08-25)
+Aumentar o **peso** conta como progressão junto com as reps. Modelo: por exercício, **max(%melhora
+reps, %melhora peso)** sobre a própria base — sem converter kg↔reps, sem somar (dupla progressão).
+Bodyweight (peso 0) segue idêntico (só reps). Recorde de peso comemora + entra no Rating e no Troféu
+de Ouro. Detalhe em `APRENDIZADOS.md § v0.51.0`.
+
 ## 🔔 Lembretes de treino — `[FEITO v0.49.0]` (2026-08-24)
 Notificação motivacional **recorrente** nos dias com treino agendado, **horário por dia da semana**
 (Config → Lembretes de treino). Toca sozinha toda semana, offline (`flutter_local_notifications`).

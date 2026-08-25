@@ -159,13 +159,25 @@ int recordesRecentes(
   for (final g in agruparPorExercicio(progressao)) {
     final nome = g.exercicio.trim().toLowerCase();
     if (!distintos.contains(nome)) continue;
-    if (g.registros.length < 2 || g.maior <= g.primeiro) continue;
-    // A data em que o maior valor foi atingido (última ocorrência do maior).
-    final dataDoMaior = g.registros
-        .where((r) => r.valor == g.maior)
-        .map((r) => r.data)
-        .reduce((a, b) => a.isAfter(b) ? a : b);
-    if (dataDoMaior.isAfter(limite)) n++;
+    if (g.registros.length < 2) continue;
+    var recente = false;
+    // Recorde de REPS batido recentemente?
+    if (g.maior > g.primeiro) {
+      final dataDoMaior = g.registros
+          .where((r) => r.valor == g.maior)
+          .map((r) => r.data)
+          .reduce((a, b) => a.isAfter(b) ? a : b);
+      if (dataDoMaior.isAfter(limite)) recente = true;
+    }
+    // Ou recorde de PESO (dupla progressão conta igual).
+    if (!recente && g.maiorPeso > 0 && g.maiorPeso > g.primeiroPeso) {
+      final dataDoMaiorPeso = g.registros
+          .where((r) => r.peso == g.maiorPeso)
+          .map((r) => r.data)
+          .reduce((a, b) => a.isAfter(b) ? a : b);
+      if (dataDoMaiorPeso.isAfter(limite)) recente = true;
+    }
+    if (recente) n++;
   }
   return n;
 }
@@ -247,6 +259,12 @@ int _frequencia(List<Conclusao> concs, DateTime hj) {
 /// Progressão (0..40): melhora REAL do recorde de cada exercício na janela de
 /// [dias] (recorde agora vs. início da janela), fração capada em 100%/exercício;
 /// soma com retorno decrescente 40·soma/(soma+2).
+///
+/// Cada exercício progride por DUAS dimensões — repetições e PESO — medidas como
+/// % de melhora sobre a própria base. Conta o **melhor dos dois** (não soma nem
+/// converte kg↔reps): é a "dupla progressão" (empurra-se uma dimensão por vez).
+/// Quem só evolui em reps (bodyweight, peso 0) fica idêntico ao antigo: a fração
+/// de peso é 0 e o `max` devolve a de reps.
 int _progressao(List<Treino> treinos, List<RegistroProgressao> progressao,
     DateTime hj, int dias) {
   final distintos = exerciciosDistintos(treinos);
@@ -254,11 +272,22 @@ int _progressao(List<Treino> treinos, List<RegistroProgressao> progressao,
   var soma = 0.0;
   for (final g in agruparPorExercicio(progressao)) {
     if (!distintos.contains(g.exercicio.trim().toLowerCase())) continue;
-    final antes =
+    // Reps: recorde agora vs. base (o melhor antes do corte, ou o 1º registro).
+    final antesReps =
         g.registros.where((r) => r.data.isBefore(corte)).map((r) => r.valor);
-    final base = antes.isEmpty ? g.primeiro : antes.reduce(max);
-    if (base <= 0) continue;
-    soma += ((g.maior - base) / base).clamp(0.0, 1.0);
+    final baseReps = antesReps.isEmpty ? g.primeiro : antesReps.reduce(max);
+    final fracReps =
+        baseReps > 0 ? ((g.maior - baseReps) / baseReps).clamp(0.0, 1.0) : 0.0;
+    // Peso: idem, só quando há carga (base > 0). Sem carga = fração 0.
+    final antesPeso =
+        g.registros.where((r) => r.data.isBefore(corte)).map((r) => r.peso);
+    final basePeso = antesPeso.isEmpty ? g.primeiroPeso : antesPeso.reduce(max);
+    final fracPeso = basePeso > 0
+        ? ((g.maiorPeso - basePeso) / basePeso).clamp(0.0, 1.0)
+        : 0.0;
+    // Melhor dos dois.
+    final frac = fracReps > fracPeso ? fracReps : fracPeso;
+    if (frac > 0) soma += frac;
   }
   return (40 * (soma / (soma + 2))).round();
 }

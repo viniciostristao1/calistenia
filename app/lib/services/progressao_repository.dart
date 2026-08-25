@@ -44,9 +44,10 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
   }
 
   /// Garante uma "linha de base" (o alvo a bater) para um exercício: se ele
-  /// ainda não tem nenhum registro, cria um com o valor das repetições. Não
-  /// duplica se já existir qualquer registro do exercício.
-  Future<void> garantirBaseline(String exercicio, int valor) async {
+  /// ainda não tem nenhum registro, cria um com as repetições e o peso atuais.
+  /// Não duplica se já existir qualquer registro do exercício.
+  Future<void> garantirBaseline(String exercicio, int valor,
+      [double peso = 0]) async {
     final atuais = await future;
     final nome = exercicio.trim();
     if (nome.isEmpty) return;
@@ -55,7 +56,8 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
     if (ja) return;
     await _persist([
       ...atuais,
-      RegistroProgressao(exercicio: nome, valor: valor < 0 ? 0 : valor),
+      RegistroProgressao(
+          exercicio: nome, valor: valor < 0 ? 0 : valor, peso: peso < 0 ? 0 : peso),
     ]);
   }
 
@@ -76,7 +78,9 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
         }
         vistos.add(key);
         novos.add(RegistroProgressao(
-            exercicio: nome, valor: e.repeticoes < 0 ? 0 : e.repeticoes));
+            exercicio: nome,
+            valor: e.repeticoes < 0 ? 0 : e.repeticoes,
+            peso: e.pesoKg < 0 ? 0 : e.pesoKg));
       }
     }
     if (novos.isNotEmpty) await _persist([...atuais, ...novos]);
@@ -119,5 +123,12 @@ class GrupoProgressao {
   int get primeiro => registros.first.valor;
   int get ultimo => registros.last.valor;
   int get maior => registros.map((r) => r.valor).reduce((a, b) => a > b ? a : b);
+
+  // Peso (kg): mesmas estatísticas para a dimensão de carga.
+  double get primeiroPeso => registros.first.peso;
+  double get ultimoPeso => registros.last.peso;
+  double get maiorPeso =>
+      registros.map((r) => r.peso).fold(0.0, (a, b) => a > b ? a : b);
+
   DateTime get ultimaData => registros.last.data;
 }

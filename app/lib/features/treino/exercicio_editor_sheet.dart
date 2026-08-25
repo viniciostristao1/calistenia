@@ -112,8 +112,10 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
       ..corIndex = _cor
       ..fundo = _fundo;
     // Todo exercício já entra na Progressão como "alvo a bater" (linha de base
-    // = repetições). Não duplica se já tiver registro.
-    ref.read(progressaoProvider.notifier).garantirBaseline(e.nome, e.repeticoes);
+    // = repetições + peso atuais). Não duplica se já tiver registro.
+    ref
+        .read(progressaoProvider.notifier)
+        .garantirBaseline(e.nome, e.repeticoes, e.pesoKg);
     Navigator.of(context).pop(e);
   }
 

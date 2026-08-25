@@ -5,6 +5,42 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-25 — Peso como progressão (dupla progressão, "melhor dos dois") — v0.51.0
+
+**Pedido:** "aumentar peso também deveria ser progressão". Discutido a fundo com o usuário (ele
+questionou se precisa de fator kg↔reps e o que acontece com quem só faz reps). **Decisão: Opção A.**
+
+**Modelo escolhido (sem conversão):** cada exercício progride por DUAS dimensões — **reps** e
+**peso** — cada uma medida como **% de melhora sobre a própria base**. A progressão do exercício =
+**máximo** das duas frações (NÃO soma, NÃO converte). É a "dupla progressão" (empurra-se uma por
+vez). **Chave da retrocompatibilidade:** bodyweight tem peso 0 → base de peso 0 → fração de peso 0 →
+`max` devolve a de reps = **idêntico ao antigo** (a suíte de 45 testes passou sem tocar). Weight up +
+reps down (40kg×12 → 42,5kg×8): reps caem mas ficam **clampadas em 0** (não punem); o peso vira o
+`max` → conta.
+
+**Mudanças:**
+- `RegistroProgressao`: campo `double peso` (default 0; JSON sempre grava `peso`; fromJson tolera
+  ausência → 0). Sync/backup pegam de graça (guardam o JSON cru).
+- `GrupoProgressao`: getters `primeiroPeso`/`ultimoPeso`/`maiorPeso`.
+- `gamificacao._progressao`: calcula `fracReps` e `fracPeso` (cada uma vs. sua base antes do corte de
+  42d, capada em 100%) e soma o **maior**. `recordesRecentes` (Troféu de Ouro) conta recorde de reps
+  **OU** de peso recente.
+- `_registrarRecordes` (player): ao concluir, grava recorde quando reps **ou** `pesoKg` planejado
+  supera o recorde daquela dimensão; comemora "N reps" / "Xkg". **Peso saindo de 0 = estabelece base,
+  sem alarde** (guard `rp != null && rp > 0`) — evita o falso "0→Xkg" na 1ª vez.
+- `garantirBaseline`/`garantirBaselines` semeiam o peso do exercício (`pesoKg`); editor passa
+  `garantirBaseline(nome, reps, pesoKg)`.
+- Gráfico (Desenvolvimento): peso do registro aparece **abaixo da data** (só quando >0); diálogo de
+  remoção e texto do Rating mencionam "reps ou peso". Altura do trilho +14 p/ caber o kg.
+
+**Por que não "volume (reps×peso)":** calistenia é quase tudo peso do corpo (peso 0 → volume 0) →
+sumiria com o bodyweight. Rejeitado com o usuário.
+
+**Testes:** `test/peso_progressao_test.dart` (round-trip do peso; recorde de peso c/ reps flat sobe o
+Rating; sem recorde = 0; `recordesRecentes` conta peso). 50 testes no total, verdes.
+
+---
+
 ## 2026-08-25 — Cronômetro do treino todo + alinhamento da galeria (v0.50.0)
 
 Dois ajustes de UI pedidos pelo usuário (o 3º pedido — **peso como progressão** — ficou como
