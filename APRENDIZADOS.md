@@ -5,6 +5,26 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-25 — Cronômetro do treino todo + alinhamento da galeria (v0.50.0)
+
+Dois ajustes de UI pedidos pelo usuário (o 3º pedido — **peso como progressão** — ficou como
+decisão aberta, mexe no modelo + Rating; ver `IDEIAS.md`).
+
+- **Cronômetro regressivo do treino inteiro** (`player_screen.dart`): `_progressoGeral` virou um
+  `Row` com o rótulo à esquerda (`Expanded`) e, à direita, `⏱ + fmtRelogio(_restanteTreinoSeg())`.
+  `_restanteTreinoSeg` = `_restanteMs` da fase atual + soma das `segundos` das fases seguintes
+  (`> _idx`); atualiza junto com o tick (100ms). `fmtRelogio` (mm:ss) já existia em `format.dart`.
+  **Gotcha:** `const TextStyle(color: AppColors.dim, …)` e `const Icon(color: AppColors.dim)` NÃO
+  compilam — `AppColors.dim` é getter de tema (mutável, não-const). Usar `final`/sem `const`.
+- **Galeria — troféu maior + títulos alinhados** (`checkin_screen.dart § _ConquistaCard`): medalhas
+  são **emoji** (🥈/🥇) e troféus são **Icon** (`emoji_events`); no MESMO `size` o emoji rende mais
+  alto/largo que o ícone, então o troféu parecia menor e o título ficava em altura diferente. Fix:
+  badge dentro de `SizedBox(height: 52, child: Center(...))` (slot fixo alinha os títulos entre os 4
+  cards) + troféu em `size: 44` vs medalha `38`. Mudança **local** ao card da galeria (não altera o
+  `ConquistaBadge` global, que é usado no calendário/box/histórico em tamanhos próprios).
+
+---
+
 ## 2026-08-24 — Fix: Exportar backup estourava em chave bool (v0.49.1)
 
 **Bug (reportado pelo usuário):** *"Não foi possível exportar: type 'bool' is not a subtype of type

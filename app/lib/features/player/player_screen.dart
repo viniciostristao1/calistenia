@@ -484,6 +484,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   }
 
   Widget _progressoGeral() {
+    final estilo = TextStyle(color: AppColors.dim, fontSize: 12);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -500,13 +501,29 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            _rotuloProgresso(),
-            style: TextStyle(color: AppColors.dim, fontSize: 12),
+          Row(
+            children: [
+              Expanded(child: Text(_rotuloProgresso(), style: estilo)),
+              // Tempo restante do TREINO TODO (canto direito, mesma fonte).
+              Icon(Icons.timer_outlined, size: 13, color: AppColors.dim),
+              const SizedBox(width: 3),
+              Text(fmtRelogio(_restanteTreinoSeg()), style: estilo),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  /// Segundos restantes até o FIM do treino: o que falta da fase atual + a soma
+  /// das fases seguintes. Atualiza a cada tick (contagem regressiva).
+  int _restanteTreinoSeg() {
+    var ms = _restanteMs;
+    for (var i = _idx + 1; i < _fases.length; i++) {
+      ms += _fases[i].segundos * 1000;
+    }
+    if (ms < 0) ms = 0;
+    return (ms / 1000).ceil();
   }
 
   String _rotuloProgresso() {

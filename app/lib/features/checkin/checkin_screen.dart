@@ -989,7 +989,23 @@ class _ConquistaCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ConquistaBadge(tipo: tipo, size: 38, ativo: ativo),
+          // Badge num slot de altura FIXA: o emoji das medalhas e o ícone dos
+          // troféus rendem alturas diferentes; centralizar no mesmo slot faz o
+          // TÍTULO ("Medalha de Prata", "Troféu de Prata"…) alinhar em todos os
+          // cards. Troféu um pouco MAIOR (o ícone rende menor que o emoji).
+          SizedBox(
+            height: 52,
+            child: Center(
+              child: ConquistaBadge(
+                tipo: tipo,
+                size: (tipo == TipoConquista.trofeuPrata ||
+                        tipo == TipoConquista.trofeuOuro)
+                    ? 44
+                    : 38,
+                ativo: ativo,
+              ),
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             tipo.titulo,

@@ -4,14 +4,14 @@ Anatomia e **valores atuais** da tela do player (`app/lib/features/player/player
 Quando o usuário pedir "aumenta/diminui/mais espaço/mais pra cima", **consultar e atualizar aqui**
 — evita re-derivar. Atualizar esta tabela SEMPRE que mexer nos números.
 
-> Fonte de verdade = o código. Este doc é o mapa rápido. Última sync: **2026-08-12 (v0.38.0)**.
+> Fonte de verdade = o código. Este doc é o mapa rápido. Última sync: **2026-08-25 (v0.50.0)**.
 
 ## Ordem dos elementos (topo → base) na fase de EXECUÇÃO
 
 | # | Elemento | Widget/local | Valor atual |
 |---|----------|--------------|-------------|
 | 1 | Barra topo (✕ + título) | `_barraTopo` | título fonte 15 |
-| 2 | Barra de progresso geral + rótulo | `_progressoGeral` | barra `minHeight 6`; rótulo "Exercício X/Y · Série S/T" (dim, 12) |
+| 2 | Barra de progresso geral + rótulo + **relógio do treino** | `_progressoGeral` | barra `minHeight 6`; `Row`: rótulo "Exercício X/Y · Série S/T" (dim, 12, `Expanded`) à esquerda **+ à direita `⏱ mm:ss`** = tempo restante do TREINO TODO (`_restanteTreinoSeg`, mesma fonte dim 12, ícone `timer_outlined` size 13) |
 | 3 | gap | `SizedBox` | 12 |
 | 4 | **Nome do exercício = TARJA** | `_tarjaNome`/`_tarja` | logo abaixo do progresso; largura total (inset h12), `surface2`, radius 12, padding h14/v8, **branco**, **fonte 34** (`_fonteTarja`) w800, MAIÚSCULO, centralizado; **auto-fit em UMA linha** (`FittedBox scaleDown` + `maxLines:1` — nomes longos encolhem, não quebram) |
 | 5 | **Contador de reps = TARJA amarela** | `_contadorReps`/`_tarja` | **colado no nome (sem gap)**, como placar; MESMA largura e MESMA **fonte 34**; `accentAmbar`/`onAccentAmbar`; só na execução (fora dela invisível via `Opacity 0`, mesma altura); reps CONCLUÍDAS (`f.rep-1`) |

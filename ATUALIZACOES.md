@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-25 — v0.50.0 (cronômetro do treino todo + galeria alinhada):**
+  - **Cronômetro:** na linha "Exercício X/N · Série Y/Z", agora há no **canto direito** um
+    **⏱ tempo restante do treino inteiro** (contagem regressiva mm:ss até o fim), mesma fonte.
+  - **Galeria de conquistas:** o **Troféu de Prata** (e o de Ouro) ficaram **um pouco maiores** e
+    os títulos "Medalha de Prata/Ouro" e "Troféu de Prata/Ouro" agora **alinham na mesma altura**.
+  - Re-testar: iniciar um treino e ver o relógio regressivo diminuindo; abrir Check-in → Galeria.
+
 - **2026-08-24 — v0.49.1 (corrige o Exportar backup):** o **Exportar** dava erro
   ("bool is not a subtype of String?") e não gerava o arquivo. Corrigido — agora exporta e
   importa tudo (inclusive as preferências som/gamificação, que são true/false). Re-testar:
