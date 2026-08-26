@@ -32,8 +32,11 @@ class ConquistaBadge extends StatelessWidget {
     final ehTrofeu = tipo == TipoConquista.trofeuPrata ||
         tipo == TipoConquista.trofeuOuro;
     if (ehTrofeu) {
+      // O ícone `emoji_events` rende VISUALMENTE menor que os emojis 🥈/🥇 no
+      // mesmo `size` — daí o troféu parecer pequeno ao lado das medalhas.
+      // Compensa com um fator, para o troféu bater/superar a medalha.
       return Icon(Icons.emoji_events,
-          size: size, color: ativo ? corConquista(tipo) : AppColors.dim2);
+          size: size * 1.4, color: ativo ? corConquista(tipo) : AppColors.dim2);
     }
     return Opacity(
       opacity: ativo ? 1 : 0.35,

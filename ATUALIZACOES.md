@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-26 — v0.51.1 (galeria: troféus maiores e títulos alinhados):**
+  - Os **troféus** (Prata e Ouro) ficaram **maiores** — na **galeria** e também no **ícone do
+    calendário** (o ícone rendia menor que os emojis das medalhas).
+  - Na galeria, **todos os títulos** ("Medalha de Prata/Ouro" e "Troféu de Prata/Ouro") agora
+    ficam **na mesma altura** (antes os dos troféus subiam por causa da legenda maior).
+
 - **2026-08-25 — v0.51.0 (aumentar PESO também é progressão):**
   - Agora cada exercício progride por **duas vias**: **repetições** OU **peso**. Bater um **peso
     maior** (ex.: 40 → 42,5 kg) vira **recorde** (comemora no fim do treino) e **sobe o Rating** —

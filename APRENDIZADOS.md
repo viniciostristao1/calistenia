@@ -5,6 +5,27 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-26 — Galeria: troféus maiores + títulos alinhados (v0.51.1)
+
+2ª iteração do pedido do usuário (o fix da v0.50.0 não bastou). Dois pontos:
+- **Títulos desalinhados:** `_ConquistaCard` usava `mainAxisAlignment: center`. Como a legenda do
+  Troféu de Ouro é mais alta ("+ progressão" quebra em 2 linhas), o `IntrinsicHeight`+center
+  deixava badge/título em alturas diferentes entre a linha das Medalhas e a dos Troféus. Fix:
+  **`MainAxisAlignment.start`** (ancora no topo) + slot fixo do badge (58) → os 4 títulos ficam no
+  mesmo offset do topo. **Regra:** para alinhar rótulos entre cards de um grid, top-anchor + slot
+  fixo, nunca center com conteúdos de alturas diferentes.
+- **Troféu pequeno (galeria E calendário):** `Icon(emoji_events, size)` rende VISUALMENTE menor que
+  os emojis 🥈/🥇 no mesmo `size`. Fix na **fonte única** `ConquistaBadge`: troféu = `size * 1.4`.
+  Assim o troféu cresce em TODO lugar (galeria 38→~53, calendário 13→~18, box/histórico idem) sem
+  tocar caso a caso. O `_ConquistaCard` passou a mandar o MESMO `size: 38` p/ medalha e troféu (o
+  fator interno cuida da diferença).
+- **Verificação:** golden headless (`--update-goldens`) da aba Galeria confirmou o **alinhamento**
+  (badges top-anchored, títulos no mesmo offset). O TAMANHO do troféu não dá p/ ver no golden (a
+  fonte de ícones não carrega no teste → vira caixa); validado pela lógica do fator. Golden
+  removido depois (frágil entre máquinas/CI). Técnica: [[feedback-flutter-preview-png-headless]].
+
+---
+
 ## 2026-08-25 — Peso como progressão (dupla progressão, "melhor dos dois") — v0.51.0
 
 **Pedido:** "aumentar peso também deveria ser progressão". Discutido a fundo com o usuário (ele
