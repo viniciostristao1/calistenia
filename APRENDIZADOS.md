@@ -5,6 +5,16 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-26 — Config: flechinha para temas (v0.52.1)
+
+**Pedido:** temas atrás de flechinha para baixo. Iteração sobre v0.52.0 (que já deixara lado a lado).
+
+**Mudança (`app/lib/features/config/config_screen.dart`):** `ConfigScreen` usava `Row` lado a lado direto. Extraído para `_SecaoTema extends ConsumerStatefulWidget` com `bool _expandido`. Header = `InkWell` com `Row[ Expanded(Column[Tema, subtítulo]), Icon(expand_more/less) ]` — toque alterna `_expandido`. Só quando `_expandido==true` renderiza as 2 `Row` de `_OpcaoTema`. `ConfigScreen` deixou de `watch(temaProvider)` — quem observa é o `_SecaoTema`. **Gotcha:** `const Expanded` com `AppColors.dim` quebra (`dim` é getter não-const) → usar `Expanded` não-const.
+
+**Validação:** `flutter analyze` limpo. Versão `0.52.1+55`.
+
+---
+
 ## 2026-08-26 — Config: temas lado a lado + lembretes com botão (v0.52.0)
 
 **Pedido do usuário (2 itens):** (1) temas um abaixo do outro → deixar lado a lado; (2) Lembretes mostrava todos os dias sem pedir → criar botão para revelar.

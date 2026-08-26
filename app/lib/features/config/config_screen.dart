@@ -20,7 +20,6 @@ class ConfigScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
     final som = ref.watch(somProvider).value ?? true;
     final gami = ref.watch(gamificacaoProvider).value ?? true;
     return Scaffold(
@@ -28,59 +27,7 @@ class ConfigScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          const Text('Tema',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-          const SizedBox(height: 4),
-          Text('Muda as cores e o visual do app inteiro.',
-              style: TextStyle(color: AppColors.dim, fontSize: 13)),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              for (final o in const [
-                (TemaApp.ambar, 'Âmbar', 'Âmbar sobre navy (padrão)'),
-                (TemaApp.azul, 'Azul', 'Azul sobre navy'),
-              ])
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        right: o.$1 == TemaApp.ambar ? 5 : 0,
-                        left: o.$1 == TemaApp.azul ? 5 : 0),
-                    child: _OpcaoTema(
-                      titulo: o.$2,
-                      subtitulo: o.$3,
-                      cor: AppColors.accentDoTema(o.$1),
-                      fundo: AppColors.fundoDoTema(o.$1),
-                      selecionado: tema == o.$1,
-                      onTap: () => ref.read(temaProvider.notifier).definir(o.$1),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              for (final o in const [
-                (TemaApp.espresso, 'Expresso', 'Escuro amadeirado'),
-                (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado'),
-              ])
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        right: o.$1 == TemaApp.espresso ? 5 : 0,
-                        left: o.$1 == TemaApp.madeira ? 5 : 0),
-                    child: _OpcaoTema(
-                      titulo: o.$2,
-                      subtitulo: o.$3,
-                      cor: AppColors.accentDoTema(o.$1),
-                      fundo: AppColors.fundoDoTema(o.$1),
-                      selecionado: tema == o.$1,
-                      onTap: () => ref.read(temaProvider.notifier).definir(o.$1),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          const _SecaoTema(),
           const SizedBox(height: 14),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -142,6 +89,105 @@ class ConfigScreen extends ConsumerWidget {
           const _SecaoBackup(),
         ],
       ),
+    );
+  }
+}
+
+class _SecaoTema extends ConsumerStatefulWidget {
+  const _SecaoTema();
+
+  @override
+  ConsumerState<_SecaoTema> createState() => _SecaoTemaState();
+}
+
+class _SecaoTemaState extends ConsumerState<_SecaoTema> {
+  bool _expandido = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => setState(() => _expandido = !_expandido),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Tema',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text('Muda as cores e o visual do app inteiro.',
+                        style:
+                            TextStyle(color: AppColors.dim, fontSize: 13)),
+                  ],
+                ),
+              ),
+              Icon(
+                _expandido ? Icons.expand_less : Icons.expand_more,
+                color: AppColors.dim,
+              ),
+            ],
+          ),
+        ),
+        if (_expandido) ...[
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              for (final o in const [
+                (TemaApp.ambar, 'Âmbar', 'Âmbar sobre navy (padrão)'),
+                (TemaApp.azul, 'Azul', 'Azul sobre navy'),
+              ])
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        right: o.$1 == TemaApp.ambar ? 5 : 0,
+                        left: o.$1 == TemaApp.azul ? 5 : 0),
+                    child: _OpcaoTema(
+                      titulo: o.$2,
+                      subtitulo: o.$3,
+                      cor: AppColors.accentDoTema(o.$1),
+                      fundo: AppColors.fundoDoTema(o.$1),
+                      selecionado: tema == o.$1,
+                      onTap: () =>
+                          ref.read(temaProvider.notifier).definir(o.$1),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (final o in const [
+                (TemaApp.espresso, 'Expresso', 'Escuro amadeirado'),
+                (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado'),
+              ])
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        right: o.$1 == TemaApp.espresso ? 5 : 0,
+                        left: o.$1 == TemaApp.madeira ? 5 : 0),
+                    child: _OpcaoTema(
+                      titulo: o.$2,
+                      subtitulo: o.$3,
+                      cor: AppColors.accentDoTema(o.$1),
+                      fundo: AppColors.fundoDoTema(o.$1),
+                      selecionado: tema == o.$1,
+                      onTap: () =>
+                          ref.read(temaProvider.notifier).definir(o.$1),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
