@@ -54,15 +54,6 @@ class ConfigScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('Lembretes de treino',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-          const SizedBox(height: 4),
-          Text(
-            'Uma notificação motivacional nos dias em que você tem treino '
-            'agendado, no horário que escolher. Toca sozinha toda semana.',
-            style: TextStyle(color: AppColors.dim, fontSize: 13),
-          ),
-          const SizedBox(height: 8),
           const _SecaoLembretes(),
           const SizedBox(height: 20),
           const Text('Conta',

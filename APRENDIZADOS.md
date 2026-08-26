@@ -5,6 +5,16 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-26 — Config: remove frase solta dos lembretes (v0.52.2)
+
+**Pedido:** "Lembretes dos treinos, etc" era duplicado — já existe "Lembrar de treinar" com switch + dias/horários. Remover a frase solta.
+
+**Mudança (`app/lib/features/config/config_screen.dart` § `ConfigScreen`):** removidos `Text('Lembretes de treino')` + `Text('Uma notificação motivacional...')` + `SizedBox` entre eles que antecediam `_SecaoLembretes`. Agora `ConfigScreen` só tem `SizedBox(height:20)` + `_SecaoLembretes()` — o título/subtítulo vivem dentro do `SwitchListTile` de `_SecaoLembretes` ("Lembrar de treinar" + "Notificação ligada.../Desligado."). Sem duplicação.
+
+**Validação:** `flutter analyze` limpo. Versão `0.52.2+56`.
+
+---
+
 ## 2026-08-26 — Config: flechinha para temas (v0.52.1)
 
 **Pedido:** temas atrás de flechinha para baixo. Iteração sobre v0.52.0 (que já deixara lado a lado).

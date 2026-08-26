@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-26 — v0.52.2 (config: remove frase solta dos lembretes):**
+  - Em **Configurações**, removida a frase solta "Lembretes de treino — Uma notificação motivacional..." que ficava acima de "Lembrar de treinar". Agora só aparece a chave **"Lembrar de treinar"** com os dias/horários (sem duplicação).
+
 - **2026-08-26 — v0.52.1 (config: temas atrás de flechinha):**
   - Em **Configurações → Tema**, as 4 opções agora ficam **escondidas atrás de uma flechinha para baixo** — toque na linha "Tema" para expandir/recolher (continuam lado a lado quando abertas).
 
