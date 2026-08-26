@@ -5,6 +5,18 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-26 — Config: temas lado a lado + lembretes com botão (v0.52.0)
+
+**Pedido do usuário (2 itens):** (1) temas um abaixo do outro → deixar lado a lado; (2) Lembretes mostrava todos os dias sem pedir → criar botão para revelar.
+
+**Mudanças (`app/lib/features/config/config_screen.dart`):**
+- **Temas lado a lado:** os 4 `_OpcaoTema` viraram 2 `Row` com 2 `Expanded` cada (Âmbar|Azul na 1ª, Expresso|Madeira na 2ª) + `SizedBox(height:10)` entre elas. `Wrap`/`GridView` funcionaria mas `Row`+`Expanded` é determinístico e mantém a borda/seleção. **Gotcha:** `Row` com `for`+`Expanded` precisa de `Padding` com `right/left 5` para o gap — `Spacing` de Wrap não existe em Row.
+- **Lembretes com botão:** `_SecaoLembretes` era `ConsumerWidget` que mostrava a lista direto quando `ativo && dias.isNotEmpty`. Virou `ConsumerStatefulWidget` com `bool _mostrarHorarios`. Agora mostra `OutlinedButton.icon` ("Gerenciar horários · N dias" / "Ocultar horários") e só quando `_mostrarHorarios==true` renderiza o `Container` com os `_LinhaDiaHorario`. Switch `definirAtivo(false)` reseta `_mostrarHorarios=false`. **Por que Stateful:** precisava de toggle local sem persistir — `ExpansionTile` daria mas o botão dá copy explícita do pedido ("ao clicar sim apareça").
+
+**Validação:** `flutter analyze` limpo. `flutter build apk --release` local OK (✓ Built 64.9MB). Versão `0.52.0+54`.
+
+---
+
 ## 2026-08-26 — Galeria: troféus maiores + títulos alinhados (v0.51.1)
 
 2ª iteração do pedido do usuário (o fix da v0.50.0 não bastou). Dois pontos:

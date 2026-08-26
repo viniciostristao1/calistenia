@@ -34,23 +34,53 @@ class ConfigScreen extends ConsumerWidget {
           Text('Muda as cores e o visual do app inteiro.',
               style: TextStyle(color: AppColors.dim, fontSize: 13)),
           const SizedBox(height: 14),
-          for (final o in const [
-            (TemaApp.ambar, 'Âmbar', 'Âmbar sobre navy escuro (padrão)'),
-            (TemaApp.azul, 'Azul', 'Azul sobre navy escuro'),
-            (TemaApp.espresso, 'Expresso', 'Escuro amadeirado'),
-            (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado'),
-          ])
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _OpcaoTema(
-                titulo: o.$2,
-                subtitulo: o.$3,
-                cor: AppColors.accentDoTema(o.$1),
-                fundo: AppColors.fundoDoTema(o.$1),
-                selecionado: tema == o.$1,
-                onTap: () => ref.read(temaProvider.notifier).definir(o.$1),
-              ),
-            ),
+          Row(
+            children: [
+              for (final o in const [
+                (TemaApp.ambar, 'Âmbar', 'Âmbar sobre navy (padrão)'),
+                (TemaApp.azul, 'Azul', 'Azul sobre navy'),
+              ])
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        right: o.$1 == TemaApp.ambar ? 5 : 0,
+                        left: o.$1 == TemaApp.azul ? 5 : 0),
+                    child: _OpcaoTema(
+                      titulo: o.$2,
+                      subtitulo: o.$3,
+                      cor: AppColors.accentDoTema(o.$1),
+                      fundo: AppColors.fundoDoTema(o.$1),
+                      selecionado: tema == o.$1,
+                      onTap: () => ref.read(temaProvider.notifier).definir(o.$1),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (final o in const [
+                (TemaApp.espresso, 'Expresso', 'Escuro amadeirado'),
+                (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado'),
+              ])
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        right: o.$1 == TemaApp.espresso ? 5 : 0,
+                        left: o.$1 == TemaApp.madeira ? 5 : 0),
+                    child: _OpcaoTema(
+                      titulo: o.$2,
+                      subtitulo: o.$3,
+                      cor: AppColors.accentDoTema(o.$1),
+                      fundo: AppColors.fundoDoTema(o.$1),
+                      selecionado: tema == o.$1,
+                      onTap: () => ref.read(temaProvider.notifier).definir(o.$1),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 14),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -123,12 +153,18 @@ String _hhmm(int minutos) {
   return '$h:$m';
 }
 
-/// Chave (liga/desliga) + horário por dia da semana que tem treino agendado.
-class _SecaoLembretes extends ConsumerWidget {
+class _SecaoLembretes extends ConsumerStatefulWidget {
   const _SecaoLembretes();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SecaoLembretes> createState() => _SecaoLembretesState();
+}
+
+class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
+  bool _mostrarHorarios = false;
+
+  @override
+  Widget build(BuildContext context) {
     final config =
         ref.watch(lembretesConfigProvider).value ?? LembretesConfig.vazio;
     final treinos = ref.watch(treinosProvider).value ?? const [];
@@ -140,8 +176,10 @@ class _SecaoLembretes extends ConsumerWidget {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           value: config.ativo,
-          onChanged: (v) =>
-              ref.read(lembretesConfigProvider.notifier).definirAtivo(v),
+          onChanged: (v) {
+            ref.read(lembretesConfigProvider.notifier).definirAtivo(v);
+            if (!v) setState(() => _mostrarHorarios = false);
+          },
           activeThumbColor: context.accent,
           title: const Text('Lembrar de treinar',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
@@ -162,41 +200,67 @@ class _SecaoLembretes extends ConsumerWidget {
                 style: TextStyle(color: AppColors.dim, fontSize: 13),
               ),
             )
-          else
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.line),
-              ),
-              child: Column(
-                children: [
-                  for (var i = 0; i < dias.length; i++) ...[
-                    if (i > 0)
-                      Divider(height: 1, color: AppColors.line),
-                    _LinhaDiaHorario(
-                      dia: dias[i],
-                      minutos: config.horarioDe(dias[i]),
-                      onTap: () async {
-                        final t = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay(
-                            hour: config.horaDe(dias[i]),
-                            minute: config.minutoDe(dias[i]),
-                          ),
-                          helpText: 'Lembrete de ${nomesDiasLongos[dias[i]]}',
-                        );
-                        if (t != null) {
-                          await ref
-                              .read(lembretesConfigProvider.notifier)
-                              .definirHorario(dias[i], t.hour * 60 + t.minute);
-                        }
-                      },
-                    ),
-                  ],
-                ],
+          else ...[
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.text,
+                  side: BorderSide(color: AppColors.lineStrong),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () =>
+                    setState(() => _mostrarHorarios = !_mostrarHorarios),
+                icon: Icon(
+                    _mostrarHorarios
+                        ? Icons.expand_less
+                        : Icons.expand_more,
+                    size: 20),
+                label: Text(_mostrarHorarios
+                    ? 'Ocultar horários'
+                    : 'Gerenciar horários · ${dias.length} ${dias.length == 1 ? 'dia' : 'dias'}'),
               ),
             ),
+            if (_mostrarHorarios) ...[
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.line),
+                ),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < dias.length; i++) ...[
+                      if (i > 0)
+                        Divider(height: 1, color: AppColors.line),
+                      _LinhaDiaHorario(
+                        dia: dias[i],
+                        minutos: config.horarioDe(dias[i]),
+                        onTap: () async {
+                          final t = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay(
+                              hour: config.horaDe(dias[i]),
+                              minute: config.minutoDe(dias[i]),
+                            ),
+                            helpText: 'Lembrete de ${nomesDiasLongos[dias[i]]}',
+                          );
+                          if (t != null) {
+                            await ref
+                                .read(lembretesConfigProvider.notifier)
+                                .definirHorario(
+                                    dias[i], t.hour * 60 + t.minute);
+                          }
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
       ],
     );
   }

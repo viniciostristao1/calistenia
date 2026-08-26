@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-26 — v0.52.0 (config: temas lado a lado + lembretes com botão):**
+  - Em **Configurações → Tema**, as 4 opções agora ficam **lado a lado** (2 por linha) — não mais uma abaixo da outra.
+  - Em **Configurações → Lembrar de treinar**, quando ligado não mostra mais todos os dias direto — aparece um botão **"Gerenciar horários · N dias"**; só ao tocar o botão a lista de horários por dia aparece (e dá para ocultar de novo).
+
 - **2026-08-26 — v0.51.1 (galeria: troféus maiores e títulos alinhados):**
   - Os **troféus** (Prata e Ouro) ficaram **maiores** — na **galeria** e também no **ícone do
     calendário** (o ícone rendia menor que os emojis das medalhas).
