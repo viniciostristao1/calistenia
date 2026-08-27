@@ -131,8 +131,8 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
           Row(
             children: [
               for (final o in const [
-                (TemaApp.ambar, 'Âmbar', 'Âmbar sobre navy (padrão)'),
-                (TemaApp.azul, 'Azul', 'Azul sobre navy'),
+                (TemaApp.ambar, 'Âmbar'),
+                (TemaApp.azul, 'Azul'),
               ])
                 Expanded(
                   child: Padding(
@@ -141,7 +141,6 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
                         left: o.$1 == TemaApp.azul ? 5 : 0),
                     child: _OpcaoTema(
                       titulo: o.$2,
-                      subtitulo: o.$3,
                       cor: AppColors.accentDoTema(o.$1),
                       fundo: AppColors.fundoDoTema(o.$1),
                       selecionado: tema == o.$1,
@@ -156,8 +155,8 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
           Row(
             children: [
               for (final o in const [
-                (TemaApp.espresso, 'Expresso', 'Escuro amadeirado'),
-                (TemaApp.madeira, 'Madeira', 'Bege claro amadeirado'),
+                (TemaApp.espresso, 'Expresso'),
+                (TemaApp.madeira, 'Madeira'),
               ])
                 Expanded(
                   child: Padding(
@@ -166,7 +165,6 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
                         left: o.$1 == TemaApp.madeira ? 5 : 0),
                     child: _OpcaoTema(
                       titulo: o.$2,
-                      subtitulo: o.$3,
                       cor: AppColors.accentDoTema(o.$1),
                       fundo: AppColors.fundoDoTema(o.$1),
                       selecionado: tema == o.$1,
@@ -610,7 +608,6 @@ class _SecaoBackupState extends ConsumerState<_SecaoBackup> {
 class _OpcaoTema extends StatelessWidget {
   const _OpcaoTema({
     required this.titulo,
-    required this.subtitulo,
     required this.cor,
     required this.fundo,
     required this.selecionado,
@@ -618,9 +615,8 @@ class _OpcaoTema extends StatelessWidget {
   });
 
   final String titulo;
-  final String subtitulo;
-  final Color cor; // accent do tema
-  final Color fundo; // fundo do tema (mini-preview)
+  final Color cor;
+  final Color fundo;
   final bool selecionado;
   final VoidCallback onTap;
 
@@ -641,7 +637,6 @@ class _OpcaoTema extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Mini-preview: o fundo do tema com uma bolinha do accent.
             Container(
               width: 42,
               height: 32,
@@ -659,15 +654,8 @@ class _OpcaoTema extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(titulo,
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
-                  Text(subtitulo,
-                      style: TextStyle(color: AppColors.dim, fontSize: 12)),
-                ],
-              ),
+              child: Text(titulo,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
             ),
             if (selecionado) Icon(Icons.check_circle, color: cor),
           ],

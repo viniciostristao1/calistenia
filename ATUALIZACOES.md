@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-26 — v0.52.3 (config: temas só com nome):**
+  - Em **Configurações → Tema**, removidas as descrições ("Âmbar sobre navy", "Bege claro amadeirado" etc.) — agora cada opção mostra só o **nome** (Âmbar, Azul, Expresso, Madeira).
+
 - **2026-08-26 — v0.52.2 (config: remove frase solta dos lembretes):**
   - Em **Configurações**, removida a frase solta "Lembretes de treino — Uma notificação motivacional..." que ficava acima de "Lembrar de treinar". Agora só aparece a chave **"Lembrar de treinar"** com os dias/horários (sem duplicação).
 

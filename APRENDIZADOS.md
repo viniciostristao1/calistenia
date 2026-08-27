@@ -5,6 +5,16 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-08-26 — Config: temas só com nome (v0.52.3)
+
+**Pedido:** não precisa descrição do tema — basta o nome (sem "Âmbar sobre navy", "Bege claro amadeirado").
+
+**Mudança (`app/lib/features/config/config_screen.dart`):** `_SecaoTema` passou a criar `_OpcaoTema` só com `titulo` (Âmbar/Azul/Expresso/Madeira) — removidos os subtítulos. `_OpcaoTema` perdeu o campo `subtitulo` e a `Column` com 2 Texts — agora é só `Expanded(Text(titulo))` ao lado do preview. Simplifica o card e evita quebra de linha em grade 2-col.
+
+**Validação:** `flutter analyze` limpo. Versão `0.52.3+57`.
+
+---
+
 ## 2026-08-26 — Config: remove frase solta dos lembretes (v0.52.2)
 
 **Pedido:** "Lembretes dos treinos, etc" era duplicado — já existe "Lembrar de treinar" com switch + dias/horários. Remover a frase solta.
