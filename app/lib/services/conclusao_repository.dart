@@ -21,9 +21,31 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(chaveConclusao);
     if (raw == null || raw.isEmpty) return [];
-    return (jsonDecode(raw) as List)
+    final lista = (jsonDecode(raw) as List)
         .map((e) => Conclusao.fromJson(e as Map<String, dynamic>))
         .toList();
+    final checkinRaw = prefs.getString('checkin_v1');
+    if (checkinRaw != null && checkinRaw.isNotEmpty) {
+      try {
+        final checkins = (jsonDecode(checkinRaw) as List)
+            .map((e) => (e as Map<String, dynamic>)['data'] as int)
+            .map((ms) => DateTime.fromMillisecondsSinceEpoch(ms))
+            .map((d) => DateTime(d.year, d.month, d.day))
+            .toSet();
+        final filtrada = lista
+            .where((c) => checkins.contains(
+                DateTime(c.data.year, c.data.month, c.data.day)))
+            .toList();
+        if (filtrada.length != lista.length) {
+          await prefs.setString(
+            chaveConclusao,
+            jsonEncode(filtrada.map((c) => c.toJson()).toList()),
+          );
+          return filtrada;
+        }
+      } catch (_) {}
+    }
+    return lista;
   }
 
   Future<void> _persist(List<Conclusao> list) async {
@@ -71,5 +93,15 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
     final list = List<Conclusao>.of(await future)
       ..removeWhere((c) => c.id == id);
     await _persist(list);
+  }
+
+  Future<void> removerPorDia(DateTime dia) async {
+    final d = DateTime(dia.year, dia.month, dia.day);
+    final list = List<Conclusao>.of(await future)
+      ..removeWhere((c) =>
+          c.data.year == d.year &&
+          c.data.month == d.month &&
+          c.data.day == d.day);
+    if (list.length != (await future).length) await _persist(list);
   }
 }

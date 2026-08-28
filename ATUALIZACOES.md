@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-28 — v0.53.0 (insígnias congeladas + sequência fiel ao check-in):**
+  - **Insígnias:** sorteio de até 7 dias/mês agora é **congelado** na 1ª conclusão do mês (sem rolling se mudar a agenda) e só vale na **conclusão** do treino completo — ao ganhar abre a janela "Insígnia do dia!" junto aos recordes.
+  - **Sequência/medalhas:** excluir o último check-in de um dia agora **apaga a conclusão** do dia — a sequência e o rating realinham retroativamente na próxima abertura (ex.: ouro de 17/08 sem o dia 16 passa para o próximo dia treinado, 18/08).
+
 - **2026-08-26 — v0.52.3 (config: temas só com nome):**
   - Em **Configurações → Tema**, removidas as descrições ("Âmbar sobre navy", "Bege claro amadeirado" etc.) — agora cada opção mostra só o **nome** (Âmbar, Azul, Expresso, Madeira).
 

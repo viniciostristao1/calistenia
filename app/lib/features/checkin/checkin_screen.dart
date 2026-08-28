@@ -411,8 +411,15 @@ class _EditarDiaSheet extends ConsumerWidget {
                 trailing: IconButton(
                   icon: Icon(Icons.close,
                       size: 20, color: AppColors.dim2),
-                  onPressed: () =>
-                      ref.read(checkinProvider.notifier).remover(c.id),
+                  onPressed: () async {
+                    final eraUltimo = doDia.length == 1;
+                    await ref.read(checkinProvider.notifier).remover(c.id);
+                    if (eraUltimo) {
+                      await ref
+                          .read(conclusaoProvider.notifier)
+                          .removerPorDia(dia);
+                    }
+                  },
                 ),
               ),
           const SizedBox(height: 8),

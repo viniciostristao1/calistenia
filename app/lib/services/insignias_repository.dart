@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/insignia.dart';
+import '../util/insignias.dart';
 
 const chaveInsignias = 'insignias_v1';
+const chaveSorteio = 'insignias_sorteio_v1';
 
 /// Fonte única das insígnias (estrelas) GANHAS. Uma vez ganha, é permanente.
 /// Local, e sincronizada quando logado (ver `sync_service.dart`).
@@ -42,6 +44,42 @@ class InsigniasNotifier extends AsyncNotifier<List<Insignia>> {
     if (atuais.any((i) => i.id == nova.id)) return false;
     await _persist([...atuais, nova]);
     return true;
+  }
+
+  String _chaveMes(int ano, int mes) =>
+      '$ano-${mes.toString().padLeft(2, '0')}';
+
+  Map<String, List<int>> _decodeSorteio(String? raw) {
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      return m.map((k, v) => MapEntry(k, (v as List).cast<int>()));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// Sorteio congelado do mês: na primeira consulta do mês calcula com
+  /// [agendadosSemana]/[semente] e persiste; depois sempre o mesmo (sem rolling).
+  Future<Set<int>> diasSorteadosDoMes(
+      int ano, int mes, Set<int> agendadosSemana, int semente) async {
+    if (agendadosSemana.isEmpty) return const {};
+    final prefs = await SharedPreferences.getInstance();
+    final mapa = _decodeSorteio(prefs.getString(chaveSorteio));
+    final chave = _chaveMes(ano, mes);
+    if (mapa.containsKey(chave)) return mapa[chave]!.toSet();
+    final sorteados =
+        diasInsigniaDoMes(ano, mes, agendadosSemana, semente);
+    mapa[chave] = sorteados.toList()..sort();
+    await prefs.setString(chaveSorteio, jsonEncode(mapa));
+    return sorteados;
+  }
+
+  Future<bool> ehDiaSorteado(
+      DateTime dia, Set<int> agendadosSemana, int semente) async {
+    final dias =
+        await diasSorteadosDoMes(dia.year, dia.month, agendadosSemana, semente);
+    return dias.contains(dia.day);
   }
 }
 

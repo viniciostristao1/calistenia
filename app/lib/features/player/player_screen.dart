@@ -309,14 +309,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final notifier = ref.read(conquistasProvider.notifier);
     final novas = await notifier.registrarNovas(atuais);
     await notifier.reconciliar(atuais); // move p/ histórico o que tiver caído
-    // Insígnia do dia (surpresa): só ao concluir de verdade, e só se hoje é um
-    // dos dias sorteados do mês (entre os dias com treino agendado).
+    // Insígnia do dia (surpresa, sorteio congelado): só ao concluir de verdade,
+    // e só se o dia da conclusão é um dos 7 dias sorteados do mês.
     final uid = ref.read(authStateProvider).value?.uid;
     final hoje = DateTime.now();
-    final ganhouInsignia = ehDiaDeInsignia(
-            hoje, diasAgendados(treinos), sementeInsignia(uid))
-        ? await ref.read(insigniasProvider.notifier).registrarSeNova(hoje)
-        : false;
+    final insigniasNotifier = ref.read(insigniasProvider.notifier);
+    final ehSorteado = await insigniasNotifier.ehDiaSorteado(
+        hoje, diasAgendados(treinos), sementeInsignia(uid));
+    final ganhouInsignia =
+        ehSorteado ? await insigniasNotifier.registrarSeNova(hoje) : false;
     if (!mounted) return;
     setState(() {
       _respostaCompleto = true;
