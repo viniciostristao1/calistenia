@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-28 — v0.54.0 (mês perfeito + lembrete de risco):**
+  - **Mês perfeito:** ao fechar **7/7 estrelas** no mês o quadro `Insígnias do mês` vira dourado com "Mês perfeito! ✨" e a janela de insígnia mostra "7 de 7 — você brilhou o mês inteiro!"; no `Histórico` o mês com 7 também fica dourado.
+  - **Lembrete de risco:** se você está a 1 dia de perder o nível, surge um banner "Sequência em risco — treine hoje para não perder seu nível!" no `Check-in` e uma notificação às **20:00** do dia (só quando em risco, não todo dia).
+
 - **2026-08-28 — v0.53.0 (insígnias congeladas + sequência fiel ao check-in):**
   - **Insígnias:** sorteio de até 7 dias/mês agora é **congelado** na 1ª conclusão do mês (sem rolling se mudar a agenda) e só vale na **conclusão** do treino completo — ao ganhar abre a janela "Insígnia do dia!" junto aos recordes.
   - **Sequência/medalhas:** excluir o último check-in de um dia agora **apaga a conclusão** do dia — a sequência e o rating realinham retroativamente na próxima abertura (ex.: ouro de 17/08 sem o dia 16 passa para o próximo dia treinado, 18/08).

@@ -121,6 +121,27 @@ NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
   return NivelInfo(nivel, recorde);
 }
 
+/// Está em risco de perder nível amanhã se não treinar hoje/amanhã.
+/// True se pular o próximo dia agendado derruba o nível atual.
+bool emRiscoDePerda(List<Conclusao> concs, List<Treino> treinos,
+    {DateTime? hoje}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final agendados = diasAgendados(treinos);
+  if (agendados.isEmpty) return false;
+  final hojeFeito = concs.any((c) =>
+      c.completo &&
+      c.data.year == hj.year &&
+      c.data.month == hj.month &&
+      c.data.day == hj.day);
+  if (hojeFeito) return false;
+  final amanha = hj.add(const Duration(days: 1));
+  final nivelHoje = nivelInfo(concs, treinos, hoje: hj).atual;
+  if (nivelHoje == 0) return false;
+  final nivelAmanhaSemTreino =
+      nivelInfo(concs, treinos, hoje: amanha).atual;
+  return nivelAmanhaSemTreino < nivelHoje;
+}
+
 /// Total de DIAS distintos com treino concluído.
 int totalDiasConcluidos(List<Conclusao> concs) =>
     concs.map((c) => _dia(c.data)).toSet().length;

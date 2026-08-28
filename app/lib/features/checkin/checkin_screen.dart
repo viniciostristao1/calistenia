@@ -155,8 +155,10 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               onAnterior: () => _mudarMes(-1),
               onProximo: () => _mudarMes(1),
             ),
-            if (gamiOn)
+            if (gamiOn) ...[
               _QuadroInsignias(onTap: () => setState(() => _vista = 2)),
+              _BannerRisco(),
+            ],
             const _LinhaDias(),
             Expanded(
               child: GridView.builder(
@@ -509,6 +511,7 @@ class _QuadroInsignias extends ConsumerWidget {
     final lista = ref.watch(insigniasProvider).value ?? const <Insignia>[];
     final agora = DateTime.now();
     final doMes = insigniasDoMes(lista, agora.year, agora.month);
+    final perfeito = doMes.length >= 7;
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
       child: InkWell(
@@ -517,19 +520,28 @@ class _QuadroInsignias extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: perfeito
+                ? AppColors.estrela.withOpacity(0.12)
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(
+                color: perfeito ? AppColors.estrela : AppColors.line,
+                width: perfeito ? 1.5 : 1),
           ),
           child: Row(
             children: [
-              Icon(Icons.star_rounded, size: 18, color: AppColors.estrela),
+              Icon(Icons.star_rounded,
+                  size: 18, color: AppColors.estrela),
               const SizedBox(width: 8),
-              Text('Insígnias do mês',
-                  style: TextStyle(color: AppColors.dim, fontSize: 12.5)),
+              Text(perfeito ? 'Mês perfeito! ✨' : 'Insígnias do mês',
+                  style: TextStyle(
+                      color: perfeito ? AppColors.estrela : AppColors.dim,
+                      fontSize: 12.5,
+                      fontWeight: perfeito ? FontWeight.w800 : FontWeight.w400)),
               const Spacer(),
               if (doMes.isEmpty)
-                Text('—', style: TextStyle(color: AppColors.dim2, fontSize: 14))
+                Text('—',
+                    style: TextStyle(color: AppColors.dim2, fontSize: 14))
               else
                 Flexible(
                   child: Wrap(
@@ -547,6 +559,42 @@ class _QuadroInsignias extends ConsumerWidget {
               Icon(Icons.chevron_right, color: AppColors.dim, size: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BannerRisco extends ConsumerWidget {
+  const _BannerRisco();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final concs = ref.watch(conclusaoProvider).value ?? const [];
+    final treinos = ref.watch(treinosProvider).value ?? const [];
+    if (!emRiscoDePerda(concs, treinos)) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.danger.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.danger.withOpacity(0.5)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded,
+                size: 18, color: AppColors.danger),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('Sequência em risco — treine hoje para não perder seu nível!',
+                  style: TextStyle(
+                      color: AppColors.danger,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700)),
+            ),
+          ],
         ),
       ),
     );
@@ -713,20 +761,30 @@ class _MesInsignias extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final perfeito = quantas >= 7;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: perfeito
+            ? AppColors.estrela.withOpacity(0.12)
+            : AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(
+            color: perfeito ? AppColors.estrela : AppColors.line,
+            width: perfeito ? 1.5 : 1),
       ),
       child: Row(
         children: [
           Expanded(
-            child: Text(_tituloMes(chaveMes),
-                style:
-                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+            child: Text(
+                perfeito
+                    ? '${_tituloMes(chaveMes)}  ✨'
+                    : _tituloMes(chaveMes),
+                style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: perfeito ? AppColors.estrela : AppColors.text)),
           ),
           Flexible(
             child: Wrap(

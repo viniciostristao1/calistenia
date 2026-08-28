@@ -7,7 +7,8 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../util/frases.dart';
-import '../util/gamificacao.dart' show diasAgendados;
+import '../util/gamificacao.dart' show diasAgendados, emRiscoDePerda;
+import 'conclusao_repository.dart';
 import 'treinos_repository.dart';
 
 const _chaveLembretes = 'lembretes_v1';
@@ -15,6 +16,7 @@ const _chaveLembretes = 'lembretes_v1';
 /// Base dos ids de notificação: um id por dia da semana (0=seg..6=dom), então
 /// os lembretes ocupam [_idBase] .. [_idBase]+6. Fora da faixa dos outros usos.
 const int _idBase = 4200;
+const int _idRisco = 4300;
 
 /// Configuração dos lembretes de treino: liga/desliga global + horário (minutos
 /// do dia, 0..1439) por dia da semana. O lembrete só dispara nos dias que TÊM
@@ -207,6 +209,27 @@ class LembretesService {
     for (var d = 0; d < 7; d++) {
       await _plugin.cancel(_idBase + d);
     }
+    await _plugin.cancel(_idRisco);
+  }
+
+  Future<void> agendarRisco(bool emRisco) async {
+    if (!_pronto) await init();
+    await _plugin.cancel(_idRisco);
+    if (!emRisco) return;
+    if (!await pedirPermissao()) return;
+    final agora = DateTime.now();
+    var alvo = DateTime(agora.year, agora.month, agora.day, 20, 0);
+    if (!alvo.isAfter(agora)) return;
+    final quando = tz.TZDateTime.fromMillisecondsSinceEpoch(
+        tz.UTC, alvo.millisecondsSinceEpoch);
+    await _plugin.zonedSchedule(
+      _idRisco,
+      'Sequência em risco ⚠️',
+      'Você está a 1 dia de perder seu nível — treine hoje para manter!',
+      quando,
+      _detalhes('Toque para treinar agora e manter sua sequência.'),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
   }
 }
 
@@ -221,11 +244,23 @@ final lembretesControllerProvider = Provider<void>((ref) {
     try {
       await LembretesService.instance
           .reagendar(config, diasAgendados(treinos));
-    } catch (_) {
-      // Sem plugin/permission: silencioso (não deve derrubar o app).
-    }
+    } catch (_) {}
+  }
+
+  Future<void> agendarRisco() async {
+    final treinos = ref.read(treinosProvider).value;
+    final concs = ref.read(conclusaoProvider).value;
+    if (treinos == null || concs == null) return;
+    try {
+      final risco = emRiscoDePerda(concs, treinos);
+      await LembretesService.instance.agendarRisco(risco);
+    } catch (_) {}
   }
 
   ref.listen(lembretesConfigProvider, (_, _) => agendar(), fireImmediately: true);
-  ref.listen(treinosProvider, (_, _) => agendar(), fireImmediately: true);
+  ref.listen(treinosProvider, (_, _) {
+    agendar();
+    agendarRisco();
+  }, fireImmediately: true);
+  ref.listen(conclusaoProvider, (_, _) => agendarRisco(), fireImmediately: true);
 });

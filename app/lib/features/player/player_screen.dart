@@ -860,7 +860,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       ],
       if (_ganhouInsignia) ...[
         const SizedBox(height: 20),
-        const _InsigniaGanha(),
+        _InsigniaGanha(
+            mesPerfeito: (ref.watch(insigniasProvider).value ?? const [])
+                    .where((i) =>
+                        i.data.year == DateTime.now().year &&
+                        i.data.month == DateTime.now().month)
+                    .length >=
+                7),
       ],
       const SizedBox(height: 32),
       _botoesFim(labelRepetir: 'Repetir treino'),
@@ -935,14 +941,18 @@ class _NovasConquistas extends StatelessWidget {
 /// Faixa da INSÍGNIA (estrela) ganha — surpresa revelada depois dos parabéns, só
 /// nos dias sorteados do mês. A estrela é sempre amarela (independe do tema).
 class _InsigniaGanha extends StatelessWidget {
-  const _InsigniaGanha();
+  const _InsigniaGanha({this.mesPerfeito = false});
+
+  final bool mesPerfeito;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: mesPerfeito
+            ? AppColors.estrela.withOpacity(0.12)
+            : AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.estrela, width: 1.5),
       ),
@@ -951,11 +961,14 @@ class _InsigniaGanha extends StatelessWidget {
         children: [
           _IconeComemora(Icons.star_rounded, size: 52, color: AppColors.estrela),
           const SizedBox(height: 8),
-          const Text('Insígnia do dia!',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(mesPerfeito ? 'Mês perfeito! ✨' : 'Insígnia do dia!',
+              style:
+                  const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           const SizedBox(height: 4),
           Text(
-            'Você caiu num dia sorteado e concluiu — estrela rara garantida.',
+            mesPerfeito
+                ? '7 de 7 estrelas — você brilhou o mês inteiro!'
+                : 'Você caiu num dia sorteado e concluiu — estrela rara garantida.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.dim, fontSize: 12.5),
           ),
