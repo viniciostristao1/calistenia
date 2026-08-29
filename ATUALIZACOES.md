@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-29 — v0.57.0 (idioma):**
+  - Em **Configurações → Idioma** (atrás de seta para baixo) escolha **Português / English / Español** — a troca é instantânea e fica salva. Base para versão completa em 3 línguas.
+
 - **2026-08-29 — v0.56.0 (Progressão com vida):**
   - `Rating` agora conta de `0` até seu valor (`650ms`) e a barra preenche suave (`700ms`); o **gráfico de tendência desenha da esquerda para a direita** (`850ms`), como um vídeo — dá vida ao progresso sem poluir.
 

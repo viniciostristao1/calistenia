@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/auth_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/gamificacao_pref.dart';
+import '../../services/idioma_repository.dart';
 import '../../services/lembretes_service.dart';
 import '../../services/som_repository.dart';
 import '../../services/sync_service.dart';
@@ -12,6 +13,7 @@ import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
 import '../../util/gamificacao.dart' show diasAgendados;
+import '../../l10n/strings.dart';
 
 /// Configurações do app: tema, som, gamificação, lembretes de treino, conta
 /// (login + status da sincronização) e backup em arquivo.
@@ -22,22 +24,26 @@ class ConfigScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final som = ref.watch(somProvider).value ?? true;
     final gami = ref.watch(gamificacaoProvider).value ?? true;
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
     return Scaffold(
-      appBar: AppBar(title: const Text('Configurações')),
+      appBar: AppBar(title: Text(s.configTitulo)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
           const _SecaoTema(),
+          const SizedBox(height: 14),
+          const _SecaoIdioma(),
           const SizedBox(height: 14),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             value: som,
             onChanged: (v) => ref.read(somProvider.notifier).definir(v),
             activeThumbColor: context.accent,
-            title: const Text('Som',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            title: Text(s.som,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
             subtitle: Text(
-              'Bips nas transições e no fim do treino.',
+              s.somDesc,
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
           ),
@@ -46,34 +52,31 @@ class ConfigScreen extends ConsumerWidget {
             value: gami,
             onChanged: (v) => ref.read(gamificacaoProvider.notifier).definir(v),
             activeThumbColor: context.accent,
-            title: const Text('Gamificação',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            title: Text(s.gamificacao,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
             subtitle: Text(
-              'Medalhas, troféus e a pergunta “treino completo?” no fim do treino.',
+              s.gamificacaoDesc,
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
           ),
           const SizedBox(height: 20),
           const _SecaoLembretes(),
           const SizedBox(height: 20),
-          const Text('Conta',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+          Text(s.conta,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 4),
           Text(
-            'Entre com Google para guardar treinos, check-ins e progressão na '
-            'sua conta e recuperá-los em qualquer aparelho.',
+            s.contaDesc,
             style: TextStyle(color: AppColors.dim, fontSize: 13),
           ),
           const SizedBox(height: 12),
           const _SecaoConta(),
           const SizedBox(height: 20),
-          const Text('Backup em arquivo',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+          Text(s.backupArquivo,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
           const SizedBox(height: 4),
           Text(
-            'Uma segunda via, independente da conta: exporte tudo (treinos, '
-            'progressão, check-ins, conquistas) num arquivo .json e restaure '
-            'quando quiser.',
+            s.backupDesc,
             style: TextStyle(color: AppColors.dim, fontSize: 13),
           ),
           const SizedBox(height: 12),
@@ -97,6 +100,8 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
   @override
   Widget build(BuildContext context) {
     final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,11 +114,11 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Tema',
-                        style: TextStyle(
+                    Text(s.tema,
+                        style: const TextStyle(
                             fontWeight: FontWeight.w700, fontSize: 16)),
                     const SizedBox(height: 4),
-                    Text('Muda as cores e o visual do app inteiro.',
+                    Text(s.temaDesc,
                         style:
                             TextStyle(color: AppColors.dim, fontSize: 13)),
                   ],
@@ -181,6 +186,111 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
   }
 }
 
+class _SecaoIdioma extends ConsumerStatefulWidget {
+  const _SecaoIdioma();
+
+  @override
+  ConsumerState<_SecaoIdioma> createState() => _SecaoIdiomaState();
+}
+
+class _SecaoIdiomaState extends ConsumerState<_SecaoIdioma> {
+  bool _expandido = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => setState(() => _expandido = !_expandido),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(s.idioma,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text(s.idiomaDesc,
+                        style: TextStyle(color: AppColors.dim, fontSize: 13)),
+                  ],
+                ),
+              ),
+              Icon(
+                _expandido ? Icons.expand_less : Icons.expand_more,
+                color: AppColors.dim,
+              ),
+            ],
+          ),
+        ),
+        if (_expandido) ...[
+          const SizedBox(height: 14),
+          for (final o in Idioma.values)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _OpcaoIdioma(
+                idioma: o,
+                selecionado: idioma == o,
+                onTap: () => ref.read(idiomaProvider.notifier).definir(o),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+class _OpcaoIdioma extends StatelessWidget {
+  const _OpcaoIdioma(
+      {required this.idioma, required this.selecionado, required this.onTap});
+
+  final Idioma idioma;
+  final bool selecionado;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selecionado ? context.accent : AppColors.line,
+            width: selecionado ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              switch (idioma) {
+                Idioma.pt => '🇧🇷',
+                Idioma.en => '🇺🇸',
+                Idioma.es => '🇪🇸',
+              },
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(idioma.nomeNativo,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+            ),
+            if (selecionado) Icon(Icons.check_circle, color: context.accent),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// "HH:MM" a partir de minutos do dia (0..1439).
 String _hhmm(int minutos) {
   final h = (minutos ~/ 60).toString().padLeft(2, '0');
@@ -204,6 +314,8 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
         ref.watch(lembretesConfigProvider).value ?? LembretesConfig.vazio;
     final treinos = ref.watch(treinosProvider).value ?? const [];
     final dias = diasAgendados(treinos).toList()..sort();
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,12 +328,10 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
             if (!v) setState(() => _mostrarHorarios = false);
           },
           activeThumbColor: context.accent,
-          title: const Text('Lembrar de treinar',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          title: Text(s.lembrarTreinar,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
           subtitle: Text(
-            config.ativo
-                ? 'Notificação ligada nos dias com treino.'
-                : 'Desligado.',
+            config.ativo ? s.lembrarDescOn : s.lembrarDescOff,
             style: TextStyle(color: AppColors.dim, fontSize: 13),
           ),
         ),
@@ -230,8 +340,7 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 4),
               child: Text(
-                'Nenhum treino agendado ainda. Marque os dias de um treino no '
-                'editor para o lembrete aparecer aqui.',
+                s.nenhumTreinoAgendado,
                 style: TextStyle(color: AppColors.dim, fontSize: 13),
               ),
             )
@@ -253,8 +362,8 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
                         : Icons.expand_more,
                     size: 20),
                 label: Text(_mostrarHorarios
-                    ? 'Ocultar horários'
-                    : 'Gerenciar horários · ${dias.length} ${dias.length == 1 ? 'dia' : 'dias'}'),
+                    ? s.ocultarHorarios
+                    : '${s.gerenciarHorarios} · ${s.diasCount(dias.length)}'),
               ),
             ),
             if (_mostrarHorarios) ...[

@@ -10,6 +10,7 @@ import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/conquistas_repository.dart';
 import '../../services/gamificacao_pref.dart';
+import '../../services/idioma_repository.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
@@ -17,6 +18,7 @@ import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
 import '../../util/dias.dart';
 import '../../util/gamificacao.dart';
+import '../../l10n/strings.dart';
 
 const _meses = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -84,14 +86,16 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     });
     final gamiOn = ref.watch(gamificacaoProvider).value ?? true;
     final vista = gamiOn ? _vista : 0;
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.calendar_month, size: 22),
-            SizedBox(width: 8),
-            Text('Check-in'),
+            const Icon(Icons.calendar_month, size: 22),
+            const SizedBox(width: 8),
+            Text(s.checkIn),
           ],
         ),
       ),
@@ -108,10 +112,10 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   textStyle: const TextStyle(
                       fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
-                segments: const [
-                  ButtonSegment(value: 0, label: Text('Calendário')),
-                  ButtonSegment(value: 1, label: Text('Galeria')),
-                  ButtonSegment(value: 2, label: Text('Histórico')),
+                segments: [
+                  ButtonSegment(value: 0, label: Text(s.calendario)),
+                  ButtonSegment(value: 1, label: Text(s.galeria)),
+                  ButtonSegment(value: 2, label: Text(s.historico)),
                 ],
                 selected: {vista},
                 showSelectedIcon: false,

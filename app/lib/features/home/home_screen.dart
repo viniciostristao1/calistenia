@@ -6,6 +6,7 @@ import '../../models/exercicio.dart';
 import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
+import '../../services/idioma_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
@@ -13,6 +14,7 @@ import '../../util/exportar_treino.dart';
 import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 import '../../util/versao.dart';
+import '../../l10n/strings.dart';
 import '../config/config_screen.dart';
 import '../player/player_screen.dart';
 import '../treino/treino_editor_screen.dart';
@@ -44,28 +46,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final treinos = (ref.read(treinosProvider).value ?? const <Treino>[])
         .where((t) => t.dias.contains(_dia))
         .toList();
+    final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
     if (treinos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Nenhum treino neste dia para compartilhar.')),
+        SnackBar(content: Text(s.nenhumTreinoDiaCompartilhar)),
       );
       return;
     }
-    _mostrarCompartilhar('Compartilhar o dia', treinosParaTexto(treinos));
+    _mostrarCompartilhar(s.compartilharDia, treinosParaTexto(treinos));
   }
 
   void _compartilharSemana() {
     final todos = ref.read(treinosProvider).value ?? const <Treino>[];
+    final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
     if (todos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nenhum treino cadastrado ainda.')),
+        SnackBar(content: Text(s.nenhumTreinoCadastrado)),
       );
       return;
     }
-    _mostrarCompartilhar('Compartilhar a semana', semanaParaTexto(todos));
+    _mostrarCompartilhar(s.compartilharSemana, semanaParaTexto(todos));
   }
 
   void _mostrarCompartilhar(String titulo, String texto) {
+    final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
@@ -83,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+            child: Text(s.fechar),
           ),
           FilledButton.icon(
             style: FilledButton.styleFrom(
@@ -95,11 +99,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (!mounted) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Copiado!')),
+                SnackBar(content: Text(s.copiado)),
               );
             },
             icon: const Icon(Icons.copy, size: 18),
-            label: const Text('Copiar'),
+            label: Text(s.copiar),
           ),
         ],
       ),
@@ -107,19 +111,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _sair() async {
+    final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Sair do app?'),
+        title: Text(s.sairApp),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(s.cancelar),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sair'),
+            child: Text(s.sair),
           ),
         ],
       ),
@@ -194,6 +199,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(treinosProvider);
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
 
     return Scaffold(
       appBar: AppBar(
@@ -226,23 +233,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Configurações',
+            tooltip: s.configTitulo,
             icon: const Icon(Icons.settings_outlined),
             onPressed: _abrirConfig,
           ),
           PopupMenuButton<String>(
-            tooltip: 'Compartilhar',
+            tooltip: s.compartilharDia,
             icon: const Icon(Icons.share_outlined),
             onSelected: (v) =>
                 v == 'dia' ? _compartilharDia() : _compartilharSemana(),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'dia', child: Text('Compartilhar o dia')),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'dia', child: Text(s.compartilharDia)),
               PopupMenuItem(
-                  value: 'semana', child: Text('Compartilhar a semana toda')),
+                  value: 'semana', child: Text(s.compartilharSemana)),
             ],
           ),
           IconButton(
-            tooltip: 'Sair',
+            tooltip: s.sair,
             icon: const Icon(Icons.logout),
             onPressed: _sair,
           ),
@@ -253,7 +260,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: context.accent,
         foregroundColor: context.onAccent,
         icon: const Icon(Icons.add),
-        label: const Text('Novo treino'),
+        label: Text(s.novoTreino),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -289,7 +296,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _SeletorDias extends StatelessWidget {
+class _SeletorDias extends ConsumerWidget {
   const _SeletorDias({
     required this.selecionado,
     required this.diasComTreino,
@@ -301,7 +308,9 @@ class _SeletorDias extends StatelessWidget {
   final ValueChanged<int> onSelect;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
     // Todos os 7 dias cabem na largura (cada um em um Expanded), sem scroll.
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
@@ -312,7 +321,7 @@ class _SeletorDias extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: _DiaPill(
-                  rotulo: nomesDiasCurtos[d],
+                  rotulo: s.diasCurtos[d],
                   selecionado: d == selecionado,
                   hoje: d == diaDeHoje,
                   temTreino: diasComTreino.contains(d),
@@ -617,13 +626,15 @@ class _PlayCircle extends StatelessWidget {
   }
 }
 
-class _Vazio extends StatelessWidget {
+class _Vazio extends ConsumerWidget {
   const _Vazio({required this.dia});
 
   final int dia;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
+    final s = Strings(idioma);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -633,13 +644,13 @@ class _Vazio extends StatelessWidget {
             Icon(Icons.fitness_center, size: 56, color: AppColors.dim2),
             const SizedBox(height: 16),
             Text(
-              'Nenhum treino em ${nomesDiasLongos[dia]}',
+              s.nenhumTreinoEm(s.diasLongos[dia]),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 6),
             Text(
-              'Toque em “Novo treino” para criar.',
+              s.toqueNovoTreino,
               style: TextStyle(color: AppColors.dim),
               textAlign: TextAlign.center,
             ),
