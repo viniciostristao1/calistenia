@@ -21,31 +21,9 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(chaveConclusao);
     if (raw == null || raw.isEmpty) return [];
-    final lista = (jsonDecode(raw) as List)
+    return (jsonDecode(raw) as List)
         .map((e) => Conclusao.fromJson(e as Map<String, dynamic>))
         .toList();
-    final checkinRaw = prefs.getString('checkin_v1');
-    if (checkinRaw != null && checkinRaw.isNotEmpty) {
-      try {
-        final checkins = (jsonDecode(checkinRaw) as List)
-            .map((e) => (e as Map<String, dynamic>)['data'] as int)
-            .map((ms) => DateTime.fromMillisecondsSinceEpoch(ms))
-            .map((d) => DateTime(d.year, d.month, d.day))
-            .toSet();
-        final filtrada = lista
-            .where((c) => checkins.contains(
-                DateTime(c.data.year, c.data.month, c.data.day)))
-            .toList();
-        if (filtrada.length != lista.length) {
-          await prefs.setString(
-            chaveConclusao,
-            jsonEncode(filtrada.map((c) => c.toJson()).toList()),
-          );
-          return filtrada;
-        }
-      } catch (_) {}
-    }
-    return lista;
   }
 
   Future<void> _persist(List<Conclusao> list) async {

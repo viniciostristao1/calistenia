@@ -41,6 +41,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     super.initState();
     final n = DateTime.now();
     _mes = DateTime(n.year, n.month, 1);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reconciliar());
   }
 
   void _mudarMes(int delta) =>
@@ -75,6 +76,12 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(conclusaoProvider, (_, v) {
+      if (v.hasValue) Future.microtask(_reconciliar);
+    });
+    ref.listen(checkinProvider, (_, v) {
+      if (v.hasValue) Future.microtask(_reconciliar);
+    });
     final gamiOn = ref.watch(gamificacaoProvider).value ?? true;
     final vista = gamiOn ? _vista : 0;
     return Scaffold(

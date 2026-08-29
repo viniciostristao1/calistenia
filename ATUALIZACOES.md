@@ -6,6 +6,9 @@ re-testar".
 - **2026-08-28 — v0.54.2 (fix: ouro em 17 sem o dia 16):**
   - `nivel`/`conquistas` agora ignoram conclusões sem `check-in` do dia — excluir o último pontinho do calendário remove a conclusão órfã mesmo com sincronização, então a sequência recalcula certo (ouro de 17/08 migra para o próximo dia treinado).
 
+- **2026-08-28 — v0.54.3 (fix: ouro ainda em 17 após 0.54.2):**
+  - Corrige caso onde a órfã de `16/08` voltava via sync e `Check-in` não reconciliava automaticamente — agora `nivelInfo` filtra órfãs em tempo real e `Check-in` reconcilia sozinho ao abrir (sem precisar trocar de aba).
+
 - **2026-08-28 — v0.54.1 (fix: título mostrava 0.52.3):**
   - Corrige `kVersao` que ficou em `0.52.3` na `v0.54.0` — agora o título na Home mostra `v0.54.1` correto.
 
