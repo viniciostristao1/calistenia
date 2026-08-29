@@ -4,11 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/exercicio.dart';
 import '../../models/treino.dart';
+import '../../services/checkin_repository.dart';
+import '../../services/conclusao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
 import '../../util/exportar_treino.dart';
 import '../../util/format.dart';
+import '../../util/gamificacao.dart';
 import '../../util/versao.dart';
 import '../config/config_screen.dart';
 import '../player/player_screen.dart';
@@ -124,6 +127,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (ok == true) SystemNavigator.pop();
   }
 
+  void _mostrarDebug(BuildContext ctx) {
+    final treinos = ref.read(treinosProvider).value ?? const <Treino>[];
+    final concs = ref.read(conclusaoProvider).value ?? const [];
+    final checkins = ref.read(checkinProvider).value ?? const [];
+    final agendados = diasAgendados(treinos);
+    final diasValidos = checkins
+        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+        .toSet();
+    final buf = StringBuffer();
+    buf.writeln('DEBUG SEQUÊNCIA — v$kVersao');
+    buf.writeln('Agendados (0=seg): $agendados');
+    buf.writeln('Treinos: ${treinos.map((t) => "${t.nome}:${t.dias}").join(" | ")}');
+    buf.writeln('');
+    buf.writeln('Dia | Sem | Ag | Check | Concl | Nivel | Conquistas');
+    for (var d = 10; d <= 20; d++) {
+      final dt = DateTime(2026, 8, d);
+      final wd = dt.weekday - 1;
+      final ag = agendados.contains(wd) ? 'S' : '-';
+      final ck = checkins.where((c) => c.data.day == d && c.data.month == 8).length;
+      final co = concs.where((c) => c.data.day == d && c.data.month == 8).toList();
+      final coTxt = co.isEmpty ? '-' : co.map((c) => c.completo ? 'C' : 'T').join(',');
+      final nivel = nivelInfo(concs, treinos, hoje: dt, diasValidos: diasValidos).atual;
+      final at = conquistasAtuais(concs, treinos, [], hoje: dt, diasValidos: diasValidos);
+      final atTxt = at.isEmpty ? '-' : at.map((e) => e.name).join(',');
+      buf.writeln('${d.toString().padLeft(2, '0')}/08 | $wd | $ag | $ck | $coTxt | $nivel | $atTxt');
+    }
+    buf.writeln('');
+    buf.writeln('Conclusoes Agosto:');
+    for (final c in concs.where((c) => c.data.month == 8)) {
+      buf.writeln(' ${c.data.day.toString().padLeft(2, '0')}/08 ${c.treino} completo=${c.completo} id=${c.id.substring(0, 6)}');
+    }
+    buf.writeln('Check-ins Agosto:');
+    for (final c in checkins.where((c) => c.data.month == 8)) {
+      buf.writeln(' ${c.data.day.toString().padLeft(2, '0')}/08 ${c.exercicio}');
+    }
+    final txt = buf.toString();
+    showDialog<void>(
+      context: ctx,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Debug sequência 10-20/08'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(txt, style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Fechar')),
+          FilledButton.icon(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: txt));
+              if (ctx.mounted) {
+                ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Copiado! Cole aqui no chat.')));
+              }
+            },
+            icon: const Icon(Icons.copy, size: 16),
+            label: const Text('Copiar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(treinosProvider);
@@ -142,13 +209,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(width: 6),
             // Número da versão ao lado do título: confirma, num relance, que o
             // build instalado é o mais novo (sobe junto com o pubspec).
-            Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: Text('v$kVersao',
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.dim)),
+            // Long-press abre diagnóstico da sequência (para debug de medalhas).
+            InkWell(
+              onLongPress: () => _mostrarDebug(context),
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 3, left: 4, right: 4),
+                child: Text('v$kVersao',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.dim)),
+              ),
             ),
           ],
         ),

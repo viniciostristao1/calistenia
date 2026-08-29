@@ -9,6 +9,9 @@ re-testar".
 - **2026-08-28 — v0.54.3 (fix: ouro ainda em 17 após 0.54.2):**
   - Corrige caso onde a órfã de `16/08` voltava via sync e `Check-in` não reconciliava automaticamente — agora `nivelInfo` filtra órfãs em tempo real e `Check-in` reconcilia sozinho ao abrir (sem precisar trocar de aba).
 
+- **2026-08-28 — v0.54.4 (debug sequência):**
+  - Long-press no `v0.54.4` da Home abre diagnóstico de 10-20/08 (agendados, check-ins, conclusões, nível e conquistas por dia) para investigar ouro em 17 com prata em 13.
+
 - **2026-08-28 — v0.54.1 (fix: título mostrava 0.52.3):**
   - Corrige `kVersao` que ficou em `0.52.3` na `v0.54.0` — agora o título na Home mostra `v0.54.1` correto.
 
