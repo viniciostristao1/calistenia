@@ -249,7 +249,6 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               autofocus: widget.existente == null,
               textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
-                labelText: 'Nome do exercício',
                 hintText: 'Ex.: Flexão, Agachamento, Prancha…',
               ),
             ),

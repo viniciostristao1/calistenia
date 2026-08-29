@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-29 — v0.57.6 (editor sem rótulo):**
+  - Removido o rótulo `Nome do treino` e `Nome do exercício` das caixinhas de nome (lápis) — fica só o hint `Ex.: ...`, mais limpo.
+
 - **2026-08-29 — v0.57.5 (Desenvolvimento anima ao voltar de outras abas):**
   - `Desenvolvimento` agora também anima ao voltar de `Treinos`/`Check-in` (antes só de `Rating` → `Desenvolvimento`), com o mesmo `KeyedSubtree` do `Rating`.
 

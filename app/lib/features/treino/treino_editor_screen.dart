@@ -228,7 +228,6 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
             controller: _nomeCtrl,
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
-              labelText: 'Nome do treino',
               hintText: 'Ex.: Peitoral, Pernas…',
               prefixIcon: Icon(Icons.edit_outlined),
             ),
