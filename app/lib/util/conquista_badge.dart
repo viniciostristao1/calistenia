@@ -32,11 +32,66 @@ class ConquistaBadge extends StatelessWidget {
     final ehTrofeu = tipo == TipoConquista.trofeuPrata ||
         tipo == TipoConquista.trofeuOuro;
     if (ehTrofeu) {
-      // O ícone `emoji_events` rende VISUALMENTE menor que os emojis 🥈/🥇 no
-      // mesmo `size` — daí o troféu parecer pequeno ao lado das medalhas.
-      // Compensa com um fator, para o troféu bater/superar a medalha.
-      return Icon(Icons.emoji_events,
-          size: size * 1.4, color: ativo ? corConquista(tipo) : AppColors.dim2);
+      final trofeuSize = size * 1.4;
+      return SizedBox(
+        width: trofeuSize,
+        height: trofeuSize,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(Icons.emoji_events,
+                size: trofeuSize,
+                color: ativo ? corConquista(tipo) : AppColors.dim2),
+            if (ativo) ...[
+              // Brilho diagonal no copo — sensação de metal polido, como nas medalhas.
+              Positioned(
+                left: trofeuSize * 0.28,
+                top: trofeuSize * 0.18,
+                child: Transform.rotate(
+                  angle: -0.35,
+                  child: Container(
+                    width: trofeuSize * 0.09,
+                    height: trofeuSize * 0.32,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.62),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+              ),
+              // Segundo brilho menor, mais em cima.
+              Positioned(
+                left: trofeuSize * 0.36,
+                top: trofeuSize * 0.16,
+                child: Transform.rotate(
+                  angle: -0.35,
+                  child: Container(
+                    width: trofeuSize * 0.05,
+                    height: trofeuSize * 0.14,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.42),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+              ),
+              // Linha de luz na base — relevo.
+              Positioned(
+                bottom: trofeuSize * 0.22,
+                left: trofeuSize * 0.32,
+                right: trofeuSize * 0.32,
+                child: Container(
+                  height: 1.2,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.38),
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
     }
     return Opacity(
       opacity: ativo ? 1 : 0.35,

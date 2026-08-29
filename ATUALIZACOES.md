@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-29 — v0.57.4 (troféu de prata com brilho):**
+  - `Troféu de prata` agora tem **brilho diagonal no copo e filete na base** (mesmo contorno e **mesmo tamanho** de antes) — sensação de metal polido, como nas medalhas.
+
 - **2026-08-29 — v0.57.3 (Desenvolvimento — barras um pouco mais lentas):**
   - Barras de `Desenvolvimento` agora sobem `700ms + 85ms` por barra (antes `620ms + 75ms`) — minimamente mais lentas, mais suaves.
 
