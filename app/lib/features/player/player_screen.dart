@@ -830,51 +830,30 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// Treino concluído (respondeu "sim", ou sessão sem gamificação).
   Widget _telaSucesso() {
     final completou = _respostaCompleto == true;
-    return _molduraFim([
-      // Ícone que "salta" ao entrar — comemora todo treino concluído, com ou
-      // sem recorde.
-      _IconeComemora(Icons.check_circle, size: 88, color: context.accent),
-      const SizedBox(height: 20),
-      Text(
-        completou ? 'Treino completo!' : 'Check-in concluído',
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-        textAlign: TextAlign.center,
-      ),
-      const SizedBox(height: 8),
-      if (_fraseCompleto != null) ...[
-        Text(
-          _fraseCompleto!,
-          style: TextStyle(color: AppColors.text),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 6),
+    final temCelebracao = _novosRecordes.isNotEmpty ||
+        _novasConquistas.isNotEmpty ||
+        _ganhouInsignia;
+    final mesPerfeito = (ref.watch(insigniasProvider).value ?? const [])
+            .where((i) =>
+                i.data.year == DateTime.now().year &&
+                i.data.month == DateTime.now().month)
+            .length >=
+        7;
+    return Stack(
+      children: [
+        if (temCelebracao) const _ConfettiLayer(),
+        _molduraFim([
+          _FadeSlide(idx: 0, child: _IconeComemora(Icons.check_circle, size: 88, color: context.accent)),
+          _FadeSlide(idx: 1, child: Padding(padding: const EdgeInsets.only(top: 20), child: Text(completou ? 'Treino completo!' : 'Check-in concluído', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center))),
+          if (_fraseCompleto != null) _FadeSlide(idx: 2, child: Padding(padding: const EdgeInsets.only(top: 8), child: Text(_fraseCompleto!, style: TextStyle(color: AppColors.text), textAlign: TextAlign.center))),
+          _FadeSlide(idx: 3, child: Padding(padding: EdgeInsets.only(top: _fraseCompleto != null ? 6 : 8), child: Text('${widget.titulo} · ${fmtSeg(_duracaoTotal)}', style: TextStyle(color: AppColors.dim, fontSize: 13), textAlign: TextAlign.center))),
+          if (_novosRecordes.isNotEmpty) _FadeSlide(idx: 4, child: Padding(padding: const EdgeInsets.only(top: 20), child: _NovosRecordes(recordes: _novosRecordes))),
+          if (_novasConquistas.isNotEmpty) _FadeSlide(idx: 5, child: Padding(padding: const EdgeInsets.only(top: 20), child: _NovasConquistas(tipos: _novasConquistas))),
+          if (_ganhouInsignia) _FadeSlide(idx: 6, child: Padding(padding: const EdgeInsets.only(top: 20), child: _InsigniaGanha(mesPerfeito: mesPerfeito))),
+          _FadeSlide(idx: 7, child: Padding(padding: const EdgeInsets.only(top: 32), child: _botoesFim(labelRepetir: 'Repetir treino'))),
+        ]),
       ],
-      Text(
-        '${widget.titulo} · ${fmtSeg(_duracaoTotal)}',
-        style: TextStyle(color: AppColors.dim, fontSize: 13),
-        textAlign: TextAlign.center,
-      ),
-      if (_novosRecordes.isNotEmpty) ...[
-        const SizedBox(height: 20),
-        _NovosRecordes(recordes: _novosRecordes),
-      ],
-      if (_novasConquistas.isNotEmpty) ...[
-        const SizedBox(height: 20),
-        _NovasConquistas(tipos: _novasConquistas),
-      ],
-      if (_ganhouInsignia) ...[
-        const SizedBox(height: 20),
-        _InsigniaGanha(
-            mesPerfeito: (ref.watch(insigniasProvider).value ?? const [])
-                    .where((i) =>
-                        i.data.year == DateTime.now().year &&
-                        i.data.month == DateTime.now().month)
-                    .length >=
-                7),
-      ],
-      const SizedBox(height: 32),
-      _botoesFim(labelRepetir: 'Repetir treino'),
-    ]);
+    );
   }
 
   /// Treino não concluído: frase de incentivo (o dia já entrou no check-in).
@@ -994,14 +973,83 @@ class _IconeComemora extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 700),
       curve: Curves.elasticOut,
       builder: (context, t, child) => Opacity(
         opacity: t.clamp(0.0, 1.0),
         child: Transform.scale(
             scale: (0.4 + 0.6 * t).clamp(0.0, 1.2), child: child),
       ),
-      child: Icon(icon, size: size, color: color),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: size * 1.55,
+            height: size * 1.55,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.14),
+            ),
+          ),
+          Icon(icon, size: size, color: color),
+        ],
+      ),
+    );
+  }
+}
+
+class _FadeSlide extends StatelessWidget {
+  const _FadeSlide({required this.idx, required this.child});
+  final int idx;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 420 + idx * 90),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, ch) => Opacity(
+        opacity: t.clamp(0.0, 1.0),
+        child: Transform.translate(
+          offset: Offset(0, 14 * (1 - t)),
+          child: ch,
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _ConfettiLayer extends StatelessWidget {
+  const _ConfettiLayer();
+  @override
+  Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
+    return IgnorePointer(
+      child: Stack(
+        children: List.generate(16, (i) {
+          final left = (w * (0.05 + 0.06 * i + (i % 3) * 0.07)) % w;
+          final colors = [AppColors.estrela, AppColors.exec, AppColors.prep, context.accent];
+          final c = colors[i % colors.length];
+          final icon = [Icons.star_rounded, Icons.circle, Icons.favorite_rounded][i % 3];
+          final sz = 10.0 + (i % 4) * 2;
+          return TweenAnimationBuilder<double>(
+            tween: Tween(begin: -30, end: h + 30),
+            duration: Duration(milliseconds: 1800 + (i % 5) * 260),
+            curve: Curves.linear,
+            builder: (context, top, ch) => Positioned(
+              left: left,
+              top: top,
+              child: Opacity(
+                opacity: (1 - (top + 30) / (h + 60)).clamp(0.0, 0.75),
+                child: Transform.rotate(angle: top * 0.015 + i, child: ch),
+              ),
+            ),
+            child: Icon(icon, size: sz, color: c),
+          );
+        }),
+      ),
     );
   }
 }
