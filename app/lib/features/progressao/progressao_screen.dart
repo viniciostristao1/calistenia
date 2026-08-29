@@ -426,6 +426,7 @@ class _Barra extends StatelessWidget {
 }
 
 /// Card do Rating: valor atual + barra + composição (assiduidade / evolução).
+/// Números contam de 0 até o valor e a barra preenche em 650ms.
 class _RatingCard extends StatelessWidget {
   const _RatingCard({required this.rating});
 
@@ -450,18 +451,28 @@ class _RatingCard extends StatelessWidget {
               const Text('Rating',
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
               const Spacer(),
-              Text('${rating.total}',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 20,
-                      color: context.accent)),
-              if (rating.bonusEstrelas > 0) ...[
-                const SizedBox(width: 8),
-                Text('+${rating.bonusEstrelas}',
-                    style: const TextStyle(
+              TweenAnimationBuilder<int>(
+                tween: IntTween(begin: 0, end: rating.total),
+                duration: const Duration(milliseconds: 650),
+                curve: Curves.easeOutCubic,
+                builder: (context, v, _) => Text('$v',
+                    style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 20,
-                        color: AppColors.estrela)),
+                        color: context.accent)),
+              ),
+              if (rating.bonusEstrelas > 0) ...[
+                const SizedBox(width: 8),
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: rating.bonusEstrelas),
+                  duration: const Duration(milliseconds: 650),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, v, _) => Text('+$v',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          color: AppColors.estrela)),
+                ),
                 const SizedBox(width: 2),
                 const Icon(Icons.star_rounded,
                     size: 18, color: AppColors.estrela),
@@ -469,22 +480,35 @@ class _RatingCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: LinearProgressIndicator(
-              value: frac,
-              minHeight: 9,
-              backgroundColor: AppColors.surface2,
-              valueColor: AlwaysStoppedAnimation(context.accent),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: frac),
+            duration: const Duration(milliseconds: 700),
+            curve: Curves.easeOutCubic,
+            builder: (context, v, _) => ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: LinearProgressIndicator(
+                value: v,
+                minHeight: 9,
+                backgroundColor: AppColors.surface2,
+                valueColor: AlwaysStoppedAnimation(context.accent),
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Consistência ${rating.consistencia}/40 · '
-            'Frequência ${rating.frequencia}/20 · '
-            'Progressão ${rating.progressao}/40'
-            '${rating.bonusEstrelas > 0 ? ' · Bônus ⭐ +${rating.bonusEstrelas}' : ''}',
-            style: TextStyle(color: AppColors.dim, fontSize: 12),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOut,
+            builder: (context, t, _) => Opacity(
+              opacity: t,
+              child: Text(
+                'Consistência ${rating.consistencia}/40 · '
+                'Frequência ${rating.frequencia}/20 · '
+                'Progressão ${rating.progressao}/40'
+                '${rating.bonusEstrelas > 0 ? ' · Bônus ⭐ +${rating.bonusEstrelas}' : ''}',
+                style: TextStyle(color: AppColors.dim, fontSize: 12),
+              ),
+            ),
           ),
         ],
       ),
@@ -493,7 +517,7 @@ class _RatingCard extends StatelessWidget {
 }
 
 /// Gráfico de linha (tendência do Rating): traços ligando os pontos, com a área
-/// sob a curva. O eixo Y se ajusta ao maior valor para a tendência ficar visível.
+/// sob a curva. Desenha da esquerda para a direita em 850ms.
 class _GraficoLinha extends StatelessWidget {
   const _GraficoLinha({required this.pontos});
 
@@ -512,13 +536,19 @@ class _GraficoLinha extends StatelessWidget {
         children: [
           SizedBox(
             height: 160,
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: _LinhaPainter(
-                pontos: pontos,
-                cor: context.accent,
-                corGrade: AppColors.line,
-                corTexto: AppColors.dim2,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 850),
+              curve: Curves.easeOutCubic,
+              builder: (context, prog, _) => CustomPaint(
+                size: Size.infinite,
+                painter: _LinhaPainter(
+                  pontos: pontos,
+                  cor: context.accent,
+                  corGrade: AppColors.line,
+                  corTexto: AppColors.dim2,
+                  progresso: prog,
+                ),
               ),
             ),
           ),
@@ -546,12 +576,14 @@ class _LinhaPainter extends CustomPainter {
     required this.cor,
     required this.corGrade,
     required this.corTexto,
+    this.progresso = 1.0,
   });
 
   final List<PontoRating> pontos;
   final Color cor;
   final Color corGrade;
   final Color corTexto;
+  final double progresso;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -580,6 +612,8 @@ class _LinhaPainter extends CustomPainter {
     }
 
     if (n >= 2) {
+      canvas.save();
+      canvas.clipRect(Rect.fromLTWH(0, 0, size.width * progresso, size.height));
       final fill = Path()..moveTo(pos(0).dx, size.height);
       for (var i = 0; i < n; i++) {
         fill.lineTo(pos(i).dx, pos(i).dy);
@@ -606,11 +640,18 @@ class _LinhaPainter extends CustomPainter {
           ..strokeCap = StrokeCap.round
           ..strokeJoin = StrokeJoin.round,
       );
-    }
-
-    final ponto = Paint()..color = cor;
-    for (var i = 0; i < n; i++) {
-      canvas.drawCircle(pos(i), i == n - 1 ? 4.0 : 2.5, ponto);
+      final ponto = Paint()..color = cor;
+      for (var i = 0; i < n; i++) {
+        if (pos(i).dx <= size.width * progresso + 1) {
+          canvas.drawCircle(pos(i), i == n - 1 ? 4.0 : 2.5, ponto);
+        }
+      }
+      canvas.restore();
+    } else {
+      final ponto = Paint()..color = cor;
+      for (var i = 0; i < n; i++) {
+        canvas.drawCircle(pos(i), 4.0, ponto);
+      }
     }
 
     // Rótulo do topo do eixo Y (o maior valor do desenho).
@@ -625,7 +666,8 @@ class _LinhaPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_LinhaPainter old) => true;
+  bool shouldRepaint(_LinhaPainter old) =>
+      old.progresso != progresso || old.pontos != pontos;
 }
 
 class _Vazio extends StatelessWidget {

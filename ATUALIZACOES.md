@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-29 — v0.56.0 (Progressão com vida):**
+  - `Rating` agora conta de `0` até seu valor (`650ms`) e a barra preenche suave (`700ms`); o **gráfico de tendência desenha da esquerda para a direita** (`850ms`), como um vídeo — dá vida ao progresso sem poluir.
+
 - **2026-08-29 — v0.55.0 (conclusão com fluxo animado):**
   - Ao concluir um treino a janela não surge seca — agora entra em **fluxo limpo**: ícone com halo que salta, título/frase/recordes/conquistas/insígnia surgem em cascata (fade + deslize), e quando há celebração cai um **confete sutil** (estrelas/corações) por trás, como um vídeo curto.
 
