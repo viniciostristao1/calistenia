@@ -3,11 +3,14 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
-- **2026-08-29 — v0.57.1 (Progressão mais lenta + barras animadas):**
-  - `Rating` e `Tendência` um pouco mais lentos (`850ms` números, `900ms` barra, `1100ms` gráfico) e **barras de Progressão crescem em cascata** (`620ms + 75ms` por barra) — mais vivo sem poluir.
+- **2026-08-29 — v0.57.3 (Desenvolvimento — barras um pouco mais lentas):**
+  - Barras de `Desenvolvimento` agora sobem `700ms + 85ms` por barra (antes `620ms + 75ms`) — minimamente mais lentas, mais suaves.
 
 - **2026-08-29 — v0.57.2 (Rating anima ao voltar de outras abas):**
   - `Rating`/`Tendência` agora animam também ao voltar de `Treinos`/`Check-in` para `Progressão` (antes só de `Desenvolvimento` → `Rating`), com `KeyedSubtree` e `GlobalKey`.
+
+- **2026-08-29 — v0.57.1 (Progressão mais lenta + barras animadas):**
+  - `Rating` e `Tendência` um pouco mais lentos (`850ms` números, `900ms` barra, `1100ms` gráfico) e **barras de Progressão crescem em cascata** (`620ms + 75ms` por barra) — mais vivo sem poluir.
 
 - **2026-08-29 — v0.57.0 (idioma):**
   - Em **Configurações → Idioma** (atrás de seta para baixo) escolha **Português / English / Español** — a troca é instantânea e fica salva. Base para versão completa em 3 línguas.

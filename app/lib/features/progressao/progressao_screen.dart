@@ -406,7 +406,7 @@ class _Barra extends StatelessWidget {
                   const SizedBox(height: 3),
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: h),
-                    duration: Duration(milliseconds: 620 + idx * 75),
+                    duration: Duration(milliseconds: 700 + idx * 85),
                     curve: Curves.easeOutCubic,
                     builder: (context, ch, _) => Container(
                       width: 14,
