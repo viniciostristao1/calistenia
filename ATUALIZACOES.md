@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-28 — v0.54.2 (fix: ouro em 17 sem o dia 16):**
+  - `nivel`/`conquistas` agora ignoram conclusões sem `check-in` do dia — excluir o último pontinho do calendário remove a conclusão órfã mesmo com sincronização, então a sequência recalcula certo (ouro de 17/08 migra para o próximo dia treinado).
+
 - **2026-08-28 — v0.54.1 (fix: título mostrava 0.52.3):**
   - Corrige `kVersao` que ficou em `0.52.3` na `v0.54.0` — agora o título na Home mostra `v0.54.1` correto.
 

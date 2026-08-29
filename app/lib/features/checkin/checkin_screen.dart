@@ -53,16 +53,22 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     final treinosA = ref.read(treinosProvider);
     final progA = ref.read(progressaoProvider);
     final conqA = ref.read(conquistasProvider);
+    final checkinsA = ref.read(checkinProvider);
     if (concsA.isLoading ||
         treinosA.isLoading ||
         progA.isLoading ||
-        conqA.isLoading) {
+        conqA.isLoading ||
+        checkinsA.isLoading) {
       return;
     }
+    final diasValidos = checkinsA.value!
+        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+        .toSet();
     final atuais = conquistasAtuais(
       concsA.value ?? const [],
       treinosA.value ?? const [],
       progA.value ?? const [],
+      diasValidos: diasValidos,
     );
     ref.read(conquistasProvider.notifier).reconciliar(atuais);
   }
@@ -572,7 +578,13 @@ class _BannerRisco extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final concs = ref.watch(conclusaoProvider).value ?? const [];
     final treinos = ref.watch(treinosProvider).value ?? const [];
-    if (!emRiscoDePerda(concs, treinos)) return const SizedBox.shrink();
+    final checkins = ref.watch(checkinProvider).value ?? const [];
+    final diasValidos = checkins
+        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+        .toSet();
+    if (!emRiscoDePerda(concs, treinos, diasValidos: diasValidos)) {
+      return const SizedBox.shrink();
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
       child: Container(
@@ -611,10 +623,14 @@ class _GaleriaConquistas extends ConsumerWidget {
     final concs = ref.watch(conclusaoProvider).value ?? const [];
     final treinos = ref.watch(treinosProvider).value ?? const [];
     final prog = ref.watch(progressaoProvider).value ?? const [];
+    final checkins = ref.watch(checkinProvider).value ?? const [];
+    final diasValidos = checkins
+        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+        .toSet();
 
-    final nivel = nivelInfo(concs, treinos);
+    final nivel = nivelInfo(concs, treinos, diasValidos: diasValidos);
     final total = totalDiasConcluidos(concs);
-    final atuais = conquistasAtuais(concs, treinos, prog);
+    final atuais = conquistasAtuais(concs, treinos, prog, diasValidos: diasValidos);
 
     Widget card(TipoConquista t) => _ConquistaCard(
           tipo: t,

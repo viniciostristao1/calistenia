@@ -305,7 +305,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final concs = ref.read(conclusaoProvider).value ?? const [];
     final treinos = ref.read(treinosProvider).value ?? const [];
     final prog = ref.read(progressaoProvider).value ?? const [];
-    final atuais = conquistasAtuais(concs, treinos, prog);
+    final checkins = ref.read(checkinProvider).value ?? const [];
+    final diasValidos = checkins
+        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+        .toSet();
+    final atuais = conquistasAtuais(concs, treinos, prog, diasValidos: diasValidos);
     final notifier = ref.read(conquistasProvider.notifier);
     final novas = await notifier.registrarNovas(atuais);
     await notifier.reconciliar(atuais); // move p/ histórico o que tiver caído

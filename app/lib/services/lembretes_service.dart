@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../util/frases.dart';
 import '../util/gamificacao.dart' show diasAgendados, emRiscoDePerda;
+import 'checkin_repository.dart';
 import 'conclusao_repository.dart';
 import 'treinos_repository.dart';
 
@@ -250,9 +251,13 @@ final lembretesControllerProvider = Provider<void>((ref) {
   Future<void> agendarRisco() async {
     final treinos = ref.read(treinosProvider).value;
     final concs = ref.read(conclusaoProvider).value;
-    if (treinos == null || concs == null) return;
+    final checkins = ref.read(checkinProvider).value;
+    if (treinos == null || concs == null || checkins == null) return;
     try {
-      final risco = emRiscoDePerda(concs, treinos);
+      final diasValidos = checkins
+          .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+          .toSet();
+      final risco = emRiscoDePerda(concs, treinos, diasValidos: diasValidos);
       await LembretesService.instance.agendarRisco(risco);
     } catch (_) {}
   }
@@ -263,4 +268,5 @@ final lembretesControllerProvider = Provider<void>((ref) {
     agendarRisco();
   }, fireImmediately: true);
   ref.listen(conclusaoProvider, (_, _) => agendarRisco(), fireImmediately: true);
+  ref.listen(checkinProvider, (_, _) => agendarRisco(), fireImmediately: true);
 });

@@ -76,13 +76,16 @@ class NivelInfo {
 const int _orcamentoFalhas = 2;
 
 NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
-    {DateTime? hoje}) {
+    {DateTime? hoje, Set<DateTime>? diasValidos}) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
+  final validos = diasValidos?.map(_dia).toSet();
   // Por dia: houve alguma conclusão COMPLETA? (completo vence tentativa no dia)
+  // Se diasValidos for fornecido (check-ins), ignora conclusões órfãs.
   final completoPorDia = <DateTime, bool>{};
   for (final c in concs) {
     final d = _dia(c.data);
+    if (validos != null && !validos.contains(d)) continue;
     completoPorDia[d] = (completoPorDia[d] ?? false) || c.completo;
   }
   if (completoPorDia.isEmpty) return const NivelInfo(0, 0);
@@ -124,21 +127,23 @@ NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
 /// Está em risco de perder nível amanhã se não treinar hoje/amanhã.
 /// True se pular o próximo dia agendado derruba o nível atual.
 bool emRiscoDePerda(List<Conclusao> concs, List<Treino> treinos,
-    {DateTime? hoje}) {
+    {DateTime? hoje, Set<DateTime>? diasValidos}) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
   if (agendados.isEmpty) return false;
+  final validos = diasValidos?.map(_dia).toSet();
   final hojeFeito = concs.any((c) =>
       c.completo &&
+      (validos == null || validos.contains(_dia(c.data))) &&
       c.data.year == hj.year &&
       c.data.month == hj.month &&
       c.data.day == hj.day);
   if (hojeFeito) return false;
   final amanha = hj.add(const Duration(days: 1));
-  final nivelHoje = nivelInfo(concs, treinos, hoje: hj).atual;
+  final nivelHoje = nivelInfo(concs, treinos, hoje: hj, diasValidos: validos).atual;
   if (nivelHoje == 0) return false;
   final nivelAmanhaSemTreino =
-      nivelInfo(concs, treinos, hoje: amanha).atual;
+      nivelInfo(concs, treinos, hoje: amanha, diasValidos: validos).atual;
   return nivelAmanhaSemTreino < nivelHoje;
 }
 
@@ -220,9 +225,10 @@ Set<TipoConquista> conquistasAtuais(
   List<Treino> treinos,
   List<RegistroProgressao> progressao, {
   DateTime? hoje,
+  Set<DateTime>? diasValidos,
 }) {
   final atuais = <TipoConquista>{};
-  final nivel = nivelInfo(concs, treinos, hoje: hoje).atual;
+  final nivel = nivelInfo(concs, treinos, hoje: hoje, diasValidos: diasValidos).atual;
   if (nivel >= 4) atuais.add(TipoConquista.medalhaPrata);
   if (nivel >= 8) atuais.add(TipoConquista.medalhaOuro);
   if (nivel >= 15) atuais.add(TipoConquista.trofeuPrata);
