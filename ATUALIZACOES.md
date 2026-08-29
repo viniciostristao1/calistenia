@@ -6,6 +6,9 @@ re-testar".
 - **2026-08-29 — v0.55.0 (conclusão com fluxo animado):**
   - Ao concluir um treino a janela não surge seca — agora entra em **fluxo limpo**: ícone com halo que salta, título/frase/recordes/conquistas/insígnia surgem em cascata (fade + deslize), e quando há celebração cai um **confete sutil** (estrelas/corações) por trás, como um vídeo curto.
 
+- **2026-08-29 — v0.55.1 (fluxo mais lento):**
+  - Deixado um pouco mais lento e vivo: halo `900ms`, cascata `560ms + 110ms` por item e confete `2400ms` — mais cara de vídeo móvel.
+
 - **2026-08-28 — v0.54.2 (fix: ouro em 17 sem o dia 16):**
   - `nivel`/`conquistas` agora ignoram conclusões sem `check-in` do dia — excluir o último pontinho do calendário remove a conclusão órfã mesmo com sincronização, então a sequência recalcula certo (ouro de 17/08 migra para o próximo dia treinado).
 

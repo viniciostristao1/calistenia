@@ -973,7 +973,7 @@ class _IconeComemora extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 900),
       curve: Curves.elasticOut,
       builder: (context, t, child) => Opacity(
         opacity: t.clamp(0.0, 1.0),
@@ -1006,7 +1006,7 @@ class _FadeSlide extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 420 + idx * 90),
+      duration: Duration(milliseconds: 560 + idx * 110),
       curve: Curves.easeOutCubic,
       builder: (context, t, ch) => Opacity(
         opacity: t.clamp(0.0, 1.0),
@@ -1036,7 +1036,7 @@ class _ConfettiLayer extends StatelessWidget {
           final sz = 10.0 + (i % 4) * 2;
           return TweenAnimationBuilder<double>(
             tween: Tween(begin: -30, end: h + 30),
-            duration: Duration(milliseconds: 1800 + (i % 5) * 260),
+            duration: Duration(milliseconds: 2400 + (i % 5) * 320),
             curve: Curves.linear,
             builder: (context, top, ch) => Positioned(
               left: left,
@@ -1064,7 +1064,7 @@ class _NovosRecordes extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 420),
+      duration: const Duration(milliseconds: 560),
       curve: Curves.easeOutBack,
       builder: (context, t, child) => Opacity(
         opacity: t.clamp(0.0, 1.0),
