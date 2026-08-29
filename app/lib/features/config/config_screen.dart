@@ -212,7 +212,7 @@ class _SecaoIdiomaState extends ConsumerState<_SecaoIdioma> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(s.idioma,
+                    Text(s.idiomaLabel,
                         style: const TextStyle(
                             fontWeight: FontWeight.w700, fontSize: 16)),
                     const SizedBox(height: 4),

@@ -1,12 +1,12 @@
 import '../services/idioma_repository.dart';
 
 class Strings {
-  final Idioma idioma;
-  const Strings(this.idioma);
+  final Idioma _idioma;
+  const Strings(this._idioma);
 
   static Strings of(Idioma idioma) => Strings(idioma);
 
-  String _t(String pt, String en, String es) => switch (idioma) {
+  String _t(String pt, String en, String es) => switch (_idioma) {
         Idioma.en => en,
         Idioma.es => es,
         Idioma.pt => pt,
@@ -16,7 +16,7 @@ class Strings {
   String get configTitulo => _t('Configurações', 'Settings', 'Configuración');
   String get tema => _t('Tema', 'Theme', 'Tema');
   String get temaDesc => _t('Muda as cores e o visual do app inteiro.', 'Changes colors and look of the whole app.', 'Cambia los colores y el aspecto de toda la app.');
-  String get idioma => _t('Idioma', 'Language', 'Idioma');
+  String get idiomaLabel => _t('Idioma', 'Language', 'Idioma');
   String get idiomaDesc => _t('Escolha o idioma do app.', 'Choose the app language.', 'Elige el idioma de la app.');
   String get som => _t('Som', 'Sound', 'Sonido');
   String get somDesc => _t('Bips nas transições e no fim do treino.', 'Beeps on transitions and at workout end.', 'Pitidos en transiciones y al final del entreno.');
@@ -53,7 +53,6 @@ class Strings {
   String get fechar => _t('Fechar', 'Close', 'Cerrar');
   String get copiar => _t('Copiar', 'Copy', 'Copiar');
   String get copiado => _t('Copiado!', 'Copied!', '¡Copiado!');
-  String get sair => _t('Sair', 'Exit', 'Salir');
 
   // Check-in
   String get checkIn => _t('Check-in', 'Check-in', 'Check-in');
@@ -104,23 +103,23 @@ class Strings {
   String get treinoCompleto => _t('Treino completo!', 'Workout complete!', '¡Entreno completo!');
   String get checkinConcluido => _t('Check-in concluído', 'Check-in done', 'Check-in completado');
   String get fazParte => _t('Faz parte do processo. O importante é não parar!', 'It’s part of the process. The key is not to stop!', 'Es parte del proceso. ¡Lo importante es no parar!');
-  String get esforçoConta => _t('Seu esforço conta: metade da consistência e a sua sequência mantida.', 'Your effort counts: half consistency and your streak kept.', 'Tu esfuerzo cuenta: mitad de consistencia y tu racha mantenida.');
+  String get esforcoConta => _t('Seu esforço conta: metade da consistência e a sua sequência mantida.', 'Your effort counts: half consistency and your streak kept.', 'Tu esfuerzo cuenta: mitad de consistencia y tu racha mantenida.');
   String get repetirTreino => _t('Repetir treino', 'Repeat workout', 'Repetir entreno');
   String get tentarDeNovo => _t('Tentar de novo', 'Try again', 'Intentar de nuevo');
   String get voltar => _t('Voltar', 'Back', 'Volver');
 
   // Dias
-  List<String> get diasCurtos => switch (idioma) {
+  List<String> get diasCurtos => switch (_idioma) {
         Idioma.en => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         Idioma.es => ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
         Idioma.pt => ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
       };
-  List<String> get diasLongos => switch (idioma) {
+  List<String> get diasLongos => switch (_idioma) {
         Idioma.en => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         Idioma.es => ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
         Idioma.pt => ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'],
       };
-  List<String> get meses => switch (idioma) {
+  List<String> get meses => switch (_idioma) {
         Idioma.en => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
         Idioma.es => ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
         Idioma.pt => ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
