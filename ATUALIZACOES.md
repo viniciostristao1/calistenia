@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-29 — v0.57.1 (Progressão mais lenta + barras animadas):**
+  - `Rating` e `Tendência` um pouco mais lentos (`850ms` números, `900ms` barra, `1100ms` gráfico) e **barras de Progressão crescem em cascata** (`620ms + 75ms` por barra) — mais vivo sem poluir.
+
 - **2026-08-29 — v0.57.0 (idioma):**
   - Em **Configurações → Idioma** (atrás de seta para baixo) escolha **Português / English / Español** — a troca é instantânea e fica salva. Base para versão completa em 3 línguas.
 

@@ -310,8 +310,9 @@ class _GraficoBarras extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (var i = 0; i < registros.length; i++)
+              for (var i = 0; i < registros.length; i++)
               _Barra(
+                idx: i,
                 registro: registros[i],
                 fracao: registros[i].valor / maxV,
                 trilho: _trilho,
@@ -329,6 +330,7 @@ class _GraficoBarras extends StatelessWidget {
 
 class _Barra extends StatelessWidget {
   const _Barra({
+    required this.idx,
     required this.registro,
     required this.fracao,
     required this.trilho,
@@ -340,6 +342,7 @@ class _Barra extends StatelessWidget {
 
   static const _corRecorde = Color(0xFFF4C542); // ouro do selo de recorde
 
+  final int idx;
   final RegistroProgressao registro;
   final double fracao;
   final double trilho;
@@ -390,9 +393,13 @@ class _Barra extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 3),
-                  Container(
-                    width: 14,
-                    height: h,
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: h),
+                    duration: Duration(milliseconds: 620 + idx * 75),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, ch, _) => Container(
+                      width: 14,
+                      height: ch,
                     decoration: BoxDecoration(
                       color: destaque
                           ? context.accent
@@ -400,6 +407,7 @@ class _Barra extends StatelessWidget {
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(6)),
                     ),
+                  ),
                   ),
                 ],
               ),
@@ -426,7 +434,7 @@ class _Barra extends StatelessWidget {
 }
 
 /// Card do Rating: valor atual + barra + composição (assiduidade / evolução).
-/// Números contam de 0 até o valor e a barra preenche em 650ms.
+/// Números contam de 0 até o valor e a barra preenche em 900ms (um pouco mais lento).
 class _RatingCard extends StatelessWidget {
   const _RatingCard({required this.rating});
 
@@ -453,7 +461,7 @@ class _RatingCard extends StatelessWidget {
               const Spacer(),
               TweenAnimationBuilder<int>(
                 tween: IntTween(begin: 0, end: rating.total),
-                duration: const Duration(milliseconds: 650),
+                duration: const Duration(milliseconds: 850),
                 curve: Curves.easeOutCubic,
                 builder: (context, v, _) => Text('$v',
                     style: TextStyle(
@@ -465,7 +473,7 @@ class _RatingCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 TweenAnimationBuilder<int>(
                   tween: IntTween(begin: 0, end: rating.bonusEstrelas),
-                  duration: const Duration(milliseconds: 650),
+                  duration: const Duration(milliseconds: 850),
                   curve: Curves.easeOutCubic,
                   builder: (context, v, _) => Text('+$v',
                       style: const TextStyle(
@@ -482,7 +490,7 @@ class _RatingCard extends StatelessWidget {
           const SizedBox(height: 10),
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: frac),
-            duration: const Duration(milliseconds: 700),
+            duration: const Duration(milliseconds: 900),
             curve: Curves.easeOutCubic,
             builder: (context, v, _) => ClipRRect(
               borderRadius: BorderRadius.circular(5),
@@ -538,7 +546,7 @@ class _GraficoLinha extends StatelessWidget {
             height: 160,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 850),
+              duration: const Duration(milliseconds: 1100),
               curve: Curves.easeOutCubic,
               builder: (context, prog, _) => CustomPaint(
                 size: Size.infinite,
