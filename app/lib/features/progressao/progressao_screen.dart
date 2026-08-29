@@ -22,7 +22,12 @@ class ProgressaoScreen extends ConsumerStatefulWidget {
 
 class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
   int _vista = 0; // 0 = Desenvolvimento, 1 = Rating
+  int _animKey = 0;
   bool _semeado = false; // baselines dos exercícios já existentes semeadas?
+
+  void restartRatingAnimation() {
+    if (_vista == 1 && mounted) setState(() => _animKey++);
+  }
 
   /// Semeia (uma vez) a linha de base dos exercícios já salvos que ainda não
   /// têm registro — migração para quem criou treinos antes desta versão.
@@ -78,7 +83,10 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
                 ],
                 selected: {vista},
                 showSelectedIcon: false,
-                onSelectionChanged: (s) => setState(() => _vista = s.first),
+                onSelectionChanged: (s) => setState(() {
+                  _vista = s.first;
+                  if (s.first == 1) _animKey++;
+                }),
               ),
             ),
           Expanded(child: vista == 1 ? _rating() : _desenvolvimento()),
@@ -113,10 +121,12 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
     final diasIns = diasComInsignia(insignias);
     final rating = ratingForma(concs, treinos, prog, diasInsignia: diasIns);
     final serie = serieRating(concs, treinos, prog, diasInsignia: diasIns);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      children: [
-        _RatingCard(rating: rating),
+    return KeyedSubtree(
+      key: ValueKey(_animKey),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        children: [
+          _RatingCard(rating: rating),
         const SizedBox(height: 18),
         const Text('Tendência',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
@@ -134,7 +144,8 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
           'passar do platô, bata recordes.',
           style: TextStyle(color: AppColors.dim, fontSize: 12),
         ),
-      ],
+        ],
+      ),
     );
   }
 }

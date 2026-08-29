@@ -18,6 +18,7 @@ class RootScreen extends ConsumerStatefulWidget {
 
 class _RootScreenState extends ConsumerState<RootScreen> {
   int _aba = 0;
+  final _progressaoKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +28,26 @@ class _RootScreenState extends ConsumerState<RootScreen> {
       // IndexedStack preserva o estado de cada aba ao alternar.
       body: IndexedStack(
         index: _aba,
-        children: const [HomeScreen(), CheckinScreen(), ProgressaoScreen()],
+        children: [
+          const HomeScreen(),
+          const CheckinScreen(),
+          ProgressaoScreen(key: _progressaoKey),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _aba,
-        onDestinationSelected: (i) => setState(() => _aba = i),
+        onDestinationSelected: (i) {
+          final prev = _aba;
+          setState(() => _aba = i);
+          if (i == 2 && prev != 2) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              try {
+                (_progressaoKey.currentState as dynamic)
+                    ?.restartRatingAnimation();
+              } catch (_) {}
+            });
+          }
+        },
         backgroundColor: AppColors.surface,
         indicatorColor: context.accent.withValues(alpha: 0.20),
         destinations: [
