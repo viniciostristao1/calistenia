@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-28 — v0.54.1 (fix: título mostrava 0.52.3):**
+  - Corrige `kVersao` que ficou em `0.52.3` na `v0.54.0` — agora o título na Home mostra `v0.54.1` correto.
+
 - **2026-08-28 — v0.54.0 (mês perfeito + lembrete de risco):**
   - **Mês perfeito:** ao fechar **7/7 estrelas** no mês o quadro `Insígnias do mês` vira dourado com "Mês perfeito! ✨" e a janela de insígnia mostra "7 de 7 — você brilhou o mês inteiro!"; no `Histórico` o mês com 7 também fica dourado.
   - **Lembrete de risco:** se você está a 1 dia de perder o nível, surge um banner "Sequência em risco — treine hoje para não perder seu nível!" no `Check-in` e uma notificação às **20:00** do dia (só quando em risco, não todo dia).
