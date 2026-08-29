@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-08-29 — v0.57.5 (Desenvolvimento anima ao voltar de outras abas):**
+  - `Desenvolvimento` agora também anima ao voltar de `Treinos`/`Check-in` (antes só de `Rating` → `Desenvolvimento`), com o mesmo `KeyedSubtree` do `Rating`.
+
 - **2026-08-29 — v0.57.4 (troféu de prata com brilho):**
   - `Troféu de prata` agora tem **brilho diagonal no copo e filete na base** (mesmo contorno e **mesmo tamanho** de antes) — sensação de metal polido, como nas medalhas.
 

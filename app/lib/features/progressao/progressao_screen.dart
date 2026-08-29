@@ -25,9 +25,11 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
   int _animKey = 0;
   bool _semeado = false; // baselines dos exercícios já existentes semeadas?
 
-  void restartRatingAnimation() {
-    if (_vista == 1 && mounted) setState(() => _animKey++);
+  void restartAnimation() {
+    if (mounted) setState(() => _animKey++);
   }
+
+  void restartRatingAnimation() => restartAnimation();
 
   /// Semeia (uma vez) a linha de base dos exercícios já salvos que ainda não
   /// têm registro — migração para quem criou treinos antes desta versão.
@@ -85,11 +87,16 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
                 showSelectedIcon: false,
                 onSelectionChanged: (s) => setState(() {
                   _vista = s.first;
-                  if (s.first == 1) _animKey++;
+                  _animKey++;
                 }),
               ),
             ),
-          Expanded(child: vista == 1 ? _rating() : _desenvolvimento()),
+          Expanded(
+            child: KeyedSubtree(
+              key: ValueKey('$_animKey-$_vista'),
+              child: vista == 1 ? _rating() : _desenvolvimento(),
+            ),
+          ),
         ],
       ),
     );
