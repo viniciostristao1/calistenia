@@ -21,9 +21,23 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(chaveConclusao);
     if (raw == null || raw.isEmpty) return [];
-    return (jsonDecode(raw) as List)
+    final lista = (jsonDecode(raw) as List)
         .map((e) => Conclusao.fromJson(e as Map<String, dynamic>))
         .toList();
+    final tem16 = lista.any(
+        (c) => c.data.year == 2026 && c.data.month == 8 && c.data.day == 16);
+    if (tem16) {
+      final filtrada = lista
+          .where((c) =>
+              !(c.data.year == 2026 && c.data.month == 8 && c.data.day == 16))
+          .toList();
+      await prefs.setString(
+        chaveConclusao,
+        jsonEncode(filtrada.map((c) => c.toJson()).toList()),
+      );
+      return filtrada;
+    }
+    return lista;
   }
 
   Future<void> _persist(List<Conclusao> list) async {

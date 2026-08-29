@@ -12,6 +12,9 @@ re-testar".
 - **2026-08-28 — v0.54.4 (debug sequência):**
   - Long-press no `v0.54.4` da Home abre diagnóstico de 10-20/08 (agendados, check-ins, conclusões, nível e conquistas por dia) para investigar ouro em 17 com prata em 13.
 
+- **2026-08-28 — v0.54.5 (fix: ouro 17 com 16 sem pontinho):**
+  - Remove pontualmente a conclusão órfã de `16/08/2026` que ficou do teste de domingo — mesmo sem pontinho ela contava na sequência; agora ao abrir o app a ouro de `17` migra para o próximo dia treinado e o calendário fica sem pontinho em 16.
+
 - **2026-08-28 — v0.54.1 (fix: título mostrava 0.52.3):**
   - Corrige `kVersao` que ficou em `0.52.3` na `v0.54.0` — agora o título na Home mostra `v0.54.1` correto.
 
