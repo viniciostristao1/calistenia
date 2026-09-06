@@ -208,7 +208,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/icon/logo.png', height: 26),
+            ClipRRect(borderRadius: BorderRadius.circular(6), child: Image.asset('assets/icon/logo.png', height: 26, width: 26, fit: BoxFit.cover)),
             const SizedBox(width: 8),
             const Flexible(
               child: Text('Calis Timer', overflow: TextOverflow.ellipsis),
