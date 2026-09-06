@@ -1,49 +1,22 @@
-"""Gera os assets de ícone a partir do logo pronto (quadrado) enviado pelo
-usuário. O logo vem com uma MOLDURA PRETA nos cantos (fora do quadrado
-arredondado âmbar); ela é removida (preenchida com âmbar) para o ícone ficar
-âmbar full-bleed, sem "quadrado em volta". Produz, em app/assets/icon/:
-  - icon_full.png       (1024)  âmbar + arte (ícone legacy / iOS)
-  - icon_background.png (1024)  âmbar sólido (adaptive background)
-  - icon_foreground.png (1024)  o logo âmbar+arte a ~90% (adaptive foreground)
-O logo da HOME (logo.png) mantém a arte original (os cantos pretos somem no
-fundo navy da home).
-Depois: `cd app && dart run flutter_launcher_icons`.
-"""
+"""Gera os assets de icone a partir do novo logo file_00000000c230820eb5a52ce3318f075c.png"""
 import os
-
-from PIL import Image, ImageDraw
-
+from PIL import Image
 AQUI = os.path.dirname(__file__)
-SRC = os.path.join(AQUI, "..", "file_00000000440c820ebc643a945725ef31.png")
+SRC = os.path.join(AQUI, "..", "file_00000000c230820eb5a52ce3318f075c.png")
 ASSETS = os.path.join(AQUI, "..", "app", "assets", "icon")
 OUT = 1024
-AMBER = (252, 178, 37)  # âmbar do fundo do logo (amostrado)
-
 logo = Image.open(SRC).convert("RGBA")
 lado = min(logo.size)
-logo = logo.crop((0, 0, lado, lado)).resize((OUT, OUT), Image.LANCZOS)
-
-# --- logo da home = original (cantos pretos somem no navy da home) ---
+cx, cy = logo.size[0] // 2, logo.size[1] // 2
+logo = logo.crop((cx - lado // 2, cy - lado // 2, cx + lado // 2, cy + lado // 2)).resize((OUT, OUT), Image.LANCZOS)
 logo.save(os.path.join(ASSETS, "logo.png"))
-
-# --- remove a moldura preta: flood-fill dos 4 cantos até o âmbar ---
-sem_moldura = logo.convert("RGB")
-for xy in [(1, 1), (OUT - 2, 1), (1, OUT - 2), (OUT - 2, OUT - 2)]:
-    ImageDraw.floodfill(sem_moldura, xy, AMBER, thresh=70)
-sem_moldura = sem_moldura.convert("RGBA")
-
-# --- icon_full = âmbar + arte, sem moldura ---
-sem_moldura.save(os.path.join(ASSETS, "icon_full.png"))
-
-# --- background âmbar sólido (casa com o full-bleed) ---
-Image.new("RGBA", (OUT, OUT), (*AMBER, 255)).save(
-    os.path.join(ASSETS, "icon_background.png"))
-
-# --- foreground: âmbar+arte a ~90% (margem âmbar mínima = sem costura) ---
+logo.save(os.path.join(ASSETS, "icon_full.png"))
+bg = logo.getpixel((5, 5))[:3]
+Image.new("RGBA", (OUT, OUT), (*bg, 255)).save(os.path.join(ASSETS, "icon_background.png"))
 fg = Image.new("RGBA", (OUT, OUT), (0, 0, 0, 0))
 lado_fg = int(OUT * 0.90)
-mini = sem_moldura.resize((lado_fg, lado_fg), Image.LANCZOS)
+mini = logo.resize((lado_fg, lado_fg), Image.LANCZOS)
 off = (OUT - lado_fg) // 2
 fg.paste(mini, (off, off), mini)
 fg.save(os.path.join(ASSETS, "icon_foreground.png"))
-print("ok: moldura preta removida; ícones regenerados")
+print("ok: icones regenerados a partir do novo logo")
