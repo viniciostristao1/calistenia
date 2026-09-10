@@ -758,6 +758,18 @@ build do CI é o teste real. Versão `0.16.0+16`.
 
 ---
 
+## 2026-09-10 — v0.57.9: fix insígnias (hash em bloco + calendário)
+
+**Bugs reportados:** (1) insígnias em 8, 9 e 10/09 — 3 dias consecutivos — "não me parece correto"; (2) quadro "Insígnias do mês" em Check-in > Calendário mostrava as mesmas 3 estrelas em TODOS os meses ao navegar.
+
+**Causa 1 — hash linear (`util/insignias.dart:: diasInsigniaDoMes`).** O `_mix` era `(a*0x01000193 ^ b)*0x01000193` com `a=base` fixo e `b=dia(1..31)` — variação de `b` vira `delta = 16777619*dia` (<2^31, sem wrap) → `mix(base,dia)` monotônico por `dia` → `pool.sort` devolvia dias quase-ordenados → sempre 7 consecutivos (medido: 100% dos 10k seeds davam bloco de 3+). Sorteio determinístico virou bloco, não aleatório. **Fix:** substituído `_mix` por `_hashDia(semente,ano,mes,dia)` com mixing Murmur (multiply por `0x85ebca6b/0xc2b2ae35/0x27d4eb2f` + avalanche `>>16/>>13`) — distribuição ~20% de 3-consecutivos em 7/30, igual ao `Random` verdadeiro. Cache congelado `insignias_sorteio_v1` → **`v2`** para invalidar meses já sorteados com o bug (Setembro recalcula equi-distribuído).
+
+**Causa 2 — quadro do mês errado (`features/checkin/checkin_screen.dart:: _QuadroInsignias`).** Construía `DateTime.now()` para `insigniasDoMes`, ignorando `_mes` navegado → sempre as do mês corrente. **Fix:** `_QuadroInsignias` agora recebe `mes: _mes` e filtra por `mes.year/mes.month`.
+
+**Validação:** `flutter analyze` limpo (só `withOpacity` deprecated herdado), `flutter test` 50/50. Insígnias já ganhas (8-10/09) permanecem no histórico (id=YYYY-MM-DD, permanentes); próximos dias do mês seguem o novo sorteio v2.
+
+---
+
 ## 2026-08-03 — v0.17.0: sincronização (Firestore)
 
 - **Dep:** `cloud_firestore ^6.7.1`. Banco `calis-timer` (São Paulo, produção); regras em

@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-10 — v0.57.9 (fix: insígnias 3 dias seguidos + calendário):**
+  - Corrigidas as insígnias de **8, 9 e 10/09** que vieram em bloco — o sorteio mensal sorteava dias **consecutivos** por bug no hash; agora o sorteio é distribuído (cache do mês renovado).
+  - Corrigido o quadro **Insígnias do mês** em **Check-in > Calendário**: mostrava sempre as do mês atual ao navegar; agora mostra as do mês exibido.
+
 - **2026-08-29 — v0.57.6 (editor sem rótulo):**
   - Removido o rótulo `Nome do treino` e `Nome do exercício` das caixinhas de nome (lápis) — fica só o hint `Ex.: ...`, mais limpo.
 

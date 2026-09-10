@@ -7,7 +7,7 @@ import '../models/insignia.dart';
 import '../util/insignias.dart';
 
 const chaveInsignias = 'insignias_v1';
-const chaveSorteio = 'insignias_sorteio_v1';
+const chaveSorteio = 'insignias_sorteio_v2';
 
 /// Fonte única das insígnias (estrelas) GANHAS. Uma vez ganha, é permanente.
 /// Local, e sincronizada quando logado (ver `sync_service.dart`).

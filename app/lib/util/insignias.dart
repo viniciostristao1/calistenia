@@ -23,13 +23,19 @@ int _fnv1a(String s) {
   return h & 0x7fffffff;
 }
 
-/// Mistura determinística de dois inteiros (para ordenar os candidatos). Mantém
-/// tudo em 31 bits positivos (estável em qualquer plataforma).
-int _mix(int a, int b) {
-  var h = (a * 0x01000193) & 0x7fffffff;
-  h = (h ^ b) & 0x7fffffff;
-  h = (h * 0x01000193) & 0x7fffffff;
-  return (h ^ (h >> 15)) & 0x7fffffff;
+int _hashDia(int semente, int ano, int mes, int dia) {
+  var h = semente & 0xffffffff;
+  h = (h ^ (ano * 0x9e3779b9)) & 0xffffffff;
+  h = (h * 0x85ebca6b) & 0xffffffff;
+  h = (h ^ (mes * 0xc2b2ae35)) & 0xffffffff;
+  h = (h * 0x27d4eb2f) & 0xffffffff;
+  h = (h ^ (dia * 0x94d049bb)) & 0xffffffff;
+  h ^= h >> 16;
+  h = (h * 0x85ebca6b) & 0xffffffff;
+  h ^= h >> 13;
+  h = (h * 0xc2b2ae35) & 0xffffffff;
+  h ^= h >> 16;
+  return h & 0x7fffffff;
 }
 
 /// Dias (número do dia) sorteados para insígnia no mês [ano]/[mes]. Só entram os
@@ -47,10 +53,10 @@ Set<int> diasInsigniaDoMes(
     }
   }
   if (pool.length <= insigniasPorMes) return pool.toSet();
-  final base = _mix(_mix(semente, ano), mes);
   pool.sort((a, b) {
-    final c = _mix(base, a).compareTo(_mix(base, b));
-    return c != 0 ? c : a.compareTo(b); // desempate estável pelo dia
+    final c = _hashDia(semente, ano, mes, a)
+        .compareTo(_hashDia(semente, ano, mes, b));
+    return c != 0 ? c : a.compareTo(b);
   });
   return pool.take(insigniasPorMes).toSet();
 }

@@ -173,7 +173,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               onProximo: () => _mudarMes(1),
             ),
             if (gamiOn) ...[
-              _QuadroInsignias(onTap: () => setState(() => _vista = 2)),
+              _QuadroInsignias(mes: _mes, onTap: () => setState(() => _vista = 2)),
               _BannerRisco(),
             ],
             const _LinhaDias(),
@@ -519,15 +519,15 @@ List<Exercicio> _exerciciosDisponiveis(List<Treino> treinos) {
 /// GANHAS no mês corrente. Mostra só as ganhas — as que faltam ficam em segredo.
 /// Tocar leva ao Histórico (onde ficam as estrelas dos meses anteriores).
 class _QuadroInsignias extends ConsumerWidget {
-  const _QuadroInsignias({required this.onTap});
+  const _QuadroInsignias({required this.mes, required this.onTap});
 
+  final DateTime mes;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lista = ref.watch(insigniasProvider).value ?? const <Insignia>[];
-    final agora = DateTime.now();
-    final doMes = insigniasDoMes(lista, agora.year, agora.month);
+    final doMes = insigniasDoMes(lista, mes.year, mes.month);
     final perfeito = doMes.length >= 7;
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
