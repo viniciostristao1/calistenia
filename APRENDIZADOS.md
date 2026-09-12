@@ -5,6 +5,51 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú: tampa em arco côncava + física de abertura; troféus desenhados (v0.63.0)
+
+**Contexto:** usuário pediu para melhorar o desenho da tampa do baú ("formato mais
+côncavo na parte de dentro"), melhorar a abertura e detalhar os troféus de ouro e prata.
+Tudo continua só no Laboratório (Fase 5 ainda pendente).
+
+**Tampa do baú — modelo corrigido (`chest_open.dart`):** antes a tampa era um "caixote"
+plano com faces retangulares. Agora é uma **casca em arco** (barril clássico de baú):
+`_shellPoint(w, u, yOff, th)` com `w = -1..1` (largura), `u = 0` (dobradiça) → `1`
+(frente), `arch = _lidT·(1 − w²)` (o arco que dá o topo redondo) e `yOff` = espessura.
+**Gotcha do referencial:** o giro é em torno da dobradiça em `z = −_depth`; o parâmetro
+de profundidade tem de virar `z = −_depth·(1 − u)` antes do `_lidPoint` — com `z = _depth·u`
+a face "interna" era desenhada à frente do baú (geometria plausível mas errada).
+Faces: casca externa (topo redondo, só com `tilt·cosθ − sinθ > 0`), **casca interna
+côncava** (`sinθ > 0`, com gradiente quente vindo da boca, vinheta nas laterais e 2
+nervuras em arco `_shellEdge(u, …)`), e a "testa" em D (embaixo reto + topo em arco;
+some quando `cosθ + tilt·sinθ ≤ 0`, ou seja, ~105°). A visibilidade por **normal contra a
+câmera inclinada** é o que faz cada face aparecer/sumir na hora certa (não usar só
+`cos`/`sin`). Dobradiças agora sentam no **arco traseiro** (`_shellPoint(w, 0, 0, 0)`).
+
+**Física da abertura:** `_theta` = afunda (`−0.12·sin(Interval(0.12,0.30)·π)`, a tampa
+"senta" antes de soltar) → abre com `easeOutQuart` em 0.30–0.56 (destranca rápido e freia)
+→ **batida no batente** com dois rebotes `sin(st·3π)·0.16·(1−st)^1.4`. O baú inteiro dá um
+**pulinho** no tranco (`dy = −4.5·sin(recT·2.2π)·(1−recT)` em 0.56–0.88, no `_chest`), o
+que vende o peso.
+
+**Troféus (`trophy_3d.dart`, novo):** `Trophy3D(metal:)` desenhado à mão — copo bojudo
+com gradiente de cilindro metálico (5 stops: sombra/reflexo/cor/reflexo/sombra), sombra à
+direita + reflexo à esquerda, glint difuso, **estrela gravada**, aro (boca escura + anel +
+luz), **alças em C** (stroke com contorno escuro + fill metálico + fio de luz), haste com
+colar, base de madeira escura com placa metálica e faíscas. **Gotcha das alças:** os
+pontos de controle do `cubicTo` precisam empurrar para FORA (`60 + sign·48`, `60 + sign·53`);
+com `sign·10` a alça fica atrás do copo e some. Serve ouro e prata via `register_rewards`
+(troféus usam `IconReveal(child: …)`; medalhas seguem com o ícone do Material — por isso
+`IconReveal.icon` virou opcional com `assert(icon != null || child != null)`).
+
+**Util compartilhado:** `fx/shading.dart` (`shade`/`lighten` via HSL) — `Star3D`,
+`Trophy3D` e `_ChestPainter` usam o mesmo par de funções (antes cada um tinha a sua cópia).
+
+**Validação:** `flutter analyze` limpo (só infos antigos de `withOpacity` fora do `fx/`),
+`flutter test` **52/52**, e frames conferidos por golden temporário (baú fechado/mid/aberto
+e os dois troféus). Versão `0.63.0+83`.
+
+---
+
 ## 2026-09-12 — `Star3D` (estrela facetada) + baú com tampa projetada em 3D (v0.62.0)
 
 **Contexto:** depois do `Spin3D` (v0.61.0), o usuário aprovou o movimento e pediu:

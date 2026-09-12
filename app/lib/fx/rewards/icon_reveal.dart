@@ -22,15 +22,19 @@ import '../particles/particle_burst.dart';
 class IconReveal extends StatelessWidget {
   const IconReveal({
     super.key,
-    required this.icon,
+    this.icon,
     required this.color,
     this.label,
     this.params = const FxParams(),
     this.size = 100,
     this.pulse = false,
-  });
+    this.child,
+  }) : assert(
+         icon != null || child != null,
+         'informe `icon` ou `child` como conteúdo do reveal',
+       );
 
-  final IconData icon;
+  final IconData? icon;
   final Color color;
   final String? label;
   final FxParams params;
@@ -39,16 +43,23 @@ class IconReveal extends StatelessWidget {
   /// Se o ícone fica "respirando" (bom para sequência/chama).
   final bool pulse;
 
+  /// Conteúdo próprio (ex.: troféu desenhado à mão). Se nulo, usa [icon].
+  final Widget? child;
+
   @override
   Widget build(BuildContext context) {
     final iconWidget = ShineSweep(
       params: params,
-      child: Icon(
-        icon,
-        size: size,
-        color: color,
-        shadows: [Shadow(color: color.withValues(alpha: 0.5), blurRadius: 22)],
-      ),
+      child:
+          child ??
+          Icon(
+            icon,
+            size: size,
+            color: color,
+            shadows: [
+              Shadow(color: color.withValues(alpha: 0.5), blurRadius: 22),
+            ],
+          ),
     );
 
     return SizedBox(

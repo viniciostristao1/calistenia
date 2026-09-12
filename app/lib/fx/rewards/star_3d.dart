@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../shading.dart';
+
 /// **Conteúdo: estrela 3D facetada** — o "desenho" da recompensa Estrela.
 ///
 /// Pintura à mão (`CustomPainter`) para dar VOLUME: silhueta arredondada,
@@ -47,7 +49,7 @@ class _Star3DPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = s * 0.085
       ..strokeJoin = StrokeJoin.round
-      ..color = _shade(color, 0.30);
+      ..color = shade(color, 0.30);
 
     // 1) Sombra projetada — descola a estrela do fundo.
     canvas.drawShadow(path, const Color(0xAA3A2400), s * 0.12, false);
@@ -66,7 +68,7 @@ class _Star3DPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [_lighten(color, 0.42), color, _shade(color, 0.26)],
+          colors: [lighten(color, 0.42), color, shade(color, 0.26)],
           stops: const [0.0, 0.52, 1.0],
         ).createShader(faceRect),
     );
@@ -98,8 +100,8 @@ class _Star3DPainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           colors: [
-            _lighten(color, 0.22).withValues(alpha: 0.85),
-            _shade(color, 0.32).withValues(alpha: 0.85),
+            lighten(color, 0.22).withValues(alpha: 0.85),
+            shade(color, 0.32).withValues(alpha: 0.85),
           ],
           radius: 0.9,
         ).createShader(Rect.fromCircle(center: c, radius: ri)),
@@ -110,7 +112,7 @@ class _Star3DPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = s * 0.016
         ..strokeJoin = StrokeJoin.round
-        ..color = _shade(color, 0.45).withValues(alpha: 0.55),
+        ..color = shade(color, 0.45).withValues(alpha: 0.55),
     );
 
     // 6) Bisel: luz na borda de cima-esquerda, sombra na de baixo-direita.
@@ -126,7 +128,7 @@ class _Star3DPainter extends CustomPainter {
           colors: [
             Colors.white.withValues(alpha: 0.9),
             Colors.white.withValues(alpha: 0.0),
-            _shade(color, 0.55).withValues(alpha: 0.8),
+            shade(color, 0.55).withValues(alpha: 0.8),
           ],
           stops: const [0.0, 0.42, 1.0],
         ).createShader(faceRect),
@@ -173,8 +175,8 @@ class _Star3DPainter extends CustomPainter {
       tri,
       Paint()
         ..color = Color.lerp(
-          _shade(color, 0.48),
-          _lighten(color, 0.55),
+          shade(color, 0.48),
+          lighten(color, 0.55),
           t,
         )!.withValues(alpha: 0.72),
     );
@@ -220,22 +222,6 @@ class _Star3DPainter extends CustomPainter {
               ) *
               (i.isEven ? outer : inner),
   ];
-
-  Color _shade(Color base, double amount) {
-    final hsl = HSLColor.fromColor(base);
-    return hsl
-        .withLightness((hsl.lightness * (1 - amount)).clamp(0.0, 1.0))
-        .toColor();
-  }
-
-  Color _lighten(Color base, double amount) {
-    final hsl = HSLColor.fromColor(base);
-    return hsl
-        .withLightness(
-          (hsl.lightness + (1 - hsl.lightness) * amount).clamp(0.0, 1.0),
-        )
-        .toColor();
-  }
 
   @override
   bool shouldRepaint(_Star3DPainter old) => old.color != color;

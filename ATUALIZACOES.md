@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.63.0 (tampa do baú côncava + troféus detalhados):**
+  - **Baú:** a tampa virou uma **casca em arco** (baú clássico redondo) com a **parte de dentro côncava** — dá pra ver a curvatura e as nervuras por dentro quando abre. A abertura ficou mais física: o baú afunda de leve, a tampa solta rápido, freia, bate no batente e o baú dá um pulinho antes de assentar.
+  - **Troféus (ouro e prata):** ganharam desenho próprio — copo bojudo com reflexos de metal, **alças grandes**, estrela gravada, haste com colar e base com placa metálica. Nada mais de ícone genérico.
+
 - **2026-09-12 — v0.62.0 (estrela detalhada + baú com tampa real):**
   - A **estrela** do Laboratório ganhou **volume de verdade**: espessura nas costas, faces facetadas com luz, borda biselada, miolo em relevo com estrela gravada, brilho e faíscas — tudo desenhado à mão, girando no mesmo movimento de antes.
   - A **tampa do baú** agora abre de verdade: presa numa **dobradiça atrás**, gira com perspectiva (dá pra ver a parte de dentro escura, as cintas e as dobradiças), afunda de leve antes de abrir e bate/assenta no fim. Bem mais realista.

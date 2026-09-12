@@ -5,6 +5,7 @@ import 'reward_type.dart';
 import 'rewards/chest_open.dart';
 import 'rewards/icon_reveal.dart';
 import 'rewards/star_burst.dart';
+import 'rewards/trophy_3d.dart';
 import 'rewards/xp_gain.dart';
 
 /// Liga cada [RewardType] à sua molécula de `fx/rewards/` (ou `particles/`).
@@ -51,13 +52,22 @@ void registerBuiltInRewards() {
     ),
   );
 
-  // Troféu/medalha (ouro e prata) — mesmo reveal, metadados diferentes.
-  for (final t in const [
-    RewardType.trophyGold,
-    RewardType.trophySilver,
-    RewardType.medalGold,
-    RewardType.medalSilver,
-  ]) {
+  // Troféus — conteúdo desenhado à mão (copo metálico), ouro e prata.
+  for (final t in const [RewardType.trophyGold, RewardType.trophySilver]) {
+    RewardRegistry.register(
+      t,
+      (context, params, {value}) => IconReveal(
+        color: t.color(context),
+        label: t.label,
+        params: params,
+        size: 112,
+        child: Trophy3D(size: 116, metal: t.color(context)),
+      ),
+    );
+  }
+
+  // Medalhas — reveal com o ícone do Material.
+  for (final t in const [RewardType.medalGold, RewardType.medalSilver]) {
     RewardRegistry.register(
       t,
       (context, params, {value}) => IconReveal(
