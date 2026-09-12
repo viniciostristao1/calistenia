@@ -5,6 +5,59 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Camada `fx/` — giro 3D no próprio eixo (moeda) + holofote (v0.61.0)
+
+**Contexto:** usuário achou as animações "amadoras" e pediu **giro em 3D no próprio eixo**
+(como virar no eixo vertical, tipo moeda de pé), **não** giro "deitado" no plano da tela
+(`Transform.rotate`) nem de cima pra baixo. Referência de sensação: Brawl Stars. Tudo
+continua só no Laboratório (Fase 5 = integração real ainda pendente).
+
+**Átomo novo `Spin3D` (`fx/effects/spin3d.dart`):** rotação real com
+`Matrix4.identity()..setEntry(3, 2, perspective)..rotateY(angle)` + `Transform(alignment:
+center)`. Numa passada: `Interval(0, spinFraction, easeOutCubic)` dá as voltas (inteiro
+`turns` → termina em 0 mod 2π), depois **cambaleada amortecida** (`sin(land·3π)·(1−land)`)
+e **squash de impacto** (scaleX/scaleY espelhados, em `Transform.scale` FORA da matriz —
+squash dentro da matriz seria no espaço local, errado). Escala com `elasticOut`.
+**Face de trás espelhada** (`Transform.scale(scaleX:-1)` quando `cos(angle)<0`): soma-se ao
+espelhamento natural do `rotateY` e o ícone fica na orientação certa nas duas faces
+(moeda com o desenho dos dois lados) — validado em golden: sem isso, metade do giro mostra
+o desenho "de costas". **Fio de luz na aresta** quando de perfil
+(`pow(1−|cos|, 9)`, linha vertical via `FractionallySizedBox`) vende o volume.
+`params.loopForever` = giro contínuo sem pouso (modo vitrine do Lab; opacidade fixa 1).
+
+**Átomo novo `RadialRays` (`fx/effects/rays.dart`):** leque de raios (CustomPainter) que
+gira devagar; alpha alternado por raio, gradiente radial por raio (shader em coords do
+canvas → dá pra desenhar todos com o mesmo `Rect`). O "holofote" atrás da recompensa.
+
+**Átomo novo `Delayed` (`fx/effects/delayed.dart`):** monta o filho só após um `Timer` —
+como os átomos iniciam controllers no `initState`, é o jeito de sincronizar **partículas
+com o pouso** (delay ≈ 50% da duração) em vez de explodirem no nascimento. `dispose`
+cancela o timer (importante pro teste não acusar timer pendente).
+
+**Moléculas atualizadas:** `StarBurst` virou `StatelessWidget` e é `RadialRays` +
+`Delayed(ParticleBurst)` + `GlowHalo` + `Spin3D(turns: 3)` (o `Transform.rotate` antigo
+girava a estrela como ponteiro de relógio). `IconReveal` idem (`turns: 2`, label sobe com
+`Interval(0.42,0.75)`). `ChestOpen`: baú ganha **torção de antecipação** (`rotateY`
+amortecido 0–0.3), ganha `RadialRays` atrás ao abrir, e a recompensa que salta troca
+`Bounce` por `Spin3D` (girando no próprio eixo enquanto voa). `XpGain`: pop `elasticOut`,
+balanço lateral `sin(πv)` e `ShineSweep` por cima (texto não pode girar em Y — espelharia).
+
+**Gotcha — `dart format`:** rodar `dart format` na pasta inteira reformatou 12 arquivos
+intocados (o repo é do estilo antigo, sem tall-style). **Revertidos** com `git checkout`
+para o commit ficar focado; formatar só arquivo novo/reescrito.
+
+**Gotcha — validação visual no headless:** sem celular, dá pra conferir o 3D com um teste
+temporário de golden (`matchesGoldenFile` + `--update-goldens`) e ler os PNGs. Cuidado:
+filhos sem filho (ex.: `ColoredBox` cru dentro de `Expanded`) ficam com altura 0 —
+`SizedBox.expand` no meio. Cards de teste usavam `Card` (fonte Ahem no teste = retângulo),
+mas a **foreshortening/espelhamento** fica visível nos pixels.
+
+**Validação:** `flutter analyze` limpo (só infos antigos de `withOpacity` fora do `fx/`);
+`flutter test` **52/52** (inclui `fx_smoke_test` dos 10 tipos + params extremos). Versão
+`0.61.0+81`.
+
+---
+
 ## 2026-09-12 — Camada `fx/` — Fases 2–4: átomos, confete, troféu/medalha, baú (v0.60.0)
 
 **Contexto:** usuário pediu para levar até a **Fase 4** e deixar arquivos/docs bem registrados

@@ -9,9 +9,10 @@
 Uma **camada de animações/recompensas reutilizável**, com sensação de **impacto,
 recompensa e polimento** — a linguagem visual de jogos mobile (referência de
 *sensação*, tipo Brawl Stars; **não** copiamos arte nem animação específica).
-Efeitos **2.5D** feitos em Flutter (escala, rotação, bounce, overshoot, shake,
-fade, brilho, partículas, explosões, elementos surgindo do centro / voando até
-um ponto, vibrações, trails, flashes e combinações). **Sem 3D real** por ora.
+Efeitos feitos em Flutter (escala, rotação, bounce, overshoot, shake, fade, brilho,
+partículas, explosões, elementos surgindo do centro / voando até um ponto, vibrações,
+trails, flashes e combinações) **incluindo 3D real com perspectiva** via `Matrix4`
+(giro no próprio eixo — `Spin3D`), sem game-engine.
 
 ## Princípios (não violar)
 
@@ -126,11 +127,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | **3** | molécula **Troféu/Medalha** (`IconReveal` genérico, ouro/prata) | **feita** |
 | **4** | molécula **Baú** (`ChestOpen` — a mais composta) + `levelUp`/`streak` via `IconReveal`. **Todos os `RewardType` têm efeito real; nada mais no placeholder.** | **feita** |
 | 5 | **extrair** as animações que ainda vivem no `player_screen.dart` para `fx/` + **plugar** o overlay nos momentos reais (fim de treino, desbloqueio, insígnia), reusando a lógica existente. Som opcional via `som_repository`. | **← próxima** |
+| 5.5 | **giro 3D no próprio eixo** (`Spin3D`), holofote (`RadialRays`), sincronização do impacto (`Delayed`) e pouso com squash nas moléculas — pedido do usuário ("animações amadoras"; quer moeda girando de pé, não giro deitado). | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.60.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.61.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -142,22 +144,35 @@ Estado em v0.60.0. **Tudo abaixo é apresentação pura; a lógica de recompensa
 | Átomo | Faz | Usado por |
 |---|---|---|
 | `PopIn` | escala + overshoot | *(toolkit — livre)* |
-| `Bounce` | entra quicando | `ChestOpen` |
-| `Shake` | tremida amortecida (tem `start()`) | *(chest usa versão inline)* |
-| `GlowHalo` | halo pulsante | `StarBurst` |
-| `ShineSweep` | brilho diagonal passando | `IconReveal` |
+| `Bounce` | entra quicando | *(toolkit — livre)* |
+| `Shake` | tremida amortecida (tem `start()`) | *(toolkit — livre)* |
+| `GlowHalo` | halo pulsante | `StarBurst`, `IconReveal` |
+| `ShineSweep` | brilho diagonal passando | `IconReveal`, `XpGain` |
 | `Pulse` | respira em loop | `IconReveal` (sequência) |
 | `ScreenFlash` | clarão que some | `ChestOpen` |
 | `FlyToTarget` | voa de A→B com fade | `ChestOpen` |
 | `FadeThrough` | aparece e some | *(toolkit — p/ rótulos)* |
+| `Spin3D` | **giro 3D no próprio eixo** (perspectiva, face de trás espelhada, pouso com cambaleada + squash, fio de luz na aresta; loop = vitrine) | `StarBurst`, `IconReveal`, `ChestOpen` |
+| `RadialRays` | holofote: raios radiais girando ao fundo (`CustomPainter`) | `StarBurst`, `IconReveal`, `ChestOpen` |
+| `Delayed` | atrasa o nascimento do filho (sincroniza o impacto) | `StarBurst`, `IconReveal` (partículas no pouso) |
 
 **Partículas (`fx/particles/`, `CustomPainter`, zero deps):** `particle.dart`,
 `particle_system.dart` (`emitBurst`/`step`), `particle_painter.dart` (círculo/quadrado/spark),
 `particle_burst.dart` (`ParticleBurst`, explosão radial), `confetti.dart` (`ConfettiRain`).
 
-**Moléculas (`fx/rewards/`):** `star_burst.dart`, `xp_gain.dart`, `icon_reveal.dart`
-(genérico: troféu/medalha/nível/sequência), `chest_open.dart` (baú, showcase),
-`placeholder_reward.dart` (fallback — hoje nenhum tipo cai nele).
+**Moléculas (`fx/rewards/`):** `star_burst.dart` (estrela: `RadialRays` + partículas no
+pouso + `Spin3D` 3 voltas), `xp_gain.dart` (pilha +XP com `ShineSweep`, sem giro em Y —
+espelharia o texto), `icon_reveal.dart` (genérico: troféu/medalha/nível/sequência;
+`Spin3D` 2 voltas + holofote + halo + rótulo que sobe), `chest_open.dart` (baú, showcase:
+torção de antecipação no eixo, tampa `rotateX`, holofote + partículas ao abrir, item sai
+girando), `placeholder_reward.dart` (fallback — hoje nenhum tipo cai nele).
+
+**Efeito 3D — resumo:** `Spin3D` é a peça central: `Matrix4` com `setEntry(3,2,…)`
+(perspectiva) + `rotateY` (padrão) e `Transform(alignment: center)`. Detalhes que fazem
+parecer 3D de verdade: **face de trás espelhada** (o ícone aparece correto nas duas faces,
+como moeda cunhada nos dois lados), **fio de luz na aresta** quando de perfil e **squash de
+impacto** aplicado FORA da matriz (espaço de tela). Eixos `x/y/z` disponíveis; o padrão é Y
+(giro de pé) — o `Transform.rotate` puro gira "deitado" e foi aposentado nas moléculas.
 
 **Testes:** `test/fx_smoke_test.dart` — constrói e anima todo `RewardType` (+ params extremos)
 sem exceção. **Rode-o após qualquer mudança em `fx/`** (`flutter test test/fx_smoke_test.dart`).

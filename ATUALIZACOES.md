@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.61.0 (giros em 3D no Laboratório — estilo jogo):**
+  - As recompensas do **🧪 Laboratório** agora giram em **3D de verdade, no próprio eixo** (como uma moeda girando de pé) — nada de giro "deitado" na tela. A **estrela** entra girando rápido (3 voltas) e pousa com impacto; **troféu/medalha/nível/sequência** fazem o mesmo com holofote de raios girando atrás; o item que salta do **baú** também gira no próprio eixo, e o próprio baú dá uma torção antes de abrir.
+  - Extra de polimento: **raios de holofote girando** atrás das recompensas, **fio de luz na aresta** quando o item fica de perfil, partículas explodindo **no pouso** (não no início) e brilho deslizante no **+XP**.
+
 - **2026-09-12 — v0.60.0 (Laboratório completo: baú, troféu, medalha, confete e mais):**
   - Agora **todas** as recompensas do 🧪 Laboratório têm animação real: **baú abrindo** (treme, a tampa levanta, sai luz e partículas, a recompensa salta), **troféu** e **medalha** (ouro/prata, com brilho passando + partículas), **subir de nível**, **sequência** (chama pulsante), **confete** e as já existentes Estrela e +XP. Nenhuma fica mais como placeholder.
   - Continua tudo só no laboratório — nada ligado ao seu progresso real ainda. A integração aos momentos reais (fim de treino, desbloqueios) é o próximo passo.

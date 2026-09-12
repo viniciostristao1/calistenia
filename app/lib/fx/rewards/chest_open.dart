@@ -3,17 +3,19 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_colors.dart';
-import '../effects/bounce.dart';
 import '../effects/fly_to_target.dart';
+import '../effects/rays.dart';
 import '../effects/screen_flash.dart';
+import '../effects/spin3d.dart';
 import '../fx_params.dart';
 import '../particles/particle.dart';
 import '../particles/particle_burst.dart';
 
 /// **Recompensa: baú abrindo** — a molécula mais composta, showcase da camada.
-/// Timeline (fração do tempo): antecipação + `Shake` (0–0.3) → tampa abre em
-/// 2.5D (0.32–0.66) → clarão (`ScreenFlash`) + luz + `ParticleBurst` → a
-/// recompensa salta pra fora (`FlyToTarget` + `Bounce`, 0.55–1.0).
+/// Timeline (fração do tempo): antecipação + `Shake` com **torção no próprio
+/// eixo** (0–0.3) → tampa abre em 3D (0.32–0.66) → clarão (`ScreenFlash`) +
+/// `RadialRays` + `ParticleBurst` → a recompensa salta pra fora girando no
+/// próprio eixo (`Spin3D` + `FlyToTarget`), 0.55–1.0.
 class ChestOpen extends StatefulWidget {
   const ChestOpen({super.key, this.params = const FxParams()});
 
@@ -76,6 +78,13 @@ class _ChestOpenState extends State<ChestOpen>
           return Stack(
             alignment: Alignment.center,
             children: [
+              // Holofote dourado girando atrás do baú aberto.
+              if (aberto)
+                RadialRays(
+                  color: _ouro,
+                  diameter: 210,
+                  params: widget.params,
+                ),
               // Partículas saindo para cima (leque), atrás.
               aberto
                   ? ParticleBurst(
@@ -101,15 +110,16 @@ class _ChestOpenState extends State<ChestOpen>
               ),
               // O baú (corpo + tampa articulada).
               _chest(v),
-              // A recompensa saltando pra fora.
+              // A recompensa saltando pra fora girando no próprio eixo.
               v > 0.55
                   ? FlyToTarget(
                       params: _revealParams,
                       begin: const Offset(0, 8),
                       end: Offset(0, -92 * _intensity.clamp(0.4, 2.0)),
-                      child: Bounce(
+                      child: Spin3D(
                         params: _revealParams,
-                        drop: 8,
+                        turns: 2,
+                        fromScale: 0.3,
                         child: Icon(Icons.star_rounded,
                             size: 48,
                             color: AppColors.estrela,
@@ -137,12 +147,18 @@ class _ChestOpenState extends State<ChestOpen>
     // Antecipação: tremida que amortece nos primeiros 30%.
     final shakeT = Interval(0.0, 0.30).transform(v);
     final dx = sin(shakeT * 4 * 2 * pi) * 6 * (1 - shakeT) * _intensity;
+    // Torção de antecipação no próprio eixo (some antes de abrir a tampa).
+    final yaw = sin(shakeT * 2 * pi) * 0.22 * (1 - shakeT) * _intensity;
     // Tampa abre para trás (rotateX) entre 32% e 66%.
     final lidT = Interval(0.32, 0.66, curve: Curves.easeOutBack).transform(v);
     final lidAngle = -1.45 * lidT.clamp(0.0, 1.2);
 
-    return Transform.translate(
-      offset: Offset(dx, 0),
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, 0.0015)
+        ..translateByDouble(dx, 0.0, 0.0, 1.0)
+        ..rotateY(yaw),
       child: SizedBox(
         width: 150,
         height: 120,

@@ -1,5 +1,4 @@
 import 'package:calistenia/fx/fx.dart';
-import 'package:calistenia/fx/reward_registry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
