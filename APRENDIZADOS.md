@@ -5,6 +5,55 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Camada `fx/` — Fase 1: átomos + partículas + Estrela/+XP (v0.59.0)
+
+**Contexto:** usuário aprovou seguir da Fase 0 para os primeiros efeitos reais, na ordem
+do mais simples ao mais composto. Entregue: os tijolos reutilizáveis + o motor de partículas
++ as duas primeiras moléculas (Estrela e +XP), clicáveis no Laboratório. Ainda **não** plugado
+aos momentos reais do app (isso é a fase de integração, lá no fim).
+
+**Motor de partículas (`fx/particles/`, único uso de CustomPainter, zero deps):**
+- `particle.dart` — 1 partícula (pos/vel/vida/cor/rotação/forma) + `step(dt, gravity, drag)`.
+- `particle_system.dart` — `emitBurst(...)` (leque via `direction`+`spread`; 2π = explosão
+  radial) e `step(dt)` que integra e remove mortas. `Random` injetável.
+- `particle_painter.dart` — desenha círculo/quadrado/`spark` (estrelinha 4 pontas via Path),
+  com fade+encolhimento por idade.
+- `particle_burst.dart` — widget `ParticleBurst`: cria o sistema, emite 1 rajada e integra
+  por frame com `AnimationController` (dt = delta de `lastElapsedDuration`). Respeita
+  `particleCount×intensity`, alcance por `intensity`, vida por `effectiveDuration`, loop.
+
+**Átomos (`fx/effects/`):** `PopIn` (escala+overshoot, TweenAnimationBuilder, curva elástica);
+`GlowHalo` (disco radial pulsante, controller em `repeat(reverse:true)`); `ShineSweep` (faixa
+de luz diagonal varrendo, ClipRect+gradiente); `Shake` (tremida amortecida `sin·(1-t)²`,
+método `start()` público p/ re-disparo).
+
+**Moléculas (`fx/rewards/`):** `StarBurst` = `ParticleBurst` + `GlowHalo` + estrela que surge
+(Interval 0–0.6 elasticOut) girando 1 volta; `XpGain` = "+N XP" que salta, sobe (`intensity`)
+e some (Intervals de fade in/out). Ambas com 1 `AnimationController` próprio (loop se
+`params.loopForever`).
+
+**Ligação:** o `RewardEffectBuilder` ganhou `{num? value}` (p/ o "+N XP"); `RewardRegistry`,
+`RewardFx.show` e o placeholder repassam. `fx/register_rewards.dart` (`registerBuiltInRewards`,
+idempotente) liga `star`→StarBurst e `xp`→XpGain; chamado no `main()` e, defensivamente, no
+`initState` do Lab. Tipos sem molécula seguem no placeholder. Lab ganhou slider **Valor (+XP)**.
+
+**Gotchas / decisões:**
+- `double.clamp(double,double)` retorna `double` (especialização do front-end) — ok em
+  `Opacity`/`Transform`. Mas literal `int` em contexto `double` num `?:` vira `num` → usei
+  `200.0` no `ShineSweep`.
+- `?child` (elemento null-aware de coleção) no lugar de `if (x!=null) x` — lint
+  `use_null_aware_elements`.
+- **Não usar `pumpAndSettle`** nos testes: `GlowHalo` pulsa em loop e nunca assenta — usar
+  `pump(Duration)` fixo.
+- `CustomPaint(size: Size.infinite)` dentro de `Stack`/`SizedBox` fica limitado às constraints
+  (260×260) — ok.
+
+**Validação:** `flutter analyze` (fx+lab+main) **No issues found!**; novo
+`test/fx_smoke_test.dart` (constrói+anima todo `RewardType`, inclusive `FxParams` extremos) —
+**2 passa**. Versão `0.59.0+79`. Roteiro atualizado no `ANIMACOES.md`.
+
+---
+
 ## 2026-09-12 — Camada de animações `fx/` — Fase 0 (arquitetura) (v0.58.0)
 
 **Pedido:** atuar como arquiteto de um sistema de animações/recompensas reutilizável

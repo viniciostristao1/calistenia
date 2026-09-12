@@ -17,3 +17,8 @@
 /// Regra: cada átomo é um widget pequeno (< ~150 linhas) que recebe um
 /// `FxParams` e não sabe nada de recompensas — só de movimento.
 library;
+
+export 'glow.dart';
+export 'pop_in.dart';
+export 'shake.dart';
+export 'shine_sweep.dart';

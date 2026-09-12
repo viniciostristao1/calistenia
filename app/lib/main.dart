@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/root/root_screen.dart';
 import 'firebase_options.dart';
+import 'fx/fx.dart' show registerBuiltInRewards;
 import 'services/lembretes_service.dart';
 import 'services/sync_service.dart';
 import 'services/tema_repository.dart';
@@ -34,6 +35,9 @@ Future<void> main() async {
   try {
     await LembretesService.instance.init();
   } catch (_) {}
+
+  // Liga cada RewardType à sua animação (camada fx/). Idempotente.
+  registerBuiltInRewards();
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const ProviderScope(child: CalisteniaApp()));

@@ -21,13 +21,24 @@ class _LabScreenState extends State<LabScreen> {
   RewardType _selecionado = RewardType.star;
   FxParams _params = const FxParams();
 
+  /// Valor exibido por efeitos que mostram número (ex.: "+XP").
+  double _valor = 50;
+
   /// Muda a cada "Testar" para reiniciar o efeito no palco.
   int _token = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Garante que as animações reais estejam ligadas mesmo se o Lab for aberto
+    // isolado. Idempotente (já é chamado no main).
+    registerBuiltInRewards();
+  }
 
   void _testarNoPalco() => setState(() => _token++);
 
   void _testarComoOverlay() =>
-      RewardFx.show(context, _selecionado, params: _params);
+      RewardFx.show(context, _selecionado, params: _params, value: _valor);
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +116,8 @@ class _LabScreenState extends State<LabScreen> {
           // KeyedSubtree com _token reinicia o efeito a cada "Testar no palco".
           child: KeyedSubtree(
             key: ValueKey('$_selecionado-$_token'),
-            child: RewardRegistry.build(context, _selecionado, _params),
+            child: RewardRegistry.build(context, _selecionado, _params,
+                value: _valor),
           ),
         ),
       );
@@ -183,6 +195,10 @@ class _LabScreenState extends State<LabScreen> {
                 'Repetir', _params.repeat.toDouble(), 0, 5,
                 _params.loopForever ? '∞ (loop)' : '${_params.repeat}×',
                 (v) => setState(() => _params = _params.copyWith(repeat: v.round())),
+              ),
+              _slider(
+                'Valor (+XP)', _valor, 0, 500, '${_valor.round()}',
+                (v) => setState(() => _valor = v),
               ),
             ],
           ),

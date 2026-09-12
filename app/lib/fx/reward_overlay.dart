@@ -41,7 +41,7 @@ class RewardFx {
           if (entry.mounted) entry.remove();
           onDone?.call();
         },
-        child: RewardRegistry.build(ctx, type, params),
+        child: RewardRegistry.build(ctx, type, params, value: value),
       ),
     );
     overlay.insert(entry);

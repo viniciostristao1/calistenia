@@ -121,11 +121,11 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | Fase | Entrega | Estado |
 |---|---|---|
 | **0** | scaffold `fx/` + este doc + `RewardType`/`FxParams`/registry/overlay + Lab shell (placeholder) + tile no Config | **feita** |
-| 1 | átomos (pop/bounce/shake/fade/glow/shine/flash/pulse) + extrair confete/ícone do player | — |
-| 2 | motor de partículas + `ParticleBurst` + confete melhorado | — |
-| 3 | Lab com átomos reais + preview por efeito | — |
-| 4 | moléculas: StarBurst/XpGain/RewardReveal → Trophy/Medal → ChestOpen | — |
-| 5 | plugar o overlay nos momentos reais (fim de treino, desbloqueio, insígnia) | — |
+| **1** | átomos `PopIn`/`GlowHalo`/`ShineSweep`/`Shake` + **motor de partículas** (`ParticleBurst`) + moléculas **Estrela** e **+XP** ligadas no registry, clicáveis no Lab | **feita** |
+| 2 | mais átomos (bounce/fade/pulse/flash/trail/fly_to_target) + confete (evolução do `_ConfettiLayer`) | — |
+| 3 | molécula **Troféu/Medalha** (overshoot + `ShineSweep` + partículas; conteúdo = `ConquistaBadge`) | — |
+| 4 | molécula **Baú** (a mais composta: `Shake` → tampa → `GlowHalo` + `ParticleBurst` → reveal com bounce) | — |
+| 5 | **extrair** as animações que ainda vivem no `player_screen.dart` para `fx/` + **plugar** o overlay nos momentos reais (fim de treino, desbloqueio, insígnia), reusando a lógica existente. Som opcional via `som_repository`. | — |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 Cada fase fecha com o ritual do `INICIO.md` (analyze → subir versão → APRENDIZADOS/

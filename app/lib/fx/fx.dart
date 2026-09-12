@@ -18,6 +18,7 @@
 library;
 
 export 'fx_params.dart';
+export 'register_rewards.dart';
 export 'reward_overlay.dart';
 export 'reward_registry.dart';
 export 'reward_type.dart';
