@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.64.0 (novo logo/ícone do app):**
+  - O app agora usa o **novo logo** (cronômetro com a pessoa se exercitando): ícone na tela inicial do celular (inclusive ícone adaptativo), ícone da web e o logo dentro da home.
+
 - **2026-09-12 — v0.63.1 (baú: tampa girando certo):**
   - Corrigido o movimento da tampa: agora ela é um **painel inteiro que gira para trás na dobradiça**, como uma tampa de verdade — antes ela parecia se desmontar em fitas. Mantive a parte de dentro côncava (o bojo com as ripas de madeira) e a abertura com o "tranco" no fim.
   - Tempo da abertura levemente mais calmo para dar pra ver o giro.

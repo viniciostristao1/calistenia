@@ -5,6 +5,31 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Novo logo/ícone do app (v0.64.0)
+
+**Contexto:** usuário subiu `file_000000000b10820e9dd5bc7e7891d5c3.png` direto no repo
+(commit "Add files via upload" na `main`, 1254×1254 RGB, fundo **preto sólido**, sem
+transparência). Pediu para ser o novo logo do app.
+
+**Pipeline (já existia, só atualizei):** `tools/logo_para_icone.py` recorta o quadrado
+central, salva em `app/assets/icon/`: `logo.png` (home), `icon_full.png` (ícone legacy),
+`icon_background.png` (cor do pixel (5,5) → preto) e `icon_foreground.png` (90% central,
+transparente no entorno). Em seguida `dart run flutter_launcher_icons` (config no
+`pubspec.yaml`, `flutter_launcher_icons: ^0.14.4`) regera os mipmaps/drawables do Android.
+**Adicionei ao script** a geração dos ícones web (`app/web/favicon.png` 32, `Icon-192/512`,
+`Icon-maskable-192/512`) — na v0.57.7 eles tinham sido atualizados à mão; agora é
+reprodutível. O script aceita o arquivo de origem como argumento opcional.
+
+**Decisão:** mantido o fundo preto do próprio artwork (adaptive background = preto); o
+foreground é o quadrado inteiro a 90% — as máscaras redondas só cortam os cantos, que já
+são pretos. **Removido** o logo antigo da raiz (`file_00000000c230820eb5a52ce3318f075c.png`,
+~1,4 MB, backup em `/tmp/opencode/logo_antigo.png`) — não era mais referenciado.
+
+**Validação:** conferido o `mipmap-xxxhdpi/ic_launcher.png` renderizado (cronômetro
+branco/verde sobre preto); `flutter analyze` limpo. Versão `0.64.0+85`.
+
+---
+
 ## 2026-09-12 — Fix: tampa do baú girando como painel rígido (v0.63.1)
 
 **Feedback:** "O baú piorou. Ele não faz o movimento natural de abrir a tampa para trás."
