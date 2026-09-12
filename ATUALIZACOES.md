@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.62.0 (estrela detalhada + baú com tampa real):**
+  - A **estrela** do Laboratório ganhou **volume de verdade**: espessura nas costas, faces facetadas com luz, borda biselada, miolo em relevo com estrela gravada, brilho e faíscas — tudo desenhado à mão, girando no mesmo movimento de antes.
+  - A **tampa do baú** agora abre de verdade: presa numa **dobradiça atrás**, gira com perspectiva (dá pra ver a parte de dentro escura, as cintas e as dobradiças), afunda de leve antes de abrir e bate/assenta no fim. Bem mais realista.
+
 - **2026-09-12 — v0.61.0 (giros em 3D no Laboratório — estilo jogo):**
   - As recompensas do **🧪 Laboratório** agora giram em **3D de verdade, no próprio eixo** (como uma moeda girando de pé) — nada de giro "deitado" na tela. A **estrela** entra girando rápido (3 voltas) e pousa com impacto; **troféu/medalha/nível/sequência** fazem o mesmo com holofote de raios girando atrás; o item que salta do **baú** também gira no próprio eixo, e o próprio baú dá uma torção antes de abrir.
   - Extra de polimento: **raios de holofote girando** atrás das recompensas, **fio de luz na aresta** quando o item fica de perfil, partículas explodindo **no pouso** (não no início) e brilho deslizante no **+XP**.

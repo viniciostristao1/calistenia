@@ -8,6 +8,7 @@ import '../effects/spin3d.dart';
 import '../fx_params.dart';
 import '../particles/particle.dart';
 import '../particles/particle_burst.dart';
+import 'star_3d.dart';
 
 /// **Recompensa: estrela.** Molécula = `RadialRays` (holofote girando) +
 /// `ParticleBurst` (explode no pouso) + `GlowHalo` + estrela que gira no
@@ -54,14 +55,7 @@ class StarBurst extends StatelessWidget {
             params: params,
             turns: 3,
             fromScale: 0.15,
-            child: Icon(
-              Icons.star_rounded,
-              size: size,
-              color: color,
-              shadows: [
-                Shadow(color: color.withValues(alpha: 0.6), blurRadius: 24),
-              ],
-            ),
+            child: Star3D(size: size, color: color),
           ),
         ],
       ),

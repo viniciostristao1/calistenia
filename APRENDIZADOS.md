@@ -5,6 +5,52 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — `Star3D` (estrela facetada) + baú com tampa projetada em 3D (v0.62.0)
+
+**Contexto:** depois do `Spin3D` (v0.61.0), o usuário aprovou o movimento e pediu:
+(1) **estrela com muito mais detalhe e cara de 3D** (movimento igual); (2) **tampa do baú
+mais real** na abertura ("se inspirar no Jogo do Davi"). Tudo continua só no Laboratório.
+
+**`fx/rewards/star_3d.dart` — `Star3D` (CustomPainter puro, sem controller):** substitui o
+`Icon(Icons.star_rounded)` no `StarBurst` e no item que salta do baú. Camadas, na ordem:
+sombra (`canvas.drawShadow`), **extrusão** (3 cópias deslocadas +18px/20px/22px), face com
+gradiente, **10 facetas** (2 triângulos por ponta; tom por `lambert` da direção do centro
+da faceta contra luz fixa topo-esquerda `(-0.50,-0.87)`), sulco central por ponta, núcleo
+(pentágono com gradiente radial + estrela interna **gravada** a stroke), **bisel** com
+stroke de gradiente (branco→transparente→sombra), glint especular (`MaskFilter.blur` em
+oval rotacionado) e 3 faíscas de 4 pontas (losango côncavo com `quadraticBezierTo`).
+Silhueta arredondada pelo truque: `drawPath` com stroke grosso `StrokeJoin.round` **antes**
+do fill. Cores derivadas do `color` via `HSLColor` (`_shade`/`_lighten`).
+
+**`chest_open.dart` — `_ChestPainter` (baú todo projetado):** o baú deixou de ser um
+`Stack` de `DecoratedBox`/`ColoredBox` e virou um painter com **projeção em perspectiva**:
+`Offset _p(x, y, z)` com `s = persp/(persp − z)` e **tombo de câmera** `y += tilt·z`
+(sem esse tombo, superfícies horizontais — a boca do baú — projetam numa linha e somem).
+Mundo: `x` centrado, `y` a partir da dobradiça, `z = +` para a frente; o corpo fica em
+`z = 0`, a tampa é uma caixa presa na **dobradiça traseira** (`z = −depth`).
+`_lidPoint(x,y,z,θ)`: leva `z` para o referencial da dobradiça (`zr = z + depth`), gira
+`(y,zr)` por `θ` e volta. **Visibilidade por normal:** face interna aparece com `sin θ > 0`,
+face frontal (a "testa" da tampa) com `cos θ > 0` — é o que faz a tampa "virar" de verdade
+(interna aparece e a frontal some ao passar do vertical). Timeline: antecipação
+`dip = −0.10·sin(Interval(0.14,0.32)·π)` (tampa afunda), abertura `2.02 rad` com
+`easeOutCubic` (0.32–0.62) e assentamento `sin(st·2.6π)·0.075·(1−st)` (bate e volta).
+Boca do baú = trapézio `p(±halfBody,0,0) → p(±halfBody,0,−depth)` com glow radial clipado;
+dobradiças desenhadas por último (não giram); rebites/fechadura/faixas em gold.
+
+**Gotcha — `Interval` em painter:** pode ser usado no `paint` (importa `material.dart`),
+mas recalcular por frame é obrigatório (`shouldRepaint` compara `v`/`intensity`).
+
+**Gotcha — teste de golden:** para conferir o resultado sem celular, cria-se um teste
+temporário com `matchesGoldenFile` + `--update-goldens` e lê os PNGs. **Deletar depois** —
+e cuidado com o `rm`: o workdir do shell já era `app/`, então `rm -rf app/test/...` não
+apagou nada e o `flutter test` seguinte acusou o teste temporário. `rm` com caminho
+relativo ao workdir certo.
+
+**Validação:** `flutter analyze` limpo (só infos antigos de `withOpacity` fora do `fx/`);
+`flutter test` **52/52**. Versão `0.62.0+82`.
+
+---
+
 ## 2026-09-12 — Camada `fx/` — giro 3D no próprio eixo (moeda) + holofote (v0.61.0)
 
 **Contexto:** usuário achou as animações "amadoras" e pediu **giro em 3D no próprio eixo**
