@@ -132,11 +132,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.7 | **tampa côncava** (`_innerPoint`/`_innerEdge`/`_innerFace`: face interna em bojo com ripas e vinheta) + física da abertura (destranca, freia, bate e o baú dá um pulinho) + **troféus desenhados à mão** (`Trophy3D`, ouro/prata) e util `fx/shading.dart`. | **feita** |
 | 5.8 | fix: tampa voltou a ser **painel rígido girando na dobradiça** (a casca de barril da 5.7 lia como "fitas" soltas); mantida a face interna côncava. | **feita** |
 | 5.9 | **baú em vista 3/4**: `_ChestPainter` virou mini-renderizador 3D (`_V`, `_proj` com yaw/pitch, culling por normal, luz direcional, ordenação por profundidade) — frente + lateral, tampa girando no eixo X. | **feita** |
+| 5.10 | fix: **fundo visível** (interior raso + assoalho de madeira + aro das paredes) e **tampa interna côncava de verdade** (face em 6 faixas curvas + tábuas seguindo a curva). | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.65.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.65.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),

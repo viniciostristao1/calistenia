@@ -209,7 +209,6 @@ class _ChestPainter extends CustomPainter {
   static const _tampa1 = Color(0xFF8A4E22);
   static const _tampa2 = Color(0xFF4A2912);
   static const _ouro = Color(0xFFF4C542);
-  static const _interior = Color(0xFF160C05);
 
   // Modelo (y p/ cima, z p/ frente).
   static const _bodyW = 136.0;
@@ -217,7 +216,7 @@ class _ChestPainter extends CustomPainter {
   static const _depth = 48.0;
   static const _lidH = 34.0;
   static const _wall = 4.0;
-  static const _floorY = _bodyH - 46.0;
+  static const _floorY = _bodyH - 20.0;
   static const _hx = _bodyW / 2;
   static const _hd = _depth / 2;
   static const _hxi = _hx - _wall;
@@ -226,7 +225,7 @@ class _ChestPainter extends CustomPainter {
 
   // Câmera axonométrica (vista 3/4: frente + lateral direita).
   static const _yaw = 0.66; // ~38° (diagonal)
-  static const _pitch = 0.22; // ~13° (vê um pouco por cima)
+  static const _pitch = 0.38; // ~22° (vê o fundo)
   static const _scale = 1.0;
   static const _cx = 100.0;
   static const _cy = 184.0;
@@ -344,10 +343,12 @@ class _ChestPainter extends CustomPainter {
     Offset sp(double y, double z) => _proj(_V(_hx, y, z), yaw);
     Offset lp(double x, double y, double z) => _proj(_lidV(x, y, z, th), yaw);
 
-    // ── Interior (boca escura + luz saindo do fundo) ──
+    // ── Interior (fundo de madeira + paredes + aro da boca) ──
     final glow =
         (0.45 + 0.55 * Interval(0.30, 0.62).transform(v)) *
         intensity.clamp(0.0, 1.4);
+    const madeiraDentro = Color(0xFF4A2A12);
+    // Fundo (assoalho do baú) — é o que dá a sensação de "ter fundo".
     face(
       _outward([
         const _V(-_hxi, _floorY, _hzi),
@@ -355,14 +356,28 @@ class _ChestPainter extends CustomPainter {
         const _V(_hxi, _floorY, -_hzi),
         const _V(-_hxi, _floorY, -_hzi),
       ], const _V(0, 1, 0)),
-      _interior,
+      madeiraDentro,
       shader: (r) => RadialGradient(
         colors: [
-          const Color(0xFFFFC93C).withValues(alpha: (glow * 0.55).clamp(0, 1)),
-          _interior,
+          const Color(0xFFFFC93C).withValues(alpha: (glow * 0.5).clamp(0, 1)),
+          madeiraDentro,
         ],
       ).createShader(r),
+      detail: (c, path, proj) {
+        // Tábuas do fundo.
+        final grain = Paint()
+          ..color = Colors.black.withValues(alpha: 0.22)
+          ..strokeWidth = 1.4;
+        for (final x in [-_hxi * 0.5, 0.0, _hxi * 0.5]) {
+          c.drawLine(
+            _proj(_V(x, _floorY, -_hzi), yaw),
+            _proj(_V(x, _floorY, _hzi), yaw),
+            grain,
+          );
+        }
+      },
     );
+    // Paredes internas (madeira mais escura).
     face(
       _outward([
         const _V(-_hxi, _floorY, _hzi),
@@ -370,7 +385,7 @@ class _ChestPainter extends CustomPainter {
         const _V(_hxi, _bodyH, _hzi),
         const _V(-_hxi, _bodyH, _hzi),
       ], const _V(0, 0, -1)),
-      _interior,
+      shade(madeiraDentro, 0.3),
     );
     face(
       _outward([
@@ -379,8 +394,68 @@ class _ChestPainter extends CustomPainter {
         const _V(_hxi, _bodyH, _hzi),
         const _V(_hxi, _bodyH, -_hzi),
       ], const _V(-1, 0, 0)),
-      lighten(_interior, 0.10),
+      shade(madeiraDentro, 0.45),
     );
+    face(
+      _outward([
+        const _V(-_hxi, _floorY, -_hzi),
+        const _V(_hxi, _floorY, -_hzi),
+        const _V(_hxi, _bodyH, -_hzi),
+        const _V(-_hxi, _bodyH, -_hzi),
+      ], const _V(0, 0, 1)),
+      shade(madeiraDentro, 0.35),
+    );
+    // Aro das paredes (topo) — fecha a boca e dá espessura.
+    const aro = Color(0xFF7A4A20);
+    face(
+      _outward([
+        const _V(-_hx, _bodyH, _hzi),
+        const _V(_hx, _bodyH, _hzi),
+        const _V(_hx, _bodyH, _hd),
+        const _V(-_hx, _bodyH, _hd),
+      ], const _V(0, 1, 0)),
+      aro,
+    );
+    face(
+      _outward([
+        const _V(_hxi, _bodyH, -_hd),
+        const _V(_hx, _bodyH, -_hd),
+        const _V(_hx, _bodyH, _hd),
+        const _V(_hxi, _bodyH, _hd),
+      ], const _V(0, 1, 0)),
+      shade(aro, 0.12),
+    );
+    face(
+      _outward([
+        const _V(-_hxi, _bodyH, -_hd),
+        const _V(_hxi, _bodyH, -_hd),
+        const _V(_hxi, _bodyH, -_hzi),
+        const _V(-_hxi, _bodyH, -_hzi),
+      ], const _V(0, 1, 0)),
+      shade(aro, 0.2),
+    );
+    // Filete dourado na aresta interna da boca.
+    final aroDepth = _centroid([
+      const _V(-_hxi, _bodyH, _hzi),
+      const _V(_hxi, _bodyH, _hzi),
+      const _V(_hxi, _bodyH, -_hzi),
+      const _V(-_hxi, _bodyH, -_hzi),
+    ]).dot(cam);
+    push(aroDepth + 2, (c) {
+      final o = Paint()
+        ..color = _ouro.withValues(alpha: 0.6)
+        ..strokeWidth = 1.8;
+      c.drawLine(
+        _proj(const _V(-_hxi, _bodyH, _hzi), yaw),
+        _proj(const _V(_hxi, _bodyH, _hzi), yaw),
+        o,
+      );
+      c.drawLine(
+        _proj(const _V(_hxi, _bodyH, -_hzi), yaw),
+        _proj(const _V(_hxi, _bodyH, _hzi), yaw),
+        o,
+      );
+    });
 
     // ── Corpo: frente ──
     face(
@@ -481,55 +556,55 @@ class _ChestPainter extends CustomPainter {
       for (final p in local) _lidV(p.x, p.y, p.z, th),
     ], _lidN(nLocal, th));
 
-    // Parte de dentro côncava (aparece quando abre e tomba para trás).
-    face(
-      lid([
-        const _V(-_hl, _bodyH, _hd),
-        const _V(_hl, _bodyH, _hd),
-        const _V(_hl, _bodyH, -_hd),
-        const _V(-_hl, _bodyH, -_hd),
-      ], const _V(0, -1, 0)),
-      _tampa2,
-      shader: (r) => LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color.lerp(shade(_tampa1, 0.10), const Color(0xFFC8802A), 0.45)!,
-          shade(_tampa2, 0.12),
-        ],
-      ).createShader(r),
-      detail: (c, path, proj) {
-        // Sombra no fundo do bojo (centro escuro) — vende a concavidade.
-        c.drawPath(
-          path,
-          Paint()
-            ..shader = RadialGradient(
-              center: const Alignment(0, -0.15),
-              radius: 0.95,
-              colors: [
-                Colors.black.withValues(alpha: 0.0),
-                Colors.black.withValues(alpha: 0.30),
-              ],
-              stops: const [0.35, 1.0],
-            ).createShader(path.getBounds()),
-        );
-        // Ripas de madeira da dobradiça para a frente.
-        final plank = Paint()
-          ..color = shade(_tampa2, 0.35).withValues(alpha: 0.6)
-          ..strokeWidth = 2.2;
-        for (final x in [-_hl * 0.6, -_hl * 0.2, _hl * 0.2, _hl * 0.6]) {
-          c.drawLine(lp(x, _bodyH, -_hd), lp(x, _bodyH, _hd), plank);
+    // Parte de dentro CÔNCAVA (curva de verdade): a superfície sobe para
+    // dentro da tampa no meio e as tábuas acompanham a curva.
+    const sagLid = 10.0;
+    _V inner(double x, double u) =>
+        _lidV(x, _bodyH + sagLid * sin(pi * u), -_hd + 2 * _hd * u, th);
+    const passes = 6;
+    for (var i = 0; i < passes; i++) {
+      final u0 = i / passes;
+      final u1 = (i + 1) / passes;
+      final um = (u0 + u1) / 2;
+      face(
+        _outward([
+          inner(-_hl, u0),
+          inner(_hl, u0),
+          inner(_hl, u1),
+          inner(-_hl, u1),
+        ], _lidN(const _V(0, -1, 0), th)),
+        shade(_tampa1, 0.16 + 0.42 * sin(pi * um)),
+        bias: 0.02 * i,
+      );
+    }
+    // Tábuas + aresta dourada da boca (seguem a curva), por cima das faixas.
+    final lidDepth = _centroid([
+      inner(-_hl, 0),
+      inner(_hl, 0),
+      inner(-_hl, 1),
+      inner(_hl, 1),
+    ]).dot(cam);
+    push(lidDepth + 2, (c) {
+      final plank = Paint()
+        ..color = shade(_tampa2, 0.30).withValues(alpha: 0.55)
+        ..strokeWidth = 2.2;
+      for (final x in [-_hl * 0.6, -_hl * 0.2, _hl * 0.2, _hl * 0.6]) {
+        final path = Path();
+        for (var i = 0; i <= 10; i++) {
+          final p = _proj(inner(x, i / 10), yaw);
+          i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
         }
-        // Aresta da frente (boca da tampa) dourada.
-        c.drawLine(
-          lp(-_hl, _bodyH, _hd),
-          lp(_hl, _bodyH, _hd),
-          Paint()
-            ..color = _ouro.withValues(alpha: 0.8)
-            ..strokeWidth = 2.2,
-        );
-      },
-    );
+        c.drawPath(path, plank);
+      }
+      // Aresta da frente (boca da tampa) dourada.
+      c.drawLine(
+        _proj(inner(-_hl, 1), yaw),
+        _proj(inner(_hl, 1), yaw),
+        Paint()
+          ..color = _ouro.withValues(alpha: 0.8)
+          ..strokeWidth = 2.2,
+      );
+    });
 
     // Frente da tampa (some ao passar do vertical).
     face(

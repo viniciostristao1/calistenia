@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.65.1 (baú com fundo + tampa côncava de verdade):**
+  - O baú agora **tem fundo**: dá pra ver o assoalho de madeira com tábuas dentro, o aro das paredes e o filete dourado na boca — antes o interior parecia um buraco.
+  - A **parte de dentro da tampa** ficou **côncava de verdade**: a superfície curva para dentro e as tábuas acompanham a curva quando ela abre.
+
 - **2026-09-12 — v0.65.0 (baú em 3/4 — frente + lateral):**
   - O baú do Laboratório agora aparece **de lado, em diagonal**: dá pra ver a **frente e a lateral direita**, com a faixa dourada, rebites e a fechadura contornando o volume. A tampa abre girando para trás na dobradiça, mostrando por dentro as tábuas e o fundo mais escuro (côncavo), e fecha com o "tranco" no fim.
 

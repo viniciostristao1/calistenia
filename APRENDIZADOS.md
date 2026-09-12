@@ -5,6 +5,35 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú: fundo visível + tampa côncava de verdade (v0.65.1)
+
+**Feedback:** "Quase o baú ficou sem fundo. E a tampa a parte interna não está côncava
+como eu pedi."
+
+**Sem fundo:** o interior existia, mas com `_floorY = _bodyH − 46` (46 de profundidade) e
+pitch `0.22` (~13°) o assoalho ficava **matematicamente invisível** (a linha de visão
+sobre a borda da frente desce ~46 em 150 unidades, e o baú só tem 40 de profundidade).
+Correções: interior **raso** (`_floorY = _bodyH − 20`, como em arte de jogo), pitch
+`0.38` (~22°, vê mais por cima), assoalho de **madeira** (`#4A2A12`) com tábuas e brilho
+quente em vez de quase-preto, paredes internas em madeira e **aro do topo das paredes**
+(4 quads) + filete dourado na aresta interna da boca. Agora lê como caixa com fundo.
+
+**Tampa não côncava:** ela era um quadrado **plano** com um gradiente escuro (só sombra,
+sem geometria). Agora a face interna é uma **superfície curva** amostrada em 6 faixas
+(`inner(x, u)` com `y = _bodyH + sag·sin(πu)`, `sag = 10`): o meio sobe para dentro da
+tampa e as faixas são sombreadas do claro (bordas) ao escuro (centro). As **tábuas** são
+polilinhas amostradas na mesma curva (10 pontos) e a aresta da boca é dourada. A curva
+fica evidente com a tampa aberta (~106°).
+
+**Gotcha:** profundidade "bonita" em arte estilizada ≠ profundidade realista — o interior
+raso (20) é o que permite ver o fundo num baú de 76 de altura com câmera de ~22°. Se
+aumentar a profundidade de novo, subir o pitch junto.
+
+**Validação:** frames golden (fechado/abrindo/aberto) conferidos; analyze sem erros e
+`flutter test` 52/52. Versão `0.65.1+87`.
+
+---
+
 ## 2026-09-12 — Baú em vista 3/4: mini-renderizador 3D no painter (v0.65.0)
 
 **Contexto:** usuário pediu o baú "numa posição de 90 graus, convidando a diagonal —
