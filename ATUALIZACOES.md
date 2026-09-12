@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.66.0 (baú mais cúbico):**
+  - O baú ficou **mais quadrado/cúbico**: a frente é um pouco menor e o baú é bem mais fundo, então a lateral tem quase o mesmo tamanho da frente — como uma caixa de verdade. O fundo, a tampa côncava e a abertura continuam iguais.
+
 - **2026-09-12 — v0.65.2 (lateral do fundo do baú fechada):**
   - A **parede do fundo** do baú (o lado esquerdo, atrás na perspectiva) estava faltando — o interior abria para o cenário. Agora tem madeira ali também, com o aro no topo e o filete dourado, então o baú fecha por todos os lados.
 

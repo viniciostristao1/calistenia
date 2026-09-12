@@ -211,10 +211,10 @@ class _ChestPainter extends CustomPainter {
   static const _ouro = Color(0xFFF4C542);
 
   // Modelo (y p/ cima, z p/ frente).
-  static const _bodyW = 136.0;
-  static const _bodyH = 76.0;
-  static const _depth = 48.0;
-  static const _lidH = 34.0;
+  static const _bodyW = 122.0;
+  static const _bodyH = 74.0;
+  static const _depth = 88.0;
+  static const _lidH = 32.0;
   static const _wall = 4.0;
   static const _floorY = _bodyH - 20.0;
   static const _hx = _bodyW / 2;
@@ -226,9 +226,9 @@ class _ChestPainter extends CustomPainter {
   // Câmera axonométrica (vista 3/4: frente + lateral direita).
   static const _yaw = 0.66; // ~38° (diagonal)
   static const _pitch = 0.38; // ~22° (vê o fundo)
-  static const _scale = 1.0;
+  static const _scale = 0.90;
   static const _cx = 100.0;
-  static const _cy = 184.0;
+  static const _cy = 174.0;
 
   static final _luz = _norm(const _V(-0.38, 0.72, 0.58));
 
@@ -238,7 +238,7 @@ class _ChestPainter extends CustomPainter {
   double get _theta {
     final dip = -0.12 * sin(Interval(0.12, 0.30).transform(v) * pi);
     final openT = Interval(0.30, 0.64, curve: Curves.easeOutCubic).transform(v);
-    var open = 1.85 * openT;
+    var open = 1.78 * openT;
     final st = ((v - 0.64) / 0.30).clamp(0.0, 1.0);
     if (st > 0) open += sin(st * 2.6 * pi) * 0.10 * (1 - st);
     return dip + open;

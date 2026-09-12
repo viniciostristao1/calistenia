@@ -5,6 +5,27 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú mais cúbico (v0.66.0)
+
+**Feedback:** "deixe o baú um pouco mais quadrado, mais em forma de cubo; ele está em
+forma de retângulo, com a frente maior que as laterais."
+
+**Ajuste de proporção (só constantes do modelo):** frente `136→122`, profundidade
+`48→88`, altura do corpo `76→74`, tampa `34→32` — agora frente 122 × lateral 88 × altura
+106, praticamente uma caixa. Como o baú ficou maior/mais alto na projeção (a tampa aberta
+sobe ~profundidade acima da dobradiça), a câmera foi reajustada: `_scale 1.0→0.90`,
+`_cy 184→174` e a abertura `1.85→1.78 rad` (~102°) para a tampa não encostar no topo do
+canvas e deixar a estrela voar livre.
+
+**Gotcha:** com o baú mais fundo, a tampa aberta fica alta (a borda da frente sobe
+≈ profundidade acima da dobradiça) — sempre reconferir o enquadramento (topo/base do
+canvas 200) e a folga da recompensa depois de mexer em `_depth`.
+
+**Validação:** goldens fechado/abrindo/aberto; interior com fundo e paredes visíveis;
+analyze sem erros; `flutter test` 52/52. Versão `0.66.0+89`.
+
+---
+
 ## 2026-09-12 — Baú: parede interna do fundo (v0.65.2)
 
 **Feedback:** "a lateral do baú que está na esquerda está aberta, sem lateral — a que está
