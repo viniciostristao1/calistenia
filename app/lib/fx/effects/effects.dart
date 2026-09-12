@@ -18,7 +18,12 @@
 /// `FxParams` e não sabe nada de recompensas — só de movimento.
 library;
 
+export 'bounce.dart';
+export 'fade_through.dart';
+export 'fly_to_target.dart';
 export 'glow.dart';
 export 'pop_in.dart';
+export 'pulse.dart';
+export 'screen_flash.dart';
 export 'shake.dart';
 export 'shine_sweep.dart';

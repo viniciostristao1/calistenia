@@ -121,12 +121,53 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | Fase | Entrega | Estado |
 |---|---|---|
 | **0** | scaffold `fx/` + este doc + `RewardType`/`FxParams`/registry/overlay + Lab shell (placeholder) + tile no Config | **feita** |
-| **1** | átomos `PopIn`/`GlowHalo`/`ShineSweep`/`Shake` + **motor de partículas** (`ParticleBurst`) + moléculas **Estrela** e **+XP** ligadas no registry, clicáveis no Lab | **feita** |
-| 2 | mais átomos (bounce/fade/pulse/flash/trail/fly_to_target) + confete (evolução do `_ConfettiLayer`) | — |
-| 3 | molécula **Troféu/Medalha** (overshoot + `ShineSweep` + partículas; conteúdo = `ConquistaBadge`) | — |
-| 4 | molécula **Baú** (a mais composta: `Shake` → tampa → `GlowHalo` + `ParticleBurst` → reveal com bounce) | — |
-| 5 | **extrair** as animações que ainda vivem no `player_screen.dart` para `fx/` + **plugar** o overlay nos momentos reais (fim de treino, desbloqueio, insígnia), reusando a lógica existente. Som opcional via `som_repository`. | — |
+| **1** | átomos `PopIn`/`GlowHalo`/`ShineSweep`/`Shake` + **motor de partículas** (`ParticleBurst`) + moléculas **Estrela** e **+XP** | **feita** |
+| **2** | átomos `Bounce`/`FadeThrough`/`Pulse`/`ScreenFlash`/`FlyToTarget` + **confete** (`ConfettiRain`) | **feita** |
+| **3** | molécula **Troféu/Medalha** (`IconReveal` genérico, ouro/prata) | **feita** |
+| **4** | molécula **Baú** (`ChestOpen` — a mais composta) + `levelUp`/`streak` via `IconReveal`. **Todos os `RewardType` têm efeito real; nada mais no placeholder.** | **feita** |
+| 5 | **extrair** as animações que ainda vivem no `player_screen.dart` para `fx/` + **plugar** o overlay nos momentos reais (fim de treino, desbloqueio, insígnia), reusando a lógica existente. Som opcional via `som_repository`. | **← próxima** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
+
+## Inventário atual (para quem for continuar)
+
+Estado em v0.60.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+
+**Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
+`fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
+`reward_overlay.dart` (`RewardFx.show`), `register_rewards.dart` (liga todos os tipos),
+`fx.dart` (barrel).
+
+**Átomos (`fx/effects/`, exportados em `effects.dart`):**
+
+| Átomo | Faz | Usado por |
+|---|---|---|
+| `PopIn` | escala + overshoot | *(toolkit — livre)* |
+| `Bounce` | entra quicando | `ChestOpen` |
+| `Shake` | tremida amortecida (tem `start()`) | *(chest usa versão inline)* |
+| `GlowHalo` | halo pulsante | `StarBurst` |
+| `ShineSweep` | brilho diagonal passando | `IconReveal` |
+| `Pulse` | respira em loop | `IconReveal` (sequência) |
+| `ScreenFlash` | clarão que some | `ChestOpen` |
+| `FlyToTarget` | voa de A→B com fade | `ChestOpen` |
+| `FadeThrough` | aparece e some | *(toolkit — p/ rótulos)* |
+
+**Partículas (`fx/particles/`, `CustomPainter`, zero deps):** `particle.dart`,
+`particle_system.dart` (`emitBurst`/`step`), `particle_painter.dart` (círculo/quadrado/spark),
+`particle_burst.dart` (`ParticleBurst`, explosão radial), `confetti.dart` (`ConfettiRain`).
+
+**Moléculas (`fx/rewards/`):** `star_burst.dart`, `xp_gain.dart`, `icon_reveal.dart`
+(genérico: troféu/medalha/nível/sequência), `chest_open.dart` (baú, showcase),
+`placeholder_reward.dart` (fallback — hoje nenhum tipo cai nele).
+
+**Testes:** `test/fx_smoke_test.dart` — constrói e anima todo `RewardType` (+ params extremos)
+sem exceção. **Rode-o após qualquer mudança em `fx/`** (`flutter test test/fx_smoke_test.dart`).
+
+**Ideias de melhoria (baratas, sem novas deps):** afinar tempos/curvas por efeito; usar os
+átomos `PopIn`/`FadeThrough`/`Shake` que estão prontos e livres; dar cara própria a `levelUp`
+(hoje reusa `IconReveal`); som opcional no reveal via `som_repository`; um "playground de
+átomos" no Lab (aba separada) além das recompensas. **Antes da Fase 5**, cuidado: integrar =
+plugar `RewardFx.show`/`RewardRegistry.build` nos pontos reais **sem** alterar
+`util/gamificacao.dart` nem `services/*_repository.dart`.
 
 Cada fase fecha com o ritual do `INICIO.md` (analyze → subir versão → APRENDIZADOS/
 ATUALIZACOES → push → CI na nuvem → link `latest`).

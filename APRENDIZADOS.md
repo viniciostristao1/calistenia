@@ -5,6 +5,51 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Camada `fx/` — Fases 2–4: átomos, confete, troféu/medalha, baú (v0.60.0)
+
+**Contexto:** usuário pediu para levar até a **Fase 4** e deixar arquivos/docs bem registrados
+para uma IA mais barata continuar depois (integração real = Fase 5). Resultado: **todo
+`RewardType` tem efeito real; nenhum cai mais no placeholder.** Inventário completo em
+[`ANIMACOES.md`](ANIMACOES.md) § "Inventário atual".
+
+**Átomos novos (`fx/effects/`):** `Bounce` (entra quicando, `bounceOut`), `FadeThrough`
+(fade in→hold→fade out), `Pulse` (respira em loop), `ScreenFlash` (clarão que some — usa
+`SizedBox.expand`, **não** `Positioned.fill`, p/ ser filho comum de Stack), `FlyToTarget`
+(voa A→B com fade). Barrel `effects.dart` exporta todos.
+
+**Confete (`fx/particles/confetti.dart`):** `ConfettiRain` — semeia partículas no topo (via
+`LayoutBuilder`, guardado por flag `_area`) e integra por frame. Evolução do antigo
+`_ConfettiLayer`. `Size(...)` exige `double` → literais `300.0/400.0`.
+
+**Moléculas:**
+- `icon_reveal.dart` (`IconReveal`) — reveal genérico parametrizado por `icon/color/label`
+  (+`pulse`). Um só widget cobre **troféu ouro/prata, medalha ouro/prata, subir de nível,
+  sequência**, puxando os metadados do `RewardType`. Compõe `ParticleBurst` + ícone com
+  overshoot/balanço + `ShineSweep` + rótulo que aparece depois.
+- `chest_open.dart` (`ChestOpen`) — showcase composto, 1 controller + Intervals: antecipação
+  (shake inline 0–0.3) → tampa em 2.5D (`Transform`+`Matrix4.rotateX`, `alignment.bottomCenter`,
+  0.32–0.66) → `ScreenFlash` + luz radial inline + `ParticleBurst` (leque p/ cima) → recompensa
+  salta (`FlyToTarget`+`Bounce`). Baú desenhado com `DecoratedBox`/`ColoredBox` (corpo+faixa+
+  fechadura+tampa), cores fixas (marrom/ouro, independem do tema — reconhecibilidade).
+  Gate por `v>limiar` dentro do `AnimatedBuilder` (filhos statefuls montam na hora e persistem;
+  `SizedBox.shrink()` mantém índice/z-order).
+
+**Ligação (`register_rewards.dart`):** liga os 10 tipos. Loop `for (final t in const [...])`
+captura `t` distinto por iteração (fecha certo). `confetti` recebe paleta `[estrela, exec,
+prep, accent]`. `levelUp`/`streak` usam `value` no rótulo.
+
+**Decisão de acoplamento:** `IconReveal` **não** importa `models/`/`ConquistaBadge` — o
+molécula cuida do movimento, o "conteúdo" é o ícone dos metadados. Mantém `fx/` independente do
+domínio (melhor p/ handoff). Na Fase 5, se quiser, as telas reais passam o badge como conteúdo.
+
+**Átomos prontos porém livres (toolkit):** `PopIn`, `FadeThrough`, `Shake` (o chest usa shake
+inline). Sem lint por classe pública não usada; documentados no inventário.
+
+**Validação:** `flutter analyze` (fx+lab+main) **No issues found!**; `test/fx_smoke_test.dart`
+agora cobre os 10 tipos (+ params extremos) — **2 passam**. Versão `0.60.0+80`.
+
+---
+
 ## 2026-09-12 — Camada `fx/` — Fase 1: átomos + partículas + Estrela/+XP (v0.59.0)
 
 **Contexto:** usuário aprovou seguir da Fase 0 para os primeiros efeitos reais, na ordem

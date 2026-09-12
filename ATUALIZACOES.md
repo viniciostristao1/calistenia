@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.60.0 (Laboratório completo: baú, troféu, medalha, confete e mais):**
+  - Agora **todas** as recompensas do 🧪 Laboratório têm animação real: **baú abrindo** (treme, a tampa levanta, sai luz e partículas, a recompensa salta), **troféu** e **medalha** (ouro/prata, com brilho passando + partículas), **subir de nível**, **sequência** (chama pulsante), **confete** e as já existentes Estrela e +XP. Nenhuma fica mais como placeholder.
+  - Continua tudo só no laboratório — nada ligado ao seu progresso real ainda. A integração aos momentos reais (fim de treino, desbloqueios) é o próximo passo.
+
 - **2026-09-12 — v0.59.0 (primeiros efeitos reais no Laboratório: Estrela e +XP):**
   - No **🧪 Laboratório de Animações** (Config), as recompensas **Estrela** e **+XP** já têm animação de verdade: a estrela nasce, cresce com "salto", gira, brilha e solta partículas; o **+XP** surge, sobe e some. Ajuste tudo pelos sliders (velocidade, intensidade, escala, nº de partículas, duração, valor…).
   - As demais recompensas seguem como placeholder por enquanto (troféu, medalha, baú vêm a seguir). Nada disso está ligado ao seu progresso real ainda — é só o laboratório.

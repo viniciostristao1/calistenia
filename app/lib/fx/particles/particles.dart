@@ -11,6 +11,7 @@
 /// - `confetti.dart`         widget: chuva (evolução do `_ConfettiLayer` atual)
 library;
 
+export 'confetti.dart';
 export 'particle.dart';
 export 'particle_burst.dart';
 export 'particle_painter.dart';
