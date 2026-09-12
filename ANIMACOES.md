@@ -131,11 +131,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.6 | **conteúdo 3D**: estrela facetada com extrusão/bisel/brilhos (`Star3D`) e baú com tampa projetada em perspectiva na dobradiça traseira (`_ChestPainter`) — pedido do usuário (mais detalhe na estrela; tampa do baú realista). | **feita** |
 | 5.7 | **tampa côncava** (`_innerPoint`/`_innerEdge`/`_innerFace`: face interna em bojo com ripas e vinheta) + física da abertura (destranca, freia, bate e o baú dá um pulinho) + **troféus desenhados à mão** (`Trophy3D`, ouro/prata) e util `fx/shading.dart`. | **feita** |
 | 5.8 | fix: tampa voltou a ser **painel rígido girando na dobradiça** (a casca de barril da 5.7 lia como "fitas" soltas); mantida a face interna côncava. | **feita** |
+| 5.9 | **baú em vista 3/4**: `_ChestPainter` virou mini-renderizador 3D (`_V`, `_proj` com yaw/pitch, culling por normal, luz direcional, ordenação por profundidade) — frente + lateral, tampa girando no eixo X. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.63.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.65.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -171,9 +172,11 @@ desenhado à mão parametrizado por `metal`: copo com gradiente de cilindro, al�
 estrela gravada, aro, haste e base com placa; serve ouro/prata), `xp_gain.dart` (pilha +XP
 com `ShineSweep`, sem giro em Y — espelharia o texto), `icon_reveal.dart` (genérico:
 troféu/medalha/nível/sequência; `Spin3D` 2 voltas + holofote + halo + rótulo que sobe;
-aceita `child` próprio ou `icon` do Material), `chest_open.dart` (baú **todo desenhado em
-3D** por `_ChestPainter`: corpo + boca + tampa **painel rígido girando na dobradiça
-traseira, com face interna côncava** (bojo + ripas) e física de abertura — afunda,
+aceita `child` próprio ou `icon` do Material), `chest_open.dart` (baú **em vista 3/4** —
+mini-renderizador 3D no `_ChestPainter`: `_V` + projeção axonométrica com yaw/pitch,
+faces com culling por normal, luz direcional e ordenação por profundidade; **frente +
+lateral direita** visíveis, tampa girando no eixo X na dobradiça traseira, interior
+escuro com brilho e parte de dentro da tampa côncava com tábuas; física — afunda,
 destranca, freia, bate no batente e o baú dá um pulinho; item sai girando com `Star3D`),
 `placeholder_reward.dart` (fallback — hoje nenhum tipo cai nele).
 

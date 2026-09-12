@@ -5,6 +5,42 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú em vista 3/4: mini-renderizador 3D no painter (v0.65.0)
+
+**Contexto:** usuário pediu o baú "numa posição de 90 graus, convidando a diagonal —
+ver a parte dianteira e uma lateral". A vista frontal 2.5D (mesmo com a tampa girando)
+não mostra lateral nenhuma, então o `_ChestPainter` foi reescrito como um pequeno
+renderizador 3D axonométrico.
+
+**Modelo:** `_V` (x direita, y p/ cima, z p/ frente). Corpo caixa `136×76×48`, tampa caixa
+`142×34×48` presa na dobradiça traseira `(y=76, z=−24)`: `_lidV` gira em torno do eixo X
+(`yl' = yl·cosθ + zl·sinθ`, `zl' = −yl·sinθ + zl·cosθ`, com `yl/zl` relativos à dobradiça).
+`_lidN` gira a normal junto (para o culling).
+
+**Câmera/projeção:** axonométrica (linear, sem divide de perspectiva — mais simples e
+suficiente p/ jogo): yaw `0.66` (~38°, diagonal), pitch `0.22` (~13°, vê por cima),
+`_proj` aplica yaw em Y e pitch em X, com `_cy` p/ posicionar no canvas 200.
+**Gotcha:** culling por sinal da área projetada depende do flip de Y da tela; por isso o
+culling é feito por **normal 3D × direção da câmera** (`n.dot(cam) > 0`) — robusto.
+
+**Pipeline de faces:** cada face vira um comando `(profundidade, closure)` numa lista;
+`_outward(pts, normal_desejada)` reordena os vértices; `face()` cula, projeta, preenche
+(flat `_lit` com luz direcional `(-0.38,0.72,0.58)` ou `shader` opcional), contorna e
+chama `detail(canvas, path, proj)` p/ enfeites no plano (faixa, fechadura, rebites,
+tábuas). No fim, `cmds.sort` por profundidade (mais longe primeiro) e desenha.
+Interior = caixa interna escura (piso com gradiente radial quente + paredes internas).
+**Gotcha:** num shader de `LinearGradient` **sempre** informar `begin`/`end` (o default é
+left→right e o degradê "de cima" saía errado).
+
+**Extras:** torção de antecipação virou yaw extra na câmera (`_twist`), mantendo o shake
+horizontal/vertical como translate 2D no widget; sombra côncava no interior da tampa com
+`RadialGradient` escuro no centro; o `detail` recebe o `Path` para poder reusá-lo.
+
+**Validação:** frames golden (fechado, abrindo, aberto) conferidos; `flutter analyze`
+limpo (0 erros/warnings) e `flutter test` **52/52**. Versão `0.65.0+86`.
+
+---
+
 ## 2026-09-12 — Novo logo/ícone do app (v0.64.0)
 
 **Contexto:** usuário subiu `file_000000000b10820e9dd5bc7e7891d5c3.png` direto no repo

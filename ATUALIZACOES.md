@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.65.0 (baú em 3/4 — frente + lateral):**
+  - O baú do Laboratório agora aparece **de lado, em diagonal**: dá pra ver a **frente e a lateral direita**, com a faixa dourada, rebites e a fechadura contornando o volume. A tampa abre girando para trás na dobradiça, mostrando por dentro as tábuas e o fundo mais escuro (côncavo), e fecha com o "tranco" no fim.
+
 - **2026-09-12 — v0.64.0 (novo logo/ícone do app):**
   - O app agora usa o **novo logo** (cronômetro com a pessoa se exercitando): ícone na tela inicial do celular (inclusive ícone adaptativo), ícone da web e o logo dentro da home.
 
