@@ -5,6 +5,36 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Fix: tampa do baú girando como painel rígido (v0.63.1)
+
+**Feedback:** "O baú piorou. Ele não faz o movimento natural de abrir a tampa para trás."
+A v0.63.0 tinha trocado o painel por uma **casca de barril em arco** (`_shellPoint`/
+`_shellBand`) com nervuras: nos quadros, o resultado lia como **fitas soltas flutuando**
+(arcos concêntricos) em vez de uma tampa girando. A geometria estava certa, a leitura
+visual não.
+
+**Correção:** voltei ao **painel rígido** (frente retangular em `_lidPoint`, girando na
+dobradiça traseira), que lê imediatamente como "tampa abrindo para trás", e mantive a
+concavidade na face interna com `_innerPoint`/`_innerEdge`/`_innerFace`:
+`y = −_sag·sin(πu)` com `_sag = 15` (o meio afunda), **ripas** desenhadas como linhas ao
+longo da profundidade (que encurvam com o bojo) e vinheta dark nas laterais. Visibilidade
+por normal contra a câmera inclinada (`sinθ − tilt·cosθ` para a face interna;
+`cosθ + tilt·sinθ` para a testa) — a face interna já está desenhada por baixo quando a
+testa some (~100°), então **não há "pop"**.
+
+**Gotcha:** ao montar `_innerFace` com `Path.addPath`, o subpath novo não conecta ao ponto
+atual — a face fechava em diagonal. O jeito certo é amostrar esquerda (dobradiça→frente),
+dar `lineTo` para a direita e voltar amostrando direita (frente→dobradiça), fechando.
+
+**Movimento:** abertura com `easeOutQuart` em 260 ms era rápida demais (parecia teleporte);
+agora `easeOutCubic` em 0.30–0.64 (~340 ms) + assentamento `sin(st·2.6π)·0.10·(1−st)` e
+`dip` de antecipação −0.12. Pulinho do baú reduzido para −3.5 px.
+
+**Validação:** frames por golden temporário (300→850 ms) mostram o painel girando com a
+parte interna côncava; `flutter analyze` limpo e `fx_smoke_test` 2/2. Versão `0.63.1+84`.
+
+---
+
 ## 2026-09-12 — Baú: tampa em arco côncava + física de abertura; troféus desenhados (v0.63.0)
 
 **Contexto:** usuário pediu para melhorar o desenho da tampa do baú ("formato mais

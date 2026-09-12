@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.63.1 (baú: tampa girando certo):**
+  - Corrigido o movimento da tampa: agora ela é um **painel inteiro que gira para trás na dobradiça**, como uma tampa de verdade — antes ela parecia se desmontar em fitas. Mantive a parte de dentro côncava (o bojo com as ripas de madeira) e a abertura com o "tranco" no fim.
+  - Tempo da abertura levemente mais calmo para dar pra ver o giro.
+
 - **2026-09-12 — v0.63.0 (tampa do baú côncava + troféus detalhados):**
   - **Baú:** a tampa virou uma **casca em arco** (baú clássico redondo) com a **parte de dentro côncava** — dá pra ver a curvatura e as nervuras por dentro quando abre. A abertura ficou mais física: o baú afunda de leve, a tampa solta rápido, freia, bate no batente e o baú dá um pulinho antes de assentar.
   - **Troféus (ouro e prata):** ganharam desenho próprio — copo bojudo com reflexos de metal, **alças grandes**, estrela gravada, haste com colar e base com placa metálica. Nada mais de ícone genérico.

@@ -153,8 +153,8 @@ class _ChestOpenState extends State<ChestOpen>
     final dx = sin(shakeT * 4 * 2 * pi) * 6 * (1 - shakeT) * _intensity;
     final yaw = sin(shakeT * 2 * pi) * 0.22 * (1 - shakeT) * _intensity;
     // Tranco no batente: o baú dá um pulinho (sobe, cai, assenta).
-    final recT = Interval(0.56, 0.88).transform(v);
-    final dy = -4.5 * sin(recT * 2.2 * pi) * (1 - recT) * _intensity;
+    final recT = Interval(0.62, 0.90).transform(v);
+    final dy = -3.5 * sin(recT * 2.2 * pi) * (1 - recT) * _intensity;
 
     return Transform(
       alignment: Alignment.center,
@@ -194,8 +194,7 @@ class _ChestPainter extends CustomPainter {
   static const _lidHalf = 73.0;
   static const _lidT = 44.0; // altura da frente da tampa fechada
   static const _depth = 42.0; // profundidade (dobradiça → frente)
-  static const _shellT = 9.0; // espessura da casca da tampa
-  static const _sag = 3.0; // leve bojo no comprimento (barril)
+  static const _sag = 15.0; // concavidade da parte de dentro da tampa
   static const _persp = 430.0;
   static const _tilt = 0.26; // tombo da câmera (vê um pouco por cima)
 
@@ -204,11 +203,11 @@ class _ChestPainter extends CustomPainter {
   /// amortecendo — dois rebotes.
   double get _theta {
     final dip = -0.12 * sin(Interval(0.12, 0.30).transform(v) * pi);
-    final openT = Interval(0.30, 0.56, curve: Curves.easeOutQuart).transform(v);
-    var open = 2.04 * openT;
-    final st = ((v - 0.56) / 0.34).clamp(0.0, 1.0);
+    final openT = Interval(0.30, 0.64, curve: Curves.easeOutCubic).transform(v);
+    var open = 2.0 * openT;
+    final st = ((v - 0.64) / 0.30).clamp(0.0, 1.0);
     if (st > 0) {
-      open += sin(st * 3 * pi) * 0.16 * pow(1 - st, 1.4).toDouble();
+      open += sin(st * 2.6 * pi) * 0.10 * (1 - st);
     }
     return dip + open;
   }
@@ -227,33 +226,33 @@ class _ChestPainter extends CustomPainter {
     return _p(x, yR, zR - _depth);
   }
 
-  /// Ponto da casca da tampa. `w` = -1..1 (largura), `u` = 0 (dobradiça) → 1
-  /// (frente), `yOff` = espessura (0 = casca externa). O arco em `w` dá a
-  /// tampa redonda de baú; por dentro sobra um **bojo côncavo**.
-  Offset _shellPoint(double w, double u, double yOff, double th) {
-    final x = _lidHalf * w;
-    final arch = _lidT * (1 - w * w);
-    final y = yOff - arch - _sag * sin(pi * u);
-    return _lidPoint(x, y, -_depth * (1 - u), th);
-  }
+  /// Ponto da face INTERNA (côncava) da tampa. `w` = -1..1 (largura),
+  /// `u` = 0 (dobradiça) → 1 (frente). O meio afunda [_sag]: a parte de dentro
+  /// é um **bojo curvo**, não um painel reto.
+  Offset _innerPoint(double w, double u, double th) =>
+      _lidPoint(_lidHalf * w, -_sag * sin(pi * u), -_depth * (1 - u), th);
 
-  /// Curva ao longo do arco numa profundidade `u` (esquerda→direita; ou o
-  /// inverso com [reverse]).
-  Path _shellEdge(double u, double yOff, double th, {bool reverse = false}) {
+  /// Curva da face interna numa largura `w`, da dobradiça à frente.
+  Path _innerEdge(double w, double th) {
     final path = Path();
-    for (var i = 0; i <= 16; i++) {
-      final t = i / 16;
-      final w = (reverse ? 1 - t : t) * 2 - 1;
-      final p = _shellPoint(w, u, yOff, th);
+    for (var i = 0; i <= 10; i++) {
+      final p = _innerPoint(w, i / 10, th);
       i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
     }
     return path;
   }
 
-  /// Faixa da casca da frente (`u=1`) até a dobradiça (`u=0`).
-  Path _shellBand(double yOff, double th) {
-    final path = _shellEdge(1, yOff, th);
-    path.addPath(_shellEdge(0, yOff, th, reverse: true), Offset.zero);
+  /// A face interna inteira (borda esquerda + frente + direita).
+  Path _innerFace(double th) {
+    final path = Path();
+    for (var i = 0; i <= 10; i++) {
+      final p = _innerPoint(-1, i / 10, th);
+      i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
+    }
+    for (var i = 10; i >= 0; i--) {
+      final p = _innerPoint(1, i / 10, th);
+      path.lineTo(p.dx, p.dy);
+    }
     return path..close();
   }
 
@@ -388,7 +387,7 @@ class _ChestPainter extends CustomPainter {
     canvas.drawPath(path, Paint()..color = const Color(0xFF1C0F05));
 
     final glow =
-        (0.45 + 0.55 * Interval(0.30, 0.56).transform(v)) *
+        (0.45 + 0.55 * Interval(0.30, 0.62).transform(v)) *
         intensity.clamp(0.0, 1.4);
     canvas.save();
     canvas.clipPath(path);
@@ -418,42 +417,21 @@ class _ChestPainter extends CustomPainter {
     );
   }
 
-  /// A tampa é uma **casca em arco** (barril): topo redondo, parte de dentro
-  /// côncava com nervuras e a "testa" em forma de D que some ao passar do
-  /// vertical. A visibilidade de cada face vem da normal contra a câmera (que
-  /// olha um pouco de cima, com [_tilt]).
+  /// A tampa é um **painel rígido** preso na dobradiça traseira: gira para trás
+  /// como um todo (movimento natural) e a face de dentro é **côncava** (bojo
+  /// com ripas que seguem a curva). A visibilidade de cada face vem da normal
+  /// contra a câmera (que olha um pouco de cima, com [_tilt]).
   void _lid(Canvas canvas, double th) {
     final cosT = cos(th);
     final sinT = sin(th);
 
-    // Topo arredondado (casca externa) — só com a tampa quase fechada.
-    if (_tilt * cosT - sinT > 0.03) {
-      final outer = _shellBand(0, th);
-      canvas.drawPath(
-        outer,
-        Paint()
-          ..shader = LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [lighten(_tampa1, 0.22), _tampa1],
-          ).createShader(outer.getBounds()),
-      );
-      canvas.drawPath(
-        _shellEdge(1, 0, th),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.6
-          ..color = _ouro.withValues(alpha: 0.45),
-      );
-    }
-
-    // Parte de DENTRO côncava — o bojo curvo que olha para o observador.
-    if (sinT > 0.02) {
-      final inner = _shellBand(_shellT, th);
+    // Parte de DENTRO côncava — o bojo que olha para o observador.
+    if (sinT - _tilt * cosT > 0.02) {
+      final inner = _innerFace(th);
       final bounds = inner.getBounds();
       // Luz quente que sobe da boca do baú e bate no fundo da tampa.
       final warm =
-          (Interval(0.34, 0.62).transform(v) *
+          (Interval(0.34, 0.64).transform(v) *
                   (1 - 0.35 * Interval(0.82, 1.0).transform(v)))
               .clamp(0.0, 1.0);
       canvas.drawPath(
@@ -463,12 +441,12 @@ class _ChestPainter extends CustomPainter {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color.lerp(shade(_tampa1, 0.18), const Color(0xFFD08A2E), warm)!,
-              Color.lerp(shade(_tampa2, 0.05), const Color(0xFF7A4A16), warm)!,
+              Color.lerp(shade(_tampa1, 0.10), const Color(0xFFC8802A), warm)!,
+              Color.lerp(_tampa2, const Color(0xFF6B4010), warm)!,
             ],
           ).createShader(bounds),
       );
-      // Vinheta nas laterais (o fundo do bojo é mais escuro que as bordas).
+      // Vinheta: centro do bojo mais escuro que as bordas → concavidade.
       canvas.drawPath(
         inner,
         Paint()
@@ -476,48 +454,62 @@ class _ChestPainter extends CustomPainter {
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              Colors.black.withValues(alpha: 0.34),
-              Colors.black.withValues(alpha: 0.0),
-              Colors.black.withValues(alpha: 0.34),
+              Colors.black.withValues(alpha: 0.30),
+              Colors.black.withValues(alpha: 0.05),
+              Colors.black.withValues(alpha: 0.30),
             ],
             stops: const [0.0, 0.5, 1.0],
           ).createShader(bounds),
       );
-      // Nervuras em arco: é o que mostra a curvatura da tampa.
-      final rib = Paint()
+      // Ripas (madeira) acompanhando a curva — de baixo para cima.
+      final plank = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2
-        ..color = shade(_ouro, 0.52).withValues(alpha: 0.42);
-      for (final u in [0.3, 0.62]) {
-        canvas.drawPath(_shellEdge(u, _shellT, th), rib);
+        ..strokeWidth = 2.4
+        ..color = shade(_tampa2, 0.3).withValues(alpha: 0.5);
+      for (final w in [-0.6, -0.2, 0.2, 0.6]) {
+        canvas.drawPath(_innerEdge(w, th), plank);
       }
-      // Arestas internas do arco (frente e dobradiça) iluminadas.
+      // Aresta de cima (a "boca" da tampa) iluminada.
+      final frontEdge = Path();
+      for (var i = 0; i <= 10; i++) {
+        final p = _innerPoint(-1 + 2 * i / 10, 1, th);
+        i == 0 ? frontEdge.moveTo(p.dx, p.dy) : frontEdge.lineTo(p.dx, p.dy);
+      }
       canvas.drawPath(
-        _shellEdge(1, _shellT, th),
+        frontEdge,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.2
-          ..color = _ouro.withValues(alpha: 0.8),
+          ..color = _ouro.withValues(alpha: 0.7),
       );
+      // Aresta da dobradiça iluminada.
+      final hingeEdge = Path();
+      for (var i = 0; i <= 10; i++) {
+        final p = _innerPoint(-1 + 2 * i / 10, 0, th);
+        i == 0 ? hingeEdge.moveTo(p.dx, p.dy) : hingeEdge.lineTo(p.dx, p.dy);
+      }
       canvas.drawPath(
-        _shellEdge(0, _shellT, th),
+        hingeEdge,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.2
-          ..color = _ouro.withValues(alpha: 0.65),
+          ..strokeWidth = 1.8
+          ..color = _ouro.withValues(alpha: 0.45),
       );
     }
 
-    // "Testa" da tampa: face cheia em D (embaixo reto, topo em arco). Visível
-    // até passar do vertical; depois o que aparece é a parte de dentro.
+    // "Testa" da tampa (face da frente) — some ao passar do vertical; depois o
+    // que aparece é a parte de dentro.
     if (cosT + _tilt * sinT > 0.04) {
       final bl = _lidPoint(-_lidHalf, 0, 0, th);
       final br = _lidPoint(_lidHalf, 0, 0, th);
+      final tl = _lidPoint(-_lidHalf, -_lidT, 0, th);
+      final tr = _lidPoint(_lidHalf, -_lidT, 0, th);
       final plate = Path()
         ..moveTo(bl.dx, bl.dy)
-        ..lineTo(br.dx, br.dy);
-      plate.addPath(_shellEdge(1, 0, th, reverse: true), Offset.zero);
-      plate.close();
+        ..lineTo(br.dx, br.dy)
+        ..lineTo(tr.dx, tr.dy)
+        ..lineTo(tl.dx, tl.dy)
+        ..close();
       final bounds = plate.getBounds();
       canvas.drawPath(
         plate,
@@ -535,14 +527,24 @@ class _ChestPainter extends CustomPainter {
           ..strokeWidth = 2.4
           ..color = _ouro.withValues(alpha: 0.8),
       );
+      // Cinta central atravessando a testa.
+      final midL = Offset.lerp(bl, tl, 0.5)!;
+      final midR = Offset.lerp(br, tr, 0.5)!;
+      canvas.drawLine(
+        midL,
+        midR,
+        Paint()
+          ..color = shade(_ouro, 0.2).withValues(alpha: 0.6)
+          ..strokeWidth = 3,
+      );
     }
   }
 
-  /// Dobradiças no topo traseiro, sobre o arco (não giram com a tampa).
+  /// Dobradiças no topo traseiro (não giram com a tampa).
   void _hinges(Canvas canvas) {
     final paint = Paint()..color = shade(_ouro, 0.1);
-    for (final w in [-0.82, 0.82]) {
-      final p = _shellPoint(w, 0, 0, 0);
+    for (final x in [-_lidHalf + 12, _lidHalf - 12]) {
+      final p = _p(x, 0, -_depth + 8);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromCenter(center: p, width: 13, height: 9),
