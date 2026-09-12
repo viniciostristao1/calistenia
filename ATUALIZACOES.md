@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.65.2 (lateral do fundo do baú fechada):**
+  - A **parede do fundo** do baú (o lado esquerdo, atrás na perspectiva) estava faltando — o interior abria para o cenário. Agora tem madeira ali também, com o aro no topo e o filete dourado, então o baú fecha por todos os lados.
+
 - **2026-09-12 — v0.65.1 (baú com fundo + tampa côncava de verdade):**
   - O baú agora **tem fundo**: dá pra ver o assoalho de madeira com tábuas dentro, o aro das paredes e o filete dourado na boca — antes o interior parecia um buraco.
   - A **parte de dentro da tampa** ficou **côncava de verdade**: a superfície curva para dentro e as tábuas acompanham a curva quando ela abre.

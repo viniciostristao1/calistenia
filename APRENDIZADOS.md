@@ -5,6 +5,30 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú: parede interna do fundo (v0.65.2)
+
+**Feedback:** "a lateral do baú que está na esquerda está aberta, sem lateral — a que está
+mais no fundo em perspectiva foi esquecida."
+
+**Causa:** no interior do baú só estavam modeladas as paredes interna da frente (culled),
+direita (culled, pois a câmera está à direita) e **traseira**. Faltava a **parede interna
+esquerda** (`x = −_hxi`, normal inward `+x`) — que é justamente a que a câmera enxerga do
+outro lado. Sem ela, o culling derrubava também a parede externa esquerda (normal `−x`) e
+o cenário aparecia através do baú. Adicionada a parede interna esquerda
+(`shade(madeiraDentro, 0.55)`) e o **aro superior esquerdo** (`x −_hx..−_hxi`) — os quatro
+aros de topo de parede agora existem (frente, direita, trás, esquerda); o filete dourado da
+boca ganhou a aresta esquerda também.
+
+**Gotcha de modelagem:** ao desenhar uma caixa aberta, listar as faces internas **uma por
+uma** pensando na câmera: as paredes internas que "olham" para a câmera são as do lado
+oposto (esquerda e trás, com a câmera à direita). É fácil lembrar da traseira e esquecer a
+lateral oposta.
+
+**Validação:** golden do quadro aberto confere o interior fechado (madeira nos 4 lados +
+fundo); analyze sem erros; `flutter test` 52/52. Versão `0.65.2+88`.
+
+---
+
 ## 2026-09-12 — Baú: fundo visível + tampa côncava de verdade (v0.65.1)
 
 **Feedback:** "Quase o baú ficou sem fundo. E a tampa a parte interna não está côncava

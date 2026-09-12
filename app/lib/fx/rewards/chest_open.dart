@@ -396,6 +396,17 @@ class _ChestPainter extends CustomPainter {
       ], const _V(-1, 0, 0)),
       shade(madeiraDentro, 0.45),
     );
+    // Parede interna do FUNDO (lado esquerdo na perspectiva) — sem ela o
+    // interior abria para o cenário.
+    face(
+      _outward([
+        const _V(-_hxi, _floorY, -_hzi),
+        const _V(-_hxi, _floorY, _hzi),
+        const _V(-_hxi, _bodyH, _hzi),
+        const _V(-_hxi, _bodyH, -_hzi),
+      ], const _V(1, 0, 0)),
+      shade(madeiraDentro, 0.55),
+    );
     face(
       _outward([
         const _V(-_hxi, _floorY, -_hzi),
@@ -434,6 +445,16 @@ class _ChestPainter extends CustomPainter {
       ], const _V(0, 1, 0)),
       shade(aro, 0.2),
     );
+    // Aro do lado do FUNDO (esquerdo na perspectiva).
+    face(
+      _outward([
+        const _V(-_hx, _bodyH, -_hd),
+        const _V(-_hxi, _bodyH, -_hd),
+        const _V(-_hxi, _bodyH, _hd),
+        const _V(-_hx, _bodyH, _hd),
+      ], const _V(0, 1, 0)),
+      shade(aro, 0.08),
+    );
     // Filete dourado na aresta interna da boca.
     final aroDepth = _centroid([
       const _V(-_hxi, _bodyH, _hzi),
@@ -453,6 +474,11 @@ class _ChestPainter extends CustomPainter {
       c.drawLine(
         _proj(const _V(_hxi, _bodyH, -_hzi), yaw),
         _proj(const _V(_hxi, _bodyH, _hzi), yaw),
+        o,
+      );
+      c.drawLine(
+        _proj(const _V(-_hxi, _bodyH, -_hzi), yaw),
+        _proj(const _V(-_hxi, _bodyH, _hzi), yaw),
         o,
       );
     });
