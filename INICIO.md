@@ -22,7 +22,8 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 >    usuário confirmar que está rodando o build mais novo (o número também aparece na home).
 >
 > Papéis dos docs: referência (`INICIO`) · técnico (`APRENDIZADOS`) · changelog do usuário
-> (`ATUALIZACOES`) · futuro (`IDEIAS`) · layout do player (`LAYOUT_CRONOMETRO`).
+> (`ATUALIZACOES`) · futuro (`IDEIAS`) · layout do player (`LAYOUT_CRONOMETRO`) · camada de
+> animações/recompensas (`ANIMACOES` — arquitetura de `fx/` + Laboratório).
 
 ## ⭐ ESTADO ATUAL (2026-08-17) — ler primeiro pós-/clear
 

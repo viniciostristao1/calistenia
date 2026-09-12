@@ -14,6 +14,7 @@ import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
 import '../../util/gamificacao.dart' show diasAgendados;
 import '../../l10n/strings.dart';
+import '../lab/lab_screen.dart';
 
 /// Configurações do app: tema, som, gamificação, lembretes de treino, conta
 /// (login + status da sincronização) e backup em arquivo.
@@ -57,6 +58,21 @@ class ConfigScreen extends ConsumerWidget {
             subtitle: Text(
               s.gamificacaoDesc,
               style: TextStyle(color: AppColors.dim, fontSize: 13),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Text('🧪', style: TextStyle(fontSize: 22)),
+            title: const Text('Laboratório de Animações',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            subtitle: Text(
+              'Área de testes das animações e recompensas (não altera seu progresso)',
+              style: TextStyle(color: AppColors.dim, fontSize: 13),
+            ),
+            trailing: Icon(Icons.chevron_right, color: AppColors.dim),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const LabScreen()),
             ),
           ),
           const SizedBox(height: 20),

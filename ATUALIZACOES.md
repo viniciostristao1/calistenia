@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.58.0 (base do sistema de animações + Laboratório):**
+  - Nova área **🧪 Laboratório de Animações** em **Config** — ambiente isolado para testar as animações de recompensa (não altera XP, sequência, medalhas nem seu progresso). Por enquanto mostra **placeholders**; os efeitos reais (baú, estrela, troféu, +XP…) chegam nas próximas versões.
+  - Fundação técnica da camada de efeitos (`fx/`) — nada mais muda visualmente no resto do app.
+
 - **2026-09-10 — v0.57.9 (fix: insígnias 3 dias seguidos + calendário):**
   - Corrigidas as insígnias de **8, 9 e 10/09** que vieram em bloco — o sorteio mensal sorteava dias **consecutivos** por bug no hash; agora o sorteio é distribuído (cache do mês renovado).
   - Corrigido o quadro **Insígnias do mês** em **Check-in > Calendário**: mostrava sempre as do mês atual ao navegar; agora mostra as do mês exibido.

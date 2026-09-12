@@ -5,6 +5,53 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Camada de animações `fx/` — Fase 0 (arquitetura) (v0.58.0)
+
+**Pedido:** atuar como arquiteto de um sistema de animações/recompensas reutilizável
+(sensação de jogo mobile, sem copiar arte), com um **Laboratório de Animações** isolado
+dentro do APK. Decidido: começar só pela **Fase 0** (scaffold + doc + stubs), revisar antes
+de implementar efeitos; acesso ao Lab por **tile visível em Config**. Doc canônico da camada
+= [`ANIMACOES.md`](ANIMACOES.md) na raiz.
+
+**Diagnóstico prévio:** a **lógica** de recompensa já estava separada da apresentação —
+regras em `util/gamificacao.dart` + `util/insignias.dart`, estado em
+`services/{conquistas,insignias}_repository.dart` + `gamificacao_pref.dart`, identidade em
+`models/{conquista,insignia}.dart`. O que faltava era a camada de **apresentação**: as
+animações existiam só como widgets privados dentro de `player_screen.dart` (`_IconeComemora`,
+`_ConfettiLayer`, `_FadeSlide`, `_NovosRecordes`, `_CarimboPill`) — sementes a extrair na Fase 1.
+
+**Criado (`app/lib/fx/`):**
+- `reward_type.dart` — `enum RewardType` (star/chest/trophyGold…) = a IDENTIDADE ("quê"), com
+  extensão de metadados (label/icon/`color(context)`). Separa domínio de visual.
+- `fx_params.dart` — `FxParams` imutável (speed/intensity/scale/particleCount/duration/delay/
+  repeat) + `effectiveDuration` (aplica speed) e `copyWith`. É o que o Lab controla.
+- `reward_registry.dart` — `Map<RewardType, RewardEffectBuilder>` (a PONTE). Fase 0: tudo
+  aponta pro placeholder; fases seguintes fazem `register(type, builder)`. Trocar animação =
+  mexer só aqui, nenhuma tela muda.
+- `reward_overlay.dart` — `RewardFx.show(context, type, ...)` via `Overlay` nativo (a API
+  pública, zero acoplamento de layout). `_RewardHost` centraliza e auto-descarta por `Timer`.
+- `fx.dart` — barrel (telas importam só isto).
+- `rewards/placeholder_reward.dart` — pop-in genérico (easeOutBack) que respeita speed/scale/
+  duration; **temporário da Fase 0**, some quando as moléculas reais entrarem.
+- `effects/effects.dart` e `particles/particles.dart` — barrels documentados (vazios; recebem
+  átomos na Fase 1 e o motor de partículas em CustomPainter na Fase 2). Marcam as pastas no git.
+
+**Laboratório (`app/lib/features/lab/lab_screen.dart`):** palco central + grade de
+`ChoiceChip` por `RewardType` + painel de sliders (ExpansionTile) ligados ao `FxParams`;
+botões "Testar no palco" (reinicia via `KeyedSubtree`/token) e "Como overlay" (`RewardFx.show`).
+**Isolamento por construção:** importa só `fx/` + `theme/` — **nenhum** import de `services/`,
+`*_repository`, `shared_preferences` ou Firestore → impossível alterar progresso. Gotcha
+registrado no doc: **nunca `const` com `AppColors`** (temas trocam em runtime).
+
+**Config:** tile "🧪 Laboratório de Animações" após a seção de gamificação, abre `LabScreen`
+via `Navigator.push` (padrão do app). Rótulo hardcoded em PT (área de dev; não passou por l10n).
+
+**Validação:** `flutter analyze lib/fx lib/features/lab lib/features/config/config_screen.dart`
+→ *No issues found!*. Versão `0.58.0+78`. **Aguardando revisão da arquitetura antes da Fase 1
+(implementar átomos + extrair as animações do player).**
+
+---
+
 ## 2026-08-26 — Config: temas só com nome (v0.52.3)
 
 **Pedido:** não precisa descrição do tema — basta o nome (sem "Âmbar sobre navy", "Bege claro amadeirado").
