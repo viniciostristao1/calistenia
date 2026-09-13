@@ -5,6 +5,32 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Chama animada na sequência + troféus "orelhuda" (v0.72.0)
+
+**Pedidos:** (1) a sequência devia parecer o fogo do app, com as **pontas balançando**;
+(2) os troféus de ouro/prata no formato da taça da Liga dos Campeões (a "orelhuda").
+
+**Chama (`fx/rewards/flame_reveal.dart`, novo):** molécula própria em vez do `IconReveal`
+com `Spin3D` (girar uma chama como moeda não faz sentido). Um `AnimationController` em
+`repeat()` alimenta o `_FlamePainter`, que desenha 3 línguas (externa/média/interna) +
+núcleo como gotas (cubics), cada uma com `tipDx/tipDy = sin(fase + offset)·amp` — as
+pontas balançam em ritmos diferentes. O corpo inteiro pulsa com squash & stretch em torno
+da base (`scale(1±0.035·sin(1.7·fase))`), e 3 brasas sobem por dentro (fase modular).
+Composição: `RadialRays` + `GlowHalo` + `ParticleBurst` com **gravidade negativa**
+(`-140` → faíscas sobem) + `PopIn` na entrada + rótulo. Cor = `RewardType.streak.color`
+(`AppColors.exec`, o laranja do app).
+
+**Troféu (`trophy_3d.dart` reescrito):** copo em sino (cubic de (37,24) até a base de
+12 de largura em y=86), **alças grandes** por `stroke` triplo (contorno escuro 11 →
+metal 8 → fio de luz 2) com curva de (60±22, 26) a (60±12, 75); aro 50×13, haste com
+colar e base-pedestal 44×11 com entalhe escuro. Detalhes: painéis (costuras verticais) e
+sombra/reflexo clipados no copo, glint difuso e estrela gravada.
+
+**Validação:** goldens da chama em 3 fases (pontas mudam) e dos dois troféus; analyze sem
+erros; `flutter test` 52/52. Versão `0.72.0+98`.
+
+---
+
 ## 2026-09-12 — Baú 2: estrelas maiores + medalhas do app no Lab (v0.71.0)
 
 **Pedidos:** (1) aumentar um pouco as estrelas de dentro do baú 2; (2) as medalhas do

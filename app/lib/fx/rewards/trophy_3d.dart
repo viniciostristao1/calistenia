@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 
 import '../shading.dart';
 
-/// **Conteúdo: troféu 3D (ouro/prata)** — copo metálico desenhado à mão, com
-/// alças, aro, haste, base e brilhos. Parametrizado por [metal], serve aos dois
-/// troféus (`trophyGold`/`trophySilver`). Não anima: o giro no próprio eixo
-/// fica com o átomo `Spin3D`.
+/// **Conteúdo: troféu 3D (ouro/prata)** — agora no formato da taça da Liga dos
+/// Campeões, a "orelhuda": copo alto em sino, **alças grandes** (as orelhas),
+/// haste com colar e base em pedestal. Parametrizado por [metal], serve aos
+/// dois troféus (`trophyGold`/`trophySilver`). Não anima: o giro no próprio
+/// eixo fica com o átomo `Spin3D`.
 class Trophy3D extends StatelessWidget {
   const Trophy3D({
     super.key,
@@ -35,10 +36,9 @@ class _TrophyPainter extends CustomPainter {
     canvas.save();
     canvas.scale(size.width / 120, size.height / 120);
     _groundShadow(canvas);
-    _handles(canvas);
+    _ears(canvas);
     _cup(canvas);
-    _stem(canvas);
-    _base(canvas);
+    _stemAndBase(canvas);
     canvas.restore();
   }
 
@@ -66,43 +66,53 @@ class _TrophyPainter extends CustomPainter {
     );
   }
 
-  void _handles(Canvas canvas) {
-    final outline = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 9
-      ..strokeCap = StrokeCap.round
-      ..color = shade(metal, 0.55);
-    final fill = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.5
-      ..strokeCap = StrokeCap.round
-      ..shader = _metalFill(const Rect.fromLTWH(0, 20, 120, 45)).shader;
-    final light = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.round
-      ..color = lighten(metal, 0.85).withValues(alpha: 0.9);
-
+  /// As "orelhas": alças grandes que saem da borda e reencontram o copo
+  /// embaixo — a marca registrada do troféu.
+  void _ears(Canvas canvas) {
     for (final sign in [-1.0, 1.0]) {
       final path = Path()
-        ..moveTo(60 + sign * 29, 28)
-        ..cubicTo(60 + sign * 48, 21, 60 + sign * 53, 47, 60 + sign * 31, 54);
-      canvas.drawPath(path, outline);
-      canvas.drawPath(path, fill);
+        ..moveTo(60 + sign * 22, 26)
+        ..cubicTo(60 + sign * 43, 21, 60 + sign * 45, 57, 60 + sign * 12, 75);
+      final bounds = path.getBounds();
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 11
+          ..strokeCap = StrokeCap.round
+          ..color = shade(metal, 0.55),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 8
+          ..strokeCap = StrokeCap.round
+          ..shader = _metalFill(bounds).shader,
+      );
       canvas.save();
-      canvas.translate(sign * -1.2, -1.6);
-      canvas.drawPath(path, light);
+      canvas.translate(sign * -1.4, -1.6);
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..strokeCap = StrokeCap.round
+          ..color = lighten(metal, 0.85).withValues(alpha: 0.8),
+      );
       canvas.restore();
     }
   }
 
+  /// Copo em sino (alto e afunilado), com aro, painéis e estrela gravada.
   void _cup(Canvas canvas) {
     final bowl = Path()
-      ..moveTo(34, 20)
-      ..cubicTo(30, 38, 34, 54, 46, 61)
-      ..cubicTo(50, 63, 55, 65, 60, 65)
-      ..cubicTo(65, 65, 70, 63, 74, 61)
-      ..cubicTo(86, 54, 90, 38, 86, 20)
+      ..moveTo(37, 24)
+      ..cubicTo(38.5, 42, 44, 62, 53, 76)
+      ..cubicTo(55.5, 80, 56.5, 83, 56, 86)
+      ..lineTo(64, 86)
+      ..cubicTo(63.5, 83, 64.5, 80, 67, 76)
+      ..cubicTo(76, 62, 81.5, 42, 83, 24)
       ..close();
     final bounds = bowl.getBounds();
     canvas.drawPath(bowl, _metalFill(bounds));
@@ -111,27 +121,34 @@ class _TrophyPainter extends CustomPainter {
     canvas.clipPath(bowl);
     // Sombra à direita (volume do cilindro).
     canvas.drawRect(
-      Rect.fromLTWH(76, 18, 16, 52),
+      Rect.fromLTWH(76, 18, 14, 72),
       Paint()..color = shade(metal, 0.38).withValues(alpha: 0.5),
     );
     // Reflexo à esquerda.
     canvas.drawRect(
-      Rect.fromLTWH(37, 18, 6, 54),
+      Rect.fromLTWH(42, 18, 5, 72),
       Paint()..color = Colors.white.withValues(alpha: 0.30),
     );
+    // Costuras verticais (os gomos da taça).
+    final seam = Paint()
+      ..color = shade(metal, 0.4).withValues(alpha: 0.30)
+      ..strokeWidth = 1.2;
+    for (final x in [52.0, 60.0, 68.0]) {
+      canvas.drawLine(Offset(x, 20), Offset(x, 90), seam);
+    }
     // Glint difuso.
     canvas.save();
-    canvas.translate(43, 37);
-    canvas.rotate(-0.5);
+    canvas.translate(48, 42);
+    canvas.rotate(-0.35);
     canvas.drawOval(
-      Rect.fromCenter(center: Offset.zero, width: 17, height: 7),
+      Rect.fromCenter(center: Offset.zero, width: 12, height: 5),
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.55)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5),
+        ..color = Colors.white.withValues(alpha: 0.5)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
     canvas.restore();
     // Estrela gravada.
-    _engravedStar(canvas, const Offset(60, 42), 12);
+    _engravedStar(canvas, const Offset(60, 52), 9);
     canvas.restore();
 
     // Contorno (separa do fundo e dá peso).
@@ -145,15 +162,15 @@ class _TrophyPainter extends CustomPainter {
 
     // Aro: boca escura + anel metálico + luz.
     final inside = Rect.fromCenter(
-      center: const Offset(60, 21),
-      width: 54,
+      center: const Offset(60, 23),
+      width: 46,
       height: 11,
     );
     canvas.drawOval(inside, Paint()..color = shade(metal, 0.78));
     final rim = Rect.fromCenter(
-      center: const Offset(60, 20.5),
-      width: 58,
-      height: 14,
+      center: const Offset(60, 22.5),
+      width: 50,
+      height: 13,
     );
     canvas.drawOval(
       rim,
@@ -174,68 +191,56 @@ class _TrophyPainter extends CustomPainter {
     );
   }
 
-  void _stem(Canvas canvas) {
-    final stem = Rect.fromLTWH(54, 64, 12, 20);
+  void _stemAndBase(Canvas canvas) {
+    // Haste.
+    final stem = Rect.fromLTWH(55.5, 84, 9, 16);
     canvas.drawRRect(
       RRect.fromRectAndRadius(stem, const Radius.circular(3)),
       _metalFill(stem),
     );
-    final collar = Rect.fromLTWH(50, 61.5, 20, 8);
+    canvas.drawRect(
+      Rect.fromLTWH(57.5, 86, 1.8, 12),
+      Paint()..color = Colors.white.withValues(alpha: 0.4),
+    );
+    // Colar.
+    final collar = Rect.fromLTWH(50, 82, 20, 7);
     canvas.drawRRect(
       RRect.fromRectAndRadius(collar, const Radius.circular(2.5)),
       _metalFill(collar),
     );
-    canvas.drawRect(
-      Rect.fromLTWH(57, 66, 2.2, 16),
-      Paint()..color = Colors.white.withValues(alpha: 0.45),
-    );
-  }
 
-  void _base(Canvas canvas) {
-    final plinth = Rect.fromLTWH(43, 80, 34, 9);
+    // Base em pedestal (cilindro baixo).
+    final base = Rect.fromLTWH(38, 100, 44, 11);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(plinth, const Radius.circular(3)),
-      _metalFill(plinth),
+      RRect.fromRectAndRadius(base, const Radius.circular(4)),
+      _metalFill(base),
     );
-
-    final base = RRect.fromRectAndRadius(
-      Rect.fromLTWH(31, 86.5, 58, 23),
-      const Radius.circular(5),
+    canvas.drawOval(
+      Rect.fromCenter(center: const Offset(60, 100.5), width: 44, height: 9),
+      _metalFill(base),
+    );
+    // Entalhe escuro + sombra na base.
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(40, 103.5, 40, 3.5),
+        const Radius.circular(2),
+      ),
+      Paint()..color = shade(metal, 0.5),
     );
     canvas.drawRRect(
-      base,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF54402E), Color(0xFF241A12)],
-        ).createShader(base.outerRect),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(40, 107, 40, 4),
+        const Radius.circular(2),
+      ),
+      Paint()..color = shade(metal, 0.3).withValues(alpha: 0.4),
     );
-
-    final plaque = Rect.fromLTWH(36, 89, 48, 6.5);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(plaque, const Radius.circular(2)),
-      _metalFill(plaque),
-    );
-
-    canvas.drawRRect(
-      base.deflate(1),
+      RRect.fromRectAndRadius(base, const Radius.circular(4)),
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2
-        ..color = metal.withValues(alpha: 0.35),
+        ..color = metal.withValues(alpha: 0.4),
     );
-    canvas.drawLine(
-      const Offset(33, 87.5),
-      const Offset(87, 87.5),
-      Paint()
-        ..strokeWidth = 1.6
-        ..color = lighten(metal, 0.5).withValues(alpha: 0.5),
-    );
-
-    // Faíscas no metal.
-    _sparkle(canvas, const Offset(41, 30), 3.6);
-    _sparkle(canvas, const Offset(78, 47), 2.4);
   }
 
   void _engravedStar(Canvas canvas, Offset c, double r) {
@@ -262,19 +267,6 @@ class _TrophyPainter extends CustomPainter {
       i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
     }
     return path..close();
-  }
-
-  void _sparkle(Canvas canvas, Offset p, double r) {
-    canvas.drawPath(
-      Path()
-        ..moveTo(p.dx, p.dy - r)
-        ..quadraticBezierTo(p.dx, p.dy, p.dx + r, p.dy)
-        ..quadraticBezierTo(p.dx, p.dy, p.dx, p.dy + r)
-        ..quadraticBezierTo(p.dx, p.dy, p.dx - r, p.dy)
-        ..quadraticBezierTo(p.dx, p.dy, p.dx, p.dy - r)
-        ..close(),
-      Paint()..color = Colors.white.withValues(alpha: 0.9),
-    );
   }
 
   @override

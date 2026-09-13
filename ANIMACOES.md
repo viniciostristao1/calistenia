@@ -143,11 +143,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.18 | fix: **removido o `ScreenFlash` do baú** (quadrado claro no overlay ao abrir); átomo segue livre no toolkit. | **feita** |
 | 5.19 | **Baú 1 congelado + Baú 2** (`RewardType.chest2`, `chest_open2.dart` — cópia isolada): estreia com **estrelas internas facetadas** (10 facetas com luz, bisel, núcleo gravado). | **feita** |
 | 5.20 | Baú 2: estrelas ~10% maiores; **medalhas do Lab = mesmas do app** (emojis 🥇 nº 1 / 🥈 nº 2 com cordão, como na galeria do Check-in) no `IconReveal`. | **feita** |
+| 5.21 | **Sequência = chama de verdade** (`flame_reveal.dart`: 3 línguas + núcleo com pontas balançando, pulso e brasas) e **troféus no formato da "orelhuda"** (taça da Champions com alças grandes). | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.71.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.72.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -178,9 +179,12 @@ Estado em v0.71.0. **Tudo abaixo é apresentação pura; a lógica de recompensa
 **Moléculas (`fx/rewards/`):** `star_burst.dart` (estrela: `RadialRays` + partículas no
 pouso + `Spin3D` 3 voltas; conteúdo = `star_3d.dart`), `star_3d.dart` (**`Star3D`** —
 estrela desenhada à mão: extrusão, facetas com luz, bisel, núcleo gravado, glints e
-faíscas; sem controller, é só o desenho), `trophy_3d.dart` (**`Trophy3D`** — troféu
-desenhado à mão parametrizado por `metal`: copo com gradiente de cilindro, alças em C,
-estrela gravada, aro, haste e base com placa; serve ouro/prata), `xp_gain.dart` (pilha +XP
+faíscas; sem controller, é só o desenho), `trophy_3d.dart` (**`Trophy3D`** — taça no
+formato da **"orelhuda"** (Champions): copo em sino, alças grandes, haste com colar, base
+em pedestal, estrela gravada e painéis; parametrizado por `metal`, serve ouro/prata),
+`flame_reveal.dart` (**`FlameReveal`** — a sequência virou **chama animada**: 3 línguas +
+núcleo com as pontas balançando (senos defasados), pulso e brasas subindo; controller em
+`repeat`), `xp_gain.dart` (pilha +XP
 com `ShineSweep`, sem giro em Y — espelharia o texto), `icon_reveal.dart` (genérico:
 troféu/medalha/nível/sequência; `Spin3D` 2 voltas + holofote + halo + rótulo que sobe;
 aceita `child` próprio ou `icon` do Material), `chest_open.dart` (baú **em vista 3/4** —

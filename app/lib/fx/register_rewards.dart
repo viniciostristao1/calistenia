@@ -6,6 +6,7 @@ import 'reward_registry.dart';
 import 'reward_type.dart';
 import 'rewards/chest_open.dart';
 import 'rewards/chest_open2.dart';
+import 'rewards/flame_reveal.dart';
 import 'rewards/icon_reveal.dart';
 import 'rewards/star_burst.dart';
 import 'rewards/trophy_3d.dart';
@@ -100,14 +101,13 @@ void registerBuiltInRewards() {
       params: params,
     ),
   );
+  // Sequência = chama desenhada à mão, com as pontas balançando.
   RewardRegistry.register(
     RewardType.streak,
-    (context, params, {value}) => IconReveal(
-      icon: RewardType.streak.icon,
+    (context, params, {value}) => FlameReveal(
+      params: params,
       color: RewardType.streak.color(context),
       label: value != null ? '${value.round()} dias' : 'Sequência',
-      params: params,
-      pulse: true,
     ),
   );
 }
