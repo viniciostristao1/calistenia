@@ -726,6 +726,10 @@ class _ChestPainter extends CustomPainter {
       for (final p in local) _lidV(p.x, p.y, p.z, th),
     ], _lidN(nLocal, th));
 
+    // Com a tampa quase fechada ela "contém" o monte de estrelas, então tem de
+    // ser desenhada por cima delas; conforme abre, volta ao normal.
+    final lidBias = 50.0 * (1 - (sin(th) * 1.8).clamp(0.0, 1.0));
+
     // Parte de dentro CÔNCAVA (curva de verdade): a superfície sobe para
     // dentro da tampa no meio e as tábuas acompanham a curva.
     const sagLid = 10.0;
@@ -744,7 +748,7 @@ class _ChestPainter extends CustomPainter {
           inner(-_hl, u1),
         ], _lidN(const _V(0, -1, 0), th)),
         shade(_tampa1, 0.16 + 0.42 * sin(pi * um)),
-        bias: 0.02 * i,
+        bias: lidBias + 0.02 * i,
       );
     }
     // Tábuas + aresta dourada da boca (seguem a curva), por cima das faixas.
@@ -754,7 +758,7 @@ class _ChestPainter extends CustomPainter {
       inner(-_hl, 1),
       inner(_hl, 1),
     ]).dot(cam);
-    push(lidDepth + 2, (c) {
+    push(lidDepth + 2 + lidBias, (c) {
       final plank = Paint()
         ..color = shade(_tampa2, 0.30).withValues(alpha: 0.55)
         ..strokeWidth = 2.2;
@@ -785,6 +789,7 @@ class _ChestPainter extends CustomPainter {
         const _V(-_hl, _bodyH + _lidH, _hd),
       ], const _V(0, 0, 1)),
       _tampa1,
+      bias: lidBias,
       stroke: _ouro.withValues(alpha: 0.85),
       sw: 2.4,
       shader: (r) => LinearGradient(
@@ -812,6 +817,7 @@ class _ChestPainter extends CustomPainter {
         const _V(-_hl, _bodyH + _lidH, -_hd),
       ], const _V(0, 1, 0)),
       _tampa1,
+      bias: lidBias,
     );
     face(
       lid([
@@ -821,6 +827,7 @@ class _ChestPainter extends CustomPainter {
         const _V(_hl, _bodyH + _lidH, -_hd),
       ], const _V(1, 0, 0)),
       shade(_tampa1, 0.2),
+      bias: lidBias,
       stroke: _ouro.withValues(alpha: 0.55),
       sw: 1.8,
     );
@@ -829,7 +836,7 @@ class _ChestPainter extends CustomPainter {
     for (final x in [-_hl + 13, _hl - 13]) {
       final hp = _proj(_V(x, _bodyH, -_hd), yaw);
       final r = Rect.fromCenter(center: hp, width: 13, height: 9);
-      push(5, (c) {
+      push(5 + lidBias, (c) {
         c.drawRRect(
           RRect.fromRectAndRadius(r, const Radius.circular(2.5)),
           Paint()..color = shade(_ouro, 0.1),

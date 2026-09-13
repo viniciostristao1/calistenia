@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.69.2 (baú fechado sem estrelas vazando):**
+  - Corrigido: com a **tampa fechada**, algumas estrelas do canto direito apareciam antes de abrir. Agora a tampa cobre tudo enquanto está fechada (e vai liberando conforme abre).
+
 - **2026-09-12 — v0.69.1 (estrelas todas dentro do baú):**
   - Corrigido: as estrelas de baixo da frente estavam aparecendo **na frente** do baú. Agora a parte da frente do baú **cobre** as estrelas que ficam atrás — o monte está todo dentro, com os topos aparecendo por cima da borda.
 

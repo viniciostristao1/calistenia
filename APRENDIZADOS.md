@@ -5,6 +5,27 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú fechado sem estrelas vazando (v0.69.2)
+
+**Feedback:** com a tampa fechada, estrelas do canto direito apareciam antes de abrir.
+
+**Causa:** a tampa fechada **contém** o monte, mas a ordenação por centróide não sabe
+disso: a face de cima da tampa tem centróide alto/central (`depth ≈ 39`) e as estrelas da
+frente têm centróide mais perto da câmera (`≈ 50`) — então as estrelas eram desenhadas
+depois e "furavam" a tampa. Face grande × faces pequenas é o caso clássico em que o
+painter's algorithm falha.
+
+**Correção:** `lidBias = 50·(1 − clamp(sin θ · 1.8))` — com a tampa fechada (θ≈0) todas as
+faces da tampa (frente, topo, lateral, faixas internas, tábuas e dobradiças) ganham +50 de
+profundidade e são desenhadas por cima das estrelas; a partir de θ≈35° o viés zera e a
+ordem volta ao normal (aí o monte está na frente da tampa, como deve ser).
+
+**Validação:** goldens em 60 ms (fechado), 250 ms (antecipação) e 400/700/1200 ms
+(abrindo/aberto) — fechado sem estrelas, aberto com o monte dentro; analyze sem erros;
+`flutter test` 52/52. Versão `0.69.2+94`.
+
+---
+
 ## 2026-09-12 — Estrelas 100% dentro do baú (v0.69.1)
 
 **Feedback:** as estrelas de baixo da frente apareciam **na frente** da parede do baú.
