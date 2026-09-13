@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.69.3 (baú sem o quadrado claro no overlay):**
+  - Removido o **clarão** que acendia um quadrado claro atrás da animação quando o baú abria no overlay. Agora a abertura não pisca o fundo — ficam só o holofote, as partículas e a tampa.
+
 - **2026-09-12 — v0.69.2 (baú fechado sem estrelas vazando):**
   - Corrigido: com a **tampa fechada**, algumas estrelas do canto direito apareciam antes de abrir. Agora a tampa cobre tudo enquanto está fechada (e vai liberando conforme abre).
 

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../effects/fly_to_target.dart';
 import '../effects/rays.dart';
-import '../effects/screen_flash.dart';
 import '../effects/spin3d.dart';
 import '../fx_params.dart';
 import '../particles/particle.dart';
@@ -17,7 +16,7 @@ import 'star_3d.dart';
 ///
 /// Timeline: antecipação (0–0.30) — treme e dá uma torção no próprio eixo →
 /// a tampa abre de verdade na dobradiça traseira, mostrando a parte de dentro
-/// côncava (0.30–0.64) → clarão + holofote + partículas → a recompensa salta
+/// côncava (0.30–0.64) → holofote + partículas → a recompensa salta
 /// girando (0.55–1.0), com um "tranco" no fim.
 ///
 /// O desenho é um mini-renderizador 3D em `CustomPainter`: projeção
@@ -134,8 +133,6 @@ class _ChestOpenState extends State<ChestOpen>
                     child: const Star3D(size: 52),
                   ),
                 ),
-              // Clarão breve ao abrir.
-              if (v > 0.30) ScreenFlash(params: _revealParams, peak: 0.30),
             ],
           );
         },

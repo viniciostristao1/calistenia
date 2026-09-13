@@ -5,6 +5,24 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Removido o clarão (quadrado claro) do baú (v0.69.3)
+
+**Feedback:** no overlay, ao abrir o baú acendia um **quadrado claro** cobrindo a área da
+animação e apagava.
+
+**Causa:** era o átomo `ScreenFlash` usado pelo `ChestOpen` (`if (v > 0.30)`): ele é um
+`SizedBox.expand` com branco translúcido — no palco fica um quadrado de 260×260 e no
+overlay idem (o `_RewardHost` centraliza o filho). O usuário não quer mais esse efeito.
+
+**Ação:** removido o `ScreenFlash` do `ChestOpen` (import + uso). O átomo continua no
+toolkit (`fx/effects/`) para quando quiser, mas agora está livre (atualizado no inventário
+do `ANIMACOES.md`). Ficaram o holofote (`RadialRays`), as partículas e o brilho suave
+circular do interior.
+
+**Validação:** `fx_smoke_test` 2/2 e analyze sem erros. Versão `0.69.3+95`.
+
+---
+
 ## 2026-09-12 — Baú fechado sem estrelas vazando (v0.69.2)
 
 **Feedback:** com a tampa fechada, estrelas do canto direito apareciam antes de abrir.

@@ -140,11 +140,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.15 | **baú transbordando**: assoalho raso (`_bodyH−9`), 20 estrelas em 4 camadas + fileira da frente e laterais em pé (cobre o canto); glint especular por estrela; **salto com squash & stretch** (`hop` em `dy` + `scaleY`). | **feita** |
 | 5.16 | fix: **parede da frente desenhada por último** (`bias` 60/55) — cobre as estrelas que ficam atrás (antes a fileira da frente invadia a fachada). | **feita** |
 | 5.17 | fix: **tampa fechada por cima das estrelas** (`lidBias = 50·(1−clamp(sinθ·1.8))`) — sem estrelas vazando antes de abrir; viés zera com a tampa aberta. | **feita** |
+| 5.18 | fix: **removido o `ScreenFlash` do baú** (quadrado claro no overlay ao abrir); átomo segue livre no toolkit. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.69.2. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.69.3. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -161,7 +162,7 @@ Estado em v0.69.2. **Tudo abaixo é apresentação pura; a lógica de recompensa
 | `GlowHalo` | halo pulsante | `StarBurst`, `IconReveal` |
 | `ShineSweep` | brilho diagonal passando | `IconReveal`, `XpGain` |
 | `Pulse` | respira em loop | `IconReveal` (sequência) |
-| `ScreenFlash` | clarão que some | `ChestOpen` |
+| `ScreenFlash` | clarão que some | *(toolkit — livre)* |
 | `FlyToTarget` | voa de A→B com fade | `ChestOpen` |
 | `FadeThrough` | aparece e some | *(toolkit — p/ rótulos)* |
 | `Spin3D` | **giro 3D no próprio eixo** (perspectiva, face de trás espelhada, pouso com cambaleada + squash, fio de luz na aresta; loop = vitrine) | `StarBurst`, `IconReveal`, `ChestOpen` |
