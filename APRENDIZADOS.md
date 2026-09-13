@@ -5,6 +5,32 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Estrelinhas dentro do baú (montinho) (v0.67.0)
+
+**Pedido:** ~6 estrelas dentro do baú, algumas sobre as outras, com cara de montinho,
+bem no meio e realmente dentro.
+
+**Como:** cada estrela é desenhada no mesmo renderizador 3D do baú, como um polígono no
+**plano inclinado** apoiado no assoalho — `starOnFloor(cx, cz, r, rot, lift, tone, order,
+tilt)` monta o contorno (10 vértices, raio interno 0.48) e **inclina `tilt = 0.95 rad`**
+(~54°): o eixo de profundidade da estrela vira `(y = (r − v)·sin(tilt), z = v·cos(tilt))`,
+então a borda de baixo encosta no chão e a estrela "deita encostada" (sem inclinar, o
+assoalho raso + parede da frente escondiam quase tudo — a projeção de um plano horizontal
+achata por `sin 22° ≈ 0.37`). Três faces por estrela: **sombra** no assoalho (elipse a
+`y = _floorY + 0.05`), **espessura** (cópia deslocada `dy −2.2 / dz +1.6`) e o **topo**
+com `RadialGradient` (brilho no canto) + contorno escuro. Um `order` crescente controla o
+empilhamento (bias na ordenação por profundidade): 4 na base + 2 apoiadas (`lift 10/20`),
+espalhadas por x ∈ [−38, 38] e z ∈ [−27, −13] (perto do fundo, onde a câmera enxerga).
+
+**Gotcha:** oclusão sai de graça da ordenação por profundidade — a parede da frente (mais
+perto) é desenhada depois e cobre as estrelas de trás; quando a tampa está fechada, a face
+de cima da tampa cobre a boca inteira. Não precisou de clip nenhum.
+
+**Validação:** goldens fechado/meio/aberto confirmam o montinho visível só com o baú
+aberto; analyze sem erros; `flutter test` 52/52. Versão `0.67.0+90`.
+
+---
+
 ## 2026-09-12 — Baú mais cúbico (v0.66.0)
 
 **Feedback:** "deixe o baú um pouco mais quadrado, mais em forma de cubo; ele está em

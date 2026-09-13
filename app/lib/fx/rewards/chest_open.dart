@@ -483,6 +483,82 @@ class _ChestPainter extends CustomPainter {
       );
     });
 
+    // ── Estrelinhas no fundo do baú (montinho no meio) ──
+    // Deitadas no assoalho: sombra, uma cópia deslocada (espessura) e a face
+    // de cima. A ordenação por profundidade faz as paredes cobrirem quem
+    // estiver atrás delas.
+    void starOnFloor(
+      double cx,
+      double cz,
+      double r,
+      double rot, {
+      double lift = 0,
+      double tone = 0,
+      double order = 0,
+      double tilt = 0.95,
+    }) {
+      final st = sin(tilt);
+      final ct = cos(tilt);
+      List<_V> outline(double dy, double dz) {
+        final pts = <_V>[];
+        for (var i = 0; i < 10; i++) {
+          final rad = i.isEven ? r : r * 0.48;
+          final a = rot - pi / 2 + i * pi / 5;
+          final v = sin(a) * rad; // profundidade dentro da estrela
+          pts.add(
+            _V(
+              cx + cos(a) * rad,
+              _floorY + lift + (r - v) * st + dy,
+              cz + v * ct + dz,
+            ),
+          );
+        }
+        return pts;
+      }
+
+      final cor = Color.lerp(_ouro, lighten(_ouro, 0.22), tone)!;
+      // Sombra no assoalho.
+      face(
+        _outward([
+          for (var i = 0; i < 12; i++)
+            _V(
+              cx + cos(i * pi / 6) * r * 1.05,
+              _floorY + 0.05,
+              cz - r * ct * 0.15 + sin(i * pi / 6) * r * 0.9 + 1.8,
+            ),
+        ], const _V(0, 1, 0)),
+        shade(madeiraDentro, 0.3),
+        bias: order,
+      );
+      // Espessura (cópia mais baixa, deslocada para trás).
+      face(
+        _outward(outline(-2.2, 1.6), const _V(0, 1, 0)),
+        shade(cor, 0.5),
+        bias: order + 0.1,
+      );
+      // Face de cima, com brilho.
+      face(
+        _outward(outline(0, 0), const _V(0, 1, 0)),
+        cor,
+        bias: order + 0.2,
+        stroke: shade(cor, 0.45),
+        sw: 1.0,
+        shader: (b) => RadialGradient(
+          center: const Alignment(0.25, -0.35),
+          colors: [lighten(cor, 0.38), cor, shade(cor, 0.28)],
+          stops: const [0.0, 0.55, 1.0],
+        ).createShader(b),
+      );
+    }
+
+    // Montinho: 4 encostadas na base + 2 apoiadas por cima.
+    starOnFloor(-38, -26, 18.0, 0.2, order: 0);
+    starOnFloor(-12, -15, 17.0, -0.5, order: 0.3);
+    starOnFloor(14, -27, 18.0, 0.6, order: 0.6);
+    starOnFloor(38, -13, 16.0, -0.2, order: 0.9);
+    starOnFloor(-26, -21, 17.0, 0.9, lift: 10, tone: 0.2, order: 1.2);
+    starOnFloor(8, -19, 16.0, -0.65, lift: 20, tone: 0.05, order: 1.5);
+
     // ── Corpo: frente ──
     face(
       _outward([

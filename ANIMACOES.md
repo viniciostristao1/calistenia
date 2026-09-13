@@ -135,11 +135,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.10 | fix: **fundo visível** (interior raso + assoalho de madeira + aro das paredes) e **tampa interna côncava de verdade** (face em 6 faixas curvas + tábuas seguindo a curva). | **feita** |
 | 5.11 | fix: **parede interna do fundo** (esquerda) + aro superior esquerdo — o interior abria para o cenário por causa do culling. | **feita** |
 | 5.12 | proporção: baú **mais cúbico** (frente 122 × fundo 88 × altura 106) com câmera reenquadrada. | **feita** |
+| 5.13 | **estrelinhas dentro do baú**: montinho de 6 (4 na base + 2 apoiadas), inclinadas no assoalho com sombra/espessura, ocluídas pelas paredes e pela tampa. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.66.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.67.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),

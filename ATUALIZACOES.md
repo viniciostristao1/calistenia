@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.67.0 (estrelinhas dentro do baú):**
+  - Agora o baú tem um **montinho de 6 estrelas** dentro, encostadas no fundo — algumas apoiadas sobre as outras, cada uma com sombra no assoalho. Elas ficam atrás das paredes (aparecem conforme a tampa abre) e somem quando o baú está fechado.
+
 - **2026-09-12 — v0.66.0 (baú mais cúbico):**
   - O baú ficou **mais quadrado/cúbico**: a frente é um pouco menor e o baú é bem mais fundo, então a lateral tem quase o mesmo tamanho da frente — como uma caixa de verdade. O fundo, a tampa côncava e a abertura continuam iguais.
 
