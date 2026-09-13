@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.75.1 (modo Desempenho com dados reais):**
+  - Os números do modo **Desempenho** agora são os de verdade: **🔥 sequência**, **Rating** (0–100, o mesmo da aba Progressão) e **dias treinados na semana** (x/y, contando check-in **ou** conclusão). Saíram os “vs. semana passada”, que pareciam aleatórios.
+  - O modo **Desempenho** não mostra mais os 7 dias: aparece só **hoje**, com o número do dia (ex.: "Domingo, 13"), e abaixo os treinos de hoje.
+
 - **2026-09-12 — v0.75.0 (modos de layout da página Treinos):**
   - Novo **botão ao lado da engrenagem**: cada toque troca o layout da página Treinos e avisa qual entrou. O **modo atual continua sendo o padrão** — nada muda se você não tocar nele.
   - Modos incluídos (das ideias 7, 8 e 9): **Desempenho** (faixa com sequência 🔥, treinos da semana e variação vs. semana passada, acima da lista de sempre), **Hoje/Semana** (duas visões internas: ação e planejamento) e **Carrossel** (um dia por tela, com setas, bolinhas e deslize lateral).

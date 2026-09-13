@@ -9,6 +9,8 @@ import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/home_layout_pref.dart';
 import '../../services/idioma_repository.dart';
+import '../../services/insignias_repository.dart';
+import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
@@ -357,8 +359,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             HomeLayout.desempenho => Column(
               children: [
                 _FaixaDesempenho(treinos: treinos),
-                seletor,
-                Expanded(child: _listaDoDia(treinos, _dia)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${s.diasLongos[diaDeHoje]}, ${DateTime.now().day}',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(child: _listaDoDia(treinos, diaDeHoje)),
               ],
             ),
             HomeLayout.abas => _ModoAbas(
@@ -766,7 +780,8 @@ Widget _listaDoDia(List<Treino> treinos, int dia) {
   );
 }
 
-/// **Modo 7** — faixa de desempenho no topo (sequência, semana, variação).
+/// **Modo 7** — faixa de desempenho no topo: sequência, Rating (0..100, o
+/// mesmo da aba Progressão) e dias treinados na semana (check-in ou conclusão).
 class _FaixaDesempenho extends ConsumerWidget {
   const _FaixaDesempenho({required this.treinos});
 
@@ -776,27 +791,34 @@ class _FaixaDesempenho extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = Strings(ref.watch(idiomaProvider).value ?? Idioma.pt);
     final concs = ref.watch(conclusaoProvider).value ?? const <Conclusao>[];
+    final checkins = ref.watch(checkinProvider).value ?? const [];
+    final prog = ref.watch(progressaoProvider).value ?? const [];
+    final insignias = ref.watch(insigniasProvider).value ?? const [];
 
     final agora = DateTime.now();
     final hoje0 = DateTime(agora.year, agora.month, agora.day);
     final segunda = hoje0.subtract(Duration(days: agora.weekday - 1));
     final proxima = segunda.add(const Duration(days: 7));
-    final passada = segunda.subtract(const Duration(days: 7));
 
-    int diasFeitos(DateTime de, DateTime ate) => concs
-        .where((c) => !c.data.isBefore(de) && c.data.isBefore(ate))
-        .map((c) => c.data)
-        .toSet()
-        .length;
-
-    final feitos = diasFeitos(segunda, proxima);
-    final antes = diasFeitos(passada, segunda);
+    // Dias treinados nesta semana: conclusão OU check-in (o check-in é
+    // automático por exercício, então reflete atividade mesmo sem responder a
+    // pergunta de fim de treino).
+    final diasAtivos = <DateTime>{
+      for (final c in concs)
+        if (!c.data.isBefore(segunda) && c.data.isBefore(proxima)) c.data,
+      for (final c in checkins)
+        if (!c.data.isBefore(segunda) && c.data.isBefore(proxima))
+          DateTime(c.data.year, c.data.month, c.data.day),
+    };
     final previstos = diasAgendados(
       treinos,
     ).where((d) => d <= agora.weekday - 1).length;
-    final variacao = antes == 0
-        ? null
-        : ((feitos - antes) * 100 / antes).round();
+    final rating = ratingForma(
+      concs,
+      treinos,
+      prog,
+      diasInsignia: diasComInsignia(insignias),
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -810,23 +832,17 @@ class _FaixaDesempenho extends ConsumerWidget {
           ),
           const SizedBox(width: 8),
           _Stat(
-            icone: Icons.event_available_rounded,
-            valor: previstos == 0 ? '—' : '$feitos/$previstos',
-            rotulo: s.semana,
-            cor: AppColors.prep,
+            icone: Icons.speed_rounded,
+            valor: '${rating.total}',
+            rotulo: 'Rating',
+            cor: context.accent,
           ),
           const SizedBox(width: 8),
           _Stat(
-            icone: (variacao == null || variacao >= 0)
-                ? Icons.trending_up_rounded
-                : Icons.trending_down_rounded,
-            valor: variacao == null
-                ? '—'
-                : '${variacao >= 0 ? '+' : ''}$variacao%',
-            rotulo: s.vsSemana,
-            cor: variacao == null
-                ? AppColors.dim
-                : (variacao >= 0 ? AppColors.prep : AppColors.danger),
+            icone: Icons.event_available_rounded,
+            valor: previstos == 0 ? '—' : '${diasAtivos.length}/$previstos',
+            rotulo: s.semana,
+            cor: AppColors.prep,
           ),
         ],
       ),

@@ -5,6 +5,30 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Modo Desempenho: métricas reais + só o dia de hoje (v0.75.1)
+
+**Feedback:** os dados do modo Desempenho "parecem aleatórios" e não deveriam aparecer os 7
+dias — só hoje, com o número do dia (ex.: "Domingo, 13").
+
+**Métricas:** trocado o "vs. semana passada" (ruidoso, dependia de semanas com pouco dado)
+por:
+1. **🔥 Sequência** — `streakAtual(concs, treinos)` (a mesma da gamificação);
+2. **Rating 0–100** — `ratingForma(concs, treinos, prog, diasInsignia: …)`, exatamente o
+   número da aba Progressão (dá para o usuário reconhecer);
+3. **Semana x/y** — dias treinados nesta semana (segunda→domingo) **contando conclusão OU
+   check-in** / dias agendados já passados. **Gotcha:** contar só conclusões zerava o número
+   para quem não responde "completei o treino?" — o check-in é automático por exercício, então
+   a união dos dois reflete a atividade real.
+
+**Layout:** no modo Desempenho o `_SeletorDias` saiu; entrou um cabeçalho
+`'${s.diasLongos[diaDeHoje]}, ${DateTime.now().day}'` e a lista passou a ser sempre a de
+hoje (`_listaDoDia(treinos, diaDeHoje)`).
+
+**Validação:** teste temporário renderizando os 4 modos (sem exceção/overflow) + golden do
+Desempenho; analyze sem erros; `flutter test` 52/52. Versão `0.75.1+104`.
+
+---
+
 ## 2026-09-12 — Modos de layout na página Treinos (ideias 7, 8 e 9) (v0.75.0)
 
 **Pedido:** manter o modo atual como padrão e **acrescentar** os layouts 7, 8 e 9 com um
