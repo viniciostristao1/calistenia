@@ -5,6 +5,33 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú transbordando + salto com squash & stretch (v0.69.0)
+
+**Feedback:** ainda sobrava assoalho no canto inferior esquerdo; as estrelas deviam formar
+mesmo um monte (não lado a lado); e o baú devia **saltar**: comprimir a altura e voltar.
+
+**Canto sem estrelas — diagnóstico:** a área escura não era a parede, era o **assoalho
+rente à parede da frente** (z alto). Resolvendo a projeção inversa do pixel acha-se
+`z ≈ 40` — todas as estrelas estavam com `z ≤ 3`. **Gotcha:** em axonométrica com yaw,
+chão "do fundo da tela" = z **positivo** (perto da parede da frente), não z negativo.
+
+**Correções:**
+1. Assoalho mais raso: `_floorY = _bodyH − 9` (parede interna curta, quase tudo vira
+   assoalho visível) e monte com **20 estrelas** em 4 camadas: base, meio, cima e topo,
+   mais uma **fileira da frente** (`z ≈ 28–31`, inclinada, só os topos aparecem) que cobre
+   a faixa da frente, e duas estrelas mais em pé na esquerda (`tilt` 1.25/1.3).
+2. Detalhe por estrela: brilho especular (bolinha branca) no canto, além do gradiente,
+   contorno gordinho e núcleo gravado.
+3. **Salto do baú** em `_chest`: `hop = sin(recT·2.6π)·(1−recT)` (0.56–0.96) movendo
+   `dy = −14·hop` e o `Transform.scale` (alignment bottomCenter) com
+   `scaleY = 1 − 0.16·hop`, `scaleX = 1 + 0.06·hop` — comprime subindo e estica descendo,
+   assentando amortecido. `amp = intensity.clamp(0.5, 1.6)`.
+
+**Validação:** goldens do meio da abertura, do salto (620 ms) e do repouso (1200 ms) +
+zoom no canto; analyze sem erros; `flutter test` 52/52. Versão `0.69.0+92`.
+
+---
+
 ## 2026-09-12 — Monte de estrelas no baú, com a cara do `Star3D` (v0.68.0)
 
 **Feedback:** as estrelas de dentro deviam parecer com a que salta e formar um **monte de

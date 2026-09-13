@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.69.0 (baú transbordando + salto com compressão):**
+  - O baú agora fica **cheio até a boca**: o monte de estrelas cobre todo o fundo (inclusive o canto esquerdo da frente) — nada de assoalho aparecendo.
+  - As estrelas ficaram com **brilho e núcleo gravado**, como a estrela que salta, empilhadas em camadas.
+  - O baú **salta**: comprime a altura, sobe e volta a assentar — bem mais vivo no "tranco" da tampa.
+
 - **2026-09-12 — v0.68.0 (baú cheio de estrelas, num monte de verdade):**
   - O baú agora está **cheio**: 15 estrelas cobrindo o fundo, empilhadas em camadas (um monte no meio, com as de baixo mais escurinhas e as de cima brilhando).
   - Cada estrela de dentro ficou **igual à que salta**: contorno gordinho e arredondado, brilho em degradê e a estrelinha gravada no meio — não é mais a estrela "chapada".

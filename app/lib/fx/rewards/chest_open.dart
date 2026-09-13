@@ -147,14 +147,21 @@ class _ChestOpenState extends State<ChestOpen>
     // Antecipação: tremida que amortece.
     final shakeT = Interval(0.0, 0.30).transform(v);
     final dx = sin(shakeT * 4 * 2 * pi) * 5 * (1 - shakeT) * _intensity;
-    // Tranco no batente: o baú dá um pulinho (sobe, cai, assenta).
-    final recT = Interval(0.62, 0.90).transform(v);
-    final dy = -3.5 * sin(recT * 2.2 * pi) * (1 - recT) * _intensity;
+    // Tranco no batente: comprime a altura, salta e assenta (squash & stretch).
+    final recT = Interval(0.56, 0.96).transform(v);
+    final hop = sin(recT * 2.6 * pi) * (1 - recT);
+    final amp = _intensity.clamp(0.5, 1.6);
+    final dy = -14.0 * hop * amp;
     return Transform.translate(
       offset: Offset(dx, dy),
-      child: CustomPaint(
-        size: const Size.square(200),
-        painter: _ChestPainter(v: v, intensity: _intensity),
+      child: Transform.scale(
+        alignment: Alignment.bottomCenter,
+        scaleX: 1 + 0.06 * hop * amp,
+        scaleY: 1 - 0.16 * hop * amp,
+        child: CustomPaint(
+          size: const Size.square(200),
+          painter: _ChestPainter(v: v, intensity: _intensity),
+        ),
       ),
     );
   }
@@ -216,7 +223,7 @@ class _ChestPainter extends CustomPainter {
   static const _depth = 88.0;
   static const _lidH = 32.0;
   static const _wall = 4.0;
-  static const _floorY = _bodyH - 20.0;
+  static const _floorY = _bodyH - 9.0;
   static const _hx = _bodyW / 2;
   static const _hd = _depth / 2;
   static const _hxi = _hx - _wall;
@@ -496,7 +503,7 @@ class _ChestPainter extends CustomPainter {
       double lift = 0,
       double tone = 0,
       double order = 0,
-      double tilt = 0.82,
+      double tilt = 0.95,
     }) {
       final st = sin(tilt);
       final ct = cos(tilt);
@@ -572,32 +579,51 @@ class _ChestPainter extends CustomPainter {
               ..strokeWidth = 0.8
               ..color = Colors.white.withValues(alpha: 0.35),
           );
+          // Brilho especular (canto claro da estrela).
+          c.drawCircle(
+            _proj(at(-r * 0.32, -r * 0.30, 0, 0), yaw),
+            1.3,
+            Paint()..color = Colors.white.withValues(alpha: 0.75),
+          );
         },
       );
     }
 
     // Monte: camadas que cobrem o fundo e sobem no meio.
     // Base (chão) — tom mais escuro (sombra da parede).
-    starOnFloor(-40, -25, 16.0, 0.2, tone: 0.30, order: 0.0);
-    starOnFloor(-21, -14, 15.5, -0.5, tone: 0.30, order: 0.1);
-    starOnFloor(0, -27, 16.0, 0.6, tone: 0.30, order: 0.2);
-    starOnFloor(21, -13, 15.5, -0.2, tone: 0.30, order: 0.3);
-    starOnFloor(39, -24, 15.0, 0.4, tone: 0.30, order: 0.4);
-    starOnFloor(-33, -5, 15.0, 0.9, tone: 0.34, order: 0.5);
-    starOnFloor(33, -4, 15.0, -0.7, tone: 0.34, order: 0.6);
-    // Frente (cobre o resto do assoalho visível).
-    starOnFloor(-14, -2, 14.0, -0.35, tone: 0.42, order: 0.7);
-    starOnFloor(17, -1, 14.0, 0.65, tone: 0.42, order: 0.75);
-    // Segunda camada.
-    starOnFloor(-29, -19, 14.0, 0.1, lift: 9, tone: 0.16, order: 1.0);
-    starOnFloor(-9, -19, 14.0, -0.6, lift: 9, tone: 0.16, order: 1.1);
-    starOnFloor(13, -22, 13.5, 0.5, lift: 9, tone: 0.16, order: 1.2);
-    starOnFloor(34, -16, 13.0, -0.3, lift: 9, tone: 0.16, order: 1.3);
-    // Terceira camada.
-    starOnFloor(-20, -18, 12.5, 0.3, lift: 17, tone: 0.05, order: 2.0);
-    starOnFloor(2, -18, 12.5, -0.5, lift: 17, tone: 0.05, order: 2.1);
+    // Base: cobre TODO o assoalho (inclusive o canto esquerdo da frente).
+    starOnFloor(-42, -21, 15.5, 0.2, tone: 0.30, order: 0.0);
+    starOnFloor(-24, -11, 15.0, -0.5, tone: 0.30, order: 0.1);
+    starOnFloor(-3, -25, 16.0, 0.6, tone: 0.30, order: 0.2);
+    starOnFloor(18, -11, 15.0, -0.2, tone: 0.30, order: 0.3);
+    starOnFloor(39, -21, 15.0, 0.4, tone: 0.30, order: 0.4);
+    starOnFloor(-35, -2, 16.0, 0.9, tone: 0.36, order: 0.5, tilt: 1.15);
+    starOnFloor(33, -1, 15.0, -0.7, tone: 0.36, order: 0.6, tilt: 1.15);
+    starOnFloor(-46, -12, 13.5, 0.35, tone: 0.38, order: 0.55);
+    starOnFloor(-17, 0, 15.5, -0.35, tone: 0.4, order: 0.7, tilt: 1.2);
+    starOnFloor(15, 0, 15.0, 0.65, tone: 0.4, order: 0.75, tilt: 1.2);
+    // Canto inferior esquerdo (estrelas mais em pé, aparecem sobre a borda).
+    starOnFloor(-45, -8, 15.0, 0.15, tone: 0.42, order: 0.8, tilt: 1.25);
+    starOnFloor(-32, 3, 14.0, -0.55, tone: 0.45, order: 0.9, tilt: 1.3);
+    // Fileira da FRENTE: os topos cobrem a faixa de assoalho que aparece
+    // rente à parede da frente (o "canto inferior" na tela).
+    starOnFloor(-25, 28, 15.0, 0.3, tone: 0.45, order: 0.85, tilt: 1.1);
+    starOnFloor(-3, 31, 15.5, -0.4, tone: 0.45, order: 0.87, tilt: 1.15);
+    starOnFloor(21, 28, 15.0, 0.5, tone: 0.45, order: 0.89, tilt: 1.1);
+    starOnFloor(40, 29, 14.0, -0.2, tone: 0.48, order: 0.91, tilt: 1.2);
+    // Segunda camada (fecha o meio).
+    starOnFloor(-27, -15, 14.0, 0.1, lift: 8.5, tone: 0.16, order: 1.0);
+    starOnFloor(-8, -16, 14.0, -0.6, lift: 8.5, tone: 0.16, order: 1.1);
+    starOnFloor(12, -18, 13.5, 0.45, lift: 8.5, tone: 0.16, order: 1.2);
+    starOnFloor(31, -13, 13.0, -0.3, lift: 8.5, tone: 0.16, order: 1.3);
+    starOnFloor(0, -8, 13.5, 0.8, lift: 8.5, tone: 0.2, order: 1.4);
+    // Terceira camada (sobe no centro).
+    starOnFloor(-18, -14, 12.5, 0.3, lift: 16, tone: 0.06, order: 2.0);
+    starOnFloor(2, -15, 12.5, -0.5, lift: 16, tone: 0.06, order: 2.1);
+    starOnFloor(19, -14, 12.0, 0.7, lift: 16, tone: 0.06, order: 2.2);
     // Topo do monte.
-    starOnFloor(-8, -17, 11.0, 0.5, lift: 24, tone: 0.0, order: 3.0);
+    starOnFloor(-7, -13, 11.0, 0.5, lift: 23, tone: 0.0, order: 3.0);
+    starOnFloor(8, -12, 10.5, -0.4, lift: 23, tone: 0.02, order: 3.1);
 
     // ── Corpo: frente ──
     face(
