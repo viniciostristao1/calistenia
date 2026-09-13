@@ -5,6 +5,30 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú 2: estrelas maiores + medalhas do app no Lab (v0.71.0)
+
+**Pedidos:** (1) aumentar um pouco as estrelas de dentro do baú 2; (2) as medalhas do
+Laboratório deveriam ser **iguais às do app** (🥇 nº 1 e 🥈 nº 2, com cordão),
+como na galeria do Check-in.
+
+**Estrelas do baú 2:** multiplicadas por ~1,1 no raio e as posições puxadas ~7% para
+dentro (`cx·0.93`, `cz·0.95`) para as maiores não furarem as paredes laterais. As paredes
+da frente/direita continuam desenhadas por último (bias), cobrindo qualquer sobra.
+
+**Medalhas:** o app usa **emojis** (`TipoConquista.emoji` → 🥇/🥈, via
+`util/conquista_badge.dart`), enquanto o Lab usava `Icons.military_tech_rounded`. Troquei
+o conteúdo do reveal para `Text('🥇'|'🥈', fontSize: 100)` passado como `child` do
+`IconReveal` (o registry hardcoda o emoji — `fx/` não importa `models/`, mantendo a regra
+de independência). Com `Spin3D` + `mirrorBack` (padrão), o emoji aparece **na orientação
+certa nas duas faces** do giro — importante porque o número "1"/"2" ficaria espelhado sem
+isso. **Gotcha:** `register_rewards.dart` não importava `material.dart`; passou a importar
+para usar `Text`/`TextStyle`.
+
+**Validação:** golden do baú 2 aberto (estrelas maiores), analyze sem erros e
+`flutter test` 52/52 (o smoke constrói todos os 11 tipos). Versão `0.71.0+97`.
+
+---
+
 ## 2026-09-12 — Baú 1 congelado + Baú 2 (estreia: estrelas facetadas) (v0.70.0)
 
 **Contexto:** o usuário gostou do baú atual e quer preservá-lo como **Baú 1**, criando um

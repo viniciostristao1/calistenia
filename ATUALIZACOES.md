@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.71.0 (estrelas maiores no Baú 2 + medalhas do app no Laboratório):**
+  - **Baú 2:** as estrelas de dentro ficaram um pouco **maiores**, enchendo melhor o baú.
+  - **Medalhas:** o Laboratório agora mostra as **mesmas medalhas do app** — 🥇 (nº 1) e 🥈 (nº 2), com o cordão e o número, como na galeria de conquistas do Check-in (antes era um ícone genérico).
+
 - **2026-09-12 — v0.70.0 (Baú 2 no Laboratório — Baú 1 preservado):**
   - O baú que você gostou ficou **congelado como “Baú 1”** (nada muda nele). Criei o **“Baú 2”**, uma cópia dele, para receber as melhorias sem risco — os dois aparecem no **🧪 Laboratório** para comparar.
   - Estreia do Baú 2: as **estrelas de dentro** ganharam o relevo da estrela que salta — **facetas iluminadas**, bisel, núcleo gravado e brilho — em vez do desenho liso com sombra.

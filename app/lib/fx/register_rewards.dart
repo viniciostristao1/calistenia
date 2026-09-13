@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../theme/app_colors.dart';
 import 'particles/confetti.dart';
 import 'reward_registry.dart';
@@ -71,15 +73,20 @@ void registerBuiltInRewards() {
     );
   }
 
-  // Medalhas — reveal com o ícone do Material.
+  // Medalhas — MESMO desenho do app (os emojis 🥇 nº 1 / 🥈 nº 2, como na
+  // galeria de conquistas do Check-in), agora em tamanho de reveal.
   for (final t in const [RewardType.medalGold, RewardType.medalSilver]) {
     RewardRegistry.register(
       t,
       (context, params, {value}) => IconReveal(
-        icon: t.icon,
         color: t.color(context),
         label: t.label,
         params: params,
+        size: 104,
+        child: Text(
+          t == RewardType.medalGold ? '🥇' : '🥈',
+          style: const TextStyle(fontSize: 100),
+        ),
       ),
     );
   }

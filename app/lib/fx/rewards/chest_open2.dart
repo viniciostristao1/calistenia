@@ -641,38 +641,38 @@ class _ChestPainter2 extends CustomPainter {
     }
 
     // Base: cobre TODO o assoalho (inclusive o canto esquerdo da frente).
-    starOnFloor(-42, -21, 15.5, 0.2, tone: 0.18, order: 0.0);
-    starOnFloor(-24, -11, 15.0, -0.5, tone: 0.18, order: 0.1);
-    starOnFloor(-3, -25, 16.0, 0.6, tone: 0.18, order: 0.2);
-    starOnFloor(18, -11, 15.0, -0.2, tone: 0.18, order: 0.3);
-    starOnFloor(39, -21, 15.0, 0.4, tone: 0.18, order: 0.4);
-    starOnFloor(-35, -2, 16.0, 0.9, tone: 0.22, order: 0.5, tilt: 1.15);
-    starOnFloor(33, -1, 15.0, -0.7, tone: 0.22, order: 0.6, tilt: 1.15);
-    starOnFloor(-46, -12, 13.5, 0.35, tone: 0.38, order: 0.55);
-    starOnFloor(-17, 0, 15.5, -0.35, tone: 0.4, order: 0.7, tilt: 1.2);
-    starOnFloor(15, 0, 15.0, 0.65, tone: 0.4, order: 0.75, tilt: 1.2);
+    starOnFloor(-39.1, -19.9, 17.1, 0.2, tone: 0.18, order: 0.0);
+    starOnFloor(-22.3, -10.4, 16.5, -0.5, tone: 0.18, order: 0.1);
+    starOnFloor(-2.8, -23.8, 17.6, 0.6, tone: 0.18, order: 0.2);
+    starOnFloor(16.7, -10.4, 16.5, -0.2, tone: 0.18, order: 0.3);
+    starOnFloor(36.3, -19.9, 16.5, 0.4, tone: 0.18, order: 0.4);
+    starOnFloor(-32.6, -1.9, 17.6, 0.9, tone: 0.22, order: 0.5, tilt: 1.15);
+    starOnFloor(30.7, -0.9, 16.5, -0.7, tone: 0.22, order: 0.6, tilt: 1.15);
+    starOnFloor(-42.8, -11.4, 14.9, 0.35, tone: 0.38, order: 0.55);
+    starOnFloor(-15.8, 0.0, 17.1, -0.35, tone: 0.4, order: 0.7, tilt: 1.2);
+    starOnFloor(14.0, 0.0, 16.5, 0.65, tone: 0.4, order: 0.75, tilt: 1.2);
     // Canto inferior esquerdo (estrelas mais em pé, aparecem sobre a borda).
-    starOnFloor(-45, -8, 15.0, 0.15, tone: 0.26, order: 0.8, tilt: 1.25);
-    starOnFloor(-32, 3, 14.0, -0.55, tone: 0.28, order: 0.9, tilt: 1.3);
+    starOnFloor(-41.9, -7.6, 16.5, 0.15, tone: 0.26, order: 0.8, tilt: 1.25);
+    starOnFloor(-29.8, 2.8, 15.4, -0.55, tone: 0.28, order: 0.9, tilt: 1.3);
     // Fileira da FRENTE: os topos cobrem a faixa de assoalho que aparece
     // rente à parede da frente (o "canto inferior" na tela).
-    starOnFloor(-25, 28, 15.0, 0.3, tone: 0.28, order: 0.85, tilt: 1.1);
-    starOnFloor(-3, 31, 15.5, -0.4, tone: 0.28, order: 0.87, tilt: 1.15);
-    starOnFloor(21, 28, 15.0, 0.5, tone: 0.28, order: 0.89, tilt: 1.1);
-    starOnFloor(40, 29, 14.0, -0.2, tone: 0.3, order: 0.91, tilt: 1.2);
+    starOnFloor(-23.2, 26.6, 16.5, 0.3, tone: 0.28, order: 0.85, tilt: 1.1);
+    starOnFloor(-2.8, 29.4, 17.1, -0.4, tone: 0.28, order: 0.87, tilt: 1.15);
+    starOnFloor(19.5, 26.6, 16.5, 0.5, tone: 0.28, order: 0.89, tilt: 1.1);
+    starOnFloor(37.2, 27.5, 15.4, -0.2, tone: 0.3, order: 0.91, tilt: 1.2);
     // Segunda camada (fecha o meio).
-    starOnFloor(-27, -15, 14.0, 0.1, lift: 8.5, tone: 0.16, order: 1.0);
-    starOnFloor(-8, -16, 14.0, -0.6, lift: 8.5, tone: 0.16, order: 1.1);
-    starOnFloor(12, -18, 13.5, 0.45, lift: 8.5, tone: 0.16, order: 1.2);
-    starOnFloor(31, -13, 13.0, -0.3, lift: 8.5, tone: 0.16, order: 1.3);
-    starOnFloor(0, -8, 13.5, 0.8, lift: 8.5, tone: 0.2, order: 1.4);
+    starOnFloor(-25.1, -14.2, 15.4, 0.1, lift: 8.5, tone: 0.16, order: 1.0);
+    starOnFloor(-7.4, -15.2, 15.4, -0.6, lift: 8.5, tone: 0.16, order: 1.1);
+    starOnFloor(11.2, -17.1, 14.9, 0.45, lift: 8.5, tone: 0.16, order: 1.2);
+    starOnFloor(28.8, -12.3, 14.3, -0.3, lift: 8.5, tone: 0.16, order: 1.3);
+    starOnFloor(0.0, -7.6, 14.9, 0.8, lift: 8.5, tone: 0.2, order: 1.4);
     // Terceira camada (sobe no centro).
-    starOnFloor(-18, -14, 12.5, 0.3, lift: 16, tone: 0.06, order: 2.0);
-    starOnFloor(2, -15, 12.5, -0.5, lift: 16, tone: 0.06, order: 2.1);
-    starOnFloor(19, -14, 12.0, 0.7, lift: 16, tone: 0.06, order: 2.2);
+    starOnFloor(-16.7, -13.3, 13.8, 0.3, lift: 16, tone: 0.06, order: 2.0);
+    starOnFloor(1.9, -14.2, 13.8, -0.5, lift: 16, tone: 0.06, order: 2.1);
+    starOnFloor(17.7, -13.3, 13.2, 0.7, lift: 16, tone: 0.06, order: 2.2);
     // Topo do monte.
-    starOnFloor(-7, -13, 11.0, 0.5, lift: 23, tone: 0.0, order: 3.0);
-    starOnFloor(8, -12, 10.5, -0.4, lift: 23, tone: 0.02, order: 3.1);
+    starOnFloor(-6.5, -12.3, 12.1, 0.5, lift: 23, tone: 0.0, order: 3.0);
+    starOnFloor(7.4, -11.4, 11.6, -0.4, lift: 23, tone: 0.02, order: 3.1);
 
     // ── Corpo: frente ──
     face(
