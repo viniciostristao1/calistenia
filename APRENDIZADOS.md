@@ -5,6 +5,32 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Troféu com silhueta da Champions + "subiu de nível" novo (v0.73.0)
+
+**Pedidos:** (1) troféus com cara de Liga dos Campeões; (2) "subiu de nível" com duas
+setas subindo/sumindo em ciclo + a pontuação de quantos níveis.
+
+**Troféu (`trophy_3d.dart`, terceira versão):** a silhueta agora imita a "orelhuda":
+copo em **trombeta** (`moveTo(33,21)` → cúbicas côncavas até a cintura em (51,60), fundo
+em (54,71) a 12 de largura), **aro** bem aberto (54×13), **nó** (disco 25×8 em y=72),
+haste curta, **base cilíndrica** com faixa escura e "nomes" gravados (tracinhos claros) e
+**orelhas grandes** presas no aro (60±26,22) e no nó (60±10,73) com a borda interna
+afastada — placas, não tubos. Mantidas as bandas de reflexo, oclusões e brilhos.
+
+**Subiu de nível (`level_up_reveal.dart`, novo):** dois `Icons.arrow_upward_rounded`
+aninhados num `AnimatedBuilder` em `repeat()`: fase `(t + i·0.5) % 1`, `dy = 62 − ph·128`,
+opacidade `sin(π·ph)` (aparece, sobe, some) e escala junto — sempre uma defasada da outra.
+No centro, a **pontuação** `+N` + “nível/níveis” com pop `elasticOut`.
+
+**Gotcha:** o `_pontuacao()` **não pode** ficar dentro do `AnimatedBuilder` — ele
+recriava o `TweenAnimationBuilder` a cada frame e a entrada nunca acontecia (ficava
+reiniciando). Ficou como irmão, fora do builder.
+
+**Validação:** golden dos dois troféus (160 px) e do nível em 3 tempos; analyze sem erros;
+`flutter test` 52/52. Versão `0.73.0+100`.
+
+---
+
 ## 2026-09-12 — Troféus mais "metal de verdade" (v0.72.1)
 
 **Feedback:** "os troféus estão feios, não parecem de verdade".

@@ -8,6 +8,7 @@ import 'rewards/chest_open.dart';
 import 'rewards/chest_open2.dart';
 import 'rewards/flame_reveal.dart';
 import 'rewards/icon_reveal.dart';
+import 'rewards/level_up_reveal.dart';
 import 'rewards/star_burst.dart';
 import 'rewards/trophy_3d.dart';
 import 'rewards/xp_gain.dart';
@@ -92,13 +93,13 @@ void registerBuiltInRewards() {
     );
   }
 
+  // Subiu de nível = setas subindo em ciclo + a pontuação (quantos níveis).
   RewardRegistry.register(
     RewardType.levelUp,
-    (context, params, {value}) => IconReveal(
-      icon: RewardType.levelUp.icon,
-      color: RewardType.levelUp.color(context),
-      label: value != null ? 'Nível ${value.round()}' : 'Subiu de nível',
+    (context, params, {value}) => LevelUpReveal(
       params: params,
+      color: RewardType.levelUp.color(context),
+      value: value ?? 1,
     ),
   );
   // Sequência = chama desenhada à mão, com as pontas balançando.

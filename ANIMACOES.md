@@ -145,11 +145,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.20 | Baú 2: estrelas ~10% maiores; **medalhas do Lab = mesmas do app** (emojis 🥇 nº 1 / 🥈 nº 2 com cordão, como na galeria do Check-in) no `IconReveal`. | **feita** |
 | 5.21 | **Sequência = chama de verdade** (`flame_reveal.dart`: 3 línguas + núcleo com pontas balançando, pulso e brasas) e **troféus no formato da "orelhuda"** (taça da Champions com alças grandes). | **feita** |
 | 5.22 | troféus repintados como **metal de verdade**: 7 stops, oclusões, barra gravada, brilhos especulares e alças com folga do copo. | **feita** |
+| 5.23 | troféu na **silhueta da Champions** (copo em trombeta, nó, base com nomes, orelhas grandes) e **"subiu de nível"** novo (`level_up_reveal.dart`: 2 setas subindo em ciclo + pontuação). | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.72.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.73.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -186,8 +187,10 @@ em pedestal, estrela gravada e painéis; parametrizado por `metal`, serve ouro/p
 `flame_reveal.dart` (**`FlameReveal`** — a sequência virou **chama animada**: 3 línguas +
 núcleo com as pontas balançando (senos defasados), pulso e brasas subindo; controller em
 `repeat`), `xp_gain.dart` (pilha +XP
-com `ShineSweep`, sem giro em Y — espelharia o texto), `icon_reveal.dart` (genérico:
-troféu/medalha/nível/sequência; `Spin3D` 2 voltas + holofote + halo + rótulo que sobe;
+com `ShineSweep`, sem giro em Y — espelharia o texto), `level_up_reveal.dart`
+(**`LevelUpReveal`** — subiu de nível: 2 setas subindo/sumindo em ciclo + pontuação `+N`
+com pop), `icon_reveal.dart` (genérico:
+medalhas; `Spin3D` 2 voltas + holofote + halo + rótulo que sobe;
 aceita `child` próprio ou `icon` do Material), `chest_open.dart` (baú **em vista 3/4** —
 mini-renderizador 3D no `_ChestPainter`: `_V` + projeção axonométrica com yaw/pitch,
 faces com culling por normal, luz direcional e ordenação por profundidade; **frente +

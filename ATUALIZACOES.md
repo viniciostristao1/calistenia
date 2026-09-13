@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.73.0 (troféus com a cara da Liga dos Campeões + “subiu de nível” novo):**
+  - **Troféus:** agora seguem a taça da **Liga dos Campeões** de verdade — copo em trombeta com a boca bem aberta, cintura estreita, **nó** embaixo, haste curta e base cilíndrica com a **faixa gravada dos nomes**; as **orelhas** são placas grandes presas no aro e no nó.
+  - **Subiu de nível:** virou **duas setas subindo em ciclo** (aparecem, sobem e somem, uma defasada da outra) com a **pontuação no meio** — o número de níveis que subiu (ajuste pelo slider “Valor” no Laboratório).
+
 - **2026-09-12 — v0.72.1 (troféus com cara de metal de verdade):**
   - Os troféus (ouro e prata) foram repintados: **bandas de reflexo** no copo, sombra rente ao aro e à base (oclusão), barra gravada, **brilhos especulares**, estrela em relevo e base em pedestal com entalhe. As **alças** ficaram com folga do copo, como alças de verdade.
 
