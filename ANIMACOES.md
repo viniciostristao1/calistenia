@@ -141,11 +141,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.16 | fix: **parede da frente desenhada por último** (`bias` 60/55) — cobre as estrelas que ficam atrás (antes a fileira da frente invadia a fachada). | **feita** |
 | 5.17 | fix: **tampa fechada por cima das estrelas** (`lidBias = 50·(1−clamp(sinθ·1.8))`) — sem estrelas vazando antes de abrir; viés zera com a tampa aberta. | **feita** |
 | 5.18 | fix: **removido o `ScreenFlash` do baú** (quadrado claro no overlay ao abrir); átomo segue livre no toolkit. | **feita** |
+| 5.19 | **Baú 1 congelado + Baú 2** (`RewardType.chest2`, `chest_open2.dart` — cópia isolada): estreia com **estrelas internas facetadas** (10 facetas com luz, bisel, núcleo gravado). | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.69.3. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.70.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -187,7 +188,9 @@ faces com culling por normal, luz direcional e ordenação por profundidade; **f
 lateral direita** visíveis, tampa girando no eixo X na dobradiça traseira, interior
 escuro com brilho e parte de dentro da tampa côncava com tábuas; física — afunda,
 destranca, freia, bate no batente e o baú dá um pulinho; item sai girando com `Star3D`),
-`placeholder_reward.dart` (fallback — hoje nenhum tipo cai nele).
+`chest_open2.dart` (**Baú 2** — cópia isolada do baú 1 para evoluir sem risco; estreia com
+**estrelas internas facetadas** estilo `Star3D`), `placeholder_reward.dart` (fallback —
+hoje nenhum tipo cai nele).
 
 **Util de pintura:** `fx/shading.dart` — `shade`/`lighten` (HSL) usados por `Star3D`,
 `Trophy3D` e `_ChestPainter`.

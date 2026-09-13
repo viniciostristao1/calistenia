@@ -5,6 +5,37 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Baú 1 congelado + Baú 2 (estreia: estrelas facetadas) (v0.70.0)
+
+**Contexto:** o usuário gostou do baú atual e quer preservá-lo como **Baú 1**, criando um
+**Baú 2** (cópia) para evoluir sem risco. Estreia do Baú 2: estrelas internas com o relevo
+da estrela que salta.
+
+**Arquitetura da versão:** `fx/rewards/chest_open2.dart` é uma **cópia isolada** de
+`chest_open.dart` (classes `ChestOpen2`/`_ChestPainter2`), e o `RewardType` ganhou o valor
+`chest2` (“Baú 2”, ícone `inventory_2_rounded`), registrado em `register_rewards.dart`.
+Assim os dois aparecem no Laboratório (a grade itera `RewardType.values`) e o baú 1 fica
+intocado — mexer no v2 não afeta o v1. Custo: duplicação de ~900 linhas (decisão
+consciente: isolamento > DRY aqui, porque o objetivo é iterar um sem quebrar o outro).
+
+**Estrelas do Baú 2:** cada estrela do monte agora é desenhada num **único comando**
+(`push`, é plana — evita fatiar a ordenação) com o relevo do `Star3D`: 10 **facetas**
+triangulares (centro → ponta → vértice interno) com tom por lambert 2D contra
+`luzEstrela = (-0.55, -0.83)` (canto sup. esquerdo da tela), **bisel** por stroke com
+gradiente (branco curto no topo → sombra embaixo, `stops [0, .16, 1]`), núcleo pentagonal
++ estrela **gravada** (risco escuro + risco claro deslocado) e ponto especular. A
+espessura continua sendo uma cópia deslocada do contorno.
+
+**Ajuste de cor (tentativa 1 → 2):** com `lighten(cor, .5)` + faíscas brancas em cada
+estrela o monte ficou **prateado/lavado**; corrigido para `claro = lighten(cor, .24)`,
+`escuro = shade(cor, .42)`, bisel mais curto e **sem faísca** (só o ponto) — aí sim leu
+como ouro facetado.
+
+**Validação:** golden do quadro aberto + zoom; analyze sem erros; `flutter test` 52/52
+(o smoke test agora cobre 11 `RewardType`, incluindo `chest2`). Versão `0.70.0+96`.
+
+---
+
 ## 2026-09-12 — Removido o clarão (quadrado claro) do baú (v0.69.3)
 
 **Feedback:** no overlay, ao abrir o baú acendia um **quadrado claro** cobrindo a área da

@@ -17,6 +17,7 @@ import '../theme/app_colors.dart';
 enum RewardType {
   star,
   chest,
+  chest2,
   trophyGold,
   trophySilver,
   medalGold,
@@ -39,6 +40,7 @@ extension RewardTypeInfo on RewardType {
   String get label => switch (this) {
         RewardType.star => 'Estrela',
         RewardType.chest => 'Baú',
+        RewardType.chest2 => 'Baú 2',
         RewardType.trophyGold => 'Troféu de Ouro',
         RewardType.trophySilver => 'Troféu de Prata',
         RewardType.medalGold => 'Medalha de Ouro',
@@ -52,6 +54,7 @@ extension RewardTypeInfo on RewardType {
   IconData get icon => switch (this) {
         RewardType.star => Icons.star_rounded,
         RewardType.chest => Icons.card_giftcard_rounded,
+        RewardType.chest2 => Icons.inventory_2_rounded,
         RewardType.trophyGold || RewardType.trophySilver =>
           Icons.emoji_events_rounded,
         RewardType.medalGold || RewardType.medalSilver =>
@@ -70,6 +73,7 @@ extension RewardTypeInfo on RewardType {
         RewardType.trophySilver || RewardType.medalSilver => _prata,
         RewardType.streak => AppColors.exec,
         RewardType.chest ||
+        RewardType.chest2 ||
         RewardType.levelUp ||
         RewardType.confetti =>
           context.accent,

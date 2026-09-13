@@ -3,6 +3,7 @@ import 'particles/confetti.dart';
 import 'reward_registry.dart';
 import 'reward_type.dart';
 import 'rewards/chest_open.dart';
+import 'rewards/chest_open2.dart';
 import 'rewards/icon_reveal.dart';
 import 'rewards/star_burst.dart';
 import 'rewards/trophy_3d.dart';
@@ -38,6 +39,10 @@ void registerBuiltInRewards() {
   RewardRegistry.register(
     RewardType.chest,
     (context, params, {value}) => ChestOpen(params: params),
+  );
+  RewardRegistry.register(
+    RewardType.chest2,
+    (context, params, {value}) => ChestOpen2(params: params),
   );
   RewardRegistry.register(
     RewardType.confetti,
