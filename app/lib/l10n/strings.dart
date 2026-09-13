@@ -53,6 +53,12 @@ class Strings {
   String get fechar => _t('Fechar', 'Close', 'Cerrar');
   String get copiar => _t('Copiar', 'Copy', 'Copiar');
   String get copiado => _t('Copiado!', 'Copied!', '¡Copiado!');
+  String get modoLayout => _t('Modo de layout', 'Layout mode', 'Modo de diseño');
+  String modoLayoutNome(String nome) => _t('Modo: $nome', 'Mode: $nome', 'Modo: $nome');
+  String get hoje => _t('Hoje', 'Today', 'Hoy');
+  String get sequencia => _t('Sequência', 'Streak', 'Racha');
+  String get semana => _t('Semana', 'Week', 'Semana');
+  String get vsSemana => _t('vs. semana passada', 'vs. last week', 'vs. semana pasada');
 
   // Check-in
   String get checkIn => _t('Check-in', 'Check-in', 'Check-in');

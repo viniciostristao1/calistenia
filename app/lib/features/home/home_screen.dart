@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../models/conclusao.dart';
 import '../../models/exercicio.dart';
 import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
+import '../../services/home_layout_pref.dart';
 import '../../services/idioma_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
@@ -29,6 +31,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _dia = diaDeHoje;
 
+  /// Aba interna do modo Hoje/Semana (ideia 8).
+  bool _verSemana = false;
+
   Future<void> _novoTreino() async {
     final t = Treino(nome: '', dias: [_dia]);
     await ref.read(treinosProvider.notifier).salvar(t);
@@ -38,9 +43,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _abrirConfig() => Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const ConfigScreen()),
+  void _abrirConfig() => Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => const ConfigScreen()));
+
+  /// Cicla o layout da página Treinos (mantém o modo atual como padrão).
+  Future<void> _trocarModo() async {
+    final prox = await ref.read(homeLayoutProvider.notifier).proximo();
+    if (!mounted) return;
+    final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(s.modoLayoutNome(prox.label)),
+          duration: const Duration(seconds: 2),
+        ),
       );
+  }
 
   void _compartilharDia() {
     final treinos = (ref.read(treinosProvider).value ?? const <Treino>[])
@@ -48,9 +68,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .toList();
     final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
     if (treinos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.nenhumTreinoDiaCompartilhar)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s.nenhumTreinoDiaCompartilhar)));
       return;
     }
     _mostrarCompartilhar(s.compartilharDia, treinosParaTexto(treinos));
@@ -60,9 +80,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final todos = ref.read(treinosProvider).value ?? const <Treino>[];
     final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
     if (todos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.nenhumTreinoCadastrado)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s.nenhumTreinoCadastrado)));
       return;
     }
     _mostrarCompartilhar(s.compartilharSemana, semanaParaTexto(todos));
@@ -98,9 +118,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               await Clipboard.setData(ClipboardData(text: texto));
               if (!mounted) return;
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(s.copiado)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(s.copiado)));
             },
             icon: const Icon(Icons.copy, size: 18),
             label: Text(s.copiar),
@@ -143,29 +163,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final buf = StringBuffer();
     buf.writeln('DEBUG SEQUÊNCIA — v$kVersao');
     buf.writeln('Agendados (0=seg): $agendados');
-    buf.writeln('Treinos: ${treinos.map((t) => "${t.nome}:${t.dias}").join(" | ")}');
+    buf.writeln(
+      'Treinos: ${treinos.map((t) => "${t.nome}:${t.dias}").join(" | ")}',
+    );
     buf.writeln('');
     buf.writeln('Dia | Sem | Ag | Check | Concl | Nivel | Conquistas');
     for (var d = 10; d <= 20; d++) {
       final dt = DateTime(2026, 8, d);
       final wd = dt.weekday - 1;
       final ag = agendados.contains(wd) ? 'S' : '-';
-      final ck = checkins.where((c) => c.data.day == d && c.data.month == 8).length;
-      final co = concs.where((c) => c.data.day == d && c.data.month == 8).toList();
-      final coTxt = co.isEmpty ? '-' : co.map((c) => c.completo ? 'C' : 'T').join(',');
-      final nivel = nivelInfo(concs, treinos, hoje: dt, diasValidos: diasValidos).atual;
-      final at = conquistasAtuais(concs, treinos, [], hoje: dt, diasValidos: diasValidos);
+      final ck = checkins
+          .where((c) => c.data.day == d && c.data.month == 8)
+          .length;
+      final co = concs
+          .where((c) => c.data.day == d && c.data.month == 8)
+          .toList();
+      final coTxt = co.isEmpty
+          ? '-'
+          : co.map((c) => c.completo ? 'C' : 'T').join(',');
+      final nivel = nivelInfo(
+        concs,
+        treinos,
+        hoje: dt,
+        diasValidos: diasValidos,
+      ).atual;
+      final at = conquistasAtuais(
+        concs,
+        treinos,
+        [],
+        hoje: dt,
+        diasValidos: diasValidos,
+      );
       final atTxt = at.isEmpty ? '-' : at.map((e) => e.name).join(',');
-      buf.writeln('${d.toString().padLeft(2, '0')}/08 | $wd | $ag | $ck | $coTxt | $nivel | $atTxt');
+      buf.writeln(
+        '${d.toString().padLeft(2, '0')}/08 | $wd | $ag | $ck | $coTxt | $nivel | $atTxt',
+      );
     }
     buf.writeln('');
     buf.writeln('Conclusoes Agosto:');
     for (final c in concs.where((c) => c.data.month == 8)) {
-      buf.writeln(' ${c.data.day.toString().padLeft(2, '0')}/08 ${c.treino} completo=${c.completo} id=${c.id.substring(0, 6)}');
+      buf.writeln(
+        ' ${c.data.day.toString().padLeft(2, '0')}/08 ${c.treino} completo=${c.completo} id=${c.id.substring(0, 6)}',
+      );
     }
     buf.writeln('Check-ins Agosto:');
     for (final c in checkins.where((c) => c.data.month == 8)) {
-      buf.writeln(' ${c.data.day.toString().padLeft(2, '0')}/08 ${c.exercicio}');
+      buf.writeln(
+        ' ${c.data.day.toString().padLeft(2, '0')}/08 ${c.exercicio}',
+      );
     }
     final txt = buf.toString();
     showDialog<void>(
@@ -176,16 +221,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
-            child: SelectableText(txt, style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+            child: SelectableText(
+              txt,
+              style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
+            ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Fechar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Fechar'),
+          ),
           FilledButton.icon(
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: txt));
               if (ctx.mounted) {
-                ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Copiado! Cole aqui no chat.')));
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(content: Text('Copiado! Cole aqui no chat.')),
+                );
               }
             },
             icon: const Icon(Icons.copy, size: 16),
@@ -201,6 +254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final async = ref.watch(treinosProvider);
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
+    final layout = ref.watch(homeLayoutProvider).value ?? HomeLayout.atual;
 
     return Scaffold(
       appBar: AppBar(
@@ -208,7 +262,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(borderRadius: BorderRadius.circular(6), child: Image.asset('assets/icon/logo.png', height: 26, width: 26, fit: BoxFit.cover)),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                'assets/icon/logo.png',
+                height: 26,
+                width: 26,
+                fit: BoxFit.cover,
+              ),
+            ),
             const SizedBox(width: 8),
             const Flexible(
               child: Text('Calis Timer', overflow: TextOverflow.ellipsis),
@@ -222,16 +284,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderRadius: BorderRadius.circular(4),
               child: Padding(
                 padding: const EdgeInsets.only(top: 3, left: 4, right: 4),
-                child: Text('v$kVersao',
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.dim)),
+                child: Text(
+                  'v$kVersao',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.dim,
+                  ),
+                ),
               ),
             ),
           ],
         ),
         actions: [
+          // Botão de modo: cada toque troca o layout da página Treinos.
+          IconButton(
+            tooltip: '${s.modoLayout} · ${layout.label}',
+            icon: Icon(switch (layout) {
+              HomeLayout.atual => Icons.view_quilt_outlined,
+              HomeLayout.desempenho => Icons.insights_outlined,
+              HomeLayout.abas => Icons.tab_outlined,
+              HomeLayout.carrossel => Icons.view_carousel_outlined,
+            }),
+            onPressed: _trocarModo,
+          ),
           IconButton(
             tooltip: s.configTitulo,
             icon: const Icon(Icons.settings_outlined),
@@ -244,8 +320,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 v == 'dia' ? _compartilharDia() : _compartilharSemana(),
             itemBuilder: (_) => [
               PopupMenuItem(value: 'dia', child: Text(s.compartilharDia)),
-              PopupMenuItem(
-                  value: 'semana', child: Text(s.compartilharSemana)),
+              PopupMenuItem(value: 'semana', child: Text(s.compartilharSemana)),
             ],
           ),
           IconButton(
@@ -266,30 +341,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Erro ao carregar: $e')),
         data: (treinos) {
-          final doDia =
-              treinos.where((t) => t.dias.contains(_dia)).toList();
-          final diasComTreino =
-              treinos.expand((t) => t.dias).toSet();
-          return Column(
-            children: [
-              _SeletorDias(
-                selecionado: _dia,
-                diasComTreino: diasComTreino,
-                onSelect: (d) => setState(() => _dia = d),
-              ),
-              Expanded(
-                child: doDia.isEmpty
-                    ? _Vazio(dia: _dia)
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                        itemCount: doDia.length,
-                        separatorBuilder: (_, _) =>
-                            const SizedBox(height: 12),
-                        itemBuilder: (_, i) => _TreinoCard(treino: doDia[i]),
-                      ),
-              ),
-            ],
+          final diasComTreino = treinos.expand((t) => t.dias).toSet();
+          final seletor = _SeletorDias(
+            selecionado: _dia,
+            diasComTreino: diasComTreino,
+            onSelect: (d) => setState(() => _dia = d),
           );
+          return switch (layout) {
+            HomeLayout.atual => Column(
+              children: [
+                seletor,
+                Expanded(child: _listaDoDia(treinos, _dia)),
+              ],
+            ),
+            HomeLayout.desempenho => Column(
+              children: [
+                _FaixaDesempenho(treinos: treinos),
+                seletor,
+                Expanded(child: _listaDoDia(treinos, _dia)),
+              ],
+            ),
+            HomeLayout.abas => _ModoAbas(
+              treinos: treinos,
+              verSemana: _verSemana,
+              onVerSemana: (v) => setState(() => _verSemana = v),
+            ),
+            HomeLayout.carrossel => _ModoCarrossel(
+              treinos: treinos,
+              dia: _dia,
+              onDia: (d) => setState(() => _dia = d),
+            ),
+          };
         },
       ),
     );
@@ -397,19 +479,20 @@ class _TreinoCard extends StatelessWidget {
   final Treino treino;
 
   void _abrirEditor(BuildContext context) => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => TreinoEditorScreen(treinoId: treino.id),
-        ),
-      );
+    MaterialPageRoute(builder: (_) => TreinoEditorScreen(treinoId: treino.id)),
+  );
 
-  void _rodar(BuildContext context, String titulo, List<Exercicio> exs,
-          {Treino? treino}) =>
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              PlayerScreen(titulo: titulo, exercicios: exs, treino: treino),
-        ),
-      );
+  void _rodar(
+    BuildContext context,
+    String titulo,
+    List<Exercicio> exs, {
+    Treino? treino,
+  }) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) =>
+          PlayerScreen(titulo: titulo, exercicios: exs, treino: treino),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -437,8 +520,11 @@ class _TreinoCard extends StatelessWidget {
                           // "6 pontinhos": pista de que o título abre a edição.
                           Padding(
                             padding: EdgeInsets.only(top: 2, right: 6),
-                            child: Icon(Icons.drag_indicator,
-                                size: 20, color: AppColors.dim2),
+                            child: Icon(
+                              Icons.drag_indicator,
+                              size: 20,
+                              color: AppColors.dim2,
+                            ),
                           ),
                           Expanded(
                             child: Column(
@@ -461,7 +547,9 @@ class _TreinoCard extends StatelessWidget {
                                 Text.rich(
                                   TextSpan(
                                     style: TextStyle(
-                                        color: AppColors.dim, fontSize: 13),
+                                      color: AppColors.dim,
+                                      fontSize: 13,
+                                    ),
                                     children: [
                                       TextSpan(text: base),
                                       if (dur > 0) ...[
@@ -469,8 +557,11 @@ class _TreinoCard extends StatelessWidget {
                                         WidgetSpan(
                                           alignment:
                                               PlaceholderAlignment.middle,
-                                          child: Icon(Icons.access_time,
-                                              size: 13, color: AppColors.dim),
+                                          child: Icon(
+                                            Icons.access_time,
+                                            size: 13,
+                                            color: AppColors.dim,
+                                          ),
                                         ),
                                         TextSpan(
                                           text:
@@ -493,8 +584,11 @@ class _TreinoCard extends StatelessWidget {
                   grande: true,
                   habilitado: treino.exercicios.isNotEmpty,
                   onTap: () => _rodar(
-                      context, treino.nome, treino.exercicios,
-                      treino: treino),
+                    context,
+                    treino.nome,
+                    treino.exercicios,
+                    treino: treino,
+                  ),
                 ),
               ],
             ),
@@ -552,13 +646,14 @@ class _ExercicioLinha extends StatelessWidget {
                   Text(
                     e.nome.isEmpty ? 'Sem nome' : e.nome,
                     style: const TextStyle(
-                        fontSize: 14.5, fontWeight: FontWeight.w600),
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 1),
                   Text(
                     detalhe,
-                    style:
-                        TextStyle(color: AppColors.dim, fontSize: 12),
+                    style: TextStyle(color: AppColors.dim, fontSize: 12),
                   ),
                 ],
               ),
@@ -607,9 +702,7 @@ class _PlayCircle extends StatelessWidget {
     }
     return Material(
       color: Colors.transparent,
-      shape: CircleBorder(
-        side: BorderSide(color: AppColors.line),
-      ),
+      shape: CircleBorder(side: BorderSide(color: AppColors.line)),
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
@@ -657,6 +750,480 @@ class _Vazio extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Lista (ou vazio) dos treinos de um dia — usada pelos quatro modos.
+Widget _listaDoDia(List<Treino> treinos, int dia) {
+  final doDia = treinos.where((t) => t.dias.contains(dia)).toList();
+  if (doDia.isEmpty) return _Vazio(dia: dia);
+  return ListView.separated(
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+    itemCount: doDia.length,
+    separatorBuilder: (_, _) => const SizedBox(height: 12),
+    itemBuilder: (_, i) => _TreinoCard(treino: doDia[i]),
+  );
+}
+
+/// **Modo 7** — faixa de desempenho no topo (sequência, semana, variação).
+class _FaixaDesempenho extends ConsumerWidget {
+  const _FaixaDesempenho({required this.treinos});
+
+  final List<Treino> treinos;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = Strings(ref.watch(idiomaProvider).value ?? Idioma.pt);
+    final concs = ref.watch(conclusaoProvider).value ?? const <Conclusao>[];
+
+    final agora = DateTime.now();
+    final hoje0 = DateTime(agora.year, agora.month, agora.day);
+    final segunda = hoje0.subtract(Duration(days: agora.weekday - 1));
+    final proxima = segunda.add(const Duration(days: 7));
+    final passada = segunda.subtract(const Duration(days: 7));
+
+    int diasFeitos(DateTime de, DateTime ate) => concs
+        .where((c) => !c.data.isBefore(de) && c.data.isBefore(ate))
+        .map((c) => c.data)
+        .toSet()
+        .length;
+
+    final feitos = diasFeitos(segunda, proxima);
+    final antes = diasFeitos(passada, segunda);
+    final previstos = diasAgendados(
+      treinos,
+    ).where((d) => d <= agora.weekday - 1).length;
+    final variacao = antes == 0
+        ? null
+        : ((feitos - antes) * 100 / antes).round();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
+        children: [
+          _Stat(
+            icone: Icons.local_fire_department_rounded,
+            valor: '${streakAtual(concs, treinos)}',
+            rotulo: s.sequencia,
+            cor: AppColors.exec,
+          ),
+          const SizedBox(width: 8),
+          _Stat(
+            icone: Icons.event_available_rounded,
+            valor: previstos == 0 ? '—' : '$feitos/$previstos',
+            rotulo: s.semana,
+            cor: AppColors.prep,
+          ),
+          const SizedBox(width: 8),
+          _Stat(
+            icone: (variacao == null || variacao >= 0)
+                ? Icons.trending_up_rounded
+                : Icons.trending_down_rounded,
+            valor: variacao == null
+                ? '—'
+                : '${variacao >= 0 ? '+' : ''}$variacao%',
+            rotulo: s.vsSemana,
+            cor: variacao == null
+                ? AppColors.dim
+                : (variacao >= 0 ? AppColors.prep : AppColors.danger),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({
+    required this.icone,
+    required this.valor,
+    required this.rotulo,
+    required this.cor,
+  });
+
+  final IconData icone;
+  final String valor;
+  final String rotulo;
+  final Color cor;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icone, size: 16, color: cor),
+              const SizedBox(width: 4),
+              Text(
+                valor,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            rotulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: AppColors.dim, fontSize: 10.5),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// **Modo 8** — duas visões: Hoje (ação) e Semana (planejamento).
+class _ModoAbas extends ConsumerWidget {
+  const _ModoAbas({
+    required this.treinos,
+    required this.verSemana,
+    required this.onVerSemana,
+  });
+
+  final List<Treino> treinos;
+  final bool verSemana;
+  final ValueChanged<bool> onVerSemana;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = Strings(ref.watch(idiomaProvider).value ?? Idioma.pt);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Row(
+            children: [
+              _SegBtn(
+                rotulo: s.hoje,
+                on: !verSemana,
+                onTap: () => onVerSemana(false),
+              ),
+              const SizedBox(width: 8),
+              _SegBtn(
+                rotulo: s.semana,
+                on: verSemana,
+                onTap: () => onVerSemana(true),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: verSemana
+              ? _SemanaLista(treinos: treinos)
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '${s.hoje} · ${s.diasLongos[diaDeHoje]}',
+                          style: TextStyle(
+                            color: AppColors.dim,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(child: _listaDoDia(treinos, diaDeHoje)),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SegBtn extends StatelessWidget {
+  const _SegBtn({required this.rotulo, required this.on, required this.onTap});
+
+  final String rotulo;
+  final bool on;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          color: on ? context.accent : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: on ? context.accent : AppColors.line),
+        ),
+        child: Text(
+          rotulo,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+            color: on ? context.onAccent : AppColors.text,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// Visão da semana inteira (modo 8): cada dia com seus treinos, hoje marcado.
+class _SemanaLista extends ConsumerWidget {
+  const _SemanaLista({required this.treinos});
+
+  final List<Treino> treinos;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = Strings(ref.watch(idiomaProvider).value ?? Idioma.pt);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
+      children: [
+        for (var d = 0; d < 7; d++)
+          _DiaSemana(dia: d, treinos: treinos, hoje: d == diaDeHoje, s: s),
+      ],
+    );
+  }
+}
+
+class _DiaSemana extends StatelessWidget {
+  const _DiaSemana({
+    required this.dia,
+    required this.treinos,
+    required this.hoje,
+    required this.s,
+  });
+
+  final int dia;
+  final List<Treino> treinos;
+  final bool hoje;
+  final Strings s;
+
+  @override
+  Widget build(BuildContext context) {
+    final doDia = treinos.where((t) => t.dias.contains(dia)).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Text(
+              s.diasLongos[dia],
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: hoje ? context.accent : AppColors.text,
+              ),
+            ),
+            if (hoje) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: context.accent.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  s.hoje,
+                  style: TextStyle(
+                    color: context.accent,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+            const Spacer(),
+            Text(
+              doDia.isEmpty ? '—' : '${doDia.length}',
+              style: TextStyle(color: AppColors.dim, fontSize: 12),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        if (doDia.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              s.nenhumTreinoEm(s.diasLongos[dia]),
+              style: TextStyle(color: AppColors.dim2, fontSize: 12.5),
+            ),
+          )
+        else
+          for (final t in doDia)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _TreinoLinha(treino: t),
+            ),
+      ],
+    );
+  }
+}
+
+/// Linha compacta de treino (modo Semana): abre o editor ao tocar; ▶ roda.
+class _TreinoLinha extends StatelessWidget {
+  const _TreinoLinha({required this.treino});
+
+  final Treino treino;
+
+  @override
+  Widget build(BuildContext context) {
+    final n = treino.exercicios.length;
+    final dur = treino.duracaoTotalSeg;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TreinoEditorScreen(treinoId: treino.id),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      treino.nome.isEmpty ? 'Novo treino' : treino.nome,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$n ${n == 1 ? 'exercício' : 'exercícios'} · ${fmtSeg(dur)}',
+                      style: TextStyle(color: AppColors.dim, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              _PlayCircle(
+                grande: false,
+                habilitado: treino.exercicios.isNotEmpty,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PlayerScreen(
+                      titulo: treino.nome,
+                      exercicios: treino.exercicios,
+                      treino: treino,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// **Modo 9** — carrossel de dias: setas, bolinhas e deslize lateral.
+class _ModoCarrossel extends ConsumerWidget {
+  const _ModoCarrossel({
+    required this.treinos,
+    required this.dia,
+    required this.onDia,
+  });
+
+  final List<Treino> treinos;
+  final int dia;
+  final ValueChanged<int> onDia;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = Strings(ref.watch(idiomaProvider).value ?? Idioma.pt);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
+          child: Row(
+            children: [
+              IconButton(
+                tooltip: s.diasLongos[(dia + 6) % 7],
+                icon: const Icon(Icons.chevron_left),
+                onPressed: () => onDia((dia + 6) % 7),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      s.diasLongos[dia],
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (dia == diaDeHoje)
+                      Text(
+                        s.hoje,
+                        style: TextStyle(
+                          color: context.accent,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: s.diasLongos[(dia + 1) % 7],
+                icon: const Icon(Icons.chevron_right),
+                onPressed: () => onDia((dia + 1) % 7),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var d = 0; d < 7; d++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: d == dia ? 16 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: d == dia ? context.accent : AppColors.line,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Expanded(
+          child: GestureDetector(
+            onHorizontalDragEnd: (det) {
+              final v = det.primaryVelocity ?? 0;
+              if (v <= -250) {
+                onDia((dia + 1) % 7);
+              } else if (v >= 250) {
+                onDia((dia + 6) % 7);
+              }
+            },
+            child: _listaDoDia(treinos, dia),
+          ),
+        ),
+      ],
     );
   }
 }

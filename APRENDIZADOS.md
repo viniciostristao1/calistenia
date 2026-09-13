@@ -5,6 +5,34 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Modos de layout na página Treinos (ideias 7, 8 e 9) (v0.75.0)
+
+**Pedido:** manter o modo atual como padrão e **acrescentar** os layouts 7, 8 e 9 com um
+botão ao lado da engrenagem que **cicla** a cada toque.
+
+**Como:** `services/home_layout_pref.dart` com `enum HomeLayout { atual, desempenho, abas,
+carrossel }` persistido em `home_layout_v1` (mesmo padrão de tema/som). Na `HomeScreen`, o
+botão (antes da engrenagem) chama `homeLayoutProvider.notifier.proximo()` e mostra um
+SnackBar com o nome; o ícone muda por modo. O `body` só troca a **apresentação**: o
+`_listaDoDia(treinos, dia)` (extraído do corpo antigo) é reusado pelos quatro modos.
+- **7 Desempenho:** `_FaixaDesempenho` (3 `_Stat`: sequência via `streakAtual`, treinos da
+  semana = dias com conclusão / dias agendados já passados, variação % vs. semana anterior)
+  + o seletor e a lista de sempre.
+- **8 Hoje/Semana:** `_ModoAbas` com dois botões (`_SegBtn`) e a visão Semana em
+  `_SemanaLista` (7 seções `_DiaSemana`, hoje marcado, `_TreinoLinha` compacta).
+- **9 Carrossel:** `_ModoCarrossel` com setas ‹ ›, bolinhas animadas e
+  `onHorizontalDragEnd` (>|250| px/s) trocando o dia; lista do dia por baixo.
+
+**Gotchas:** (1) `GestureDetector` horizontal envolvendo uma `ListView` vertical não
+conflita — o reconhecedor decide pelo eixo; (2) o calendário da semana usa segunda como
+início (`weekday-1`), igual ao resto do app; (3) o denominador da "semana" conta só os dias
+agendados **já passados**, senão meio de semana parecia sempre atrasado.
+
+**Validação:** teste temporário renderizando os 4 modos (sem exceção/overflow) + goldens;
+analyze sem erros; `flutter test` 52/52. Versão `0.75.0+103`.
+
+---
+
 ## 2026-09-12 — Troféu: 2ª passada na referência + página de ideias de layout (v0.74.0)
 
 **Troféu (2ª passada):** com o print lado a lado, os ajustes que mais aproximaram:

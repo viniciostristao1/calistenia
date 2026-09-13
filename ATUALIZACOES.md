@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.75.0 (modos de layout da página Treinos):**
+  - Novo **botão ao lado da engrenagem**: cada toque troca o layout da página Treinos e avisa qual entrou. O **modo atual continua sendo o padrão** — nada muda se você não tocar nele.
+  - Modos incluídos (das ideias 7, 8 e 9): **Desempenho** (faixa com sequência 🔥, treinos da semana e variação vs. semana passada, acima da lista de sempre), **Hoje/Semana** (duas visões internas: ação e planejamento) e **Carrossel** (um dia por tela, com setas, bolinhas e deslize lateral).
+  - O modo escolhido fica salvo no aparelho.
+
 - **2026-09-12 — v0.74.0 (troféu bem mais fiel à referência):**
   - Segunda passada no troféu: corpo **mais cheio** com o ombro mais alto, afinação mais reta até a cintura, **ganchos maiores** e alças que **descem abraçando o corpo** com folga pequena, e **pé mais largo** — bem mais perto do print da Champions que você mandou. (Sigo podando detalhes se quiser.)
 
