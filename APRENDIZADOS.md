@@ -5,6 +5,28 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Troféu redesenhado a partir do print da Champions (v0.73.1)
+
+**Contexto:** o usuário subiu no repo o print `Screenshot_2026-09-13-18-01-18-646_...png`
+(o troféu real da Liga dos Campeões) e pediu para copiar formato/detalhes, sem fundo e com
+as animações atuais.
+
+**O que o print mostra (e o que ajustei):** corpo **esguio em urna** — não vase/vaso largo:
+ombro abre até a largura máxima e afina num cone suave até a cintura; **gargalo** curto com
+aro na boca e anel na base; **pé em trombeta** (côncavo) com torus na base; e as **alças
+finas em gancho** que sobem ACIMA do aro, abrem, voltam e descem **por fora do corpo**
+(com folga) até a cintura. Métrica-chave: largura máxima do corpo ≈ 1/3 da altura — a minha
+primeira versão tinha 0,64 e virava ânfora.
+
+**Gotcha:** alça desenhada antes do corpo fica **escondida** se a curva não passar por
+FORA do contorno do corpo — os `cubicTo` precisam de ponto de controle além da largura
+máxima (ex.: controle em `60±30` com corpo em `60±17`), senão só o gancho aparece.
+
+**Validação:** golden dos dois troféus; analyze sem erros; `flutter test` 52/52.
+Versão `0.73.1+101`.
+
+---
+
 ## 2026-09-12 — Troféu com silhueta da Champions + "subiu de nível" novo (v0.73.0)
 
 **Pedidos:** (1) troféus com cara de Liga dos Campeões; (2) "subiu de nível" com duas
