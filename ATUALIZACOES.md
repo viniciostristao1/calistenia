@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.74.0 (troféu bem mais fiel à referência):**
+  - Segunda passada no troféu: corpo **mais cheio** com o ombro mais alto, afinação mais reta até a cintura, **ganchos maiores** e alças que **descem abraçando o corpo** com folga pequena, e **pé mais largo** — bem mais perto do print da Champions que você mandou. (Sigo podando detalhes se quiser.)
+
 - **2026-09-12 — v0.73.1 (troféu copiado da sua referência da Champions):**
   - Refiz os troféus usando o print que você mandou: corpo **esguio em urna** (ombro que abre e afina), **gargalo** com aro e anel, **pé em trombeta** com aro na base e as **alças finas em gancho** — sobem acima do aro, abrem, descem abraçando o corpo e fecham na cintura. Sem fundo, com o mesmo giro/reveal do Laboratório.
 

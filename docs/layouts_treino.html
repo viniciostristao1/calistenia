@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calis Timer — 10 ideias de layout para a página Treino</title>
+<style>
+  :root{
+    --bg:#0E1114; --card:#161B21; --card2:#1C2229; --linha:#2A323B;
+    --txt:#E9EDF1; --dim:#93A0AC; --accent:#E8B93E; --accent2:#F4C542;
+    --ok:#57B77A; --info:#5AA9E6; --fogo:#F0742A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+       font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+  header{padding:34px 20px 10px;max-width:1180px;margin:0 auto}
+  header h1{margin:0;font-size:26px;letter-spacing:.3px}
+  header h1 span{color:var(--accent)}
+  header p{color:var(--dim);margin:8px 0 0;max-width:820px}
+  .tag{display:inline-block;margin-top:14px;padding:4px 10px;border:1px solid var(--linha);
+       border-radius:999px;color:var(--dim);font-size:12.5px}
+  main{max-width:1180px;margin:0 auto;padding:22px 20px 80px;
+       display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+  .idea{background:var(--card);border:1px solid var(--linha);border-radius:18px;
+        padding:16px;display:flex;flex-direction:column;gap:14px}
+  .info h2{margin:0 0 6px;font-size:17px}
+  .info .num{display:inline-flex;align-items:center;justify-content:center;
+             width:30px;height:30px;border-radius:9px;background:rgba(232,185,62,.14);
+             color:var(--accent);font-weight:800;margin-right:8px;font-size:14px}
+  .info p{margin:0;color:var(--dim);font-size:13.5px}
+  .info ul{margin:10px 0 0;padding:0;list-style:none;font-size:13px}
+  .info li{margin:4px 0}
+  .info .pr{color:var(--ok)} .info .co{color:#D98C8C}
+  /* ── moldura de celular ── */
+  .phone{background:#0A0D10;border:1px solid var(--linha);border-radius:22px;
+         padding:10px 10px 8px;width:100%;max-width:262px;margin:0 auto;flex:none}
+  .ph-top{display:flex;align-items:center;justify-content:space-between;
+          padding:2px 4px 8px;color:var(--txt);font-size:13px;font-weight:700}
+  .ph-top .ic{color:var(--dim);font-weight:400}
+  .ph-body{height:430px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+  .ph-nav{display:flex;justify-content:space-around;padding-top:8px;color:var(--dim);font-size:11px}
+  .ph-nav b{color:var(--accent)}
+  /* blocos */
+  .row{display:flex;gap:6px;align-items:center}
+  .chips{display:flex;gap:5px}
+  .chip{flex:1;text-align:center;padding:6px 0;border-radius:9px;background:var(--card2);
+        color:var(--dim);font-size:11px;border:1px solid transparent}
+  .chip.on{background:var(--accent);color:#1B1503;font-weight:800}
+  .chip .dot{display:block;width:5px;height:5px;border-radius:50%;background:var(--ok);margin:3px auto 0}
+  .chip.on .dot{background:#1B1503}
+  .h{font-size:12px;color:var(--dim);margin:2px 0}
+  .card{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:9px}
+  .card .t{font-size:12.5px;font-weight:700}
+  .card .s{font-size:11px;color:var(--dim);margin-top:2px}
+  .play{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#1B1503;
+        display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+  .pill{font-size:10.5px;color:var(--dim);border:1px solid var(--linha);
+        border-radius:999px;padding:2px 7px}
+  .today{background:linear-gradient(135deg,#241B06,#171B21);border:1px solid #6A5320;
+         border-radius:14px;padding:12px}
+  .bigbtn{margin-top:9px;background:var(--accent);color:#1B1503;border-radius:10px;
+          text-align:center;padding:8px;font-weight:800;font-size:12px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .cal .dow{font-size:9.5px;color:var(--dim)}
+  .cal .d{background:var(--card2);border-radius:8px;padding:6px 0;font-size:11px;color:var(--dim)}
+  .cal .d.on{border:1px solid var(--accent);color:var(--txt)}
+  .cal .d.hoje{background:var(--accent);color:#1B1503;font-weight:800}
+  .cal .d i{display:block;width:4px;height:4px;border-radius:50%;background:var(--ok);margin:3px auto 0}
+  .tl{position:relative;padding-left:16px;flex:1}
+  .tl:before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--linha)}
+  .tl .no{position:relative;margin-bottom:9px}
+  .tl .no:before{content:"";position:absolute;left:-15px;top:5px;width:9px;height:9px;
+                 border-radius:50%;background:var(--dim);border:2px solid var(--bg)}
+  .tl .no.on:before{background:var(--accent)}
+  .stats{display:flex;gap:6px}
+  .stat{flex:1;background:var(--card2);border:1px solid var(--linha);border-radius:11px;
+        padding:7px;text-align:center}
+  .stat b{display:block;font-size:15px}
+  .stat span{font-size:10px;color:var(--dim)}
+  .seg{display:flex;background:var(--card2);border-radius:11px;padding:3px;border:1px solid var(--linha)}
+  .seg div{flex:1;text-align:center;padding:6px;border-radius:9px;font-size:12px;color:var(--dim)}
+  .seg .on{background:var(--accent);color:#1B1503;font-weight:800}
+  .sheet{background:var(--card2);border:1px solid var(--linha);border-top-left-radius:14px;
+         border-top-right-radius:14px;padding:9px;margin-top:auto}
+  .grab{width:34px;height:4px;border-radius:99px;background:var(--linha);margin:0 auto 7px}
+  .semanabar{display:flex;gap:4px;margin-top:6px}
+  .semanabar .d{flex:1;text-align:center;font-size:10px;color:var(--dim);
+                background:var(--card2);border-radius:8px;padding:5px 0}
+  .semanabar .d.on{background:var(--accent);color:#1B1503;font-weight:800}
+  .hint{font-size:10.5px;color:var(--dim);text-align:center}
+  .arrowrow{display:flex;align-items:center;justify-content:space-between;color:var(--dim);font-size:12px}
+  .dots{display:flex;gap:4px;justify-content:center}
+  .dots i{width:5px;height:5px;border-radius:50%;background:var(--linha)}
+  .dots i.on{background:var(--accent)}
+  footer{max-width:1180px;margin:0 auto;padding:0 20px 60px;color:var(--dim);font-size:13px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Calis Timer · <span>10 ideias de layout</span> para a página Treino</h1>
+  <p>Como dispor a semana, deixar a navegação mais rápida e mostrar desempenho sem poluir.
+     Cada cartão traz um wireframe (esboço) e o porquê. Tudo pensado para continuar simples:
+     um toque para treinar, o resto é apoio.</p>
+  <span class="tag">Cores do app · tudo é esboço, não é o app final</span>
+</header>
+
+<main>
+
+  <!-- 1 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="chips">
+          <div class="chip">Seg<span class="dot"></span></div>
+          <div class="chip on">Ter<span class="dot"></span></div>
+          <div class="chip">Qua<span class="dot"></span></div>
+          <div class="chip">Qui<span class="dot"></span></div>
+          <div class="chip">Sex<span class="dot"></span></div>
+          <div class="chip">Sáb</div>
+          <div class="chip">Dom</div>
+        </div>
+        <div class="h">Hoje · 2 treinos</div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Superior</div><div class="s">6 exercícios · ~28 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Core</div><div class="s">4 exercícios · ~14 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="h">Fim de semana livre 🎉</div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">01</span>Tira da semana + lista do dia</h2>
+      <p>Os 7 dias numa tira rolável, com pontinho nos dias que têm treino e o dia de hoje destacado.
+         Abaixo, os treinos do dia com um ▶ grande em cada.</p>
+      <ul>
+        <li class="pr">+ Mais próximo do que já existe — mudança pequena e segura.</li>
+        <li class="pr">+ 1 toque para começar; a semana inteira visível de relance.</li>
+        <li class="co">− A tira fica apertada com 7 chips em telas pequenas.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="h">Terça · hoje</div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Superior</div><div class="s">6 exercícios · ~28 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Core</div><div class="s">4 exercícios · ~14 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="h">Quarta · 1 treino</div>
+        <div class="card row" style="justify-content:space-between;opacity:.75">
+          <div><div class="t">Pernas</div><div class="s">5 exercícios</div></div>
+          <span class="pill">abrir</span>
+        </div>
+        <div class="h">Quinta · 0</div>
+        <div class="h">Sexta · 1 treino</div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">02</span>Agenda da semana em lista</h2>
+      <p>A semana inteira como uma lista rolável: cada dia é um cabeçalho, hoje abre expandido e os
+         outros dias mostram a contagem e um “abrir”.</p>
+      <ul>
+        <li class="pr">+ Cabe qualquer quantidade de treinos por dia.</li>
+        <li class="pr">+ Leitura natural “de cima para baixo”, sem itens escondidos.</li>
+        <li class="co">− Precisa rolar para ver o fim da semana.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="today">
+          <div class="s" style="color:var(--accent);font-weight:800;font-size:11px">HOJE · TERÇA</div>
+          <div class="t" style="font-size:15px;margin-top:4px">Superior</div>
+          <div class="s" style="color:var(--dim);font-size:11.5px">6 exercícios · ~28 min · 3 séries</div>
+          <div class="bigbtn">▶ Iniciar treino</div>
+        </div>
+        <div class="h" style="margin-top:4px">Resto da semana</div>
+        <div class="card row" style="justify-content:space-between;opacity:.8"><span class="t">Quarta · Pernas</span><span class="pill">›</span></div>
+        <div class="card row" style="justify-content:space-between;opacity:.8"><span class="t">Quinta · livre</span><span class="pill">›</span></div>
+        <div class="card row" style="justify-content:space-between;opacity:.8"><span class="t">Sexta · Full body</span><span class="pill">›</span></div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">03</span>“Hoje” em destaque + accordion</h2>
+      <p>Um cartão grande só com o treino de hoje (com botão iniciar) e o resto da semana recolhido
+         logo abaixo. Abre só quando você quer.</p>
+      <ul>
+        <li class="pr">+ O caminho do dia a dia fica com 1 toque.</li>
+        <li class="pr">+ Sensação de “foco no presente”, menos decisão.</li>
+        <li class="co">− Quem treina em vários dias precisa abrir para navegar.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">◀ Setembro ▶</span></div>
+      <div class="ph-body">
+        <div class="cal">
+          <div class="dow">S</div><div class="dow">T</div><div class="dow">Q</div><div class="dow">Q</div><div class="dow">S</div><div class="dow">S</div><div class="dow">D</div>
+          <div class="d">1<i></i></div><div class="d">2</div><div class="d">3<i></i></div><div class="d">4</div><div class="d">5<i></i></div><div class="d">6</div><div class="d">7</div>
+          <div class="d">8<i></i></div><div class="d hoje">9</div><div class="d">10<i></i></div><div class="d">11</div><div class="d">12<i></i></div><div class="d">13</div><div class="d">14</div>
+          <div class="d">15<i></i></div><div class="d">16</div><div class="d on">17<i></i></div><div class="d">18</div><div class="d">19<i></i></div><div class="d">20</div><div class="d">21</div>
+        </div>
+        <div class="h">Terça 9 · hoje</div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Superior</div><div class="s">6 exercícios</div></div>
+          <div class="play">▶</div>
+        </div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">04</span>Mini-calendário do mês</h2>
+      <p>Um calendário pequeno com pontinho nos dias de treino e o hoje destacado; tocar num dia
+         mostra os treinos embaixo.</p>
+      <ul>
+        <li class="pr">+ Visão de mês ajuda a ver constância, igual ao Check-in.</li>
+        <li class="pr">+ Bom para treinos que não caem no mesmo dia toda semana.</li>
+        <li class="co">− Toques a mais no fluxo diário; pode confundir com o Check-in.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="tl">
+          <div class="no"><div class="t" style="font-size:12px">Segunda · Superior ✓</div></div>
+          <div class="no on">
+            <div class="t" style="font-size:12px">Terça · hoje</div>
+            <div class="card row" style="justify-content:space-between;margin-top:5px">
+              <div><div class="t">Superior</div><div class="s">~28 min</div></div>
+              <div class="play">▶</div>
+            </div>
+          </div>
+          <div class="no"><div class="t" style="font-size:12px">Quarta · Pernas</div></div>
+          <div class="no"><div class="t" style="font-size:12px">Quinta · livre</div></div>
+          <div class="no"><div class="t" style="font-size:12px">Sexta · Full body</div></div>
+          <div class="no"><div class="t" style="font-size:12px">Sábado · livre</div></div>
+          <div class="no"><div class="t" style="font-size:12px">Domingo · livre</div></div>
+        </div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">05</span>Trilha da semana (timeline)</h2>
+      <p>Uma linha vertical de segunda a domingo; hoje é um nó aceso que abre o cartão do treino,
+         os dias passados aparecem com ✓.</p>
+      <ul>
+        <li class="pr">+ Dá noção de progresso da semana sem gráfico.</li>
+        <li class="pr">+ Bonito e simples; o olho segue reto.</li>
+        <li class="co">− Espaço vertical por dia; com muitos treinos fica longo.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="h">Treinos de hoje · terça</div>
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <span class="t">Superior</span><span class="play">▶</span>
+          </div>
+          <div class="row" style="margin-top:7px">
+            <span class="pill">6 exercícios</span><span class="pill">3 séries</span><span class="pill">~28 min</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <span class="t">Core</span><span class="play">▶</span>
+          </div>
+          <div class="row" style="margin-top:7px">
+            <span class="pill">4 exercícios</span><span class="pill">2 séries</span><span class="pill">~14 min</span>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>7🔥</b><span>dias seguidos</span></div>
+          <div class="stat"><b>3/5</b><span>treinos na semana</span></div>
+        </div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">06</span>Cartões com resumo rápido</h2>
+      <p>Cada treino vira um cartão com etiquetas do que interessa antes de começar: exercícios,
+         séries e tempo estimado — e um resumo de desempenho no pé.</p>
+      <ul>
+        <li class="pr">+ Responde “quanto tempo vou gastar?” sem abrir nada.</li>
+        <li class="pr">+ Aproveita o que já existe no modelo (exercícios/séries).</li>
+        <li class="co">− Precisa calcular a duração estimada (dá para fazer local).</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="stats">
+          <div class="stat"><b>🔥 7</b><span>sequência</span></div>
+          <div class="stat"><b>3/5</b><span>semana</span></div>
+          <div class="stat"><b>+12%</b><span>vs. semana</span></div>
+        </div>
+        <div class="h" style="margin-top:4px">Hoje, terça</div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Superior</div><div class="s">6 exercícios · ~28 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Core</div><div class="s">4 exercícios · ~14 min</div></div>
+          <div class="play">▶</div>
+        </div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">07</span>Faixa de desempenho no topo</h2>
+      <p>Três números rápidos no topo (sequência, treinos da semana, variação) e, abaixo, a mesma
+         lista simples de treinos.</p>
+      <ul>
+        <li class="pr">+ Motivação de relance sem abrir a Progressão.</li>
+        <li class="pr">+ Reusa dados que o app já calcula (gamificação).</li>
+        <li class="co">− Se virar painel demais, polui — manter só 3 números.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 8 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="seg"><div class="on">Hoje</div><div>Semana</div></div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Superior</div><div class="s">6 exercícios · ~28 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Core</div><div class="s">4 exercícios · ~14 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="h">(aba Semana mostra os 7 dias + editar)</div>
+        <div class="card" style="opacity:.7"><div class="t">Seg</div><div class="s">Superior ✓</div></div>
+        <div class="card" style="opacity:.7"><div class="t">Qua</div><div class="s">Pernas</div></div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">08</span>Duas visões: Hoje e Semana</h2>
+      <p>Um seletor no topo separa “Hoje” (ação) de “Semana” (planejamento). A tela abre sempre em
+         Hoje, então o uso diário continua direto.</p>
+      <ul>
+        <li class="pr">+ Separa claramente executar de organizar.</li>
+        <li class="pr">+ Simples de implementar com o que já existe.</li>
+        <li class="co">− Um toque extra para quem quer só ver a semana.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 9 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="arrowrow"><span>‹</span><span style="color:var(--txt);font-weight:700">Terça, 9</span><span>›</span></div>
+        <div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="card row" style="justify-content:space-between;margin-top:6px">
+          <div><div class="t">Superior</div><div class="s">6 exercícios · ~28 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Core</div><div class="s">4 exercícios · ~14 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="hint">deslize para o lado para trocar de dia</div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">09</span>Carrossel de dias (deslizar)</h2>
+      <p>Um dia por tela, trocando com deslize (ou setas) e pontinhos de posição. O corpo mostra
+         os treinos do dia escolhido.</p>
+      <ul>
+        <li class="pr">+ Navegação por gesto, rápida e natural no celular.</li>
+        <li class="pr">+ Muito espaço para o conteúdo de cada dia.</li>
+        <li class="co">− Gesto é menos óbvio; precisa de dica visual.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 10 -->
+  <article class="idea">
+    <div class="phone">
+      <div class="ph-top"><span>Treino</span><span class="ic">⚙︎ ↗</span></div>
+      <div class="ph-body">
+        <div class="h">Hoje · terça</div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Superior</div><div class="s">6 exercícios · ~28 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="card row" style="justify-content:space-between">
+          <div><div class="t">Core</div><div class="s">4 exercícios · ~14 min</div></div>
+          <div class="play">▶</div>
+        </div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="h" style="text-align:center;margin:0 0 2px">Semana · toque num dia</div>
+          <div class="semanabar">
+            <div class="d">S</div><div class="d on">T</div><div class="d">Q</div><div class="d">Q</div>
+            <div class="d">S</div><div class="d">S</div><div class="d">D</div>
+          </div>
+        </div>
+      </div>
+      <div class="ph-nav"><span>🏠 Home</span><span><b>💪 Treino</b></span><span>📅 Check-in</span><span>📈 Progressão</span></div>
+    </div>
+    <div class="info">
+      <h2><span class="num">10</span>Semana numa barra na base + folha</h2>
+      <p>A semana vira uma barra fina no rodapé; ao tocar num dia, sobe uma folha (sheet) com os
+         treinos daquele dia. O miolo fica livre para o conteúdo de hoje.</p>
+      <ul>
+        <li class="pr">+ Conteúdo principal sempre no topo, sem disputar espaço.</li>
+        <li class="pr">+ Dois gestos no máximo: tocar o dia, tocar ▶.</li>
+        <li class="co">− A semana fica menos visível; barra precisa ser discreta.</li>
+      </ul>
+    </div>
+  </article>
+
+</main>
+
+<footer>
+  Feito para o Calis Timer — esboços sem compromisso, só para escolher a direção.
+  Diga quais números você quer testar de verdade e eu implemento no app.
+</footer>
+</body>
+</html>

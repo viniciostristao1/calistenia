@@ -5,6 +5,28 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Troféu: 2ª passada na referência + página de ideias de layout (v0.74.0)
+
+**Troféu (2ª passada):** com o print lado a lado, os ajustes que mais aproximaram:
+ombro mais **alto** (máximo em y=44, não 50), afinação do corpo mais **reta** (controles
+(80,60)/(72,76)), **ganchos maiores** (topo em y≈8), pé mais **largo** (aro da base 43) e,
+principalmente, as alças **acompanhando a borda do corpo** em vez de abrir num arco largo:
+a curva descendente agora é uma **polilinha amostrada do próprio cubic do corpo + 4.5 de
+offset** (`_cub` para interpolar os dois trechos do perfil), então a folga fica constante
+e visível como na referência. **Gotcha:** control point de cubic não é ponto da curva — para
+"abraçar" uma borda, amostrar a borda e deslocar, não chutar controles.
+
+**Página de ideias de layout:** criado `docs/layouts_treino.html` (10 ideias para a página
+Treino, wireframes em HTML/CSS puro, tema do app) + `docs/index.html`; publicado no
+**GitHub Pages** do repo (`main` → `/docs`) via `gh api .../pages`. Link:
+`https://viniciostristao1.github.io/calistenia/layouts_treino.html`. Push em `docs/**` não
+dispara o CI do APK (o workflow só observa `app/**`).
+
+**Validação:** goldens dos dois troféus; analyze sem erros; `flutter test` 52/52.
+Versão `0.74.0+102`.
+
+---
+
 ## 2026-09-12 — Troféu redesenhado a partir do print da Champions (v0.73.1)
 
 **Contexto:** o usuário subiu no repo o print `Screenshot_2026-09-13-18-01-18-646_...png`

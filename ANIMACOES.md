@@ -147,11 +147,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.22 | troféus repintados como **metal de verdade**: 7 stops, oclusões, barra gravada, brilhos especulares e alças com folga do copo. | **feita** |
 | 5.23 | troféu na **silhueta da Champions** (copo em trombeta, nó, base com nomes, orelhas grandes) e **"subiu de nível"** novo (`level_up_reveal.dart`: 2 setas subindo em ciclo + pontuação). | **feita** |
 | 5.24 | troféu **redesenhado a partir do print da Champions**: corpo esguio em urna, gargalo, pé de trombeta e alças finas em gancho com folga do corpo. | **feita** |
+| 5.25 | troféu 2ª passada: corpo mais cheio (ombro alto), afinação reta, ganchos maiores e alças **abraçando a borda** (offset amostrado do perfil). + `docs/layouts_treino.html` (10 ideias) no GitHub Pages. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.73.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.74.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),
