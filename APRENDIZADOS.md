@@ -5,6 +5,27 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Troféus mais "metal de verdade" (v0.72.1)
+
+**Feedback:** "os troféus estão feios, não parecem de verdade".
+
+**O que mudou no `_TrophyPainter`:** gradiente metálico com **7 stops** (mais faixas de
+reflexo), **oclusão ambiente** (sombra linear rente ao aro e na base do copo), **barra
+gravada** com filetes claro/escuro, dois **brilhos verticais** (`MaskFilter.blur`) no copo,
+aro com boca escura + sombra interna em arco + luz superior, haste com reflexo e sombra
+lateral, base em pedestal com topo elíptico, entalhe escuro, sombra inferior e reflexo.
+As **alças** ganharam folga real do copo (borda interna com curva mais afastada,
+`cubicTo(±32, 40)` no meio) + fio de luz na borda externa e sombra na interna — antes a
+alça era colada no copo e virava "barbatana". Contorno escuro fino define a silhueta.
+
+**Gotcha:** `dart format` reflui os `cubicTo`; ao ajustar paths por script, casar o texto
+**depois** de formatar (ou reformatar antes de substituir).
+
+**Validação:** golden dos dois troféus (160 px); analyze sem erros; `flutter test` 52/52.
+Versão `0.72.1+99`.
+
+---
+
 ## 2026-09-12 — Chama animada na sequência + troféus "orelhuda" (v0.72.0)
 
 **Pedidos:** (1) a sequência devia parecer o fogo do app, com as **pontas balançando**;

@@ -144,11 +144,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.19 | **Baú 1 congelado + Baú 2** (`RewardType.chest2`, `chest_open2.dart` — cópia isolada): estreia com **estrelas internas facetadas** (10 facetas com luz, bisel, núcleo gravado). | **feita** |
 | 5.20 | Baú 2: estrelas ~10% maiores; **medalhas do Lab = mesmas do app** (emojis 🥇 nº 1 / 🥈 nº 2 com cordão, como na galeria do Check-in) no `IconReveal`. | **feita** |
 | 5.21 | **Sequência = chama de verdade** (`flame_reveal.dart`: 3 línguas + núcleo com pontas balançando, pulso e brasas) e **troféus no formato da "orelhuda"** (taça da Champions com alças grandes). | **feita** |
+| 5.22 | troféus repintados como **metal de verdade**: 7 stops, oclusões, barra gravada, brilhos especulares e alças com folga do copo. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.72.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.72.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),

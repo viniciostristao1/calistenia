@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.72.1 (troféus com cara de metal de verdade):**
+  - Os troféus (ouro e prata) foram repintados: **bandas de reflexo** no copo, sombra rente ao aro e à base (oclusão), barra gravada, **brilhos especulares**, estrela em relevo e base em pedestal com entalhe. As **alças** ficaram com folga do copo, como alças de verdade.
+
 - **2026-09-12 — v0.72.0 (chama de verdade na sequência + troféus “orelhuda”):**
   - **Sequência:** a recompensa agora é uma **chama desenhada**, animada como fogo de verdade — as pontas balançam em ritmos diferentes, o corpo pulsa e sobem faíscas (nada de ícone estático).
   - **Troféus (ouro e prata):** redesenhados no formato da taça da **Liga dos Campeões** ("a orelhuda"): copo alto em sino, **alças grandes**, haste com colar, base em pedestal e estrela gravada.
