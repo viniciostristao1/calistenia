@@ -5,6 +5,27 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Estrelas 100% dentro do baú (v0.69.1)
+
+**Feedback:** as estrelas de baixo da frente apareciam **na frente** da parede do baú.
+
+**Causa:** ordenação por **profundidade do centróide** (painter's algorithm) — as estrelas
+da fileira da frente têm centróide *mais perto* da câmera que o centróide da parede da
+frente (ficam altas e adiantadas), então eram desenhadas depois e cobriam a parede, mesmo
+com a base delas estando atrás. Não é um caso que o centróide resolva: a face está
+**meio atrás, meio à frente**.
+
+**Correção (barata e correta para este cenário):** dar `bias` grande (60) na face da
+**parede da frente** e 55 na **lateral direita**, forçando-as a serem desenhadas por
+último. Assim a parte da frente do baú cobre as estrelas que estão atrás, e só os topos
+(que ficam acima da borda, fora do polígono projetado da parede) aparecem. Não mexeu no
+`order` das estrelas nem no chão.
+
+**Validação:** goldens do meio da abertura e do repouso; analyze sem erros;
+`flutter test` 52/52. Versão `0.69.1+93`.
+
+---
+
 ## 2026-09-12 — Baú transbordando + salto com squash & stretch (v0.69.0)
 
 **Feedback:** ainda sobrava assoalho no canto inferior esquerdo; as estrelas deviam formar

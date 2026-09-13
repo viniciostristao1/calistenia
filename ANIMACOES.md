@@ -138,11 +138,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.13 | **estrelinhas dentro do baú**: montinho de 6 (4 na base + 2 apoiadas), inclinadas no assoalho com sombra/espessura, ocluídas pelas paredes e pela tampa. | **feita** |
 | 5.14 | **monte de estrelas estilo `Star3D`**: 15 estrelas em camadas cobrindo o fundo (gradiente, contorno gordinho e núcleo gravado; tons mais claros por camada). | **feita** |
 | 5.15 | **baú transbordando**: assoalho raso (`_bodyH−9`), 20 estrelas em 4 camadas + fileira da frente e laterais em pé (cobre o canto); glint especular por estrela; **salto com squash & stretch** (`hop` em `dy` + `scaleY`). | **feita** |
+| 5.16 | fix: **parede da frente desenhada por último** (`bias` 60/55) — cobre as estrelas que ficam atrás (antes a fileira da frente invadia a fachada). | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.69.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.69.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart`, `reward_registry.dart` (ponte, builder recebe `{num? value}`),

@@ -634,6 +634,7 @@ class _ChestPainter extends CustomPainter {
         const _V(-_hx, _bodyH, _hd),
       ], const _V(0, 0, 1)),
       _corpo1,
+      bias: 60, // desenhada por último: cobre as estrelas que estão atrás
       stroke: _ouro.withValues(alpha: 0.85),
       sw: 2.6,
       shader: (r) => LinearGradient(
@@ -687,6 +688,7 @@ class _ChestPainter extends CustomPainter {
         const _V(_hx, _bodyH, -_hd),
       ], const _V(1, 0, 0)),
       shade(_corpo1, 0.16),
+      bias: 55, // também cobre estrelas que estejam por trás
       stroke: _ouro.withValues(alpha: 0.65),
       sw: 2.2,
       shader: (r) => LinearGradient(
