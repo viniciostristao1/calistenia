@@ -5,6 +5,29 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Monte de estrelas no baú, com a cara do `Star3D` (v0.68.0)
+
+**Feedback:** as estrelas de dentro deviam parecer com a que salta e formar um **monte de
+verdade** (não uma fileira); podia aumentar a quantidade — cobrir o fundo como baú cheio.
+
+**Como ficou:** 15 estrelas em 3 camadas + 1 no topo, cobrindo o assoalho. Cada uma
+(ainda em `starOnFloor`, no `_ChestPainter`) agora tem o visual do `Star3D`:
+raio interno **0.55r** (mais gordinha), contorno grosso arredondado (`sw 3.2`), face com
+`LinearGradient` topo-esquerda→baixo-direita (luz→sombra), núcleo **gravado** (estrela
+menor a 0.52/0.27r com risco escuro + risco claro deslocado) e espessura deslocada.
+Tons por camada via `Color.lerp(_ouro, shade(_ouro, 0.42), tone)`: base mais escura
+(0.30–0.42, na sombra da parede), meio 0.16, topo 0.0–0.05 (brilhando). `tilt 0.82`
+(encostadas), `lift` 0/9/17/24 e `order` crescente para o empilhamento.
+
+**Ajustes que evitaram o "monte bagunçado":** menos estrelas que a primeira tentativa
+(18 → 15), raio menor nas camadas de cima (16→11) e tons menos contrastados (0.45→0.30);
+assim o monte fica contido e as estrelas continuam legíveis.
+
+**Validação:** golden fechado/meio/aberto + zoom no monte; analyze sem erros;
+`flutter test` 52/52. Versão `0.68.0+91`.
+
+---
+
 ## 2026-09-12 — Estrelinhas dentro do baú (montinho) (v0.67.0)
 
 **Pedido:** ~6 estrelas dentro do baú, algumas sobre as outras, com cara de montinho,

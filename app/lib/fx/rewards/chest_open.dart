@@ -483,10 +483,11 @@ class _ChestPainter extends CustomPainter {
       );
     });
 
-    // ── Estrelinhas no fundo do baú (montinho no meio) ──
-    // Deitadas no assoalho: sombra, uma cópia deslocada (espessura) e a face
-    // de cima. A ordenação por profundidade faz as paredes cobrirem quem
-    // estiver atrás delas.
+    // ── Estrelinhas no fundo do baú (monte de tesouro) ──
+    // Cada estrela tem a mesma cara da estrela que salta (`Star3D`): gradiente
+    // de luz, contorno arredondado e núcleo gravado. Ficam encostadas no
+    // assoalho (plano inclinado) em camadas, formando um monte. A ordenação
+    // por profundidade faz as paredes/tampa cobrirem o que estiver atrás.
     void starOnFloor(
       double cx,
       double cz,
@@ -495,28 +496,23 @@ class _ChestPainter extends CustomPainter {
       double lift = 0,
       double tone = 0,
       double order = 0,
-      double tilt = 0.95,
+      double tilt = 0.82,
     }) {
       final st = sin(tilt);
       final ct = cos(tilt);
+      _V at(double u, double v, double dy, double dz) =>
+          _V(cx + u, _floorY + lift + (r - v) * st + dy, cz + v * ct + dz);
       List<_V> outline(double dy, double dz) {
         final pts = <_V>[];
         for (var i = 0; i < 10; i++) {
-          final rad = i.isEven ? r : r * 0.48;
+          final rad = i.isEven ? r : r * 0.55;
           final a = rot - pi / 2 + i * pi / 5;
-          final v = sin(a) * rad; // profundidade dentro da estrela
-          pts.add(
-            _V(
-              cx + cos(a) * rad,
-              _floorY + lift + (r - v) * st + dy,
-              cz + v * ct + dz,
-            ),
-          );
+          pts.add(at(cos(a) * rad, sin(a) * rad, dy, dz));
         }
         return pts;
       }
 
-      final cor = Color.lerp(_ouro, lighten(_ouro, 0.22), tone)!;
+      final cor = Color.lerp(_ouro, shade(_ouro, 0.42), tone)!;
       // Sombra no assoalho.
       face(
         _outward([
@@ -532,32 +528,76 @@ class _ChestPainter extends CustomPainter {
       );
       // Espessura (cópia mais baixa, deslocada para trás).
       face(
-        _outward(outline(-2.2, 1.6), const _V(0, 1, 0)),
-        shade(cor, 0.5),
+        _outward(outline(-2.6, 2.0), const _V(0, 1, 0)),
+        shade(cor, 0.52),
         bias: order + 0.1,
       );
-      // Face de cima, com brilho.
+      // Face principal: gradiente de luz + contorno arredondado + núcleo.
       face(
         _outward(outline(0, 0), const _V(0, 1, 0)),
         cor,
         bias: order + 0.2,
-        stroke: shade(cor, 0.45),
-        sw: 1.0,
-        shader: (b) => RadialGradient(
-          center: const Alignment(0.25, -0.35),
-          colors: [lighten(cor, 0.38), cor, shade(cor, 0.28)],
+        stroke: lighten(cor, 0.05),
+        sw: 3.2,
+        shader: (b) => LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [lighten(cor, 0.5), cor, shade(cor, 0.38)],
           stops: const [0.0, 0.55, 1.0],
         ).createShader(b),
+        detail: (c, path, proj) {
+          // Núcleo gravado (estrela menor em relevo).
+          final inner = <Offset>[];
+          for (var i = 0; i < 10; i++) {
+            final rad = i.isEven ? r * 0.52 : r * 0.27;
+            final a = rot - pi / 2 + i * pi / 5;
+            inner.add(_proj(at(cos(a) * rad, sin(a) * rad, 0, 0), yaw));
+          }
+          final ip = Path()..moveTo(inner[0].dx, inner[0].dy);
+          for (var i = 1; i < inner.length; i++) {
+            ip.lineTo(inner[i].dx, inner[i].dy);
+          }
+          ip.close();
+          c.drawPath(
+            ip,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.3
+              ..color = shade(cor, 0.5).withValues(alpha: 0.85),
+          );
+          c.drawPath(
+            ip.shift(const Offset(0, -1)),
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 0.8
+              ..color = Colors.white.withValues(alpha: 0.35),
+          );
+        },
       );
     }
 
-    // Montinho: 4 encostadas na base + 2 apoiadas por cima.
-    starOnFloor(-38, -26, 18.0, 0.2, order: 0);
-    starOnFloor(-12, -15, 17.0, -0.5, order: 0.3);
-    starOnFloor(14, -27, 18.0, 0.6, order: 0.6);
-    starOnFloor(38, -13, 16.0, -0.2, order: 0.9);
-    starOnFloor(-26, -21, 17.0, 0.9, lift: 10, tone: 0.2, order: 1.2);
-    starOnFloor(8, -19, 16.0, -0.65, lift: 20, tone: 0.05, order: 1.5);
+    // Monte: camadas que cobrem o fundo e sobem no meio.
+    // Base (chão) — tom mais escuro (sombra da parede).
+    starOnFloor(-40, -25, 16.0, 0.2, tone: 0.30, order: 0.0);
+    starOnFloor(-21, -14, 15.5, -0.5, tone: 0.30, order: 0.1);
+    starOnFloor(0, -27, 16.0, 0.6, tone: 0.30, order: 0.2);
+    starOnFloor(21, -13, 15.5, -0.2, tone: 0.30, order: 0.3);
+    starOnFloor(39, -24, 15.0, 0.4, tone: 0.30, order: 0.4);
+    starOnFloor(-33, -5, 15.0, 0.9, tone: 0.34, order: 0.5);
+    starOnFloor(33, -4, 15.0, -0.7, tone: 0.34, order: 0.6);
+    // Frente (cobre o resto do assoalho visível).
+    starOnFloor(-14, -2, 14.0, -0.35, tone: 0.42, order: 0.7);
+    starOnFloor(17, -1, 14.0, 0.65, tone: 0.42, order: 0.75);
+    // Segunda camada.
+    starOnFloor(-29, -19, 14.0, 0.1, lift: 9, tone: 0.16, order: 1.0);
+    starOnFloor(-9, -19, 14.0, -0.6, lift: 9, tone: 0.16, order: 1.1);
+    starOnFloor(13, -22, 13.5, 0.5, lift: 9, tone: 0.16, order: 1.2);
+    starOnFloor(34, -16, 13.0, -0.3, lift: 9, tone: 0.16, order: 1.3);
+    // Terceira camada.
+    starOnFloor(-20, -18, 12.5, 0.3, lift: 17, tone: 0.05, order: 2.0);
+    starOnFloor(2, -18, 12.5, -0.5, lift: 17, tone: 0.05, order: 2.1);
+    // Topo do monte.
+    starOnFloor(-8, -17, 11.0, 0.5, lift: 24, tone: 0.0, order: 3.0);
 
     // ── Corpo: frente ──
     face(

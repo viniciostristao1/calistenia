@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.68.0 (baú cheio de estrelas, num monte de verdade):**
+  - O baú agora está **cheio**: 15 estrelas cobrindo o fundo, empilhadas em camadas (um monte no meio, com as de baixo mais escurinhas e as de cima brilhando).
+  - Cada estrela de dentro ficou **igual à que salta**: contorno gordinho e arredondado, brilho em degradê e a estrelinha gravada no meio — não é mais a estrela "chapada".
+
 - **2026-09-12 — v0.67.0 (estrelinhas dentro do baú):**
   - Agora o baú tem um **montinho de 6 estrelas** dentro, encostadas no fundo — algumas apoiadas sobre as outras, cada uma com sombra no assoalho. Elas ficam atrás das paredes (aparecem conforme a tampa abre) e somem quando o baú está fechado.
 
