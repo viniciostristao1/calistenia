@@ -274,27 +274,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            const Flexible(
-              child: Text('Calis Timer', overflow: TextOverflow.ellipsis),
-            ),
-            const SizedBox(width: 6),
-            // Número da versão ao lado do título: confirma, num relance, que o
-            // build instalado é o mais novo (sobe junto com o pubspec).
-            // Long-press abre diagnóstico da sequência (para debug de medalhas).
-            InkWell(
-              onLongPress: () => _mostrarDebug(context),
-              borderRadius: BorderRadius.circular(4),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 3, left: 4, right: 4),
-                child: Text(
-                  'v$kVersao',
+            // Nome em DUAS linhas ("Calis" / "Timer"): cabe inteiro mesmo com a
+            // barra cheia de botões (antes cortava para "Calis…").
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Calis',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.dim,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    height: 1.0,
                   ),
                 ),
-              ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Timer',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        height: 1.0,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // Número da versão junto do nome: confirma, num relance, que
+                    // o build instalado é o mais novo (sobe junto com o pubspec).
+                    // Long-press abre diagnóstico da sequência (debug de medalhas).
+                    InkWell(
+                      onLongPress: () => _mostrarDebug(context),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: Text(
+                          'v$kVersao',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.dim,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),

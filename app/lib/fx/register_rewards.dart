@@ -46,7 +46,8 @@ void registerBuiltInRewards() {
   );
   RewardRegistry.register(
     RewardType.chest2,
-    (context, params, {value}) => ChestOpen2(params: params),
+    (context, params, {value}) =>
+        ChestOpen2(params: params, valorEstrela: value),
   );
   RewardRegistry.register(
     RewardType.confetti,

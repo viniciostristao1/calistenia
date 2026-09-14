@@ -5,6 +5,29 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Título em 2 linhas + pontos no Baú 2 + nível limpo (v0.77.0)
+
+**1) Título:** o `Text('Calis Timer')` era cortado ("Calis…") porque a barra tem 4 botões
+(modo, engrenagem, compartilhar, sair). Virou `Column` de duas linhas ("Calis" / "Timer",
+15 w800, `height: 1.0`) com o **vX.Y.Z** na segunda linha (long-press = debug continua).
+Largura ~85px — cabe até em tela de 320.
+
+**2) Pontos ao lado da estrela (Baú 2):** para o Laboratório poder controlar dois números
+sem mexer na assinatura do registry, entrou **`FxParams.valor2`** (`double`, 0 = não
+mostra). O valor da estrela continua vindo do `value` do registry ("Valor (+XP / ⭐)") e o
+ganho de Rating vem de `valor2` (novo slider **"Rating (+)"**, 0–100, padrão 15).
+`ChestOpen2` monta a recompensa como `SizedBox` + `Stack`: a estrela no centro e dois
+pills `_Ponto` (⭐ +N dourado, Rating +M no accent) em `Transform.translate(±44, ±13)` —
+ficam **fora do `Spin3D`** (não giram) mas **dentro do `FlyToTarget`** (voam junto).
+As entradas usam `Interval(0.60,0.72)` e `Interval(0.72,0.86)` sobre o `v` do baú → o do
+Rating entra ~0,1 depois, como pedido. `valorEstrela`/`valor2` zerados = nenhum pill
+(pronto para a integração real).
+
+**3) Nível:** removido o subtítulo "nível/níveis" do `LevelUpReveal` (fica só o `+N`).
+
+**Validação:** goldens do Baú 2 (760/1000 ms) e da barra de título; analyze sem erros;
+`flutter test` 53/53. Versão `0.77.0+106`.
+
 ## 2026-09-12 — Rating 0–1000 (por que o recorde não somava) (v0.76.0)
 
 **Relato:** o usuário bateu um recorde e o Rating **não subiu** nenhum ponto (estava

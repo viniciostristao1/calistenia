@@ -94,16 +94,6 @@ class _LevelUpRevealState extends State<LevelUpReveal>
             ],
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          widget.value.round() == 1 ? 'nível' : 'níveis',
-          style: TextStyle(
-            color: widget.color,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.4,
-          ),
-        ),
       ],
     ),
   );

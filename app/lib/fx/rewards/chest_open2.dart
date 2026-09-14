@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
 import '../effects/fly_to_target.dart';
 import '../effects/rays.dart';
 import '../effects/spin3d.dart';
@@ -24,9 +25,17 @@ import 'star_3d.dart';
 /// ordenação por profundidade. A tampa gira em torno do eixo X (dobradiça
 /// traseira).
 class ChestOpen2 extends StatefulWidget {
-  const ChestOpen2({super.key, this.params = const FxParams()});
+  const ChestOpen2({
+    super.key,
+    this.params = const FxParams(),
+    this.valorEstrela,
+  });
 
   final FxParams params;
+
+  /// Valor da estrela que sai do baú (ex.: +10). `null`/0 = não mostra o pill.
+  /// O ganho de Rating vem em `params.valor2` (slider do Laboratório).
+  final num? valorEstrela;
 
   @override
   State<ChestOpen2> createState() => _ChestOpen2State();
@@ -120,17 +129,44 @@ class _ChestOpen2State extends State<ChestOpen2>
               ),
               // O baú em 3/4.
               _chest(v),
-              // A recompensa saltando pra fora girando no próprio eixo.
+              // A recompensa saltando pra fora girando no próprio eixo — e, ao
+              // lado dela, os pontos que valem: ⭐ +N e o ganho de Rating (+M),
+              // cada um entrando com um pequeno atraso.
               if (v > 0.55)
                 FlyToTarget(
                   params: _revealParams,
                   begin: const Offset(0, 16),
                   end: Offset(0, -92 * _intensity.clamp(0.4, 2.0)),
-                  child: Spin3D(
-                    params: _revealParams,
-                    turns: 2,
-                    fromScale: 0.3,
-                    child: const Star3D(size: 52),
+                  child: SizedBox(
+                    width: 220,
+                    height: 100,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Spin3D(
+                          params: _revealParams,
+                          turns: 2,
+                          fromScale: 0.3,
+                          child: const Star3D(size: 52),
+                        ),
+                        if ((widget.valorEstrela ?? 0) > 0)
+                          _Ponto(
+                            icone: Icons.star_rounded,
+                            cor: AppColors.estrela,
+                            texto: '+${widget.valorEstrela!.round()}',
+                            opacidade: Interval(0.60, 0.72).transform(v),
+                            deslocamento: const Offset(44, -13),
+                          ),
+                        if (widget.params.valor2 > 0)
+                          _Ponto(
+                            icone: Icons.speed_rounded,
+                            cor: context.accent,
+                            texto: '+${widget.params.valor2.round()}',
+                            opacidade: Interval(0.72, 0.86).transform(v),
+                            deslocamento: const Offset(44, 13),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -158,6 +194,57 @@ class _ChestOpen2State extends State<ChestOpen2>
         child: CustomPaint(
           size: const Size.square(200),
           painter: _ChestPainter2(v: v, intensity: _intensity),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pill pequeno com ícone + número (⭐ +10 · Rating +15) ao lado da estrela.
+class _Ponto extends StatelessWidget {
+  const _Ponto({
+    required this.icone,
+    required this.cor,
+    required this.texto,
+    required this.opacidade,
+    required this.deslocamento,
+  });
+
+  final IconData icone;
+  final Color cor;
+  final String texto;
+  final double opacidade;
+  final Offset deslocamento;
+
+  @override
+  Widget build(BuildContext context) {
+    if (opacidade <= 0) return const SizedBox.shrink();
+    return Transform.translate(
+      offset: deslocamento + Offset(0, 9 * (1 - opacidade)),
+      child: Opacity(
+        opacity: opacidade.clamp(0.0, 1.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+          decoration: BoxDecoration(
+            color: cor.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(99),
+            border: Border.all(color: cor, width: 1.2),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icone, size: 14, color: cor),
+              const SizedBox(width: 3),
+              Text(
+                texto,
+                style: TextStyle(
+                  color: AppColors.text,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -576,8 +663,10 @@ class _ChestPainter2 extends CustomPainter {
             var dir = mid - c0;
             final len = dir.distance;
             dir = len == 0 ? Offset.zero : dir / len;
-            final lam = (dir.dx * luzEstrela.dx + dir.dy * luzEstrela.dy)
-                .clamp(-1.0, 1.0);
+            final lam = (dir.dx * luzEstrela.dx + dir.dy * luzEstrela.dy).clamp(
+              -1.0,
+              1.0,
+            );
             final t = (0.5 + 0.5 * lam).clamp(0.0, 1.0);
             c.drawPath(
               pathOf([c0, tip, inner]),

@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.77.0 (nome completo no topo + pontos ao lado da estrela + nível sem “níveis”):**
+  - O nome **Calis Timer** agora aparece **em duas linhas** ("Calis" em cima, "Timer" embaixo), com a versão ao lado — não corta mais para "Calis…".
+  - **Baú 2 (Laboratório):** quando a tampa abre, a estrela salta e, **ao lado dela**, aparecem os pontos: **⭐ +N** (valor do slider "Valor") e **Rating +M** (novo slider "Rating (+)", sugerido 15). O pill da estrela entra primeiro e o do Rating **logo depois** — para você ver exatamente o que ganharia. Sem valores informados, os pills não aparecem.
+  - **Subiu de nível:** removida a palavra "nível/níveis"; fica só o **+N** grande.
+
 - **2026-09-12 — v0.76.0 (Rating em 0–1000: qualquer ganho aparece):**
   - Achamos por que um **recorde não mexia no Rating**: a nota era 0–100 e arredondada — um recorde pequeno valia ~0,3 ponto e sumia no arredondamento. Agora a escala é **0–1000**: **Consistência 0–400 + Frequência 0–200 + Progressão 0–400** (+ até **70** de bônus ⭐, fora do teto).
   - Seus números viram exatamente os que você sugeriu: **370/400 · 200/200 · 130/400 · +30 ⭐** = **730 (+30)**. Um recorde modesto agora soma **~10 pontos** na Progressão em vez de 0.
