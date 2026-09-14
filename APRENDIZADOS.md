@@ -5,6 +5,34 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Rating 0–1000 (por que o recorde não somava) (v0.76.0)
+
+**Relato:** o usuário bateu um recorde e o Rating **não subiu** nenhum ponto (estava
+Consistência 37/40, Frequência 20/20, Progressão 13/40, +3 ⭐).
+
+**Diagnóstico (a conta, com os números dele):** Progressão = `40·s/(s+2)`; 13 ⇒ `s≈0,96`
+(soma das frações de melhora por exercício). A derivada no ponto é `80/(s+2)² ≈ 9,1
+pontos por unidade de s`. Um recorde de +1 rep sobre base 20 = +0,05 em `s` ⇒ **+0,45
+ponto**, que o `.round()` da escala 0–100 **engolia** (13,45 → 13). Outros dois casos que
+também zeram mudança, por desenho: (a) exercício que **não está nos treinos atuais** é
+ignorado (`distintos`); (b) fração daquele exercício já **capada em +100%** sobre a base.
+
+**Decisão (a sugestão do usuário):** manter a lógica e **multiplicar a escala por 10** —
+Rating **0..1000** = Consistência 400 + Frequência 200 + Progressão 400, bônus de estrelas
+**0..70** fora do teto. Mesma proporção, 10× resolução: o mesmo recorde de +1 rep agora
+vale **~10 pontos** (`400·0,05/2,05 = 9,8`). Escolha consciente em vez de mexer na curva
+(a consistência continua o alicerce; a progressão satura de propósito).
+
+**Mudanças:** `_consistencia` ×400, `_frequencia` ×200, `_progressao` ×400,
+`_bonusEstrelas` ×10 (clamp 0..70), `RatingForma.maximo = 1000`; textos do card
+(`x/400 · y/200 · z/400`), explicação do Rating (3 idiomas) e o `ratingDesc`. Testes
+atualizados para a nova escala + **teste de regressão** ("recorde modesto soma 10").
+
+**Validação:** `flutter analyze` sem erros; `flutter test` **53/53** (52 + o novo).
+Versão `0.76.0+105`.
+
+---
+
 ## 2026-09-12 — Modo Desempenho: métricas reais + só o dia de hoje (v0.75.1)
 
 **Feedback:** os dados do modo Desempenho "parecem aleatórios" e não deveriam aparecer os 7

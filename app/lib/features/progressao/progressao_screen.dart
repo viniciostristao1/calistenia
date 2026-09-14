@@ -77,7 +77,9 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
                   selectedBackgroundColor: context.accent,
                   foregroundColor: AppColors.dim,
                   textStyle: const TextStyle(
-                      fontSize: 12.5, fontWeight: FontWeight.w600),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 segments: const [
                   ButtonSegment(value: 0, label: Text('Desenvolvimento')),
@@ -134,23 +136,27 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           _RatingCard(rating: rating),
-        const SizedBox(height: 18),
-        const Text('Tendência',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-        const SizedBox(height: 2),
-        Text('Seu Rating nas últimas semanas.',
-            style: TextStyle(color: AppColors.dim, fontSize: 12)),
-        const SizedBox(height: 12),
-        _GraficoLinha(pontos: serie),
-        const SizedBox(height: 16),
-        Text(
-          'Rating 0–100 = Consistência (0–40, % dos dias agendados nos últimos '
-          '28 dias — hoje é neutro) + Frequência (0–20, seu volume de treino) + '
-          'Progressão (0–40, o quanto seus recordes — de repetições OU de peso — '
-          'melhoraram nos últimos ~42 dias). Consistência é o alicerce; para '
-          'passar do platô, bata recordes.',
-          style: TextStyle(color: AppColors.dim, fontSize: 12),
-        ),
+          const SizedBox(height: 18),
+          const Text(
+            'Tendência',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Seu Rating nas últimas semanas.',
+            style: TextStyle(color: AppColors.dim, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          _GraficoLinha(pontos: serie),
+          const SizedBox(height: 16),
+          Text(
+            'Rating 0–1000 = Consistência (0–400, % dos dias agendados nos últimos '
+            '28 dias — hoje é neutro) + Frequência (0–200, seu volume de treino) + '
+            'Progressão (0–400, o quanto seus recordes — de repetições OU de peso — '
+            'melhoraram nos últimos ~42 dias). Consistência é o alicerce; para '
+            'passar do platô, bata recordes.',
+            style: TextStyle(color: AppColors.dim, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -172,8 +178,10 @@ class _ExercicioProgressoCard extends ConsumerWidget {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: const Text('Remover este registro?'),
-        content: Text('${fmtDataAno(r.data)} · ${r.valor} reps'
-            '${r.peso > 0 ? ' · ${fmtPeso(r.peso)}' : ''}'),
+        content: Text(
+          '${fmtDataAno(r.data)} · ${r.valor} reps'
+          '${r.peso > 0 ? ' · ${fmtPeso(r.peso)}' : ''}',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -181,8 +189,10 @@ class _ExercicioProgressoCard extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child:
-                const Text('Remover', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Remover',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -204,8 +214,10 @@ class _ExercicioProgressoCard extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child:
-                const Text('Limpar', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Limpar',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -236,7 +248,9 @@ class _ExercicioProgressoCard extends ConsumerWidget {
                               : grupo.exercicio,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w700),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                       if (delta != 0) ...[
@@ -251,8 +265,11 @@ class _ExercicioProgressoCard extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
                   constraints: const BoxConstraints(),
-                  icon: Icon(Icons.delete_outline,
-                      size: 20, color: AppColors.dim2),
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: AppColors.dim2,
+                  ),
                   onPressed: () => _confirmarLimpar(context, ref),
                 ),
               ],
@@ -286,7 +303,11 @@ class _DeltaChip extends StatelessWidget {
       ),
       child: Text(
         '${sobe ? '+' : ''}$delta',
-        style: TextStyle(color: cor, fontSize: 11.5, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: cor,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -328,7 +349,7 @@ class _GraficoBarras extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              for (var i = 0; i < registros.length; i++)
+            for (var i = 0; i < registros.length; i++)
               _Barra(
                 idx: i,
                 registro: registros[i],
@@ -395,16 +416,20 @@ class _Barra extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (ehRecorde) ...[
-                        const Icon(Icons.workspace_premium,
-                            size: 12, color: _corRecorde),
+                        const Icon(
+                          Icons.workspace_premium,
+                          size: 12,
+                          color: _corRecorde,
+                        ),
                         const SizedBox(width: 1),
                       ],
                       Text(
                         '${registro.valor}',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight:
-                              ehRecorde ? FontWeight.w800 : FontWeight.w700,
+                          fontWeight: ehRecorde
+                              ? FontWeight.w800
+                              : FontWeight.w700,
                           color: corValor,
                         ),
                       ),
@@ -418,14 +443,15 @@ class _Barra extends StatelessWidget {
                     builder: (context, ch, _) => Container(
                       width: 14,
                       height: ch,
-                    decoration: BoxDecoration(
-                      color: destaque
-                          ? context.accent
-                          : context.accent.withValues(alpha: 0.45),
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(6)),
+                      decoration: BoxDecoration(
+                        color: destaque
+                            ? context.accent
+                            : context.accent.withValues(alpha: 0.45),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(6),
+                        ),
+                      ),
                     ),
-                  ),
                   ),
                 ],
               ),
@@ -440,9 +466,10 @@ class _Barra extends StatelessWidget {
               Text(
                 fmtPeso(registro.peso),
                 style: TextStyle(
-                    color: context.accent,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600),
+                  color: context.accent,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
           ],
         ),
@@ -474,18 +501,23 @@ class _RatingCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('Rating',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              const Text(
+                'Rating',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              ),
               const Spacer(),
               TweenAnimationBuilder<int>(
                 tween: IntTween(begin: 0, end: rating.total),
                 duration: const Duration(milliseconds: 850),
                 curve: Curves.easeOutCubic,
-                builder: (context, v, _) => Text('$v',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                        color: context.accent)),
+                builder: (context, v, _) => Text(
+                  '$v',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    color: context.accent,
+                  ),
+                ),
               ),
               if (rating.bonusEstrelas > 0) ...[
                 const SizedBox(width: 8),
@@ -493,15 +525,21 @@ class _RatingCard extends StatelessWidget {
                   tween: IntTween(begin: 0, end: rating.bonusEstrelas),
                   duration: const Duration(milliseconds: 850),
                   curve: Curves.easeOutCubic,
-                  builder: (context, v, _) => Text('+$v',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                          color: AppColors.estrela)),
+                  builder: (context, v, _) => Text(
+                    '+$v',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                      color: AppColors.estrela,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 2),
-                const Icon(Icons.star_rounded,
-                    size: 18, color: AppColors.estrela),
+                const Icon(
+                  Icons.star_rounded,
+                  size: 18,
+                  color: AppColors.estrela,
+                ),
               ],
             ],
           ),
@@ -528,9 +566,9 @@ class _RatingCard extends StatelessWidget {
             builder: (context, t, _) => Opacity(
               opacity: t,
               child: Text(
-                'Consistência ${rating.consistencia}/40 · '
-                'Frequência ${rating.frequencia}/20 · '
-                'Progressão ${rating.progressao}/40'
+                'Consistência ${rating.consistencia}/400 · '
+                'Frequência ${rating.frequencia}/200 · '
+                'Progressão ${rating.progressao}/400'
                 '${rating.bonusEstrelas > 0 ? ' · Bônus ⭐ +${rating.bonusEstrelas}' : ''}',
                 style: TextStyle(color: AppColors.dim, fontSize: 12),
               ),
@@ -582,11 +620,15 @@ class _GraficoLinha extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: [
-                Text(fmtDataCurta(pontos.first.data),
-                    style: TextStyle(color: AppColors.dim, fontSize: 10)),
+                Text(
+                  fmtDataCurta(pontos.first.data),
+                  style: TextStyle(color: AppColors.dim, fontSize: 10),
+                ),
                 const Spacer(),
-                Text(fmtDataCurta(pontos.last.data),
-                    style: TextStyle(color: AppColors.dim, fontSize: 10)),
+                Text(
+                  fmtDataCurta(pontos.last.data),
+                  style: TextStyle(color: AppColors.dim, fontSize: 10),
+                ),
               ],
             ),
           ],

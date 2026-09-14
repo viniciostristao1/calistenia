@@ -75,8 +75,12 @@ class NivelInfo {
 /// / 2º quebra (falta pesa o dobro).
 const int _orcamentoFalhas = 2;
 
-NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
-    {DateTime? hoje, Set<DateTime>? diasValidos}) {
+NivelInfo nivelInfo(
+  List<Conclusao> concs,
+  List<Treino> treinos, {
+  DateTime? hoje,
+  Set<DateTime>? diasValidos,
+}) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
   final validos = diasValidos?.map(_dia).toSet();
@@ -89,8 +93,7 @@ NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
     completoPorDia[d] = (completoPorDia[d] ?? false) || c.completo;
   }
   if (completoPorDia.isEmpty) return const NivelInfo(0, 0);
-  final inicio =
-      completoPorDia.keys.reduce((a, b) => a.isBefore(b) ? a : b);
+  final inicio = completoPorDia.keys.reduce((a, b) => a.isBefore(b) ? a : b);
   var nivel = 0, recorde = 0, gasto = 0, i = 0;
   var d = inicio;
   while (!d.isAfter(hj) && i < 4000) {
@@ -126,24 +129,39 @@ NivelInfo nivelInfo(List<Conclusao> concs, List<Treino> treinos,
 
 /// Está em risco de perder nível amanhã se não treinar hoje/amanhã.
 /// True se pular o próximo dia agendado derruba o nível atual.
-bool emRiscoDePerda(List<Conclusao> concs, List<Treino> treinos,
-    {DateTime? hoje, Set<DateTime>? diasValidos}) {
+bool emRiscoDePerda(
+  List<Conclusao> concs,
+  List<Treino> treinos, {
+  DateTime? hoje,
+  Set<DateTime>? diasValidos,
+}) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
   if (agendados.isEmpty) return false;
   final validos = diasValidos?.map(_dia).toSet();
-  final hojeFeito = concs.any((c) =>
-      c.completo &&
-      (validos == null || validos.contains(_dia(c.data))) &&
-      c.data.year == hj.year &&
-      c.data.month == hj.month &&
-      c.data.day == hj.day);
+  final hojeFeito = concs.any(
+    (c) =>
+        c.completo &&
+        (validos == null || validos.contains(_dia(c.data))) &&
+        c.data.year == hj.year &&
+        c.data.month == hj.month &&
+        c.data.day == hj.day,
+  );
   if (hojeFeito) return false;
   final amanha = hj.add(const Duration(days: 1));
-  final nivelHoje = nivelInfo(concs, treinos, hoje: hj, diasValidos: validos).atual;
+  final nivelHoje = nivelInfo(
+    concs,
+    treinos,
+    hoje: hj,
+    diasValidos: validos,
+  ).atual;
   if (nivelHoje == 0) return false;
-  final nivelAmanhaSemTreino =
-      nivelInfo(concs, treinos, hoje: amanha, diasValidos: validos).atual;
+  final nivelAmanhaSemTreino = nivelInfo(
+    concs,
+    treinos,
+    hoje: amanha,
+    diasValidos: validos,
+  ).atual;
   return nivelAmanhaSemTreino < nivelHoje;
 }
 
@@ -210,11 +228,11 @@ int recordesRecentes(
 
 /// Limiar de sequência (dias agendados seguidos) de cada conquista de sequência.
 int limiarSequencia(TipoConquista t) => switch (t) {
-      TipoConquista.medalhaPrata => 4,
-      TipoConquista.medalhaOuro => 8,
-      TipoConquista.trofeuPrata => 15,
-      TipoConquista.trofeuOuro => 21,
-    };
+  TipoConquista.medalhaPrata => 4,
+  TipoConquista.medalhaOuro => 8,
+  TipoConquista.trofeuPrata => 15,
+  TipoConquista.trofeuOuro => 21,
+};
 
 /// Conquistas ATUAIS (sustentadas AGORA). Tudo é por SEQUÊNCIA de dias agendados
 /// (consecutivos): 🥈4 · 🥇8 · 🏆Prata15 · 🏆Ouro21. Se pular um dia agendado, a
@@ -228,7 +246,12 @@ Set<TipoConquista> conquistasAtuais(
   Set<DateTime>? diasValidos,
 }) {
   final atuais = <TipoConquista>{};
-  final nivel = nivelInfo(concs, treinos, hoje: hoje, diasValidos: diasValidos).atual;
+  final nivel = nivelInfo(
+    concs,
+    treinos,
+    hoje: hoje,
+    diasValidos: diasValidos,
+  ).atual;
   if (nivel >= 4) atuais.add(TipoConquista.medalhaPrata);
   if (nivel >= 8) atuais.add(TipoConquista.medalhaOuro);
   if (nivel >= 15) atuais.add(TipoConquista.trofeuPrata);
@@ -241,8 +264,8 @@ Set<TipoConquista> conquistasAtuais(
   return atuais;
 }
 
-/// Consistência (0..40): % dos dias AGENDADOS cumpridos nos últimos 28 dias,
-/// ×0,4. Hoje é NEUTRO — não entra no denominador enquanto você não treinar
+/// Consistência (0..400): % dos dias AGENDADOS cumpridos nos últimos 28 dias,
+/// ×4 (escala do Rating 0..1000). Hoje é NEUTRO — não entra no denominador enquanto você não treinar
 /// (não derruba a nota de manhã num dia agendado). Peso por dia: completou = 1,0;
 /// só tentou ("não consegui") = 0,5. O componente é limitado ao teto de 40.
 ///
@@ -268,11 +291,11 @@ int _consistencia(List<Conclusao> concs, List<Treino> treinos, DateTime hj) {
     total++;
     feitos += peso;
   }
-  return total == 0 ? 0 : ((feitos / total) * 40).round().clamp(0, 40);
+  return total == 0 ? 0 : ((feitos / total) * 400).round().clamp(0, 400);
 }
 
-/// Frequência (0..20): volume real — média de dias treinados por semana nas
-/// últimas 4 semanas, com teto em ~5/semana. Só SOMA (não pune quem treina menos).
+/// Frequência (0..200): volume real — média de dias treinados por semana nas
+/// últimas 4 semanas, com teto em ~5/semana (×10 da escala antiga). Só SOMA (não pune quem treina menos).
 int _frequencia(List<Conclusao> concs, DateTime hj) {
   final diasConc = concs.map((c) => _dia(c.data)).toSet();
   var feitos = 0;
@@ -280,34 +303,42 @@ int _frequencia(List<Conclusao> concs, DateTime hj) {
     if (diasConc.contains(hj.subtract(Duration(days: k)))) feitos++;
   }
   final porSemana = feitos / 4.0;
-  return ((porSemana / 5).clamp(0.0, 1.0) * 20).round();
+  return ((porSemana / 5).clamp(0.0, 1.0) * 200).round();
 }
 
-/// Progressão (0..40): melhora REAL do recorde de cada exercício na janela de
+/// Progressão (0..400): melhora REAL do recorde de cada exercício na janela de
 /// [dias] (recorde agora vs. início da janela), fração capada em 100%/exercício;
-/// soma com retorno decrescente 40·soma/(soma+2).
+/// soma com retorno decrescente 400·soma/(soma+2) (×10 da escala antiga — com
+/// mais resolução, um recorde pequeno aparece como alguns pontos).
 ///
 /// Cada exercício progride por DUAS dimensões — repetições e PESO — medidas como
 /// % de melhora sobre a própria base. Conta o **melhor dos dois** (não soma nem
 /// converte kg↔reps): é a "dupla progressão" (empurra-se uma dimensão por vez).
 /// Quem só evolui em reps (bodyweight, peso 0) fica idêntico ao antigo: a fração
 /// de peso é 0 e o `max` devolve a de reps.
-int _progressao(List<Treino> treinos, List<RegistroProgressao> progressao,
-    DateTime hj, int dias) {
+int _progressao(
+  List<Treino> treinos,
+  List<RegistroProgressao> progressao,
+  DateTime hj,
+  int dias,
+) {
   final distintos = exerciciosDistintos(treinos);
   final corte = hj.subtract(Duration(days: dias));
   var soma = 0.0;
   for (final g in agruparPorExercicio(progressao)) {
     if (!distintos.contains(g.exercicio.trim().toLowerCase())) continue;
     // Reps: recorde agora vs. base (o melhor antes do corte, ou o 1º registro).
-    final antesReps =
-        g.registros.where((r) => r.data.isBefore(corte)).map((r) => r.valor);
+    final antesReps = g.registros
+        .where((r) => r.data.isBefore(corte))
+        .map((r) => r.valor);
     final baseReps = antesReps.isEmpty ? g.primeiro : antesReps.reduce(max);
-    final fracReps =
-        baseReps > 0 ? ((g.maior - baseReps) / baseReps).clamp(0.0, 1.0) : 0.0;
+    final fracReps = baseReps > 0
+        ? ((g.maior - baseReps) / baseReps).clamp(0.0, 1.0)
+        : 0.0;
     // Peso: idem, só quando há carga (base > 0). Sem carga = fração 0.
-    final antesPeso =
-        g.registros.where((r) => r.data.isBefore(corte)).map((r) => r.peso);
+    final antesPeso = g.registros
+        .where((r) => r.data.isBefore(corte))
+        .map((r) => r.peso);
     final basePeso = antesPeso.isEmpty ? g.primeiroPeso : antesPeso.reduce(max);
     final fracPeso = basePeso > 0
         ? ((g.maiorPeso - basePeso) / basePeso).clamp(0.0, 1.0)
@@ -316,11 +347,11 @@ int _progressao(List<Treino> treinos, List<RegistroProgressao> progressao,
     final frac = fracReps > fracPeso ? fracReps : fracPeso;
     if (frac > 0) soma += frac;
   }
-  return (40 * (soma / (soma + 2))).round();
+  return (400 * (soma / (soma + 2))).round();
 }
 
-/// Bônus de estrelas (0..7): EXTRA fora dos 100, LINEAR — cada insígnia ganha no
-/// MÊS-CALENDÁRIO corrente vale +1. Prêmio limpo: não dilui a consistência nem
+/// Bônus de estrelas (0..70): EXTRA fora dos 1000, LINEAR — cada insígnia ganha
+/// no MÊS-CALENDÁRIO corrente vale +10. Prêmio limpo: não dilui a consistência nem
 /// mascara faltas (só quem CONCLUIU dias sorteados soma). Capado em 7 (limite/mês).
 /// Reseta no dia 1º de cada mês (bate com o quadro de estrelas do Check-in).
 int _bonusEstrelas(Set<DateTime> diasInsignia, DateTime hj) {
@@ -328,33 +359,43 @@ int _bonusEstrelas(Set<DateTime> diasInsignia, DateTime hj) {
   for (final d in diasInsignia) {
     if (d.year == hj.year && d.month == hj.month) n++;
   }
-  return n.clamp(0, 7);
+  return (n.clamp(0, 7)) * 10;
 }
 
-/// Rating de forma = Consistência (40) + Frequência (20) + Progressão (40) =
-/// base 0..100, MAIS o bônus de estrelas (0..7) como EXTRA fora do teto. Número
-/// único "nota de desempenho": consistência é o alicerce, mas só bater recordes
-/// (progressão) leva além do platô. Quem não evolui fica estável, não despenca.
+/// Rating de forma = Consistência (400) + Frequência (200) + Progressão (400) =
+/// base 0..1000, MAIS o bônus de estrelas (0..70) como EXTRA fora do teto.
+/// Número único "nota de desempenho": consistência é o alicerce, mas só bater
+/// recordes (progressão) leva além do platô. Quem não evolui fica estável, não
+/// despenca. A escala 0..1000 (era 0..100) dá resolução: um recorde modesto
+/// aparece como alguns pontos em vez de arredondar para zero.
 class RatingForma {
-  final int consistencia; // 0..40
-  final int frequencia; // 0..20
-  final int progressao; // 0..40
-  final int bonusEstrelas; // 0..7 — EXTRA de insígnias do mês, fora dos 100
-  const RatingForma(this.consistencia, this.frequencia, this.progressao,
-      [this.bonusEstrelas = 0]);
+  final int consistencia; // 0..400
+  final int frequencia; // 0..200
+  final int progressao; // 0..400
+  final int bonusEstrelas; // 0..70 — EXTRA de insígnias do mês, fora dos 1000
+  const RatingForma(
+    this.consistencia,
+    this.frequencia,
+    this.progressao, [
+    this.bonusEstrelas = 0,
+  ]);
 
-  /// Nota-base "de forma" (0..100): consistência + frequência + progressão.
+  /// Nota-base "de forma" (0..1000): consistência + frequência + progressão.
   int get total => consistencia + frequencia + progressao;
 
-  /// Nota com o bônus de estrelas somado (pode passar de 100 — é o extra).
+  /// Nota com o bônus de estrelas somado (pode passar de 1000 — é o extra).
   int get totalComBonus => total + bonusEstrelas;
 
-  static const int maximo = 100;
+  static const int maximo = 1000;
 }
 
-RatingForma ratingForma(List<Conclusao> concs, List<Treino> treinos,
-    List<RegistroProgressao> progressao,
-    {DateTime? hoje, Set<DateTime> diasInsignia = const {}}) {
+RatingForma ratingForma(
+  List<Conclusao> concs,
+  List<Treino> treinos,
+  List<RegistroProgressao> progressao, {
+  DateTime? hoje,
+  Set<DateTime> diasInsignia = const {},
+}) {
   final hj = _dia(hoje ?? DateTime.now());
   return RatingForma(
     _consistencia(concs, treinos, hj),
@@ -388,13 +429,19 @@ List<PontoRating> serieRating(
     final data = hj.subtract(Duration(days: w * 7));
     final concsAte = concs.where((c) => !c.data.isAfter(data)).toList();
     final progAte = progressao.where((r) => !r.data.isAfter(data)).toList();
-    final insigAte =
-        diasInsignia.where((d) => !d.isAfter(data)).toSet();
-    pts.add(PontoRating(
+    final insigAte = diasInsignia.where((d) => !d.isAfter(data)).toSet();
+    pts.add(
+      PontoRating(
         data,
-        ratingForma(concsAte, treinos, progAte,
-                hoje: data, diasInsignia: insigAte)
-            .totalComBonus));
+        ratingForma(
+          concsAte,
+          treinos,
+          progAte,
+          hoje: data,
+          diasInsignia: insigAte,
+        ).totalComBonus,
+      ),
+    );
   }
   return pts;
 }
