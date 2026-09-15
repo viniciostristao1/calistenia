@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-15 — v0.78.0 (Baú 2: reflexo nos pontos + ícone de calendário):**
+  - Os dois pills de pontuação ao lado da estrela agora recebem um **reflexo passando** (brilho diagonal) quando aparecem.
+  - O pill de baixo (pontos do dia) trocou o velocímetro por um **ícone de calendário** — combina com a aba Check-in, que é de onde vem esse cumprimento (consistência/frequência).
+
 - **2026-09-12 — v0.77.2 (fix: previsão "~hora" travada nos cartões):**
   - Corrigido: a **previsão "~hora"** de fim do treino nos cartões podia ficar **presa** (aparecia no passado depois de um treino longo, no **Modo Carrossel** e ao voltar do segundo plano). Agora existe um **relógio da UI**: o texto atualiza sozinho a cada 30 s, **recalcula ao voltar do treino** e também quando o app volta do fundo. Vale em todos os modos.
 

@@ -149,6 +149,12 @@ Aba **Check-in** com segmented control no topo: **[Calendário] [Conquistas]**.
 - Mantém a Progressão limpa (barras já são altas). Última opção = abaixo da Progressão.
 
 ## Curto prazo (prováveis próximas)
+- **Ligar o Baú 2 ao ganho REAL (Fase 5 do `fx/`).** Hoje os pontos ao lado da estrela
+  (⭐ +N e 📅 +M) vêm dos sliders do Laboratório; o plano é mostrar o **ganho real ao
+  terminar o treino** — a estrela do sorteio do dia + os pontos de check-in/consistência
+  (frequência) daquele dia — usando `RewardFx.show`/`RewardRegistry.build` nos momentos
+  reais, **sem** alterar `util/gamificacao.dart` nem `services/*_repository.dart`.
+  `[A FAZER]` (pedido do usuário 2026-09-15)
 - ~~**Som/bip nas transições e no fim.**~~ `[FEITO v0.14→v0.20]` — `audioplayers` +
   WAV próprios (`assets/sounds/`); modo baixa latência + **pool de 5 players** (o reuso de 1
   player falhava nas repetições rápidas). Fim de série toca som diferente. On/off em Config.

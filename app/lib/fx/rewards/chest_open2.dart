@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../effects/fly_to_target.dart';
 import '../effects/rays.dart';
+import '../effects/shine_sweep.dart';
 import '../effects/spin3d.dart';
 import '../fx_params.dart';
 import '../particles/particle.dart';
@@ -156,14 +157,19 @@ class _ChestOpen2State extends State<ChestOpen2>
                             texto: '+${widget.valorEstrela!.round()}',
                             opacidade: Interval(0.60, 0.72).transform(v),
                             deslocamento: const Offset(70, -16),
+                            params: _revealParams,
                           ),
                         if (widget.params.valor2 > 0)
                           _Ponto(
-                            icone: Icons.speed_rounded,
+                            // Calendário: é o ganho do dia (check-in,
+                            // consistência/frequência) — mesma linguagem da
+                            // aba Check-in.
+                            icone: Icons.calendar_month_rounded,
                             cor: context.accent,
                             texto: '+${widget.params.valor2.round()}',
                             opacidade: Interval(0.72, 0.86).transform(v),
                             deslocamento: const Offset(70, 16),
+                            params: _revealParams,
                           ),
                       ],
                     ),
@@ -208,6 +214,7 @@ class _Ponto extends StatelessWidget {
     required this.texto,
     required this.opacidade,
     required this.deslocamento,
+    required this.params,
   });
 
   final IconData icone;
@@ -215,6 +222,7 @@ class _Ponto extends StatelessWidget {
   final String texto;
   final double opacidade;
   final Offset deslocamento;
+  final FxParams params;
 
   @override
   Widget build(BuildContext context) {
@@ -223,27 +231,31 @@ class _Ponto extends StatelessWidget {
       offset: deslocamento + Offset(0, 9 * (1 - opacidade)),
       child: Opacity(
         opacity: opacidade.clamp(0.0, 1.0),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-          decoration: BoxDecoration(
-            color: cor.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(99),
-            border: Border.all(color: cor, width: 1.2),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icone, size: 14, color: cor),
-              const SizedBox(width: 3),
-              Text(
-                texto,
-                style: TextStyle(
-                  color: AppColors.text,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
+        // Reflexo passando por cima do pill (o "brilho" do ganho).
+        child: ShineSweep(
+          params: params,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            decoration: BoxDecoration(
+              color: cor.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(99),
+              border: Border.all(color: cor, width: 1.2),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icone, size: 14, color: cor),
+                const SizedBox(width: 3),
+                Text(
+                  texto,
+                  style: TextStyle(
+                    color: AppColors.text,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

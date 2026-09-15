@@ -5,6 +5,22 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-15 — Baú 2: reflexo nos pills + ícone de calendário (v0.78.0)
+
+- **Reflexo:** os `_Ponto` do Baú 2 agora embrulham o conteúdo em `ShineSweep(params:
+  _revealParams)` — o brilho diagonal passa assim que o pill aparece (o `_Ponto` devolve
+  `SizedBox.shrink()` enquanto a opacidade é 0, então o `ShineSweep` **monta junto com o
+  pill** e varre uma vez). **Gotcha:** envolver o `Container` no `ShineSweep` adiciona um
+  nível de parênteses — fechar antes de rodar o analyze.
+- **Ícone:** o pill de baixo (pontos do dia) trocou `Icons.speed_rounded` por
+  `Icons.calendar_month_rounded` — a pontuação vem de check-in/consistência (frequência),
+  a mesma linguagem da aba **Check-in** (que usa calendário).
+- **Registrado em `IDEIAS.md`:** futuro (Fase 5) = ligar esses pontos ao **ganho real** ao
+  terminar o treino (estrela sorteada + pontos do dia), via `RewardFx.show` nos momentos
+  reais, sem tocar em `gamificacao.dart`/`services`.
+
+**Validação:** analyze sem erros; `flutter test` 53/53. Versão `0.78.0+109`.
+
 ## 2026-09-15 — Visibilidade do repo e minutos do GitHub (checagem, sem mudança)
 
 Usuário pediu para "deixar o Calis Timer público" porque chegou a 90% dos minutos do
