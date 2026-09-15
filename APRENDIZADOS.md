@@ -5,6 +5,22 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-15 — Baú 2: luz passando na estrela e nos pills (v0.79.1)
+
+**Pedido:** efeito de luz em movimento na estrela que sobe **e** nos dois pills.
+
+**Como:** o átomo `ShineSweep` ganhou **`cycles`** (default 1): além do `loopForever`, ele
+recomeça a passada via `addStatusListener` até completar N ciclos. No `ChestOpen2`:
+- a estrela é embrulhada em `ShineSweep(params: _revealParams, cycles: 3, child: Spin3D(...))`
+  — **fora** do `Spin3D`, senão a faixa de luz giraria junto com a estrela;
+- os `_Ponto` passam `cycles: 3` no seu `ShineSweep` (que já existia desde a v0.78.0).
+Cada passada dura `0,8 × effectiveDuration` do `_revealParams` (~440 ms) → ~1,3 s de luz,
+cobrindo o tempo em que a recompensa está na tela.
+
+**Validação:** teste contando `find.byType(ShineSweep)` = 3 (estrela + 2 pills) e rodando
+6 pumps (as 3 passadas) sem exceção; analyze sem erros; `flutter test` 53/53.
+Versão `0.79.1+111`.
+
 ## 2026-09-15 — Baú 3: a pontuação sobe com as 3 setas (v0.79.0)
 
 **Pedido:** um "baú 3" em que, em vez da estrela, sobe a **pontuação** com as **3 setas

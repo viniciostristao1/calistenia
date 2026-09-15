@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-15 — v0.79.1 (Baú 2: luz passando na estrela e nos pontos):**
+  - No **Baú 2**, agora passa **luz** (um brilho diagonal em movimento) na **estrela que sobe** e nos **dois pills de pontuação** — três passadas em cada, para ficar vivo enquanto a recompensa está na tela.
+
 - **2026-09-15 — v0.79.0 (Baú 3: a pontuação sobe com as 3 setas):**
   - Novo **Baú 3** no 🧪 Laboratório: é o baú cheio de estrelas abrindo como o Baú 2, mas em vez de a estrela saltar, **sobe a pontuação** — o número grande com as **três setas animadas** subindo em ciclo (o visual do "subiu de nível"). O valor vem do slider "Valor (+XP / ⭐)".
 

@@ -151,11 +151,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.26 | **pontos ao lado da estrela no Baú 2** (`FxParams.valor2` + slider "Rating (+)"): pills ⭐ +N e Rating +M entrando com atraso, dentro do `FlyToTarget` e fora do `Spin3D`. | **feita** |
 | 5.27 | Baú 2: **reflexo (`ShineSweep`) passando nos pills** e ícone do pill do dia virou **calendário** (linguagem do Check-in). | **feita** |
 | 5.28 | **Baú 3** (`RewardType.chest3` + `chest_open3.dart`): em vez da estrela, sobe a **pontuação com as 3 setas animadas**. | **feita** |
+| 5.29 | Baú 2: **luz passando** (`ShineSweep` com `cycles: 3`) na estrela (fora do `Spin3D`) e nos dois pills. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.79.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.79.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart` (inclui `valor2` — 2º número, ex.: Rating ao lado da estrela do baú), `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -170,7 +171,7 @@ Estado em v0.79.0. **Tudo abaixo é apresentação pura; a lógica de recompensa
 | `Bounce` | entra quicando | *(toolkit — livre)* |
 | `Shake` | tremida amortecida (tem `start()`) | *(toolkit — livre)* |
 | `GlowHalo` | halo pulsante | `StarBurst`, `IconReveal` |
-| `ShineSweep` | brilho diagonal passando | `IconReveal`, `XpGain` |
+| `ShineSweep` | brilho diagonal passando (`cycles` > 1 = várias passadas) | `IconReveal`, `XpGain`, `ChestOpen2` (estrela + pills) |
 | `Pulse` | respira em loop | `IconReveal` (sequência) |
 | `ScreenFlash` | clarão que some | *(toolkit — livre)* |
 | `FlyToTarget` | voa de A→B com fade | `ChestOpen` |

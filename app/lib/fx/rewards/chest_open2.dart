@@ -144,11 +144,17 @@ class _ChestOpen2State extends State<ChestOpen2>
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Spin3D(
+                        // Luz passando pela estrela (3 passadas) — fora do
+                        // Spin3D para a faixa não girar junto.
+                        ShineSweep(
                           params: _revealParams,
-                          turns: 2,
-                          fromScale: 0.3,
-                          child: const Star3D(size: 52),
+                          cycles: 3,
+                          child: Spin3D(
+                            params: _revealParams,
+                            turns: 2,
+                            fromScale: 0.3,
+                            child: const Star3D(size: 52),
+                          ),
                         ),
                         if ((widget.valorEstrela ?? 0) > 0)
                           _Ponto(
@@ -234,6 +240,7 @@ class _Ponto extends StatelessWidget {
         // Reflexo passando por cima do pill (o "brilho" do ganho).
         child: ShineSweep(
           params: params,
+          cycles: 3,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
             decoration: BoxDecoration(
