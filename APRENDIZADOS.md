@@ -5,6 +5,28 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-15 — Visibilidade do repo e minutos do GitHub (checagem, sem mudança)
+
+Usuário pediu para "deixar o Calis Timer público" porque chegou a 90% dos minutos do
+GitHub. **O repo já está público** (`gh api repos/.../calistenia` → `visibility: public`,
+`private: false`), então os builds **não consomem minutos** — nada a fazer. Confirmado
+também que **nenhum segredo foi versionado**, nem hoje nem no histórico
+(`git log --all --diff-filter=A --name-only | grep -Ei 'key.properties|*.jks|
+google-services|firebase_options|*.env'` → vazio).
+
+**Onde os minutos vão:** só **repos privados** consomem. O único privado com build
+recente é o **`livros_app`** (`build-apk.yml`, 3 runs em 13–14/09, ~10 min cada). Os outros
+privados (`trading`, `claude-memory`, `estrategias-trading`) não tiveram runs recentes.
+Os demais **são públicos e não gastam**: `carlog_app`, `adm-projetos*`, **`vixya_app`**
+(3 runs em 10–11/09, mas público = grátis), `alfabetizacao_app`, `xadrez_mate`, `lista_app`,
+`cread-download`, etc. (Não existe repo `vixya`; `/root/vixya` não tem remote.) O `livros_app` tem
+`backend/.env.example` no histórico (só exemplo — sem segredo real), mas por ter backend
+**não mudei a visibilidade**: o usuário optou por **não mexer por agora** (2026-09-15).
+Se um dia quiser: dá para torná-lo público (rodando antes uma varredura por chaves) ou
+só buildar em tags/releases para gastar menos.
+
+---
+
 ## 2026-09-12 — Fix: previsão "~hora" travada (relógio da UI) (v0.77.2)
 
 **Relato:** no **Modo Carrossel**, depois de terminar um treino e voltar, a previsão
