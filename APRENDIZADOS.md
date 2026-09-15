@@ -5,6 +5,26 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-15 — Baú rápido = o mesmo baú (modo `rapido`) (v0.80.1)
+
+**Feedback:** o `ChestQuick` (baú-intro desenhado do zero, 2.5D simplificado) ficou **feio**.
+O usuário quer **o mesmo baú** dos outros — só com a tampa abrindo pouco.
+
+**Como:** apaguei `chest_quick.dart` e o modo virou um **flags** do próprio `ChestOpen2`:
+`rapido: true` → no `AnimatedBuilder`, o `v` do painter é comprimido
+(`v = 0.335 · easeOut(t)`). Com isso tudo que é "revelação" fica desligado de graça
+(estrela em `v > 0.55`, raios/partículas em `v > 0.42`, pulo em `v > 0.56`) e a tampa para em
+~30° (o `Interval(0.30, 0.64)` do `_theta` chega a ~0,28). O `onFim` continua disparando no
+`completed` do controller, então a cerimônia segue igual (intro → revelação).
+Lab: `chestIntro` → `ChestOpen2(rapido: true)`.
+
+**Gotcha (desta vez):** um `str.replace` no python **não casou** com o texto formatado e
+silenciosamente não fez nada — o golden mostrou o baú abrindo inteiro com a estrela. **Sempre
+usar `assert`/`Edit`** (ou conferir com `grep`) quando o alvo passou pelo `dart format`.
+
+**Validação:** goldens do modo rápido (fechado em 500 ms; tampa ~30° no fim, sem estrela),
+analyze sem erros; `flutter test` 56/56. Versão `0.80.1+113`.
+
 ## 2026-09-15 — Cerimônia de fim de treino: baús no lugar certo (v0.80.0)
 
 **Decisão do usuário (design):** estrela (7/mês sorteados) → **Baú 2** (com toque); conquistas

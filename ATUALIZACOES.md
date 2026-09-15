@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-15 — v0.80.1 (baú rápido com o MESMO desenho dos outros):**
+  - O **baú rápido** (conquistas e marcos de sequência) agora é **o mesmo baú** 3/4 dos demais — a única diferença é que a **tampa abre só um pouco** e a animação termina ali; a medalha/troféu/chama entra no lugar em seguida. Nada de desenho simplificado.
+
 - **2026-09-15 — v0.80.0 (recompensas de fim de treino: cada prêmio no seu lugar):**
   - **Estrela sorteada (7/mês, treino completo):** agora sai do **Baú 2** — ele aparece fechado e espera um **toque**; abre, a estrela sobe e aparecem os pontos (**⭐ +10** e o **ganho do dia**).
   - **Conquistas (4/8/15/21 dias) e marcos de sequência (a cada 10: 10/20/30…):** aparece um **baú rápido** — toca, a tampa abre só um pouco e a **medalha/troféu** (ou a **chama da sequência** com o número) entra no lugar, como já era. Vale todo mês, somando surpresas além das estrelas.

@@ -31,6 +31,7 @@ class ChestOpen2 extends StatefulWidget {
     this.params = const FxParams(),
     this.valorEstrela,
     this.abreComToque = true,
+    this.rapido = false,
     this.onFim,
   });
 
@@ -42,6 +43,11 @@ class ChestOpen2 extends StatefulWidget {
 
   /// `true` = o baú espera um **toque** para abrir (padrão da cerimônia real).
   final bool abreComToque;
+
+  /// `true` = **baú rápido** (intro de conquista/sequência): MESMO baú, mas a
+  /// tampa abre só um pouco e a animação termina ali — nada de estrela, brilhos
+  /// ou pulo. A revelação (medalha/troféu/chama) vem em seguida.
+  final bool rapido;
 
   /// Chamado quando a animação termina (a cerimônia segue para o próximo).
   final VoidCallback? onFim;
@@ -114,7 +120,12 @@ class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
         child: AnimatedBuilder(
           animation: _ctrl,
           builder: (context, _) {
-            final v = _ctrl.value;
+            // No modo rápido (baú-intro) o `v` do painter para em ~0,335
+            // (tampa ~30°): o tremor fica na primeira metade e não há estrela,
+            // brilhos nem pulo — a revelação vem depois.
+            final v = widget.rapido
+                ? 0.335 * Curves.easeOut.transform(_ctrl.value)
+                : _ctrl.value;
             final aberto = v > 0.42;
             final glowA =
                 (Interval(0.34, 0.52).transform(v)) *

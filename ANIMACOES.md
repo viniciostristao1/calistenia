@@ -152,12 +152,13 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.27 | Baú 2: **reflexo (`ShineSweep`) passando nos pills** e ícone do pill do dia virou **calendário** (linguagem do Check-in). | **feita** |
 | 5.28 | **Baú 3** (`RewardType.chest3` + `chest_open3.dart`): em vez da estrela, sobe a **pontuação com as 3 setas animadas**. | **feita** |
 | 5.29 | Baú 2: **luz passando** (`ShineSweep` com `cycles: 3`) na estrela (fora do `Spin3D`) e nos dois pills. | **feita** |
-| 5.30 | **Cerimônia real de fim de treino**: `ChestQuick` (baú-intro com toque) + `chestIntro`, Baú 2 com `abreComToque`/`onFim`, `RewardFx` com `dismissOnTap`, regra pura (`marcoSequencia`/`ratingDoDia`/`recompensasDoDia`) e a fila no "Voltar" (estrela por último). | **feita** |
+| 5.30 | **Cerimônia real de fim de treino**: baú-intro (mesmo baú, `rapido: true`) + `chestIntro`, Baú 2 com `abreComToque`/`onFim`, `RewardFx` com `dismissOnTap`, regra pura (`marcoSequencia`/`ratingDoDia`/`recompensasDoDia`) e a fila no "Voltar" (estrela por último). | **feita** |
+| 5.31 | fix: baú rápido passou a ser **o mesmo baú** dos outros (`ChestOpen2(rapido: true)`, `v` comprimido → tampa ~30°); `ChestQuick` removido. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.80.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.80.1. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`; inclui os baús 1/2/3 e `chestIntro`),
 `fx_params.dart` (inclui `valor2` — 2º número, ex.: Rating ao lado da estrela do baú), `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -204,8 +205,8 @@ faces com culling por normal, luz direcional e ordenação por profundidade; **f
 lateral direita** visíveis, tampa girando no eixo X na dobradiça traseira, interior
 escuro com brilho e parte de dentro da tampa côncava com tábuas; física — afunda,
 destranca, freia, bate no batente e o baú dá um pulinho; item sai girando com `Star3D`),
-`chest_open2.dart` (**Baú 2** — cópia isolada do baú 1 para evoluir sem risco; estreia com
-**estrelas internas facetadas** estilo `Star3D`), `chest_quick.dart` (**`ChestQuick`** — baú-intro: fechado, abre no toque e sai de cena; a revelação vem depois), `chest_open3.dart` (**Baú 3** — mesma
+`chest_open2.dart` (**Baú 2** — cópia isolada do baú 1; também é o **baú rápido** via `rapido: true` (mesmo desenho, tampa abre pouco); estreia com
+**estrelas internas facetadas** estilo `Star3D`), `chest_open3.dart` (**Baú 3** — mesma
 abertura/física do baú 2, mas a recompensa é a **pontuação + 3 setas** subindo, no espírito
 do `LevelUpReveal`; recebe o valor pelo slider "Valor"), `placeholder_reward.dart`
 (fallback — hoje nenhum tipo cai nele).

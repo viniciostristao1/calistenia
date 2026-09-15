@@ -29,7 +29,6 @@ import '../../util/fundos.dart';
 import '../../util/gamificacao.dart';
 import '../../util/insignias.dart';
 import '../../fx/rewards/chest_open2.dart';
-import '../../fx/rewards/chest_quick.dart';
 
 /// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
 /// → descanso, por série) contando segundo a segundo, com pausa, pular/voltar
@@ -840,8 +839,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     TipoConquista.trofeuOuro => RewardType.trophyGold,
   };
 
-  /// **Baú rápido**: aparece fechado, abre no toque e sai de cena — a revelação
-  /// (medalha/troféu/chama) entra em seguida, como já era.
+  /// **Baú rápido**: o MESMO baú dos outros, mas a tampa abre só um pouco e a
+  /// animação termina — a revelação (medalha/troféu/chama) entra em seguida.
   Future<void> _bauIntro() {
     final pronto = Completer<void>();
     showGeneralDialog<void>(
@@ -850,8 +849,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       barrierDismissible: false,
       transitionDuration: const Duration(milliseconds: 160),
       pageBuilder: (ctx, _, _) => Center(
-        child: ChestQuick(
-          params: const FxParams(duration: Duration(milliseconds: 700)),
+        child: ChestOpen2(
+          params: const FxParams(duration: Duration(milliseconds: 850)),
+          rapido: true,
           onFim: () {
             if (!pronto.isCompleted) pronto.complete();
             Navigator.of(ctx).pop();

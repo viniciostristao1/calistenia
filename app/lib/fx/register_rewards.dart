@@ -7,7 +7,6 @@ import 'reward_type.dart';
 import 'rewards/chest_open.dart';
 import 'rewards/chest_open2.dart';
 import 'rewards/chest_open3.dart';
-import 'rewards/chest_quick.dart';
 import 'rewards/flame_reveal.dart';
 import 'rewards/icon_reveal.dart';
 import 'rewards/level_up_reveal.dart';
@@ -24,7 +23,7 @@ import 'rewards/xp_gain.dart';
 /// - `xp`          → `XpGain` (usa `value`)
 /// - `chest`       → `ChestOpen` (a mais composta)
 /// - `chest3`      → `ChestOpen3` (pontuação + 3 setas subindo)
-/// - `chestIntro`  → `ChestQuick` (intro: abre no toque, revelação vem depois)
+/// - `chestIntro`  → `ChestOpen2(rapido)` (intro: abre no toque, revelação vem depois)
 /// - `trophy*`     → `IconReveal` (troféu, tom ouro/prata)
 /// - `medal*`      → `IconReveal` (medalha, tom ouro/prata)
 /// - `levelUp`     → `IconReveal` (usa `value` como nº do nível)
@@ -58,11 +57,11 @@ void registerBuiltInRewards() {
     RewardType.chest3,
     (context, params, {value}) => ChestOpen3(params: params, valorScore: value),
   );
-  // Baú rápido: só a INTRO (fechado → toque → abre pouco); a revelação de
-  // verdade (medalha/troféu/chama) é chamada em seguida por quem o usa.
+  // Baú rápido: o MESMO baú 3/4, mas só a intro (fechado → toque → abre pouco);
+  // a revelação de verdade (medalha/troféu/chama) vem em seguida.
   RewardRegistry.register(
     RewardType.chestIntro,
-    (context, params, {value}) => ChestQuick(params: params),
+    (context, params, {value}) => ChestOpen2(params: params, rapido: true),
   );
   RewardRegistry.register(
     RewardType.confetti,
