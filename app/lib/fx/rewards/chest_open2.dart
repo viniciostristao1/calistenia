@@ -155,7 +155,7 @@ class _ChestOpen2State extends State<ChestOpen2>
                             cor: AppColors.estrela,
                             texto: '+${widget.valorEstrela!.round()}',
                             opacidade: Interval(0.60, 0.72).transform(v),
-                            deslocamento: const Offset(44, -13),
+                            deslocamento: const Offset(70, -16),
                           ),
                         if (widget.params.valor2 > 0)
                           _Ponto(
@@ -163,7 +163,7 @@ class _ChestOpen2State extends State<ChestOpen2>
                             cor: context.accent,
                             texto: '+${widget.params.valor2.round()}',
                             opacidade: Interval(0.72, 0.86).transform(v),
-                            deslocamento: const Offset(44, 13),
+                            deslocamento: const Offset(70, 16),
                           ),
                       ],
                     ),

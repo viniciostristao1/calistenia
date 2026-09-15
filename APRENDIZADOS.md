@@ -5,6 +5,19 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Ajustes finos: título, 3 setas, pills afastados (v0.77.1)
+
+- **Título:** `letterSpacing: 1.4` nas duas linhas (e `height: 1.05`) — estavam muito juntas.
+- **Subiu de nível:** 3 setas em `_setasX = [-64, 0, 64]` com fase `i/3` (antes eram 2, ±60
+  com fase 0,5). A do centro passa por trás do +N — ok, ela "nasce" acima.
+- **Baú 2:** pills de `Offset(44, ±13)` → `Offset(70, ±16)`: o pill tem ~60 de largura, então
+  a borda esquerda saiu de cima da estrela (44−30 = 14 < 26, o raio da estrela) para 40 —
+  **14px de folga**. Verificado por teste (os `Text('+10')`/`Text('+15')` existem na árvore no
+  fim da animação). **Gotcha:** validação por cor em golden engana — borda de 1,2px e fill a
+  18% se misturam ao fundo; para checar presença, `find.text(...)` é mais confiável.
+
+**Validação:** analyze sem erros; `flutter test` 53/53. Versão `0.77.1+107`.
+
 ## 2026-09-12 — Título em 2 linhas + pontos no Baú 2 + nível limpo (v0.77.0)
 
 **1) Título:** o `Text('Calis Timer')` era cortado ("Calis…") porque a barra tem 4 botões

@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.77.1 (ajustes finos: título, 3 setas e pontos mais afastados):**
+  - **Nome no topo:** as letras de "Calis"/"Timer" ganharam **espaçamento** (estavam muito grudadas).
+  - **Subiu de nível:** agora são **3 setas** subindo (esquerda, centro e direita), em ritmos defasados.
+  - **Baú 2:** os **pills de pontuação** (⭐ +N e Rating +M) ficaram **mais afastados da estrela** (antes encostavam nela).
+
 - **2026-09-12 — v0.77.0 (nome completo no topo + pontos ao lado da estrela + nível sem “níveis”):**
   - O nome **Calis Timer** agora aparece **em duas linhas** ("Calis" em cima, "Timer" embaixo), com a versão ao lado — não corta mais para "Calis…".
   - **Baú 2 (Laboratório):** quando a tampa abre, a estrela salta e, **ao lado dela**, aparecem os pontos: **⭐ +N** (valor do slider "Valor") e **Rating +M** (novo slider "Rating (+)", sugerido 15). O pill da estrela entra primeiro e o do Rating **logo depois** — para você ver exatamente o que ganharia. Sem valores informados, os pills não aparecem.

@@ -285,7 +285,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    height: 1.0,
+                    height: 1.05,
+                    letterSpacing: 1.4,
                   ),
                 ),
                 Row(
@@ -296,7 +297,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        height: 1.0,
+                        height: 1.05,
+                        letterSpacing: 1.4,
                       ),
                     ),
                     const SizedBox(width: 4),

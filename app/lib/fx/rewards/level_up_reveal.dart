@@ -43,11 +43,14 @@ class _LevelUpRevealState extends State<LevelUpReveal>
     super.dispose();
   }
 
+  /// Onde cada uma das 3 setas sobe (esquerda, centro, direita).
+  static const _setasX = [-64.0, 0.0, 64.0];
+
   Widget _seta(int i) {
-    final ph = (_ctrl.value + i * 0.5) % 1.0;
+    final ph = (_ctrl.value + i / 3) % 1.0;
     final op = sin(pi * ph).clamp(0.0, 1.0);
     return Transform.translate(
-      offset: Offset(i == 0 ? -60 : 60, 62 - ph * 128),
+      offset: Offset(_setasX[i], 62 - ph * 128),
       child: Transform.scale(
         scale: 0.7 + 0.4 * op,
         child: Opacity(
@@ -127,7 +130,7 @@ class _LevelUpRevealState extends State<LevelUpReveal>
             animation: _ctrl,
             builder: (context, _) => Stack(
               alignment: Alignment.center,
-              children: [_seta(0), _seta(1)],
+              children: [_seta(0), _seta(1), _seta(2)],
             ),
           ),
           _pontuacao(),
