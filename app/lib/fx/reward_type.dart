@@ -18,6 +18,7 @@ enum RewardType {
   star,
   chest,
   chest2,
+  chest3,
   trophyGold,
   trophySilver,
   medalGold,
@@ -38,44 +39,46 @@ const _prata = Color(0xFFC0C7D2);
 extension RewardTypeInfo on RewardType {
   /// Rótulo curto exibido no Laboratório.
   String get label => switch (this) {
-        RewardType.star => 'Estrela',
-        RewardType.chest => 'Baú',
-        RewardType.chest2 => 'Baú 2',
-        RewardType.trophyGold => 'Troféu de Ouro',
-        RewardType.trophySilver => 'Troféu de Prata',
-        RewardType.medalGold => 'Medalha de Ouro',
-        RewardType.medalSilver => 'Medalha de Prata',
-        RewardType.xp => '+XP',
-        RewardType.levelUp => 'Subiu de nível',
-        RewardType.streak => 'Sequência',
-        RewardType.confetti => 'Confete',
-      };
+    RewardType.star => 'Estrela',
+    RewardType.chest => 'Baú',
+    RewardType.chest2 => 'Baú 2',
+    RewardType.chest3 => 'Baú 3',
+    RewardType.trophyGold => 'Troféu de Ouro',
+    RewardType.trophySilver => 'Troféu de Prata',
+    RewardType.medalGold => 'Medalha de Ouro',
+    RewardType.medalSilver => 'Medalha de Prata',
+    RewardType.xp => '+XP',
+    RewardType.levelUp => 'Subiu de nível',
+    RewardType.streak => 'Sequência',
+    RewardType.confetti => 'Confete',
+  };
 
   IconData get icon => switch (this) {
-        RewardType.star => Icons.star_rounded,
-        RewardType.chest => Icons.card_giftcard_rounded,
-        RewardType.chest2 => Icons.inventory_2_rounded,
-        RewardType.trophyGold || RewardType.trophySilver =>
-          Icons.emoji_events_rounded,
-        RewardType.medalGold || RewardType.medalSilver =>
-          Icons.military_tech_rounded,
-        RewardType.xp => Icons.bolt_rounded,
-        RewardType.levelUp => Icons.arrow_circle_up_rounded,
-        RewardType.streak => Icons.local_fire_department_rounded,
-        RewardType.confetti => Icons.celebration_rounded,
-      };
+    RewardType.star => Icons.star_rounded,
+    RewardType.chest => Icons.card_giftcard_rounded,
+    RewardType.chest2 => Icons.inventory_2_rounded,
+    RewardType.chest3 => Icons.all_inbox_rounded,
+    RewardType.trophyGold ||
+    RewardType.trophySilver => Icons.emoji_events_rounded,
+    RewardType.medalGold ||
+    RewardType.medalSilver => Icons.military_tech_rounded,
+    RewardType.xp => Icons.bolt_rounded,
+    RewardType.levelUp => Icons.arrow_circle_up_rounded,
+    RewardType.streak => Icons.local_fire_department_rounded,
+    RewardType.confetti => Icons.celebration_rounded,
+  };
 
   /// Cor-tema do efeito. Lê a paleta ATUAL (nunca `const` com [AppColors]: os
   /// temas trocam em runtime — ver a nota no `ANIMACOES.md`).
   Color color(BuildContext context) => switch (this) {
-        RewardType.star || RewardType.xp => AppColors.estrela,
-        RewardType.trophyGold || RewardType.medalGold => _ouro,
-        RewardType.trophySilver || RewardType.medalSilver => _prata,
-        RewardType.streak => AppColors.exec,
-        RewardType.chest ||
-        RewardType.chest2 ||
-        RewardType.levelUp ||
-        RewardType.confetti =>
-          context.accent,
-      };
+    RewardType.star || RewardType.xp => AppColors.estrela,
+    RewardType.trophyGold || RewardType.medalGold => _ouro,
+    RewardType.trophySilver || RewardType.medalSilver => _prata,
+    RewardType.streak => AppColors.exec,
+    RewardType.chest ||
+    RewardType.chest2 ||
+    RewardType.chest3 ||
+    RewardType.levelUp ||
+    RewardType.confetti => context.accent,
+  };
 }

@@ -5,6 +5,33 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-15 — Baú 3: a pontuação sobe com as 3 setas (v0.79.0)
+
+**Pedido:** um "baú 3" em que, em vez da estrela, sobe a **pontuação** com as **3 setas
+animadas** (a mesma linguagem do "subiu de nível").
+
+**Como:** `chest_open3.dart` é uma **cópia isolada** do `chest_open2.dart` (mesmo baú, mesmo
+monte de estrelas, mesma física da tampa/giro) — mudou só a recompensa: em vez de
+`Spin3D(Star3D)` + pills, entra `_ScoreSubindo` (número grande + 3 setas em ciclo), dentro
+do `FlyToTarget`. `_ScoreSubindo` tem controller próprio em `repeat()`, 3 setas em
+`_setasX = [-58, 0, 58]` com fase `i/3` (sobe, some e reaparece) e o número entra com
+pop/fade por `entrada` (`Interval(0.58, 0.74)` do `v` do baú). Novo `RewardType.chest3`
+("Baú 3", ícone `all_inbox_rounded`, cor do accent) e registro passando `value` como
+`valorScore`.
+
+**Lição (padrão de "baú vN"):** copiar o arquivo, renomear as 3 classes
+(`ChestOpenN`/`_ChestOpenNState`/`_ChestPainterN`), trocar SÓ o bloco da recompensa, criar
+o `RewardType` e registrar. Os imports que sobrarem (ex.: `star_3d`, `spin3d`,
+`shine_sweep`) devem sair — o analyze acusa.
+
+**Gotcha de teste:** em golden, `pump` com passo grande monta a recompensa **naquele mesmo
+frame** (o `TweenAnimationBuilder` do `FlyToTarget` começa em t=0) — a primeira captura sai
+vazia; capture depois de mais um `pump` e confirme por árvore (`find.byIcon(...)`, `find.text`),
+não só por imagem.
+
+**Validação:** teste com `findsNWidgets(3)` nas setas + `find.text('+50')`; analyze sem
+erros; `flutter test` 53/53. Versão `0.79.0+110`.
+
 ## 2026-09-15 — Baú 2: reflexo nos pills + ícone de calendário (v0.78.0)
 
 - **Reflexo:** os `_Ponto` do Baú 2 agora embrulham o conteúdo em `ShineSweep(params:

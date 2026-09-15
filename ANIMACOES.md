@@ -150,11 +150,12 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.25 | troféu 2ª passada: corpo mais cheio (ombro alto), afinação reta, ganchos maiores e alças **abraçando a borda** (offset amostrado do perfil). + `docs/layouts_treino.html` (10 ideias) no GitHub Pages. | **feita** |
 | 5.26 | **pontos ao lado da estrela no Baú 2** (`FxParams.valor2` + slider "Rating (+)"): pills ⭐ +N e Rating +M entrando com atraso, dentro do `FlyToTarget` e fora do `Spin3D`. | **feita** |
 | 5.27 | Baú 2: **reflexo (`ShineSweep`) passando nos pills** e ícone do pill do dia virou **calendário** (linguagem do Check-in). | **feita** |
+| 5.28 | **Baú 3** (`RewardType.chest3` + `chest_open3.dart`): em vez da estrela, sobe a **pontuação com as 3 setas animadas**. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.78.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.79.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`),
 `fx_params.dart` (inclui `valor2` — 2º número, ex.: Rating ao lado da estrela do baú), `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -202,8 +203,10 @@ lateral direita** visíveis, tampa girando no eixo X na dobradiça traseira, int
 escuro com brilho e parte de dentro da tampa côncava com tábuas; física — afunda,
 destranca, freia, bate no batente e o baú dá um pulinho; item sai girando com `Star3D`),
 `chest_open2.dart` (**Baú 2** — cópia isolada do baú 1 para evoluir sem risco; estreia com
-**estrelas internas facetadas** estilo `Star3D`), `placeholder_reward.dart` (fallback —
-hoje nenhum tipo cai nele).
+**estrelas internas facetadas** estilo `Star3D`), `chest_open3.dart` (**Baú 3** — mesma
+abertura/física do baú 2, mas a recompensa é a **pontuação + 3 setas** subindo, no espírito
+do `LevelUpReveal`; recebe o valor pelo slider "Valor"), `placeholder_reward.dart`
+(fallback — hoje nenhum tipo cai nele).
 
 **Util de pintura:** `fx/shading.dart` — `shade`/`lighten` (HSL) usados por `Star3D`,
 `Trophy3D` e `_ChestPainter`.

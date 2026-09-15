@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-15 — v0.79.0 (Baú 3: a pontuação sobe com as 3 setas):**
+  - Novo **Baú 3** no 🧪 Laboratório: é o baú cheio de estrelas abrindo como o Baú 2, mas em vez de a estrela saltar, **sobe a pontuação** — o número grande com as **três setas animadas** subindo em ciclo (o visual do "subiu de nível"). O valor vem do slider "Valor (+XP / ⭐)".
+
 - **2026-09-15 — v0.78.0 (Baú 2: reflexo nos pontos + ícone de calendário):**
   - Os dois pills de pontuação ao lado da estrela agora recebem um **reflexo passando** (brilho diagonal) quando aparecem.
   - O pill de baixo (pontos do dia) trocou o velocímetro por um **ícone de calendário** — combina com a aba Check-in, que é de onde vem esse cumprimento (consistência/frequência).

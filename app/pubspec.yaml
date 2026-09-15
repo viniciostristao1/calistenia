@@ -3,7 +3,7 @@ description: "Cronômetros de treino de calistenia — preparação, execução,
 publish_to: 'none'
 
 # versionName+versionCode. Ex.: 0.1.0+1 → versionName "0.1.0", versionCode 1.
-version: 0.78.0+109
+version: 0.79.0+110
 
 environment:
   sdk: ^3.12.2

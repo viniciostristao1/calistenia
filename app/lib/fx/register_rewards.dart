@@ -6,6 +6,7 @@ import 'reward_registry.dart';
 import 'reward_type.dart';
 import 'rewards/chest_open.dart';
 import 'rewards/chest_open2.dart';
+import 'rewards/chest_open3.dart';
 import 'rewards/flame_reveal.dart';
 import 'rewards/icon_reveal.dart';
 import 'rewards/level_up_reveal.dart';
@@ -21,6 +22,7 @@ import 'rewards/xp_gain.dart';
 /// - `star`        → `StarBurst`
 /// - `xp`          → `XpGain` (usa `value`)
 /// - `chest`       → `ChestOpen` (a mais composta)
+/// - `chest3`      → `ChestOpen3` (pontuação + 3 setas subindo)
 /// - `trophy*`     → `IconReveal` (troféu, tom ouro/prata)
 /// - `medal*`      → `IconReveal` (medalha, tom ouro/prata)
 /// - `levelUp`     → `IconReveal` (usa `value` como nº do nível)
@@ -48,6 +50,11 @@ void registerBuiltInRewards() {
     RewardType.chest2,
     (context, params, {value}) =>
         ChestOpen2(params: params, valorEstrela: value),
+  );
+  // Baú 3: sobe a PONTUAÇÃO com as 3 setas animadas (sem estrela).
+  RewardRegistry.register(
+    RewardType.chest3,
+    (context, params, {value}) => ChestOpen3(params: params, valorScore: value),
   );
   RewardRegistry.register(
     RewardType.confetti,
