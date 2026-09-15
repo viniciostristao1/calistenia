@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-15 — v0.80.0 (recompensas de fim de treino: cada prêmio no seu lugar):**
+  - **Estrela sorteada (7/mês, treino completo):** agora sai do **Baú 2** — ele aparece fechado e espera um **toque**; abre, a estrela sobe e aparecem os pontos (**⭐ +10** e o **ganho do dia**).
+  - **Conquistas (4/8/15/21 dias) e marcos de sequência (a cada 10: 10/20/30…):** aparece um **baú rápido** — toca, a tampa abre só um pouco e a **medalha/troféu** (ou a **chama da sequência** com o número) entra no lugar, como já era. Vale todo mês, somando surpresas além das estrelas.
+  - **Dias comuns (sem estrela/conquista/marco):** sem baú — ao tocar em **Voltar**, sobem as **3 setas com o Rating que você ganhou no dia** (~2 s) e o app volta pra home.
+  - **Recordes:** comemoração de **confete + nº de repetições** na tela de fim. Quando há baú(s), eles entram **depois do "Voltar"**, com a **estrela por último** (se coincidir com conquista, são 2 baús).
+  - Tudo testável no 🧪 Laboratório: novo tipo **"Baú rápido"**.
+
 - **2026-09-15 — v0.79.1 (Baú 2: luz passando na estrela e nos pontos):**
   - No **Baú 2**, agora passa **luz** (um brilho diagonal em movimento) na **estrela que sobe** e nos **dois pills de pontuação** — três passadas em cada, para ficar vivo enquanto a recompensa está na tela.
 

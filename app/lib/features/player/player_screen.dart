@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../fx/fx.dart';
 import '../../models/conquista.dart';
 import '../../models/exercicio.dart';
 import '../../models/fase.dart';
@@ -27,6 +28,8 @@ import '../../util/frases.dart';
 import '../../util/fundos.dart';
 import '../../util/gamificacao.dart';
 import '../../util/insignias.dart';
+import '../../fx/rewards/chest_open2.dart';
+import '../../fx/rewards/chest_quick.dart';
 
 /// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
 /// → descanso, por série) contando segundo a segundo, com pausa, pular/voltar
@@ -68,9 +71,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   bool? _respostaCompleto; // null = ainda não respondeu; true/false = respondeu
   List<TipoConquista> _novasConquistas = const []; // conquistas recém-obtidas
   String? _fraseIncompleto; // frase sorteada quando não completou
-  List<String> _novosRecordes = const []; // "Nome · N reps" batidos ao completar
+  List<String> _novosRecordes =
+      const []; // "Nome · N reps" batidos ao completar
   String? _fraseCompleto; // frase sorteada quando completou
   bool _ganhouInsignia = false; // caiu num dia de insígnia e ganhou a estrela
+
+  /// Fila de prêmios do dia (baús/rating), tocada ao tocar "Voltar".
+  /// Fica pendente se o usuário tocar "Repetir treino".
+  List<PremioDia> _premios = const [];
 
   String? _carimbo; // "Série 2/3 ✓" mostrado ao concluir uma série
   Timer? _carimboTimer;
@@ -78,8 +86,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   // POOL de players (baixa latência): reusar UM player a cada repetição curta
   // fazia o som falhar. Com vários players em rodízio, cada bip usa um livre.
   static const _nBeeps = 5;
-  final List<AudioPlayer> _beeps =
-      List.generate(_nBeeps, (i) => AudioPlayer(playerId: 'calis_beep$i'));
+  final List<AudioPlayer> _beeps = List.generate(
+    _nBeeps,
+    (i) => AudioPlayer(playerId: 'calis_beep$i'),
+  );
   final AudioPlayer _fim = AudioPlayer(playerId: 'calis_fim');
   int _beepIdx = 0;
 
@@ -220,7 +230,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     }
     final faseTerm = _fases[_idx]; // a fase que está terminando
     final exAntes = faseTerm.exercicioIndex;
-    final resto = auto ? _restanteMs : 0; // carrega o "estouro" p/ manter o ritmo
+    final resto = auto
+        ? _restanteMs
+        : 0; // carrega o "estouro" p/ manter o ritmo
     _idx++;
     // Trocou de exercício? O anterior foi concluído -> check-in.
     if (_fases[_idx].exercicioIndex != exAntes) _talvezMarcar(exAntes);
@@ -228,7 +240,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _restanteMs = _fases[_idx].segundos * 1000 + resto;
     HapticFeedback.heavyImpact();
     // Última repetição da série = fim de série (som diferente); senão, bip.
-    final fimDeSerie = faseTerm.tipo == FaseTipo.execucao &&
+    final fimDeSerie =
+        faseTerm.tipo == FaseTipo.execucao &&
         faseTerm.rep == faseTerm.totalReps;
     _tocarSom(fim: fimDeSerie);
     if (fimDeSerie && faseTerm.totalSeries > 1) {
@@ -309,7 +322,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final diasValidos = checkins
         .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
         .toSet();
-    final atuais = conquistasAtuais(concs, treinos, prog, diasValidos: diasValidos);
+    final atuais = conquistasAtuais(
+      concs,
+      treinos,
+      prog,
+      diasValidos: diasValidos,
+    );
     final notifier = ref.read(conquistasProvider.notifier);
     final novas = await notifier.registrarNovas(atuais);
     await notifier.reconciliar(atuais); // move p/ histórico o que tiver caído
@@ -319,9 +337,21 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final hoje = DateTime.now();
     final insigniasNotifier = ref.read(insigniasProvider.notifier);
     final ehSorteado = await insigniasNotifier.ehDiaSorteado(
-        hoje, diasAgendados(treinos), sementeInsignia(uid));
-    final ganhouInsignia =
-        ehSorteado ? await insigniasNotifier.registrarSeNova(hoje) : false;
+      hoje,
+      diasAgendados(treinos),
+      sementeInsignia(uid),
+    );
+    final ganhouInsignia = ehSorteado
+        ? await insigniasNotifier.registrarSeNova(hoje)
+        : false;
+    // Fila da cerimônia: conquista/marco (baú rápido) → estrela (baú 2) — e,
+    // sem baú nenhum, o ganho de Rating do dia (setas do "subiu de nível").
+    final premios = recompensasDoDia(
+      novasConquistas: novas,
+      streak: streakAtual(concs, treinos, hoje: hoje),
+      ganhouEstrela: ganhouInsignia,
+      ratingGanho: ratingDoDia(concs, treinos, prog, hoje: hoje),
+    );
     if (!mounted) return;
     setState(() {
       _respostaCompleto = true;
@@ -329,6 +359,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _novosRecordes = novosRecordes;
       _fraseCompleto = fraseCompletoAleatoria();
       _ganhouInsignia = ganhouInsignia;
+      _premios = premios;
     });
   }
 
@@ -339,8 +370,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// comemoração; um peso saindo de 0 = estabelece a base, sem alarde).
   Future<List<String>> _registrarRecordes() async {
     final notifier = ref.read(progressaoProvider.notifier);
-    final grupos =
-        agruparPorExercicio(ref.read(progressaoProvider).value ?? const []);
+    final grupos = agruparPorExercicio(
+      ref.read(progressaoProvider).value ?? const [],
+    );
     final recReps = {
       for (final g in grupos) g.exercicio.trim().toLowerCase(): g.maior,
     };
@@ -359,8 +391,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       final baterReps = rr == null || e.repeticoes > rr;
       final baterPeso = e.pesoKg > 0 && (rp == null || e.pesoKg > rp);
       if (baterReps || baterPeso) {
-        await notifier.adicionar(RegistroProgressao(
-            exercicio: nome, valor: e.repeticoes, peso: e.pesoKg));
+        await notifier.adicionar(
+          RegistroProgressao(
+            exercicio: nome,
+            valor: e.repeticoes,
+            peso: e.pesoKg,
+          ),
+        );
         final partes = <String>[
           if (baterReps && rr != null) '${e.repeticoes} reps',
           if (baterPeso && rp != null && rp > 0) fmtPeso(e.pesoKg),
@@ -389,10 +426,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   }
 
   Color _cor(FaseTipo t) => switch (t) {
-        FaseTipo.preparacao => AppColors.prep,
-        FaseTipo.execucao => AppColors.exec,
-        FaseTipo.descanso => AppColors.rest,
-      };
+    FaseTipo.preparacao => AppColors.prep,
+    FaseTipo.execucao => AppColors.exec,
+    FaseTipo.descanso => AppColors.rest,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -400,8 +437,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       return Scaffold(
         appBar: AppBar(),
         body: Center(
-          child: Text('Este treino não tem etapas.',
-              style: TextStyle(color: AppColors.dim)),
+          child: Text(
+            'Este treino não tem etapas.',
+            style: TextStyle(color: AppColors.dim),
+          ),
         ),
       );
     }
@@ -489,8 +528,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           Expanded(
             child: Text(
               widget.titulo,
-              style: const TextStyle(
-                  fontSize: 15, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -512,8 +550,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               value: (_idx + 1) / _fases.length,
               minHeight: 6,
               backgroundColor: AppColors.surface2,
-              valueColor:
-                  AlwaysStoppedAnimation(AppColors.text),
+              valueColor: AlwaysStoppedAnimation(AppColors.text),
             ),
           ),
           const SizedBox(height: 6),
@@ -577,8 +614,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   static const double _fonteTarja = 34;
 
   /// Tarja larga (faixa) do topo. Nome e contador usam a mesma forma e fonte.
-  Widget _tarja(
-      {required String texto, required Color fundo, required Color cor}) {
+  Widget _tarja({
+    required String texto,
+    required Color fundo,
+    required Color cor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Container(
@@ -611,10 +651,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 
   /// Tarja do NOME do exercício (cinza, texto branco, maiúsculas).
   Widget _tarjaNome(Fase f) => _tarja(
-        texto: f.exercicioNome.toUpperCase(),
-        fundo: AppColors.surface2,
-        cor: AppColors.text,
-      );
+    texto: f.exercicioNome.toUpperCase(),
+    fundo: AppColors.surface2,
+    cor: AppColors.text,
+  );
 
   /// Tarja AMARELA do contador de reps CONCLUÍDAS ("5/12") — logo abaixo do nome,
   /// como um placar. Começa em 0 e vai até totalReps-1 (a última fecha a série).
@@ -702,10 +742,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _CtrlSecundario(
-          icon: Icons.skip_previous_rounded,
-          onTap: _anterior,
-        ),
+        _CtrlSecundario(icon: Icons.skip_previous_rounded, onTap: _anterior),
         const SizedBox(width: 28),
         Material(
           color: context.accent,
@@ -724,10 +761,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           ),
         ),
         const SizedBox(width: 28),
-        _CtrlSecundario(
-          icon: Icons.skip_next_rounded,
-          onTap: () => _avancar(),
-        ),
+        _CtrlSecundario(icon: Icons.skip_next_rounded, onTap: () => _avancar()),
       ],
     );
   }
@@ -765,6 +799,117 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     );
   }
 
+  /// Toca a fila de prêmios do dia (baús e/ou o Rating) e volta pra home.
+  Future<void> _sairComCerimonia() async {
+    final premios = _premios;
+    _premios = const []; // consome a fila (uma vez só)
+    for (final p in premios) {
+      if (!mounted) break;
+      await _tocarPremio(p);
+    }
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _tocarPremio(PremioDia p) async {
+    switch (p.tipo) {
+      case PremioTipo.conquista:
+        await _bauIntro();
+        if (!mounted) return;
+        await _mostrarReveal(_tipoDaConquista(p.conquista!));
+      case PremioTipo.sequencia:
+        await _bauIntro();
+        if (!mounted) return;
+        await _mostrarReveal(RewardType.streak, value: p.valor);
+      case PremioTipo.estrela:
+        await _bauEstrela(p.valor);
+      case PremioTipo.rating:
+        // Dias comuns: só as setas do "subiu de nível" com o ganho do dia.
+        await _mostrarReveal(
+          RewardType.levelUp,
+          value: p.valor,
+          duracao: const Duration(milliseconds: 2000),
+        );
+    }
+  }
+
+  /// Medalha/troféu do domínio → animação do `fx/`.
+  RewardType _tipoDaConquista(TipoConquista t) => switch (t) {
+    TipoConquista.medalhaPrata => RewardType.medalSilver,
+    TipoConquista.medalhaOuro => RewardType.medalGold,
+    TipoConquista.trofeuPrata => RewardType.trophySilver,
+    TipoConquista.trofeuOuro => RewardType.trophyGold,
+  };
+
+  /// **Baú rápido**: aparece fechado, abre no toque e sai de cena — a revelação
+  /// (medalha/troféu/chama) entra em seguida, como já era.
+  Future<void> _bauIntro() {
+    final pronto = Completer<void>();
+    showGeneralDialog<void>(
+      context: context,
+      barrierColor: Colors.black45,
+      barrierDismissible: false,
+      transitionDuration: const Duration(milliseconds: 160),
+      pageBuilder: (ctx, _, _) => Center(
+        child: ChestQuick(
+          params: const FxParams(duration: Duration(milliseconds: 700)),
+          onFim: () {
+            if (!pronto.isCompleted) pronto.complete();
+            Navigator.of(ctx).pop();
+          },
+        ),
+      ),
+    );
+    return pronto.future;
+  }
+
+  /// **Baú 2** (estrela): espera o toque, faz a abertura completa e, quando a
+  /// estrela termina de subir, sai de cena.
+  Future<void> _bauEstrela(int pontosDia) {
+    final pronto = Completer<void>();
+    showGeneralDialog<void>(
+      context: context,
+      barrierColor: Colors.black45,
+      barrierDismissible: false,
+      transitionDuration: const Duration(milliseconds: 160),
+      pageBuilder: (ctx, _, _) => Center(
+        child: ChestOpen2(
+          params: FxParams(
+            duration: const Duration(milliseconds: 1000),
+            valor2: pontosDia.toDouble(),
+          ),
+          valorEstrela: 10,
+          onFim: () {
+            // Deixa a estrela sair de cena antes de fechar o baú.
+            Future<void>.delayed(const Duration(milliseconds: 800), () {
+              if (ctx.mounted) Navigator.of(ctx).pop();
+              if (!pronto.isCompleted) pronto.complete();
+            });
+          },
+        ),
+      ),
+    );
+    return pronto.future;
+  }
+
+  /// Mostra uma revelação do `fx/` (overlay) e espera ela terminar.
+  Future<void> _mostrarReveal(
+    RewardType t, {
+    num? value,
+    Duration duracao = const Duration(milliseconds: 900),
+  }) {
+    final pronto = Completer<void>();
+    RewardFx.show(
+      context,
+      t,
+      params: FxParams(duration: duracao),
+      value: value,
+      onDone: () {
+        if (!pronto.isCompleted) pronto.complete();
+      },
+    );
+    return pronto.future;
+  }
+
   Widget _botoesFim({required String labelRepetir}) {
     return Column(
       children: [
@@ -779,10 +924,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           label: Text(labelRepetir),
         ),
         const SizedBox(height: 12),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Voltar'),
-        ),
+        TextButton(onPressed: _sairComCerimonia, child: const Text('Voltar')),
       ],
     );
   }
@@ -830,27 +972,98 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// Treino concluído (respondeu "sim", ou sessão sem gamificação).
   Widget _telaSucesso() {
     final completou = _respostaCompleto == true;
-    final temCelebracao = _novosRecordes.isNotEmpty ||
-        _novasConquistas.isNotEmpty ||
-        _ganhouInsignia;
-    final mesPerfeito = (ref.watch(insigniasProvider).value ?? const [])
-            .where((i) =>
-                i.data.year == DateTime.now().year &&
-                i.data.month == DateTime.now().month)
+    // Confete para RECORDE (a celebração de conquista/estrela vem nos baús,
+    // depois do "Voltar").
+    final temCelebracao = _novosRecordes.isNotEmpty;
+    final mesPerfeito =
+        (ref.watch(insigniasProvider).value ?? const [])
+            .where(
+              (i) =>
+                  i.data.year == DateTime.now().year &&
+                  i.data.month == DateTime.now().month,
+            )
             .length >=
         7;
     return Stack(
       children: [
         if (temCelebracao) const _ConfettiLayer(),
         _molduraFim([
-          _FadeSlide(idx: 0, child: _IconeComemora(Icons.check_circle, size: 88, color: context.accent)),
-          _FadeSlide(idx: 1, child: Padding(padding: const EdgeInsets.only(top: 20), child: Text(completou ? 'Treino completo!' : 'Check-in concluído', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center))),
-          if (_fraseCompleto != null) _FadeSlide(idx: 2, child: Padding(padding: const EdgeInsets.only(top: 8), child: Text(_fraseCompleto!, style: TextStyle(color: AppColors.text), textAlign: TextAlign.center))),
-          _FadeSlide(idx: 3, child: Padding(padding: EdgeInsets.only(top: _fraseCompleto != null ? 6 : 8), child: Text('${widget.titulo} · ${fmtSeg(_duracaoTotal)}', style: TextStyle(color: AppColors.dim, fontSize: 13), textAlign: TextAlign.center))),
-          if (_novosRecordes.isNotEmpty) _FadeSlide(idx: 4, child: Padding(padding: const EdgeInsets.only(top: 20), child: _NovosRecordes(recordes: _novosRecordes))),
-          if (_novasConquistas.isNotEmpty) _FadeSlide(idx: 5, child: Padding(padding: const EdgeInsets.only(top: 20), child: _NovasConquistas(tipos: _novasConquistas))),
-          if (_ganhouInsignia) _FadeSlide(idx: 6, child: Padding(padding: const EdgeInsets.only(top: 20), child: _InsigniaGanha(mesPerfeito: mesPerfeito))),
-          _FadeSlide(idx: 7, child: Padding(padding: const EdgeInsets.only(top: 32), child: _botoesFim(labelRepetir: 'Repetir treino'))),
+          _FadeSlide(
+            idx: 0,
+            child: _IconeComemora(
+              Icons.check_circle,
+              size: 88,
+              color: context.accent,
+            ),
+          ),
+          _FadeSlide(
+            idx: 1,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Text(
+                completou ? 'Treino completo!' : 'Check-in concluído',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          if (_fraseCompleto != null)
+            _FadeSlide(
+              idx: 2,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _fraseCompleto!,
+                  style: TextStyle(color: AppColors.text),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          _FadeSlide(
+            idx: 3,
+            child: Padding(
+              padding: EdgeInsets.only(top: _fraseCompleto != null ? 6 : 8),
+              child: Text(
+                '${widget.titulo} · ${fmtSeg(_duracaoTotal)}',
+                style: TextStyle(color: AppColors.dim, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          if (_novosRecordes.isNotEmpty)
+            _FadeSlide(
+              idx: 4,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: _NovosRecordes(recordes: _novosRecordes),
+              ),
+            ),
+          if (_novasConquistas.isNotEmpty)
+            _FadeSlide(
+              idx: 5,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: _NovasConquistas(tipos: _novasConquistas),
+              ),
+            ),
+          if (_ganhouInsignia)
+            _FadeSlide(
+              idx: 6,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: _InsigniaGanha(mesPerfeito: mesPerfeito),
+              ),
+            ),
+          _FadeSlide(
+            idx: 7,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: _botoesFim(labelRepetir: 'Repetir treino'),
+            ),
+          ),
         ]),
       ],
     );
@@ -899,7 +1112,9 @@ class _NovasConquistas extends StatelessWidget {
           Text(
             tipos.length > 1 ? '🎉 Novas conquistas!' : '🎉 Nova conquista!',
             style: TextStyle(
-                fontWeight: FontWeight.w800, color: context.accent),
+              fontWeight: FontWeight.w800,
+              color: context.accent,
+            ),
           ),
           const SizedBox(height: 10),
           for (final t in tipos)
@@ -910,8 +1125,10 @@ class _NovasConquistas extends StatelessWidget {
                 children: [
                   ConquistaBadge(tipo: t, size: 26),
                   const SizedBox(width: 10),
-                  Text(t.titulo,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(
+                    t.titulo,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ],
               ),
             ),
@@ -942,11 +1159,16 @@ class _InsigniaGanha extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _IconeComemora(Icons.star_rounded, size: 52, color: AppColors.estrela),
+          _IconeComemora(
+            Icons.star_rounded,
+            size: 52,
+            color: AppColors.estrela,
+          ),
           const SizedBox(height: 8),
-          Text(mesPerfeito ? 'Mês perfeito! ✨' : 'Insígnia do dia!',
-              style:
-                  const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(
+            mesPerfeito ? 'Mês perfeito! ✨' : 'Insígnia do dia!',
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
           const SizedBox(height: 4),
           Text(
             mesPerfeito
@@ -978,7 +1200,9 @@ class _IconeComemora extends StatelessWidget {
       builder: (context, t, child) => Opacity(
         opacity: t.clamp(0.0, 1.0),
         child: Transform.scale(
-            scale: (0.4 + 0.6 * t).clamp(0.0, 1.2), child: child),
+          scale: (0.4 + 0.6 * t).clamp(0.0, 1.2),
+          child: child,
+        ),
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -1010,10 +1234,7 @@ class _FadeSlide extends StatelessWidget {
       curve: Curves.easeOutCubic,
       builder: (context, t, ch) => Opacity(
         opacity: t.clamp(0.0, 1.0),
-        child: Transform.translate(
-          offset: Offset(0, 14 * (1 - t)),
-          child: ch,
-        ),
+        child: Transform.translate(offset: Offset(0, 14 * (1 - t)), child: ch),
       ),
       child: child,
     );
@@ -1030,9 +1251,18 @@ class _ConfettiLayer extends StatelessWidget {
       child: Stack(
         children: List.generate(16, (i) {
           final left = (w * (0.05 + 0.06 * i + (i % 3) * 0.07)) % w;
-          final colors = [AppColors.estrela, AppColors.exec, AppColors.prep, context.accent];
+          final colors = [
+            AppColors.estrela,
+            AppColors.exec,
+            AppColors.prep,
+            context.accent,
+          ];
           final c = colors[i % colors.length];
-          final icon = [Icons.star_rounded, Icons.circle, Icons.favorite_rounded][i % 3];
+          final icon = [
+            Icons.star_rounded,
+            Icons.circle,
+            Icons.favorite_rounded,
+          ][i % 3];
           final sz = 10.0 + (i % 4) * 2;
           return TweenAnimationBuilder<double>(
             tween: Tween(begin: -30, end: h + 30),
@@ -1069,7 +1299,9 @@ class _NovosRecordes extends StatelessWidget {
       builder: (context, t, child) => Opacity(
         opacity: t.clamp(0.0, 1.0),
         child: Transform.scale(
-            scale: 0.85 + 0.15 * t.clamp(0.0, 1.0), child: child),
+          scale: 0.85 + 0.15 * t.clamp(0.0, 1.0),
+          child: child,
+        ),
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1083,8 +1315,10 @@ class _NovosRecordes extends StatelessWidget {
           children: [
             Text(
               recordes.length > 1 ? '🎉 Novos recordes!' : '🎉 Novo recorde!',
-              style:
-                  TextStyle(fontWeight: FontWeight.w800, color: context.accent),
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: context.accent,
+              ),
             ),
             const SizedBox(height: 10),
             for (final r in recordes)
@@ -1096,8 +1330,10 @@ class _NovosRecordes extends StatelessWidget {
                     Icon(Icons.emoji_events, size: 20, color: context.accent),
                     const SizedBox(width: 8),
                     Flexible(
-                      child: Text(r,
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      child: Text(
+                        r,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ],
                 ),

@@ -405,6 +405,87 @@ RatingForma ratingForma(
   );
 }
 
+/// **Marco de sequência "redondo":** 10, 20, 30… dias (0 se não for marco).
+/// São as surpresas que vão além das 7 estrelas do mês: baú + chama com o nº.
+int marcoSequencia(int streak) => (streak > 0 && streak % 10 == 0) ? streak : 0;
+
+/// Quanto o Rating **base** (consistência + frequência + progressão; SEM o bônus
+/// de estrela) mudou do fim de ontem para hoje — o "ganho do dia" que aparece no
+/// pill 📅 do baú da estrela e nas setas dos dias comuns. Reaproveita as mesmas
+/// funções puras do [ratingForma].
+int ratingDoDia(
+  List<Conclusao> concs,
+  List<Treino> treinos,
+  List<RegistroProgressao> prog, {
+  DateTime? hoje,
+}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final ontem = hj.subtract(const Duration(days: 1));
+  List<T> ate<T>(List<T> lista, DateTime limite, DateTime Function(T) data) => [
+    for (final item in lista)
+      if (!data(item).isAfter(limite)) item,
+  ];
+  // Mesma janela/referência (hoje): só os DADOS mudam (até ontem × até hoje).
+  // Comparar "hoje" com "ontem" mudando também a janela dava um ganho fantasma
+  // (o dia mais antigo sai da janela e a % sobe sozinha).
+  final antes = ratingForma(
+    ate(concs, ontem, (c) => _dia(c.data)),
+    treinos,
+    ate(prog, ontem, (r) => _dia(r.data)),
+    hoje: hj,
+  ).total;
+  final agora = ratingForma(
+    ate(concs, hj, (c) => _dia(c.data)),
+    treinos,
+    ate(prog, hj, (r) => _dia(r.data)),
+    hoje: hj,
+  ).total;
+  return agora - antes;
+}
+
+/// **Tipo de prêmio do dia** (o que a cerimônia de fim de treino apresenta).
+enum PremioTipo { conquista, sequencia, estrela, rating }
+
+/// **Um prêmio do dia.** Conquista e marco de sequência saem do **baú rápido**
+/// (intro); a estrela sai do **baú 2** (completo); o rating é o "subiu de nível"
+/// (setas) dos dias sem baú.
+class PremioDia {
+  final PremioTipo tipo;
+  final TipoConquista? conquista;
+  final int valor; // dias (sequência) ou pontos de Rating
+
+  const PremioDia._(this.tipo, {this.conquista, this.valor = 0});
+  const PremioDia.conquista(TipoConquista t)
+    : this._(PremioTipo.conquista, conquista: t);
+  const PremioDia.sequencia(int dias)
+    : this._(PremioTipo.sequencia, valor: dias);
+  const PremioDia.estrela() : this._(PremioTipo.estrela);
+  const PremioDia.rating(int pontos) : this._(PremioTipo.rating, valor: pontos);
+}
+
+/// **Fila de prêmios do dia**, já na ordem da cerimônia: conquista/marco
+/// primeiro e a **estrela por último** (é a mais importante). Sem baú nenhum,
+/// sobra o ganho de Rating (as setas do "subiu de nível") — e nada se o ganho
+/// for 0.
+List<PremioDia> recompensasDoDia({
+  List<TipoConquista> novasConquistas = const [],
+  int streak = 0,
+  bool ganhouEstrela = false,
+  int ratingGanho = 0,
+}) {
+  final premios = <PremioDia>[];
+  for (final t in novasConquistas) {
+    premios.add(PremioDia.conquista(t));
+  }
+  final marco = marcoSequencia(streak);
+  if (marco > 0) premios.add(PremioDia.sequencia(marco));
+  if (ganhouEstrela) premios.add(const PremioDia.estrela());
+  if (premios.isEmpty && ratingGanho > 0) {
+    premios.add(PremioDia.rating(ratingGanho));
+  }
+  return premios;
+}
+
 /// Um ponto do gráfico de tendência do Rating (data + valor total).
 class PontoRating {
   final DateTime data;

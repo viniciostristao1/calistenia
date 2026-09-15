@@ -37,8 +37,16 @@ class _LabScreenState extends State<LabScreen> {
 
   void _testarNoPalco() => setState(() => _token++);
 
-  void _testarComoOverlay() =>
-      RewardFx.show(context, _selecionado, params: _params, value: _valor);
+  void _testarComoOverlay() => RewardFx.show(
+    context,
+    _selecionado,
+    params: _params,
+    value: _valor,
+    // Nos baús com toque, o primeiro toque abre (não dispensa).
+    dismissOnTap:
+        _selecionado != RewardType.chestIntro &&
+        _selecionado != RewardType.chest2,
+  );
 
   @override
   Widget build(BuildContext context) {

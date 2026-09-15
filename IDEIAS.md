@@ -149,12 +149,14 @@ Aba **Check-in** com segmented control no topo: **[Calendário] [Conquistas]**.
 - Mantém a Progressão limpa (barras já são altas). Última opção = abaixo da Progressão.
 
 ## Curto prazo (prováveis próximas)
-- **Ligar o Baú 2 ao ganho REAL (Fase 5 do `fx/`).** Hoje os pontos ao lado da estrela
-  (⭐ +N e 📅 +M) vêm dos sliders do Laboratório; o plano é mostrar o **ganho real ao
-  terminar o treino** — a estrela do sorteio do dia + os pontos de check-in/consistência
-  (frequência) daquele dia — usando `RewardFx.show`/`RewardRegistry.build` nos momentos
-  reais, **sem** alterar `util/gamificacao.dart` nem `services/*_repository.dart`.
-  `[A FAZER]` (pedido do usuário 2026-09-15)
+- ~~**Ligar os baús ao ganho REAL (Fase 5 do `fx/`).**~~ `[FEITO v0.80.0]` — cerimônia de
+  fim de treino decidida com o usuário: **Baú 2 na estrela** (7/mês, com toque; pills
+  ⭐ +10 e 📅 ganho do dia), **baú rápido** para conquistas (4/8/15/21) e marcos de
+  sequência **a cada 10** (10/20/30…, com a chama), **estrela por último** quando coincidem
+  (2 baús), **dias comuns** só com as 3 setas + Rating do dia (~2 s) e **recordes** com
+  confete + nº de reps na tela de fim. A fila toca no **"Voltar"** (fica pendente se
+  "Repetir treino"). Regras puras em `marcoSequencia`/`ratingDoDia`/`recompensasDoDia`.
+  Detalhes no `APRENDIZADOS.md § v0.80.0`.
 - ~~**Som/bip nas transições e no fim.**~~ `[FEITO v0.14→v0.20]` — `audioplayers` +
   WAV próprios (`assets/sounds/`); modo baixa latência + **pool de 5 players** (o reuso de 1
   player falhava nas repetições rápidas). Fim de série toca som diferente. On/off em Config.

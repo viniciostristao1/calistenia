@@ -30,6 +30,8 @@ class ChestOpen2 extends StatefulWidget {
     super.key,
     this.params = const FxParams(),
     this.valorEstrela,
+    this.abreComToque = true,
+    this.onFim,
   });
 
   final FxParams params;
@@ -38,26 +40,54 @@ class ChestOpen2 extends StatefulWidget {
   /// O ganho de Rating vem em `params.valor2` (slider do Laboratório).
   final num? valorEstrela;
 
+  /// `true` = o baú espera um **toque** para abrir (padrão da cerimônia real).
+  final bool abreComToque;
+
+  /// Chamado quando a animação termina (a cerimônia segue para o próximo).
+  final VoidCallback? onFim;
+
   @override
   State<ChestOpen2> createState() => _ChestOpen2State();
 }
 
-class _ChestOpen2State extends State<ChestOpen2>
-    with SingleTickerProviderStateMixin {
+class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
   late final AnimationController _ctrl = AnimationController(
     vsync: this,
     duration: widget.params.effectiveDuration,
   );
 
+  /// Pulsa a dica "Toque para abrir".
+  late final AnimationController _pulsa = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  bool _iniciado = false;
+
   @override
   void initState() {
     super.initState();
+    if (widget.abreComToque) {
+      _iniciado = false;
+    } else {
+      _iniciado = true;
+      widget.params.loopForever ? _ctrl.repeat() : _ctrl.forward();
+    }
+    _ctrl.addStatusListener((s) {
+      if (s == AnimationStatus.completed) widget.onFim?.call();
+    });
+  }
+
+  void _abrir() {
+    if (_iniciado) return;
+    setState(() => _iniciado = true);
     widget.params.loopForever ? _ctrl.repeat() : _ctrl.forward();
   }
 
   @override
   void dispose() {
     _ctrl.dispose();
+    _pulsa.dispose();
     super.dispose();
   }
 
@@ -75,115 +105,139 @@ class _ChestOpen2State extends State<ChestOpen2>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 260,
-      height: 260,
-      child: AnimatedBuilder(
-        animation: _ctrl,
-        builder: (context, _) {
-          final v = _ctrl.value;
-          final aberto = v > 0.42;
-          final glowA =
-              (Interval(0.34, 0.52).transform(v)) *
-              (1 - 0.4 * Interval(0.75, 1.0).transform(v)) *
-              0.5 *
-              _intensity;
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              // Holofote dourado girando atrás do baú aberto.
-              if (aberto)
-                RadialRays(
-                  color: const Color(0xFFF4C542),
-                  diameter: 220,
-                  params: widget.params,
-                ),
-              // Partículas saindo para cima (leque), atrás.
-              if (aberto)
-                ParticleBurst(
-                  params: widget.params,
-                  colors: const [
-                    Color(0xFFF4C542),
-                    Colors.white,
-                    Color(0xFFFFC93C),
-                  ],
-                  shapes: const [ParticleShape.spark, ParticleShape.circle],
-                  direction: -pi / 2,
-                  spread: 1.7,
-                  gravity: 420,
-                ),
-              // Luz saindo do interior.
-              Container(
-                width: 190,
-                height: 190,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(
-                        0xFFF4C542,
-                      ).withValues(alpha: glowA.clamp(0.0, 1.0)),
-                      const Color(0xFFF4C542).withValues(alpha: 0),
-                    ],
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _iniciado ? null : _abrir,
+      child: SizedBox(
+        width: 260,
+        height: 260,
+        child: AnimatedBuilder(
+          animation: _ctrl,
+          builder: (context, _) {
+            final v = _ctrl.value;
+            final aberto = v > 0.42;
+            final glowA =
+                (Interval(0.34, 0.52).transform(v)) *
+                (1 - 0.4 * Interval(0.75, 1.0).transform(v)) *
+                0.5 *
+                _intensity;
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // Holofote dourado girando atrás do baú aberto.
+                if (aberto)
+                  RadialRays(
+                    color: const Color(0xFFF4C542),
+                    diameter: 220,
+                    params: widget.params,
                   ),
-                ),
-              ),
-              // O baú em 3/4.
-              _chest(v),
-              // A recompensa saltando pra fora girando no próprio eixo — e, ao
-              // lado dela, os pontos que valem: ⭐ +N e o ganho de Rating (+M),
-              // cada um entrando com um pequeno atraso.
-              if (v > 0.55)
-                FlyToTarget(
-                  params: _revealParams,
-                  begin: const Offset(0, 16),
-                  end: Offset(0, -92 * _intensity.clamp(0.4, 2.0)),
-                  child: SizedBox(
-                    width: 220,
-                    height: 100,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Luz passando pela estrela (3 passadas) — fora do
-                        // Spin3D para a faixa não girar junto.
-                        ShineSweep(
-                          params: _revealParams,
-                          cycles: 3,
-                          child: Spin3D(
-                            params: _revealParams,
-                            turns: 2,
-                            fromScale: 0.3,
-                            child: const Star3D(size: 52),
-                          ),
-                        ),
-                        if ((widget.valorEstrela ?? 0) > 0)
-                          _Ponto(
-                            icone: Icons.star_rounded,
-                            cor: AppColors.estrela,
-                            texto: '+${widget.valorEstrela!.round()}',
-                            opacidade: Interval(0.60, 0.72).transform(v),
-                            deslocamento: const Offset(70, -16),
-                            params: _revealParams,
-                          ),
-                        if (widget.params.valor2 > 0)
-                          _Ponto(
-                            // Calendário: é o ganho do dia (check-in,
-                            // consistência/frequência) — mesma linguagem da
-                            // aba Check-in.
-                            icone: Icons.calendar_month_rounded,
-                            cor: context.accent,
-                            texto: '+${widget.params.valor2.round()}',
-                            opacidade: Interval(0.72, 0.86).transform(v),
-                            deslocamento: const Offset(70, 16),
-                            params: _revealParams,
-                          ),
+                // Partículas saindo para cima (leque), atrás.
+                if (aberto)
+                  ParticleBurst(
+                    params: widget.params,
+                    colors: const [
+                      Color(0xFFF4C542),
+                      Colors.white,
+                      Color(0xFFFFC93C),
+                    ],
+                    shapes: const [ParticleShape.spark, ParticleShape.circle],
+                    direction: -pi / 2,
+                    spread: 1.7,
+                    gravity: 420,
+                  ),
+                // Luz saindo do interior.
+                Container(
+                  width: 190,
+                  height: 190,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(
+                          0xFFF4C542,
+                        ).withValues(alpha: glowA.clamp(0.0, 1.0)),
+                        const Color(0xFFF4C542).withValues(alpha: 0),
                       ],
                     ),
                   ),
                 ),
-            ],
-          );
-        },
+                // O baú em 3/4.
+                _chest(v),
+                // A recompensa saltando pra fora girando no próprio eixo — e, ao
+                // lado dela, os pontos que valem: ⭐ +N e o ganho de Rating (+M),
+                // cada um entrando com um pequeno atraso.
+                if (v > 0.55)
+                  FlyToTarget(
+                    params: _revealParams,
+                    begin: const Offset(0, 16),
+                    end: Offset(0, -92 * _intensity.clamp(0.4, 2.0)),
+                    child: SizedBox(
+                      width: 220,
+                      height: 100,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Luz passando pela estrela (3 passadas) — fora do
+                          // Spin3D para a faixa não girar junto.
+                          ShineSweep(
+                            params: _revealParams,
+                            cycles: 3,
+                            child: Spin3D(
+                              params: _revealParams,
+                              turns: 2,
+                              fromScale: 0.3,
+                              child: const Star3D(size: 52),
+                            ),
+                          ),
+                          if ((widget.valorEstrela ?? 0) > 0)
+                            _Ponto(
+                              icone: Icons.star_rounded,
+                              cor: AppColors.estrela,
+                              texto: '+${widget.valorEstrela!.round()}',
+                              opacidade: Interval(0.60, 0.72).transform(v),
+                              deslocamento: const Offset(70, -16),
+                              params: _revealParams,
+                            ),
+                          if (widget.params.valor2 > 0)
+                            _Ponto(
+                              // Calendário: é o ganho do dia (check-in,
+                              // consistência/frequência) — mesma linguagem da
+                              // aba Check-in.
+                              icone: Icons.calendar_month_rounded,
+                              cor: context.accent,
+                              texto: '+${widget.params.valor2.round()}',
+                              opacidade: Interval(0.72, 0.86).transform(v),
+                              deslocamento: const Offset(70, 16),
+                              params: _revealParams,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                // Dica enquanto o baú espera o toque.
+                if (!_iniciado && widget.abreComToque)
+                  Positioned(
+                    bottom: 2,
+                    child: AnimatedBuilder(
+                      animation: _pulsa,
+                      builder: (context, child) => Opacity(
+                        opacity: 0.35 + 0.45 * _pulsa.value,
+                        child: child,
+                      ),
+                      child: const Text(
+                        'Toque para abrir',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

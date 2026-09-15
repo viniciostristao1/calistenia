@@ -31,12 +31,14 @@ class RewardFx {
     FxParams params = const FxParams(),
     num? value,
     VoidCallback? onDone,
+    bool dismissOnTap = true,
   }) {
     final overlay = Overlay.of(context, rootOverlay: true);
     late OverlayEntry entry;
     entry = OverlayEntry(
       builder: (ctx) => _RewardHost(
         params: params,
+        dismissOnTap: dismissOnTap,
         onDone: () {
           if (entry.mounted) entry.remove();
           onDone?.call();
@@ -54,11 +56,15 @@ class _RewardHost extends StatefulWidget {
     required this.child,
     required this.params,
     required this.onDone,
+    this.dismissOnTap = true,
   });
 
   final Widget child;
   final FxParams params;
   final VoidCallback onDone;
+
+  /// `false` = o primeiro toque é do filho (ex.: abrir o baú), não dispensa.
+  final bool dismissOnTap;
 
   @override
   State<_RewardHost> createState() => _RewardHostState();
@@ -71,9 +77,11 @@ class _RewardHostState extends State<_RewardHost> {
   void initState() {
     super.initState();
     // Uma passada só no overlay (o loop é um recurso do Laboratório).
-    final ms = widget.params.delay.inMilliseconds +
+    // Com o toque do filho (baú), damos mais tempo para o usuário abrir.
+    final ms =
+        widget.params.delay.inMilliseconds +
         widget.params.effectiveDuration.inMilliseconds +
-        600;
+        (widget.dismissOnTap ? 600 : 3200);
     _timer = Timer(Duration(milliseconds: ms), widget.onDone);
   }
 
@@ -85,11 +93,13 @@ class _RewardHostState extends State<_RewardHost> {
 
   @override
   Widget build(BuildContext context) {
-    // Toque em qualquer lugar dispensa (útil e inofensivo). O conteúdo não
-    // intercepta gestos por conta própria.
+    // Toque em qualquer lugar dispensa (útil e inofensivo). Nos efeitos com
+    // toque próprio (baú), o toque vai para o filho.
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: widget.onDone,
+      behavior: widget.dismissOnTap
+          ? HitTestBehavior.opaque
+          : HitTestBehavior.deferToChild,
+      onTap: widget.dismissOnTap ? widget.onDone : null,
       child: Center(child: widget.child),
     );
   }

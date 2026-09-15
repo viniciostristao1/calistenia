@@ -19,6 +19,7 @@ enum RewardType {
   chest,
   chest2,
   chest3,
+  chestIntro,
   trophyGold,
   trophySilver,
   medalGold,
@@ -43,6 +44,7 @@ extension RewardTypeInfo on RewardType {
     RewardType.chest => 'Baú',
     RewardType.chest2 => 'Baú 2',
     RewardType.chest3 => 'Baú 3',
+    RewardType.chestIntro => 'Baú rápido',
     RewardType.trophyGold => 'Troféu de Ouro',
     RewardType.trophySilver => 'Troféu de Prata',
     RewardType.medalGold => 'Medalha de Ouro',
@@ -58,6 +60,7 @@ extension RewardTypeInfo on RewardType {
     RewardType.chest => Icons.card_giftcard_rounded,
     RewardType.chest2 => Icons.inventory_2_rounded,
     RewardType.chest3 => Icons.all_inbox_rounded,
+    RewardType.chestIntro => Icons.unarchive_rounded,
     RewardType.trophyGold ||
     RewardType.trophySilver => Icons.emoji_events_rounded,
     RewardType.medalGold ||
@@ -78,6 +81,7 @@ extension RewardTypeInfo on RewardType {
     RewardType.chest ||
     RewardType.chest2 ||
     RewardType.chest3 ||
+    RewardType.chestIntro ||
     RewardType.levelUp ||
     RewardType.confetti => context.accent,
   };

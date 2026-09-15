@@ -5,6 +5,43 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-15 — Cerimônia de fim de treino: baús no lugar certo (v0.80.0)
+
+**Decisão do usuário (design):** estrela (7/mês sorteados) → **Baú 2** (com toque); conquistas
+(4/8/15/21) e **marcos de sequência a cada 10** (10/20/30…) → **baú rápido** (intro: toca →
+tampa abre pouco → a revelação — medalha/troféu ou chama com o nº — entra no lugar); **dias
+comuns** → só as **3 setas + Rating do dia** (~2 s); **recordes** → confete + nº de reps na
+tela de fim. Se estrela e conquista caírem no mesmo dia, **2 baús** (estrela por último).
+Fila toca no **"Voltar"**; "Repetir treino" deixa a fila **pendente na sessão**.
+
+**`fx/`** — `rewards/chest_quick.dart` (**`ChestQuick`**): baú-intro compacto (widgets, sem
+painter), tampa articulada atrás (`Matrix4` + `translateByDouble(0,0,22)` ida/volta + `rotateX`
+até ~28°), dica "Toque para abrir" pulsando (`repeat(reverse: true)`), `onFim` ao completar.
+`ChestOpen2` ganhou `abreComToque` (padrão `true`: só abre no toque, com a mesma dica) e
+`onFim`. `RewardFx.show(..., dismissOnTap: false)` → o host usa
+`HitTestBehavior.deferToChild` e **não** tem `onTap` (o 1º toque é do baú) e o timer ganha
+folga (3,2 s) para dar tempo de abrir. Novo `RewardType.chestIntro` ("Baú rápido").
+
+**Regra pura (`util/gamificacao.dart`):** `marcoSequencia(streak)` (10/20/30…),
+`ratingDoDia(...)` e `recompensasDoDia({novasConquistas, streak, ganhouEstrela, ratingGanho})`
+→ lista `PremioDia` ordenada (conquista/marco → **estrela por último**; sem baús, o Rating se
+for >0). **Gotcha importante:** o `ratingDoDia` compara **a mesma janela de 28 dias**, mudando
+só os DADOS (até ontem × até hoje) — comparar "hoje × ontem" deslocando também a janela dava
+**ganho fantasma** (o dia mais antigo saía da janela e a % subia sozinha; 7 pontos sem treinar).
+
+**Player (`features/player/player_screen.dart`):** `_marcarCompleto` monta `_premios`;
+"Voltar" → `_sairComCerimonia()` toca a fila (consumindo) e só então `pop`. Baús via
+`showGeneralDialog` transparente (intro: `ChestQuick(onFim: pop)`; estrela: `ChestOpen2` com
+`+800 ms` depois do `onFim` para a estrela sair); revelações via `RewardFx.show` com um
+`Completer` no `onDone` para encadear. **Confete agora só para recorde** (`_novosRecordes`)
+— conquista/estrela têm o baú. `_tipoDaConquista` mapeia `TipoConquista` → `RewardType`.
+
+**Gotcha de teste:** `tester.pump(500ms)` **não** entregou o `completed` do controller do
+`ChestQuick` (a animação começou no frame do toque); com `pump` em passos de 100 ms funciona.
+Validado com testes de toque nos dois baús + 3 testes puros (`test/premios_dia_test.dart`).
+
+**Validação:** analyze sem erros; `flutter test` **56/56**. Versão `0.80.0+112`.
+
 ## 2026-09-15 — Baú 2: luz passando na estrela e nos pills (v0.79.1)
 
 **Pedido:** efeito de luz em movimento na estrela que sobe **e** nos dois pills.
