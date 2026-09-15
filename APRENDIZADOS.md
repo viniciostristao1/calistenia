@@ -5,6 +5,33 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-12 — Fix: previsão "~hora" travada (relógio da UI) (v0.77.2)
+
+**Relato:** no **Modo Carrossel**, depois de terminar um treino e voltar, a previsão
+"~horário" do cartão estava atrasada; trocar de modo atualizava; e ao reabrir o app a
+previsão aparecia no passado.
+
+**Causa:** `_TreinoCard` calculava `fmtHora(DateTime.now().add(Duration(segundos: dur)))`
+**no `build`**. Se nada mudasse na tela (o `IndexedStack` mantém a home viva e o
+`treinosProvider` não emite de novo), o widget não reconstruía e o texto ficava congelado no
+valor do último build — o treino durou minutos, então a previsão "envelheceu". Trocar de
+modo forçava o rebuild (por isso "consertava"), e no relançamento o card vinha do primeiro
+build.
+
+**Correção:** `services/relogio.dart` — `relogioProvider` (`StreamProvider<DateTime>`) que
+emite `DateTime.now()` **no arranque, a cada 30 s** e em `AppLifecycleState.resumed`
+(`WidgetsBindingObserver`). O `_TreinoCard` virou `ConsumerWidget` e faz
+`ref.watch(relogioProvider).value ?? DateTime.now()` (fallback enquanto carrega). Ao voltar
+do **player** (treino inteiro ou exercício avulso) e no `_TreinoLinha`, chamamos
+`ref.invalidate(relogioProvider)` com `context.mounted` → reemite na hora.
+
+**Gotcha:** testar isso com `testWidgets` + `await container.read(provider.future)` **trava**
+(o fake async do teste não entrega o evento do `StreamController` sem pump). A validação boa
+é por widget (os 4 modos buildam e o cartão mostra o ícone de relógio). Em app real o
+evento chega normalmente.
+
+**Validação:** analyze sem erros; `flutter test` 53/53. Versão `0.77.2+108`.
+
 ## 2026-09-12 — Ajustes finos: título, 3 setas, pills afastados (v0.77.1)
 
 - **Título:** `letterSpacing: 1.4` nas duas linhas (e `height: 1.05`) — estavam muito juntas.

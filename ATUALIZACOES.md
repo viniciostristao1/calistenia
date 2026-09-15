@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-12 — v0.77.2 (fix: previsão "~hora" travada nos cartões):**
+  - Corrigido: a **previsão "~hora"** de fim do treino nos cartões podia ficar **presa** (aparecia no passado depois de um treino longo, no **Modo Carrossel** e ao voltar do segundo plano). Agora existe um **relógio da UI**: o texto atualiza sozinho a cada 30 s, **recalcula ao voltar do treino** e também quando o app volta do fundo. Vale em todos os modos.
+
 - **2026-09-12 — v0.77.1 (ajustes finos: título, 3 setas e pontos mais afastados):**
   - **Nome no topo:** as letras de "Calis"/"Timer" ganharam **espaçamento** (estavam muito grudadas).
   - **Subiu de nível:** agora são **3 setas** subindo (esquerda, centro e direita), em ritmos defasados.

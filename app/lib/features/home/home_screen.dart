@@ -11,6 +11,7 @@ import '../../services/home_layout_pref.dart';
 import '../../services/idioma_repository.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
+import '../../services/relogio.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
@@ -515,7 +516,7 @@ class _DiaPill extends StatelessWidget {
   }
 }
 
-class _TreinoCard extends StatelessWidget {
+class _TreinoCard extends ConsumerWidget {
   const _TreinoCard({required this.treino});
 
   final Treino treino;
@@ -524,20 +525,29 @@ class _TreinoCard extends StatelessWidget {
     MaterialPageRoute(builder: (_) => TreinoEditorScreen(treinoId: treino.id)),
   );
 
-  void _rodar(
+  /// Roda o treino/exercício. Ao voltar do player, reemite o relógio da UI
+  /// (o treino pode ter levado minutos — a previsão "~hora" tem de atualizar).
+  Future<void> _rodar(
     BuildContext context,
+    WidgetRef ref,
     String titulo,
     List<Exercicio> exs, {
     Treino? treino,
-  }) => Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) =>
-          PlayerScreen(titulo: titulo, exercicios: exs, treino: treino),
-    ),
-  );
+  }) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            PlayerScreen(titulo: titulo, exercicios: exs, treino: treino),
+      ),
+    );
+    if (context.mounted) ref.invalidate(relogioProvider);
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Relógio da UI: sem ele, a previsão "~hora" ficava presa no valor do
+    // primeiro build (aparecia no passado depois de um treino longo).
+    final agora = ref.watch(relogioProvider).value ?? DateTime.now();
     final n = treino.exercicios.length;
     final dur = treino.duracaoTotalSeg;
     final base = '$n ${n == 1 ? 'exercício' : 'exercícios'} · ${fmtSeg(dur)}';
@@ -607,7 +617,7 @@ class _TreinoCard extends StatelessWidget {
                                         ),
                                         TextSpan(
                                           text:
-                                              ' ~${fmtHora(DateTime.now().add(Duration(seconds: dur)))}',
+                                              ' ~${fmtHora(agora.add(Duration(seconds: dur)))}',
                                         ),
                                       ],
                                     ],
@@ -627,6 +637,7 @@ class _TreinoCard extends StatelessWidget {
                   habilitado: treino.exercicios.isNotEmpty,
                   onTap: () => _rodar(
                     context,
+                    ref,
                     treino.nome,
                     treino.exercicios,
                     treino: treino,
@@ -643,7 +654,7 @@ class _TreinoCard extends StatelessWidget {
               for (final e in treino.exercicios)
                 _ExercicioLinha(
                   exercicio: e,
-                  onRodar: () => _rodar(context, e.nome, [e]),
+                  onRodar: () => _rodar(context, ref, e.nome, [e]),
                 ),
             ],
           ],
@@ -1119,13 +1130,13 @@ class _DiaSemana extends StatelessWidget {
 }
 
 /// Linha compacta de treino (modo Semana): abre o editor ao tocar; ▶ roda.
-class _TreinoLinha extends StatelessWidget {
+class _TreinoLinha extends ConsumerWidget {
   const _TreinoLinha({required this.treino});
 
   final Treino treino;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final n = treino.exercicios.length;
     final dur = treino.duracaoTotalSeg;
     return Card(
@@ -1163,15 +1174,18 @@ class _TreinoLinha extends StatelessWidget {
               _PlayCircle(
                 grande: false,
                 habilitado: treino.exercicios.isNotEmpty,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => PlayerScreen(
-                      titulo: treino.nome,
-                      exercicios: treino.exercicios,
-                      treino: treino,
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PlayerScreen(
+                        titulo: treino.nome,
+                        exercicios: treino.exercicios,
+                        treino: treino,
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                  if (context.mounted) ref.invalidate(relogioProvider);
+                },
               ),
             ],
           ),
