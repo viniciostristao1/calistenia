@@ -157,11 +157,13 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.32 | **`ChestIntroReveal`** (baú-intro → revelação no lugar) + tipos de Lab `chestConquista`/`chestSequencia` + player com uma cena por prêmio (`_cena`). | **feita** |
 | 5.33 | **Generalização do conteúdo do baú** (v0.81.0): `ChestItem` + `itemCor`/`valores`/`conteudo`/`label`/`recompensa` no `ChestOpen2` (`valorEstrela` → `valor`); monte (`itemOnFloor`) e recompensa que sobe seguem o item (estrela/número/medalha/chama). | **feita** |
 | 5.34 | conquista/sequência = **baú cheio** (abre no toque e a medalha/troféu/chama **sai de dentro**), com o rótulo embaixo; Baú 3 com **monte de números** e `ScoreRising`. `ChestIntroReveal` fora do fluxo. | **feita** |
+| 5.35 | **Baús e subiu de nível aplicados no app** (v0.81.0): baú da estrela, baú da conquista (medalha/troféu), baú da sequência (chama) e `levelUp` nos dias comuns — conteúdo saindo de dentro do baú. | **feita** |
+| 5.36 | **Limpeza (v0.82.0):** Laboratório só com os 4 tipos usados (`chestEstrela`/`chestConquista`/`chestSequencia`/`levelUp`); removidos Baú 1/3, baú rápido/`ChestIntroReveal`, `StarBurst`, `XpGain`, `IconReveal`, `Trophy3D` e `ConfettiRain` (ficam no histórico do Git). | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.81.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.82.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`; inclui os baús 1/2/3 e `chestIntro`),
 `fx_params.dart` (inclui `valor2` — 2º número, ex.: Rating ao lado da estrela do baú), `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -175,51 +177,44 @@ Estado em v0.81.0. **Tudo abaixo é apresentação pura; a lógica de recompensa
 | `PopIn` | escala + overshoot | *(toolkit — livre)* |
 | `Bounce` | entra quicando | *(toolkit — livre)* |
 | `Shake` | tremida amortecida (tem `start()`) | *(toolkit — livre)* |
-| `GlowHalo` | halo pulsante | `StarBurst`, `IconReveal` |
-| `ShineSweep` | brilho diagonal passando (`cycles` > 1 = várias passadas) | `IconReveal`, `XpGain`, `ChestOpen2` (estrela + pills; item que sai do baú) |
-| `Pulse` | respira em loop | `IconReveal` (sequência) |
+| `GlowHalo` | halo pulsante | `LevelUpReveal` |
+| `ShineSweep` | brilho diagonal passando (`cycles` > 1 = várias passadas) | `ChestOpen2` (estrela + pills; item que sai do baú) |
+| `Pulse` | respira em loop | *(toolkit — livre)* |
 | `ScreenFlash` | clarão que some | *(toolkit — livre)* |
-| `FlyToTarget` | voa de A→B com fade | `ChestOpen` |
+| `FlyToTarget` | voa de A→B com fade | `ChestOpen2` (a recompensa sobe) |
 | `FadeThrough` | aparece e some | *(toolkit — p/ rótulos)* |
-| `Spin3D` | **giro 3D no próprio eixo** (perspectiva, face de trás espelhada, pouso com cambaleada + squash, fio de luz na aresta; loop = vitrine) | `StarBurst`, `IconReveal`, `ChestOpen` |
-| `RadialRays` | holofote: raios radiais girando ao fundo (`CustomPainter`) | `StarBurst`, `IconReveal`, `ChestOpen` |
-| `Delayed` | atrasa o nascimento do filho (sincroniza o impacto) | `StarBurst`, `IconReveal` (partículas no pouso) |
+| `Spin3D` | **giro 3D no próprio eixo** (perspectiva, face de trás espelhada, pouso com cambaleada + squash, fio de luz na aresta; loop = vitrine) | `ChestOpen2` (item que sai do baú) |
+| `RadialRays` | holofote: raios radiais girando ao fundo (`CustomPainter`) | `ChestOpen2`, `LevelUpReveal` |
+| `Delayed` | atrasa o nascimento do filho (sincroniza o impacto) | `LevelUpReveal` (partículas no pouso) |
 
 **Partículas (`fx/particles/`, `CustomPainter`, zero deps):** `particle.dart`,
 `particle_system.dart` (`emitBurst`/`step`), `particle_painter.dart` (círculo/quadrado/spark),
-`particle_burst.dart` (`ParticleBurst`, explosão radial), `confetti.dart` (`ConfettiRain`).
+`particle_burst.dart` (`ParticleBurst`, explosão radial). *(O `confetti.dart` foi removido na v0.82.0 — a tela de fim usa o `_ConfettiLayer` local.)*
 
-**Moléculas (`fx/rewards/`):** `star_burst.dart` (estrela: `RadialRays` + partículas no
-pouso + `Spin3D` 3 voltas; conteúdo = `star_3d.dart`), `star_3d.dart` (**`Star3D`** —
-estrela desenhada à mão: extrusão, facetas com luz, bisel, núcleo gravado, glints e
-faíscas; sem controller, é só o desenho), `trophy_3d.dart` (**`Trophy3D`** — taça no
-formato da **"orelhuda"** (Champions): copo em sino, alças grandes, haste com colar, base
-em pedestal, estrela gravada e painéis; parametrizado por `metal`, serve ouro/prata),
-`flame_reveal.dart` (**`FlameReveal`** — a sequência virou **chama animada**: 3 línguas +
-núcleo com as pontas balançando (senos defasados), pulso e brasas subindo; controller em
-`repeat`), `xp_gain.dart` (pilha +XP
-com `ShineSweep`, sem giro em Y — espelharia o texto), `level_up_reveal.dart`
-(**`LevelUpReveal`** — subiu de nível: 2 setas subindo/sumindo em ciclo + pontuação `+N`
-com pop), `icon_reveal.dart` (genérico:
-medalhas; `Spin3D` 2 voltas + holofote + halo + rótulo que sobe;
-aceita `child` próprio ou `icon` do Material), `chest_open.dart` (baú **em vista 3/4** —
-mini-renderizador 3D no `_ChestPainter`: `_V` + projeção axonométrica com yaw/pitch,
-faces com culling por normal, luz direcional e ordenação por profundidade; **frente +
-lateral direita** visíveis, tampa girando no eixo X na dobradiça traseira, interior
-escuro com brilho e parte de dentro da tampa côncava com tábuas; física — afunda,
-destranca, freia, bate no batente e o baú dá um pulinho; item sai girando com `Star3D`),
-`chest_intro_reveal.dart` (**`ChestIntroReveal`** — o par: baú-intro (`ChestOpen2(rapido)`) e, no lugar dele, a revelação (`child`); **fora do fluxo desde a v0.81.0** — hoje conquista/sequência abrem o baú cheio), `chest_open2.dart` (**Baú 2** —
-cópia isolada do baú 1; também é o **baú rápido** via `rapido: true` (mesmo desenho, tampa
-abre pouco) e o baú de **conquista/sequência**: o `ChestItem` diz o que fica **dentro** e o
-que **sai de dentro** (estrela → `Star3D` + pills; número → `ScoreRising`; medalha → emoji
-girando; chama → `Flame3D`), com monte facetado próprio, `label` e `recompensa` de
-override), `chest_open3.dart` (**Baú 3** — mesma abertura/física do baú 2, mas o **monte é
-de números** e a recompensa é a **pontuação + 3 setas** (`ScoreRising`) subindo, no
-espírito do `LevelUpReveal`; recebe o valor pelo slider "Valor"), `placeholder_reward.dart`
-(fallback — hoje nenhum tipo cai nele).
+**Moléculas (`fx/rewards/`)** — depois da limpeza da v0.82.0 ficaram só as que o app usa:
+`chest_open2.dart` (**`ChestOpen2`** — o ÚNICO baú: mini-renderizador 3D no
+`_ChestPainter2` (`_V` + projeção axonométrica com yaw/pitch, faces com culling por normal,
+luz direcional e ordenação por profundidade; frente + lateral direita, tampa girando no
+eixo X na dobradiça traseira, interior escuro com brilho e a parte de dentro da tampa
+côncava com tábuas; física — afunda, destranca, freia, bate no batente e o baú dá um
+pulinho). O `ChestItem` diz o que fica **dentro** (monte facetado próprio, com sombra) e o
+que **sai de dentro** girando: **estrela** (`Star3D` + pills ⭐/Rating), **medalha**
+(emoji/troféu que o chamador passa em `conteudo`) ou **chama** (`Flame3D`); `label` mostra
+o nome do prêmio quando o baú abre e `recompensa` é o override total. Também é o **baú
+rápido** via `rapido: true` (tampa abre pouco — hoje só o Laboratório usa), `star_3d.dart`
+(**`Star3D`** — estrela desenhada à mão: extrusão, facetas com luz, bisel, núcleo gravado,
+glints e faíscas; sem controller, é só o desenho), `flame_3d.dart` (**`Flame3D`** — chama
+desenhada à mão: 3 línguas + núcleo com as pontas balançando em ciclo; é só o desenho),
+`level_up_reveal.dart` (**`LevelUpReveal`** — subiu de nível: setas subindo/sumindo em
+ciclo + pontuação `+N` com pop; o `RewardType.levelUp` dos dias comuns).
+
+> **Removidos na v0.82.0** (recuperáveis no histórico do Git): `chest_open.dart` (Baú 1),
+> `chest_open3.dart` (Baú 3), `chest_intro_reveal.dart`, `star_burst.dart`, `xp_gain.dart`,
+> `icon_reveal.dart`, `trophy_3d.dart`, `flame_reveal.dart`, `score_rising.dart`,
+> `placeholder_reward.dart` e `particles/confetti.dart` — nenhum era usado pelo app.
 
 **Util de pintura:** `fx/shading.dart` — `shade`/`lighten` (HSL) usados por `Star3D`,
-`Trophy3D` e `_ChestPainter`.
+`Flame3D` e `_ChestPainter2`.
 
 **Efeito 3D — resumo:** `Spin3D` é a peça central: `Matrix4` com `setEntry(3,2,…)`
 (perspectiva) + `rotateY` (padrão) e `Transform(alignment: center)`. Detalhes que fazem
@@ -232,8 +227,7 @@ impacto** aplicado FORA da matriz (espaço de tela). Eixos `x/y/z` disponíveis;
 sem exceção. **Rode-o após qualquer mudança em `fx/`** (`flutter test test/fx_smoke_test.dart`).
 
 **Ideias de melhoria (baratas, sem novas deps):** afinar tempos/curvas por efeito; usar os
-átomos `PopIn`/`FadeThrough`/`Shake` que estão prontos e livres; dar cara própria a `levelUp`
-(hoje reusa `IconReveal`); som opcional no reveal via `som_repository`; um "playground de
+átomos `PopIn`/`FadeThrough`/`Shake`/`Pulse`/`GlowHalo` que estão prontos e livres; som opcional no reveal via `som_repository`; um "playground de
 átomos" no Lab (aba separada) além das recompensas. **Antes da Fase 5**, cuidado: integrar =
 plugar `RewardFx.show`/`RewardRegistry.build` nos pontos reais **sem** alterar
 `util/gamificacao.dart` nem `services/*_repository.dart`.

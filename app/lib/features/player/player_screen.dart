@@ -818,7 +818,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           (ctx, fim) => ChestOpen2(
             params: const FxParams(duration: Duration(milliseconds: 1000)),
             item: ChestItem.medalha,
-            itemCor: _tipoDaConquista(t).color(ctx),
+            itemCor: corConquista(t),
             label: t.titulo,
             conteudo: Text(t.emoji, style: const TextStyle(fontSize: 64)),
             onFim: () =>
@@ -831,7 +831,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           (ctx, fim) => ChestOpen2(
             params: const FxParams(duration: Duration(milliseconds: 1000)),
             item: ChestItem.chama,
-            itemCor: RewardType.streak.color(ctx),
+            itemCor: AppColors.exec,
             valor: p.valor,
             label: '${p.valor} dias',
             onFim: () =>
@@ -849,14 +849,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         );
     }
   }
-
-  /// Medalha/troféu do domínio → animação do `fx/`.
-  RewardType _tipoDaConquista(TipoConquista t) => switch (t) {
-    TipoConquista.medalhaPrata => RewardType.medalSilver,
-    TipoConquista.medalhaOuro => RewardType.medalGold,
-    TipoConquista.trofeuPrata => RewardType.trophySilver,
-    TipoConquista.trofeuOuro => RewardType.trophyGold,
-  };
 
   /// **Cena em tela cheia** (fundo escurecido): monta o widget e o fecha quando
   /// ele avisa que terminou ([fim]).
@@ -879,7 +871,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     return pronto.future;
   }
 
-  /// **Baú 2** (estrela): espera o toque, faz a abertura completa e, quando a
+  /// **Baú da estrela**: espera o toque, faz a abertura completa e, quando a
   /// estrela termina de subir, sai de cena.
   Future<void> _bauEstrela(int pontosDia) => _cena(
     (ctx, fim) => ChestOpen2(

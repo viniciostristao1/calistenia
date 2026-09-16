@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 
 /// **Conteúdo: chama 3D** — a chama desenhada à mão (3 línguas + núcleo) com as
 /// pontas balançando em ciclo e o corpo pulsando. É só o DESENHO animado: usado
-/// pelo `FlameReveal` (molécula da sequência) e como a recompensa que **sai de
-/// dentro** do baú de sequência.
+/// pelo baú da sequência como a recompensa que **sai de dentro** dele.
 class Flame3D extends StatefulWidget {
   const Flame3D({
     super.key,

@@ -1,8 +1,8 @@
 import 'package:flutter/painting.dart';
 
 /// **Utilidade de pintura** — deriva tons de sombra/luz de uma cor mantendo o
-/// matiz. Compartilhada pelos desenhos à mão (`Star3D`, `Trophy3D`,
-/// `_ChestPainter`).
+/// matiz. Compartilhada pelos desenhos à mão (`Star3D`, `Flame3D`,
+/// `_ChestPainter2`).
 ///
 /// [shade]: `amount` 0 = cor original; 1 = quase preto.
 /// [lighten]: `amount` 0 = cor original; 1 = quase branco.

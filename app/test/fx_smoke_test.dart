@@ -43,7 +43,7 @@ void main() {
       home: Scaffold(
         body: Builder(
           builder: (ctx) => Center(
-            child: RewardRegistry.build(ctx, RewardType.star, extremo),
+            child: RewardRegistry.build(ctx, RewardType.chestEstrela, extremo),
           ),
         ),
       ),

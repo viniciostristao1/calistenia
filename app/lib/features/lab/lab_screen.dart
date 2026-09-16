@@ -18,7 +18,7 @@ class LabScreen extends StatefulWidget {
 }
 
 class _LabScreenState extends State<LabScreen> {
-  RewardType _selecionado = RewardType.star;
+  RewardType _selecionado = RewardType.chestEstrela;
   FxParams _params = const FxParams(valor2: 15);
 
   /// Valor exibido por efeitos que mostram número (ex.: "+XP").

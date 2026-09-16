@@ -8,10 +8,8 @@
 /// - `particle_system.dart`  física simples (gravidade, atrito, emissão)
 /// - `particle_painter.dart` o CustomPainter
 /// - `particle_burst.dart`   widget: explosão radial (usa `FxParams.particleCount`)
-/// - `confetti.dart`         widget: chuva (evolução do `_ConfettiLayer` atual)
 library;
 
-export 'confetti.dart';
 export 'particle.dart';
 export 'particle_burst.dart';
 export 'particle_painter.dart';

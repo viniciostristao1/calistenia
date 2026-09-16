@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-16 — v0.82.0 (Laboratório enxuto: só o que o app usa):**
+  - O 🧪 Laboratório agora lista **só as animações que o app usa de verdade**: **Baú da estrela**, **Baú da conquista** (medalha/troféu), **Baú da sequência** (chama) e **Subiu de nível**.
+  - Saíram da lista **e do projeto** os protótipos que não entravam em nenhum fluxo: Baú 1, Baú 3, Baú rápido, estrela solta, +XP, medalha/troféu soltos, confete de recompensa e o placeholder (tudo continua no histórico do Git, se precisar voltar).
+  - **No app o fluxo não muda:** estrela sorteada → baú da estrela; conquistas (4/8/15/21 dias) → baú da conquista (🥈 medalha prata, 🥇 medalha ouro, 🏆 troféus); marcos de sequência (10/20/30…) → baú da sequência (chama com os dias); dias comuns → subiu de nível com o Rating.
+
 - **2026-09-16 — v0.81.0 (o que está dentro do baú agora sai de dentro dele):**
   - **Conquistas e marcos de sequência:** o baú agora abre **de verdade** (toque → tampa aberta) e o **conteúdo sai de dentro dele** — a **medalha/troféu** (com o nome embaixo: "Medalha de Ouro", "Troféu de Prata"…) ou a **chama da sequência** (com os dias: "12 dias"). Antes o baú só abria um pouco e a imagem do prêmio entrava no lugar.
   - **Dentro do baú é o mesmo prêmio:** o **monte** que aparece quando a tampa abre muda com o baú — estrelas no baú da estrela, **números** no Baú 3, **medalhas** no baú de conquista e **chamas** no de sequência.

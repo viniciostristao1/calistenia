@@ -1,6 +1,5 @@
 import 'package:calistenia/fx/rewards/chest_open2.dart';
 import 'package:calistenia/fx/rewards/flame_3d.dart';
-import 'package:calistenia/fx/rewards/score_rising.dart';
 import 'package:calistenia/fx/rewards/star_3d.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +13,11 @@ Future<void> _abre(
   ChestOpen2 bau, {
   bool toque = true,
 }) async {
-  await tester.pumpWidget(MaterialApp(home: Scaffold(body: Center(child: bau))));
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(body: Center(child: bau)),
+    ),
+  );
   await tester.pump(const Duration(milliseconds: 100));
   if (toque) {
     expect(find.text('Toque para abrir'), findsOneWidget);
@@ -30,14 +33,6 @@ void main() {
   testWidgets('estrela: o baú abre e a estrela sai de dentro', (tester) async {
     await _abre(tester, const ChestOpen2(valor: 10));
     expect(find.byType(Star3D), findsOneWidget);
-  });
-
-  testWidgets('número: o baú abre e a pontuação sai de dentro', (tester) async {
-    await _abre(
-      tester,
-      const ChestOpen2(item: ChestItem.numero, valor: 50),
-    );
-    expect(find.byType(ScoreRising), findsOneWidget);
   });
 
   testWidgets('medalha: abre com o rótulo e o emoji do prêmio', (tester) async {

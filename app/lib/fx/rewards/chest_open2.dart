@@ -12,7 +12,6 @@ import '../particles/particle.dart';
 import '../particles/particle_burst.dart';
 import '../shading.dart';
 import 'flame_3d.dart';
-import 'score_rising.dart';
 import 'star_3d.dart';
 
 /// **Recompensa: baú abrindo** — showcase da camada, agora em **vista 3/4**
@@ -28,9 +27,9 @@ import 'star_3d.dart';
 /// ordenação por profundidade. A tampa gira em torno do eixo X (dobradiça
 /// traseira).
 /// **O que fica DENTRO do baú** (o monte que aparece quando ele abre):
-/// estrela (baú da estrela), número (baú 3), medalha (conquista) ou chama
-/// (sequência). O conteúdo **sai de dentro** do baú, como a estrela.
-enum ChestItem { estrela, numero, medalha, chama }
+/// estrela (baú da estrela), medalha (conquista) ou chama (sequência). O
+/// conteúdo **sai de dentro** do baú, como a estrela.
+enum ChestItem { estrela, medalha, chama }
 
 class ChestOpen2 extends StatefulWidget {
   const ChestOpen2({
@@ -41,7 +40,6 @@ class ChestOpen2 extends StatefulWidget {
     this.rapido = false,
     this.item = ChestItem.estrela,
     this.itemCor,
-    this.valores = const ['5', '10', '25', '50', '100', '250'],
     this.recompensa,
     this.conteudo,
     this.label,
@@ -50,8 +48,8 @@ class ChestOpen2 extends StatefulWidget {
 
   final FxParams params;
 
-  /// Valor principal (a estrela do baú 2, a pontuação do baú 3…). `null`/0 =
-  /// o efeito não mostra número. O ganho de Rating vem em `params.valor2`.
+  /// Valor principal (a estrela do baú, os dias da sequência…). `null`/0 = o
+  /// efeito não mostra número. O ganho de Rating vem em `params.valor2`.
   final num? valor;
 
   /// O que tem DENTRO do baú (o monte).
@@ -59,9 +57,6 @@ class ChestOpen2 extends StatefulWidget {
 
   /// Cor do monte (padrão: dourado).
   final Color? itemCor;
-
-  /// Números usados quando [item] é [ChestItem.numero] (decoração do monte).
-  final List<String> valores;
 
   /// Recompensa que **sai de dentro** do baú (recebe o `v` da animação e o
   /// [valor]). Substitui o conteúdo padrão do [item] — movimento incluso.
@@ -179,13 +174,6 @@ class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
                 ),
             ],
           ),
-        );
-      case ChestItem.numero:
-        return ScoreRising(
-          params: params,
-          valor: widget.valor ?? 0,
-          cor: context.accent,
-          entrada: Interval(0.58, 0.74).transform(v),
         );
       case ChestItem.medalha:
         return girando(
@@ -353,7 +341,6 @@ class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
             intensity: _intensity,
             item: widget.item,
             itemCor: widget.itemCor,
-            valores: widget.valores,
           ),
         ),
       ),
@@ -463,14 +450,12 @@ class _ChestPainter2 extends CustomPainter {
     required this.intensity,
     required this.item,
     this.itemCor,
-    this.valores = const ['5', '10', '25', '50', '100', '250'],
   });
 
   final double v;
   final double intensity;
   final ChestItem item;
   final Color? itemCor;
-  final List<String> valores;
 
   static const _corpo1 = Color(0xFF9A5B2A);
   static const _corpo2 = Color(0xFF6E3D1C);
@@ -754,8 +739,8 @@ class _ChestPainter2 extends CustomPainter {
     // ── O MONTE dentro do baú (o CONTEÚDO) ──
     // Cada item é desenhado num ÚNICO comando (é plano) com o relevo da estrela
     // que salta (`Star3D`): luz direcional, bisel e brilho. O tipo vem de
-    // `ChestItem`: estrela (baú da estrela), número (baú 3), medalha (conquista)
-    // ou chama (sequência) — e o item correspondente **sai de dentro** do baú.
+    // `ChestItem`: estrela (baú da estrela), medalha (conquista) ou chama
+    // (sequência) — e o item correspondente **sai de dentro** do baú.
     const luzItem = Offset(-0.55, -0.83); // luz 2D (canto sup. esquerdo)
     final corItem = itemCor ?? _ouro;
 
@@ -1023,52 +1008,6 @@ class _ChestPainter2 extends CustomPainter {
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 1.3
                 ..color = lighten(cor, 0.6).withValues(alpha: 0.6),
-            );
-          });
-
-        case ChestItem.numero:
-          final txt = valores[(order * 10).round() % valores.length];
-          push(depth, (c) {
-            sombra(c, r * 0.85);
-            // Matriz afim do plano (u,v) → tela: o número fica "deitado".
-            final o = pj(0, 0);
-            final a = pj(1, 0) - o;
-            final b = pj(0, 1) - o;
-            final m = Matrix4.identity()
-              ..setEntry(0, 0, a.dx)
-              ..setEntry(0, 1, b.dx)
-              ..setEntry(0, 3, o.dx)
-              ..setEntry(1, 0, a.dy)
-              ..setEntry(1, 1, b.dy)
-              ..setEntry(1, 3, o.dy);
-            c.save();
-            c.transform(m.storage);
-            c.rotate(rot);
-            void escreve(Offset off, Color cc) {
-              final tp = TextPainter(
-                text: TextSpan(
-                  text: txt,
-                  style: TextStyle(
-                    fontSize: r * 1.5,
-                    fontWeight: FontWeight.w900,
-                    color: cc,
-                  ),
-                ),
-                textDirection: TextDirection.ltr,
-              )..layout();
-              tp.paint(
-                c,
-                Offset(-tp.width / 2 + off.dx, -tp.height / 2 + off.dy),
-              );
-            }
-
-            escreve(const Offset(1.0, 1.4), shade(cor, 0.55));
-            escreve(Offset.zero, cor);
-            c.restore();
-            c.drawCircle(
-              pj(-r * 0.35, -r * 0.30),
-              1.2,
-              Paint()..color = Colors.white.withValues(alpha: 0.55),
             );
           });
       }

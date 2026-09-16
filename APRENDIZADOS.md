@@ -5,6 +5,31 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-16 — Conjunto final de recompensas + limpeza (v0.82.0)
+
+**O usuário fechou o mapa:** os baús são para **a estrela** (baú da estrela), **as
+conquistas** (medalha e troféu — o troféu 15/21 dias usa o MESMO baú, com 🏆 dentro) e **os
+marcos de sequência** (10/20/30…, chama com os dias embaixo); **dias comuns** usam o
+"subiu de nível" (setas + Rating). O resto era protótipo de Laboratório e foi descartado.
+
+**Como:** `RewardType` ficou com 4 entradas (`chestEstrela`, `chestConquista`,
+`chestSequencia`, `levelUp`) e rótulos em português claro ("Baú da estrela"…) — o Lab monta
+a grade a partir de `RewardType.values`, então a lista encurtou sozinha. O
+`chest_open2.dart` perdeu o `ChestItem.numero` (o "baú 3" saiu) e o `reward_registry` não
+tem mais placeholder: tipo sem registro devolve `SizedBox` vazio (some, não explode). Quem
+precisava de cor de conquista agora usa `corConquista(TipoConquista)` do
+`util/conquista_badge.dart` (em vez de `RewardType.medalGold.color`) e a chama usa
+`AppColors.exec`.
+
+**Apagados (só o registro/reward_type referenciavam — conferido com grep antes):**
+`chest_open.dart` (Baú 1), `chest_open3.dart` (Baú 3), `chest_intro_reveal.dart`,
+`score_rising.dart`, `star_burst.dart`, `xp_gain.dart`, `icon_reveal.dart`,
+`trophy_3d.dart`, `flame_reveal.dart`, `placeholder_reward.dart`,
+`particles/confetti.dart`. Tudo recuperável no histórico do Git.
+
+**Lição:** o "congelado" (Baú 1) só vale enquanto alguém olha — passou a release sem uso,
+virou peso; o Git é o museu, o `lib/` é o app.
+
 ## 2026-09-16 — O conteúdo do baú (v0.81.0)
 
 **Pedido:** o conteúdo (estrela, número, medalha, chama) tem de ficar **dentro** do baú e
