@@ -5,6 +5,31 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-15 — Baú + revelação no Laboratório (v0.80.2)
+
+**Feedback:** testando "Baú rápido" no Laboratório o usuário viu **só a intro** — faltava a
+revelação (que no fluxo real era encadeada em duas etapas: rota da intro → overlay da
+revelação).
+
+**Como:** nova molécula `rewards/chest_intro_reveal.dart` (**`ChestIntroReveal`**): mostra
+`ChestOpen2(rapido: true)` (toque → abre pouco) e, no `onFim`, troca por `child` com um
+`AnimatedSwitcher` (220 ms) — a revelação entra no lugar do baú. Depois de
+`esperaRevelacao` (padrão 1,2 s) chama `onFim`, para a cerimônia seguir.
+
+**Tipos novos (Lab):** `RewardType.chestConquista` ("Baú conquista" → medalha dourada) e
+`chestSequencia` ("Baú sequência" → chama com o `value`). Também entrou o getter
+`RewardType.abreComToque` (chest2/chestIntro/chestConquista/chestSequencia) — o Lab passou a
+usar `dismissOnTap: !_selecionado.abreComToque`.
+
+**Player simplificado:** o encadeamento virou **uma cena por prêmio** — helper
+`_cena((ctx, fim) => ...)` (rota transparente que fecha quando o widget chama `fim`). A
+conquista/sequência usa `ChestIntroReveal` (com o reveal certo via `RewardRegistry.build`);
+a estrela usa `ChestOpen2` (com +800 ms depois do `onFim` para a estrela sair); o dia comum
+usa o overlay do `levelUp`. Sumiram `_bauIntro` e o overlay intermediário.
+
+**Validação:** teste do par (fechado → toque → revelação → `onFim`) + goldens dos dois
+momentos; analyze sem erros; `flutter test` 56/56. Versão `0.80.2+114`.
+
 ## 2026-09-15 — Baú rápido = o mesmo baú (modo `rapido`) (v0.80.1)
 
 **Feedback:** o `ChestQuick` (baú-intro desenhado do zero, 2.5D simplificado) ficou **feio**.

@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-15 — v0.80.2 (baú + revelação juntos no Laboratório):**
+  - Agora dá pra testar o **par completo** no 🧪 Laboratório: novos tipos **“Baú conquista”** (toque no baú → medalha) e **“Baú sequência”** (toque → chama com o número). Antes o “Baú rápido” mostrava só a abertura — a revelação ficava só no fluxo real.
+  - No app o fluxo segue igual (o baú é só a introdução e a medalha/troféu/chama entra no lugar), agora com o mesmo componente dos dois lados.
+
 - **2026-09-15 — v0.80.1 (baú rápido com o MESMO desenho dos outros):**
   - O **baú rápido** (conquistas e marcos de sequência) agora é **o mesmo baú** 3/4 dos demais — a única diferença é que a **tampa abre só um pouco** e a animação termina ali; a medalha/troféu/chama entra no lugar em seguida. Nada de desenho simplificado.
 

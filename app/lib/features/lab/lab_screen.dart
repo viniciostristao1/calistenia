@@ -43,9 +43,7 @@ class _LabScreenState extends State<LabScreen> {
     params: _params,
     value: _valor,
     // Nos baús com toque, o primeiro toque abre (não dispensa).
-    dismissOnTap:
-        _selecionado != RewardType.chestIntro &&
-        _selecionado != RewardType.chest2,
+    dismissOnTap: !_selecionado.abreComToque,
   );
 
   @override

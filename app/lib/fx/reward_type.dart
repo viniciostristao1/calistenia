@@ -20,6 +20,8 @@ enum RewardType {
   chest2,
   chest3,
   chestIntro,
+  chestConquista,
+  chestSequencia,
   trophyGold,
   trophySilver,
   medalGold,
@@ -45,6 +47,8 @@ extension RewardTypeInfo on RewardType {
     RewardType.chest2 => 'Baú 2',
     RewardType.chest3 => 'Baú 3',
     RewardType.chestIntro => 'Baú rápido',
+    RewardType.chestConquista => 'Baú conquista',
+    RewardType.chestSequencia => 'Baú sequência',
     RewardType.trophyGold => 'Troféu de Ouro',
     RewardType.trophySilver => 'Troféu de Prata',
     RewardType.medalGold => 'Medalha de Ouro',
@@ -61,6 +65,8 @@ extension RewardTypeInfo on RewardType {
     RewardType.chest2 => Icons.inventory_2_rounded,
     RewardType.chest3 => Icons.all_inbox_rounded,
     RewardType.chestIntro => Icons.unarchive_rounded,
+    RewardType.chestConquista => Icons.workspace_premium_rounded,
+    RewardType.chestSequencia => Icons.whatshot_rounded,
     RewardType.trophyGold ||
     RewardType.trophySilver => Icons.emoji_events_rounded,
     RewardType.medalGold ||
@@ -70,6 +76,13 @@ extension RewardTypeInfo on RewardType {
     RewardType.streak => Icons.local_fire_department_rounded,
     RewardType.confetti => Icons.celebration_rounded,
   };
+
+  /// Baús que **esperam um toque** para abrir (o 1º toque não dispensa).
+  bool get abreComToque =>
+      this == RewardType.chest2 ||
+      this == RewardType.chestIntro ||
+      this == RewardType.chestConquista ||
+      this == RewardType.chestSequencia;
 
   /// Cor-tema do efeito. Lê a paleta ATUAL (nunca `const` com [AppColors]: os
   /// temas trocam em runtime — ver a nota no `ANIMACOES.md`).
@@ -82,6 +95,8 @@ extension RewardTypeInfo on RewardType {
     RewardType.chest2 ||
     RewardType.chest3 ||
     RewardType.chestIntro ||
+    RewardType.chestConquista ||
+    RewardType.chestSequencia ||
     RewardType.levelUp ||
     RewardType.confetti => context.accent,
   };

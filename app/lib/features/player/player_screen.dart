@@ -28,6 +28,7 @@ import '../../util/frases.dart';
 import '../../util/fundos.dart';
 import '../../util/gamificacao.dart';
 import '../../util/insignias.dart';
+import '../../fx/rewards/chest_intro_reveal.dart';
 import '../../fx/rewards/chest_open2.dart';
 
 /// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
@@ -812,13 +813,31 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Future<void> _tocarPremio(PremioDia p) async {
     switch (p.tipo) {
       case PremioTipo.conquista:
-        await _bauIntro();
-        if (!mounted) return;
-        await _mostrarReveal(_tipoDaConquista(p.conquista!));
+        // Baú-intro + medalha/troféu (o par completo, igual ao Laboratório).
+        await _cena(
+          (ctx, fim) => ChestIntroReveal(
+            params: const FxParams(duration: Duration(milliseconds: 850)),
+            onFim: fim,
+            child: RewardRegistry.build(
+              ctx,
+              _tipoDaConquista(p.conquista!),
+              const FxParams(),
+            ),
+          ),
+        );
       case PremioTipo.sequencia:
-        await _bauIntro();
-        if (!mounted) return;
-        await _mostrarReveal(RewardType.streak, value: p.valor);
+        await _cena(
+          (ctx, fim) => ChestIntroReveal(
+            params: const FxParams(duration: Duration(milliseconds: 850)),
+            onFim: fim,
+            child: RewardRegistry.build(
+              ctx,
+              RewardType.streak,
+              const FxParams(),
+              value: p.valor,
+            ),
+          ),
+        );
       case PremioTipo.estrela:
         await _bauEstrela(p.valor);
       case PremioTipo.rating:
@@ -839,9 +858,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     TipoConquista.trofeuOuro => RewardType.trophyGold,
   };
 
-  /// **Baú rápido**: o MESMO baú dos outros, mas a tampa abre só um pouco e a
-  /// animação termina — a revelação (medalha/troféu/chama) entra em seguida.
-  Future<void> _bauIntro() {
+  /// **Cena em tela cheia** (fundo escurecido): monta o widget e o fecha quando
+  /// ele avisa que terminou ([fim]).
+  Future<void> _cena(
+    Widget Function(BuildContext ctx, VoidCallback fim) build,
+  ) {
     final pronto = Completer<void>();
     showGeneralDialog<void>(
       context: context,
@@ -849,14 +870,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       barrierDismissible: false,
       transitionDuration: const Duration(milliseconds: 160),
       pageBuilder: (ctx, _, _) => Center(
-        child: ChestOpen2(
-          params: const FxParams(duration: Duration(milliseconds: 850)),
-          rapido: true,
-          onFim: () {
-            if (!pronto.isCompleted) pronto.complete();
-            Navigator.of(ctx).pop();
-          },
-        ),
+        child: build(ctx, () {
+          if (!pronto.isCompleted) pronto.complete();
+          Navigator.of(ctx).pop();
+        }),
       ),
     );
     return pronto.future;
@@ -864,32 +881,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 
   /// **Baú 2** (estrela): espera o toque, faz a abertura completa e, quando a
   /// estrela termina de subir, sai de cena.
-  Future<void> _bauEstrela(int pontosDia) {
-    final pronto = Completer<void>();
-    showGeneralDialog<void>(
-      context: context,
-      barrierColor: Colors.black45,
-      barrierDismissible: false,
-      transitionDuration: const Duration(milliseconds: 160),
-      pageBuilder: (ctx, _, _) => Center(
-        child: ChestOpen2(
-          params: FxParams(
-            duration: const Duration(milliseconds: 1000),
-            valor2: pontosDia.toDouble(),
-          ),
-          valorEstrela: 10,
-          onFim: () {
-            // Deixa a estrela sair de cena antes de fechar o baú.
-            Future<void>.delayed(const Duration(milliseconds: 800), () {
-              if (ctx.mounted) Navigator.of(ctx).pop();
-              if (!pronto.isCompleted) pronto.complete();
-            });
-          },
-        ),
+  Future<void> _bauEstrela(int pontosDia) => _cena(
+    (ctx, fim) => ChestOpen2(
+      params: FxParams(
+        duration: const Duration(milliseconds: 1000),
+        valor2: pontosDia.toDouble(),
       ),
-    );
-    return pronto.future;
-  }
+      valorEstrela: 10,
+      // Deixa a estrela sair de cena antes de fechar o baú.
+      onFim: () => Future<void>.delayed(const Duration(milliseconds: 800), fim),
+    ),
+  );
 
   /// Mostra uma revelação do `fx/` (overlay) e espera ela terminar.
   Future<void> _mostrarReveal(

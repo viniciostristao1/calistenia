@@ -5,6 +5,7 @@ import 'particles/confetti.dart';
 import 'reward_registry.dart';
 import 'reward_type.dart';
 import 'rewards/chest_open.dart';
+import 'rewards/chest_intro_reveal.dart';
 import 'rewards/chest_open2.dart';
 import 'rewards/chest_open3.dart';
 import 'rewards/flame_reveal.dart';
@@ -57,11 +58,31 @@ void registerBuiltInRewards() {
     RewardType.chest3,
     (context, params, {value}) => ChestOpen3(params: params, valorScore: value),
   );
-  // Baú rápido: o MESMO baú 3/4, mas só a intro (fechado → toque → abre pouco);
-  // a revelação de verdade (medalha/troféu/chama) vem em seguida.
+  // Baú rápido: o MESMO baú 3/4, mas só a intro (fechado → toque → abre pouco).
   RewardRegistry.register(
     RewardType.chestIntro,
     (context, params, {value}) => ChestOpen2(params: params, rapido: true),
+  );
+  // Baú + revelação (o par completo): intro rápida e, no lugar dela, a
+  // medalha/troféu (dourada, para testar no Lab) ou a chama da sequência.
+  RewardRegistry.register(
+    RewardType.chestConquista,
+    (context, params, {value}) => ChestIntroReveal(
+      params: params,
+      child: RewardRegistry.build(context, RewardType.medalGold, params),
+    ),
+  );
+  RewardRegistry.register(
+    RewardType.chestSequencia,
+    (context, params, {value}) => ChestIntroReveal(
+      params: params,
+      child: RewardRegistry.build(
+        context,
+        RewardType.streak,
+        params,
+        value: value ?? 10,
+      ),
+    ),
   );
   RewardRegistry.register(
     RewardType.confetti,
