@@ -347,7 +347,12 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     // sem baú nenhum, o ganho de Rating do dia (setas do "subiu de nível").
     final premios = recompensasDoDia(
       novasConquistas: novas,
-      streak: streakAtual(concs, treinos, hoje: hoje),
+      streak: sequenciaIninterrupta(
+        concs,
+        treinos,
+        hoje: hoje,
+        diasValidos: diasValidos,
+      ),
       ganhouEstrela: ganhouInsignia,
       ratingGanho: ratingDoDia(concs, treinos, prog, hoje: hoje),
     );
@@ -408,8 +413,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   }
 
   /// "Não consegui hoje": registra uma TENTATIVA (não completou, mas manteve o
-  /// hábito → meia consistência no rating + mantém a sequência) e sorteia uma
-  /// frase de incentivo.
+  /// hábito → meia consistência no rating; a chama da sequência, porém, zera) e
+  /// sorteia uma frase de incentivo.
   Future<void> _marcarIncompleto() async {
     final treino = widget.treino;
     if (treino != null) {
@@ -820,7 +825,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
             item: ChestItem.medalha,
             itemCor: corConquista(t),
             label: t.titulo,
-            conteudo: Text(t.emoji, style: const TextStyle(fontSize: 64)),
+            conteudo: ConquistaBadge(tipo: t, size: 52),
             onFim: () =>
                 Future<void>.delayed(const Duration(milliseconds: 800), fim),
           ),
@@ -1075,7 +1080,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       ),
       const SizedBox(height: 12),
       Text(
-        'Seu esforço conta: metade da consistência e a sua sequência mantida.',
+        'Seu esforço conta: metade da consistência no Rating.',
         style: TextStyle(color: AppColors.dim),
         textAlign: TextAlign.center,
       ),

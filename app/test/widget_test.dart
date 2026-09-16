@@ -248,7 +248,7 @@ void main() {
     expect(antigo.unilateral, isFalse);
   });
 
-  test('streak: dia de descanso (não agendado) não quebra a corrente', () {
+  test('chama: dia de descanso (não agendado) não quebra a corrente', () {
     final d = DateTime(2026, 8, 10);
     final wdD = d.weekday - 1;
     final wdD2 = d.subtract(const Duration(days: 2)).weekday - 1;
@@ -268,11 +268,11 @@ void main() {
         treino: 't',
       ),
     ];
-    expect(streakAtual(concs, treinos, hoje: d), 2);
+    expect(sequenciaIninterrupta(concs, treinos, hoje: d), 2);
   });
 
   test(
-    'streak: dia agendado sem conclusão quebra; hoje pendente não quebra',
+    'chama: dia agendado SEM treino completo quebra; hoje pendente não quebra',
     () {
       final d = DateTime(2026, 8, 10);
       final treinos = [
@@ -291,7 +291,7 @@ void main() {
           treino: 't',
         ),
       ];
-      expect(streakAtual(concs, treinos, hoje: d), 2);
+      expect(sequenciaIninterrupta(concs, treinos, hoje: d), 2);
       // Hoje ainda não concluído (pendente) não quebra: conta a partir de ontem.
       final concsPendente = [
         Conclusao(
@@ -300,9 +300,98 @@ void main() {
           treino: 't',
         ),
       ];
-      expect(streakAtual(concsPendente, treinos, hoje: d), 1);
+      expect(sequenciaIninterrupta(concsPendente, treinos, hoje: d), 1);
     },
   );
+
+
+  test('chama: "não consegui" num dia agendado passado zera a corrente', () {
+    final d = DateTime(2026, 8, 20);
+    final treinos = [
+      Treino(
+        nome: 't',
+        dias: [0, 1, 2, 3, 4, 5, 6],
+        exercicios: [Exercicio(nome: 'A')],
+      ),
+    ];
+    // 5 completos (d-6..d-2) e a tentativa de ONTEM (d-1).
+    final concs = [
+      for (var i = 2; i <= 6; i++)
+        Conclusao(
+          data: d.subtract(Duration(days: i)),
+          treinoId: 't',
+          treino: 't',
+        ),
+      Conclusao(
+        data: d.subtract(const Duration(days: 1)),
+        treinoId: 't',
+        treino: 't',
+        completo: false,
+      ),
+    ];
+    expect(sequenciaIninterrupta(concs, treinos, hoje: d), 0);
+    // No dia da tentativa ela ainda é "hoje pendente" -> neutra (a corrente
+    // de 5 continua até o dia acabar).
+    expect(
+      sequenciaIninterrupta(
+        concs,
+        treinos,
+        hoje: d.subtract(const Duration(days: 1)),
+      ),
+      5,
+    );
+  });
+
+  test('chama: treino completo em dia NÃO agendado conta', () {
+    final d = DateTime(2026, 8, 10); // segunda
+    // Agenda só segunda.
+    final treinos = [
+      Treino(
+        nome: 't',
+        dias: [d.weekday - 1],
+        exercicios: [Exercicio(nome: 'A')],
+      ),
+    ];
+    // Segunda (agendada) + domingo (descanso) completos -> 2.
+    final concs = [
+      Conclusao(data: d, treinoId: 't', treino: 't'),
+      Conclusao(
+        data: d.subtract(const Duration(days: 1)),
+        treinoId: 't',
+        treino: 't',
+      ),
+    ];
+    expect(sequenciaIninterrupta(concs, treinos, hoje: d), 2);
+    expect(sequenciaRecorde(concs, treinos, hoje: d), 2);
+  });
+
+  test('chama: recorde guarda a MAIOR corrente já feita', () {
+    final d = DateTime(2026, 8, 31);
+    final treinos = [
+      Treino(
+        nome: 't',
+        dias: [0, 1, 2, 3, 4, 5, 6],
+        exercicios: [Exercicio(nome: 'A')],
+      ),
+    ];
+    // 5 completos (d-20..d-16), buraco (falta) e 3 completos (d-3..d-1).
+    final concs = [
+      for (var i = 16; i <= 20; i++)
+        Conclusao(
+          data: d.subtract(Duration(days: i)),
+          treinoId: 't',
+          treino: 't',
+        ),
+      for (var i = 1; i <= 3; i++)
+        Conclusao(
+          data: d.subtract(Duration(days: i)),
+          treinoId: 't',
+          treino: 't',
+        ),
+    ];
+    expect(sequenciaIninterrupta(concs, treinos, hoje: d), 3);
+    expect(sequenciaRecorde(concs, treinos, hoje: d), 5);
+  });
 
   test('conquistas atuais escalam com a sequência (4/8/15/21)', () {
     final d = DateTime(2026, 8, 10);
@@ -606,8 +695,9 @@ void main() {
       final r = ratingForma(tentativas, treinos, const [], hoje: d);
       expect(r.consistencia, 200); // metade de 400 (0,5 por dia tentado)
       expect(r.frequencia, 200); // tentativa conta como treino
-      // A sequência NÃO quebra com tentativas (mantém o hábito).
-      expect(streakAtual(tentativas, treinos, hoje: d), 28);
+      // A chama (sequência ininterrupta) exige treino COMPLETO: tentativas
+      // contam no Rating, mas zeram a corrente.
+      expect(sequenciaIninterrupta(tentativas, treinos, hoje: d), 0);
 
       // Completo vale o dobro da tentativa na consistência.
       final completos = [

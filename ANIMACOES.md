@@ -159,11 +159,13 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.34 | conquista/sequência = **baú cheio** (abre no toque e a medalha/troféu/chama **sai de dentro**), com o rótulo embaixo; Baú 3 com **monte de números** e `ScoreRising`. `ChestIntroReveal` fora do fluxo. | **feita** |
 | 5.35 | **Baús e subiu de nível aplicados no app** (v0.81.0): baú da estrela, baú da conquista (medalha/troféu), baú da sequência (chama) e `levelUp` nos dias comuns — conteúdo saindo de dentro do baú. | **feita** |
 | 5.36 | **Limpeza (v0.82.0):** Laboratório só com os 4 tipos usados (`chestEstrela`/`chestConquista`/`chestSequencia`/`levelUp`); removidos Baú 1/3, baú rápido/`ChestIntroReveal`, `StarBurst`, `XpGain`, `IconReveal`, `Trophy3D` e `ConfettiRain` (ficam no histórico do Git). | **feita** |
+| 5.37 | **Chama ininterrupta (v0.83.0):** `streakAtual` → `sequenciaIninterrupta` (só treino completo; "não consegui" zera) + `sequenciaRecorde`; marco do baú, card 🔥 da home e card do Check-in passam a usar. `nivelInfo` (conquistas) intacto. | **feita** |
+| 5.38 | **Avisos de risco fora + baú da conquista com as 4:** removidos banner/notificação/`emRiscoDePerda` (id antigo segue sendo cancelado); `chestConquista` aceita `value` (0..3) com `ConquistaBadge` (mesmo desenho da galeria) e o Lab ganhou o seletor das quatro. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.82.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.83.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`; inclui os baús 1/2/3 e `chestIntro`),
 `fx_params.dart` (inclui `valor2` — 2º número, ex.: Rating ao lado da estrela do baú), `reward_registry.dart` (ponte, builder recebe `{num? value}`),

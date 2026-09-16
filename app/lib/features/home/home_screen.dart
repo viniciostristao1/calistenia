@@ -865,7 +865,10 @@ class _FaixaDesempenho extends ConsumerWidget {
         children: [
           _Stat(
             icone: Icons.local_fire_department_rounded,
-            valor: '${streakAtual(concs, treinos)}',
+            valor: '${sequenciaIninterrupta(concs, treinos, diasValidos: {
+              for (final c in checkins)
+                DateTime(c.data.year, c.data.month, c.data.day),
+            })}',
             rotulo: s.sequencia,
             cor: AppColors.exec,
           ),

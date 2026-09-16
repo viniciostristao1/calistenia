@@ -174,7 +174,6 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
             ),
             if (gamiOn) ...[
               _QuadroInsignias(mes: _mes, onTap: () => setState(() => _vista = 2)),
-              _BannerRisco(),
             ],
             const _LinhaDias(),
             Expanded(
@@ -582,50 +581,9 @@ class _QuadroInsignias extends ConsumerWidget {
   }
 }
 
-class _BannerRisco extends ConsumerWidget {
-  const _BannerRisco();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final concs = ref.watch(conclusaoProvider).value ?? const [];
-    final treinos = ref.watch(treinosProvider).value ?? const [];
-    final checkins = ref.watch(checkinProvider).value ?? const [];
-    final diasValidos = checkins
-        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
-        .toSet();
-    if (!emRiscoDePerda(concs, treinos, diasValidos: diasValidos)) {
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.danger.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.danger.withOpacity(0.5)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded,
-                size: 18, color: AppColors.danger),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text('Sequência em risco — treine hoje para não perder seu nível!',
-                  style: TextStyle(
-                      color: AppColors.danger,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Galeria: conquistas atuais, sequência/recorde e as regras (medalhas e
-/// troféus), cada uma com o progresso da sequência ("Sequência: X/N").
+/// Galeria: sequência (a chama ininterrupta) + recorde, as conquistas atuais e
+/// as regras (medalhas e troféus), cada uma com o progresso do nível
+/// ("Nível X/N") — o nível das conquistas tem orçamento de falhas.
 class _GaleriaConquistas extends ConsumerWidget {
   const _GaleriaConquistas();
 
@@ -640,6 +598,11 @@ class _GaleriaConquistas extends ConsumerWidget {
         .toSet();
 
     final nivel = nivelInfo(concs, treinos, diasValidos: diasValidos);
+    final sequencia = sequenciaIninterrupta(
+      concs,
+      treinos,
+      diasValidos: diasValidos,
+    );
     final total = totalDiasConcluidos(concs);
     final atuais = conquistasAtuais(concs, treinos, prog, diasValidos: diasValidos);
 
@@ -654,7 +617,11 @@ class _GaleriaConquistas extends ConsumerWidget {
       children: [
         _ConquistasAtuaisBox(atuais: atuais),
         const SizedBox(height: 16),
-        _StreakCard(nivel: nivel.atual, recorde: nivel.recorde, total: total),
+        _StreakCard(
+          sequencia: sequencia,
+          recorde: sequenciaRecorde(concs, treinos, diasValidos: diasValidos),
+          total: total,
+        ),
         const SizedBox(height: 20),
         const _TituloSecao('Medalhas', 'Dias de treino seguidos'),
         const SizedBox(height: 10),
@@ -669,7 +636,7 @@ class _GaleriaConquistas extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        const _TituloSecao('Troféus', 'Sequências mais longas (o Ouro pede progressão)'),
+        const _TituloSecao('Troféus', 'Níveis mais longos (o Ouro pede progressão)'),
         const SizedBox(height: 10),
         IntrinsicHeight(
           child: Row(
@@ -723,7 +690,7 @@ class _HistoricoConquistas extends ConsumerWidget {
               SizedBox(height: 6),
               Text(
                 'As estrelas ganhas em meses anteriores e os títulos perdidos '
-                '(quebra de sequência) ficam guardados aqui, por mês.',
+                '(por falhas) ficam guardados aqui, por mês.',
                 style: TextStyle(color: AppColors.dim),
                 textAlign: TextAlign.center,
               ),
@@ -760,7 +727,7 @@ class _HistoricoConquistas extends ConsumerWidget {
         ],
         if (chavesConq.isNotEmpty) ...[
           const _TituloSecao(
-              'Títulos perdidos', 'Medalhas e troféus por quebra de sequência'),
+              'Títulos perdidos', 'Medalhas e troféus por falhas'),
           const SizedBox(height: 10),
           for (final k in chavesConq) ...[
             _MesHistorico(chaveMes: k, tipos: mapaConq[k]!),
@@ -890,9 +857,10 @@ class _MesHistorico extends StatelessWidget {
   }
 }
 
-/// Caixa "Conquistas atuais": o que você sustenta AGORA. Tudo é por sequência —
-/// se pular um dia agendado, TODAS caem. O Troféu de Ouro também exige progressão
-/// recente. Vazia enquanto não houver nenhuma.
+/// Caixa "Conquistas atuais": o que você sustenta AGORA. Tudo é pelo NÍVEL (com
+/// orçamento de falhas: 1 falta ou 2 tentativas ainda seguram); estourar o
+/// orçamento cai um degrau. O Troféu de Ouro também exige progressão recente.
+/// Vazia enquanto não houver nenhuma.
 class _ConquistasAtuaisBox extends StatelessWidget {
   const _ConquistasAtuaisBox({required this.atuais});
 
@@ -952,12 +920,12 @@ class _ConquistasAtuaisBox extends StatelessWidget {
 
 class _StreakCard extends StatelessWidget {
   const _StreakCard({
-    required this.nivel,
+    required this.sequencia,
     required this.recorde,
     required this.total,
   });
 
-  final int nivel;
+  final int sequencia;
   final int recorde;
   final int total;
 
@@ -984,7 +952,7 @@ class _StreakCard extends StatelessWidget {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: '$nivel ',
+                        text: '$sequencia ',
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
@@ -992,7 +960,7 @@ class _StreakCard extends StatelessWidget {
                         ),
                       ),
                       TextSpan(
-                        text: nivel == 1 ? 'dia' : 'dias',
+                        text: sequencia == 1 ? 'dia' : 'dias',
                         style: TextStyle(color: AppColors.dim),
                       ),
                     ],
@@ -1041,9 +1009,9 @@ class _TituloSecao extends StatelessWidget {
   }
 }
 
-/// Card de uma conquista (regra): badge + nome + barra de progresso da
-/// sequência. Enquanto não bate, a barra fica cinza; ao atingir (ativa), a barra
-/// e o badge ganham a cor da conquista (prata/ouro).
+/// Card de uma conquista (regra): badge + nome + barra de progresso do nível
+/// (orçamento de falhas). Enquanto não bate, a barra fica cinza; ao atingir
+/// (ativa), a barra e o badge ganham a cor da conquista (prata/ouro).
 class _ConquistaCard extends StatelessWidget {
   const _ConquistaCard({
     required this.tipo,
@@ -1065,8 +1033,8 @@ class _ConquistaCard extends StatelessWidget {
     final legenda = ativo
         ? 'Conquista ativa ✓'
         : ouroFaltaProgresso
-            ? 'Sequência ok · falta progressão'
-            : '$nivel/$alvo dias'
+            ? 'Nível ok · falta progressão'
+            : 'Nível $nivel/$alvo'
                 '${tipo == TipoConquista.trofeuOuro ? ' + progressão' : ''}';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),

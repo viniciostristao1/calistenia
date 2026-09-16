@@ -20,29 +20,81 @@ Set<int> diasAgendados(List<Treino> treinos) {
   return s;
 }
 
-/// Sequência ATUAL de dias agendados concluídos (a "corrente").
+/// Mapa dia → "houve treino COMPLETO nesse dia" (o completo vence a tentativa
+/// no mesmo dia). Fora dos [diasValidos] (check-ins), conclusões órfãs são
+/// ignoradas — mesma regra do [nivelInfo].
+Map<DateTime, bool> _completoPorDia(
+  List<Conclusao> concs,
+  Set<DateTime>? diasValidos,
+) {
+  final validos = diasValidos?.map(_dia).toSet();
+  final mapa = <DateTime, bool>{};
+  for (final c in concs) {
+    final d = _dia(c.data);
+    if (validos != null && !validos.contains(d)) continue;
+    mapa[d] = (mapa[d] ?? false) || c.completo;
+  }
+  return mapa;
+}
+
+/// **Sequência ININTERRUPTA (a "chama")** — a corrente difícil, de quem treinou
+/// e **completou**.
 ///
-/// Regra (decidida): conta os dias em que há treino agendado; concluir mantém a
-/// corrente. Um dia de descanso (sem treino agendado) NÃO quebra; um dia
-/// agendado no passado sem conclusão quebra; hoje ainda pendente não quebra.
-int streakAtual(List<Conclusao> concs, List<Treino> treinos, {DateTime? hoje}) {
+/// Regra (v0.83.0): só dia com **conclusão completa** conta +1; um dia agendado
+/// no passado que não tenha treino completo — **faltou ou só tentou** ("não
+/// consegui") — **quebra a corrente**; dia de descanso (sem treino agendado) e
+/// hoje ainda pendente são NEUTROS. Ao contrário das conquistas (que têm o
+/// "nível" com orçamento de falhas — ver [nivelInfo]), aqui uma falha zera.
+int sequenciaIninterrupta(
+  List<Conclusao> concs,
+  List<Treino> treinos, {
+  DateTime? hoje,
+  Set<DateTime>? diasValidos,
+}) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
-  final diasConc = concs.map((c) => _dia(c.data)).toSet();
-  var streak = 0;
+  final completo = _completoPorDia(concs, diasValidos);
+  var seq = 0;
   var d = hj;
-  for (var i = 0; i < 366; i++) {
+  for (var i = 0; i < 4000; i++) {
     final wd = d.weekday - 1; // 0=seg..6=dom
-    final concluiu = diasConc.contains(d);
-    if (concluiu) {
-      streak++;
+    if (completo[d] == true) {
+      seq++;
     } else if (agendados.contains(wd) && d.isBefore(hj)) {
-      break; // dia agendado no passado sem conclusão -> quebra a corrente
+      break; // dia agendado no passado sem treino completo -> quebra
     }
-    // rest day (não agendado) OU hoje ainda pendente -> neutro
+    // descanso (não agendado) OU hoje ainda pendente -> neutro
     d = d.subtract(const Duration(days: 1));
   }
-  return streak;
+  return seq;
+}
+
+/// Maior **sequência ininterrupta** já atingida (o recorde da chama). Mesmas
+/// regras da [sequenciaIninterrupta], olhando todo o histórico.
+int sequenciaRecorde(
+  List<Conclusao> concs,
+  List<Treino> treinos, {
+  DateTime? hoje,
+  Set<DateTime>? diasValidos,
+}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final agendados = diasAgendados(treinos);
+  final completo = _completoPorDia(concs, diasValidos);
+  if (completo.isEmpty) return 0;
+  final inicio = completo.keys.reduce((a, b) => a.isBefore(b) ? a : b);
+  var seq = 0, recorde = 0, i = 0;
+  var d = inicio;
+  while (!d.isAfter(hj) && i < 4000) {
+    if (completo[d] == true) {
+      seq++;
+      if (seq > recorde) recorde = seq;
+    } else if (agendados.contains(d.weekday - 1)) {
+      seq = 0; // falhou num dia agendado -> a corrente recomeça
+    }
+    d = d.add(const Duration(days: 1));
+    i++;
+  }
+  return recorde;
 }
 
 /// Limiares dos prêmios (dias de sequência): 🥈4 · 🥇8 · 🏆Prata15 · 🏆Ouro21.
@@ -125,44 +177,6 @@ NivelInfo nivelInfo(
     i++;
   }
   return NivelInfo(nivel, recorde);
-}
-
-/// Está em risco de perder nível amanhã se não treinar hoje/amanhã.
-/// True se pular o próximo dia agendado derruba o nível atual.
-bool emRiscoDePerda(
-  List<Conclusao> concs,
-  List<Treino> treinos, {
-  DateTime? hoje,
-  Set<DateTime>? diasValidos,
-}) {
-  final hj = _dia(hoje ?? DateTime.now());
-  final agendados = diasAgendados(treinos);
-  if (agendados.isEmpty) return false;
-  final validos = diasValidos?.map(_dia).toSet();
-  final hojeFeito = concs.any(
-    (c) =>
-        c.completo &&
-        (validos == null || validos.contains(_dia(c.data))) &&
-        c.data.year == hj.year &&
-        c.data.month == hj.month &&
-        c.data.day == hj.day,
-  );
-  if (hojeFeito) return false;
-  final amanha = hj.add(const Duration(days: 1));
-  final nivelHoje = nivelInfo(
-    concs,
-    treinos,
-    hoje: hj,
-    diasValidos: validos,
-  ).atual;
-  if (nivelHoje == 0) return false;
-  final nivelAmanhaSemTreino = nivelInfo(
-    concs,
-    treinos,
-    hoje: amanha,
-    diasValidos: validos,
-  ).atual;
-  return nivelAmanhaSemTreino < nivelHoje;
 }
 
 /// Total de DIAS distintos com treino concluído.

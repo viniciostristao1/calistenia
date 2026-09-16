@@ -3,6 +3,13 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-16 — v0.83.0 (chama ininterrupta + baú da conquista com as 4):**
+  - **A sequência virou coisa séria:** a chama agora só conta **treino COMPLETO**. Se você **faltar** ou responder **"não consegui"** num dia agendado, ela **zera** — o marco de 10/20/30 dias é só para quem emendou tudo. Dia de descanso não quebra, e o dia de hoje só conta quando você treina.
+  - **As conquistas continuam generosas** (nada mudou na regra): 1 falta ou 2 treinos incompletos ainda não derrubam — o que existe é o **nível** delas, e por isso as legendas ficaram **"Nível 8/15"** e **"Nível ok · falta progressão"**.
+  - **Saíram os avisos de risco:** o banner vermelho do Check-in e a notificação das 20h ("sequência em risco"). O app também **cancela** o aviso antigo se ainda estiver agendado.
+  - No fim do treino, o texto do "não consegui" não promete mais manter a sequência (conta metade da consistência no Rating).
+  - **Laboratório:** o **"Baú da conquista"** agora mostra as **quatro conquistas** (🥈 medalha prata, 🥇 medalha ouro, 🏆 troféu prata, 🏆 troféu ouro) — e no app o prêmio sai do baú com o **mesmo desenho da galeria** (troféu prateado/dourado).
+
 - **2026-09-16 — v0.82.0 (Laboratório enxuto: só o que o app usa):**
   - O 🧪 Laboratório agora lista **só as animações que o app usa de verdade**: **Baú da estrela**, **Baú da conquista** (medalha/troféu), **Baú da sequência** (chama) e **Subiu de nível**.
   - Saíram da lista **e do projeto** os protótipos que não entravam em nenhum fluxo: Baú 1, Baú 3, Baú rápido, estrela solta, +XP, medalha/troféu soltos, confete de recompensa e o placeholder (tudo continua no histórico do Git, se precisar voltar).

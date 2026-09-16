@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../../fx/fx.dart';
+import '../../models/conquista.dart';
 import '../../theme/app_colors.dart';
+import '../../util/conquista_badge.dart';
 
 /// **Laboratório de Animações** — área isolada para testar as recompensas.
 ///
-/// ⚠️ **Isolamento por construção:** esta tela importa **apenas `fx/`** — nunca
-/// `services/`, `*_repository`, `shared_preferences` ou Firestore. Por isso é
-/// impossível ela alterar XP, sequência, medalhas, insígnias ou qualquer estado
-/// persistente. Ela fabrica dados fake e só dispara a camada de apresentação.
-/// Não adicione imports de dados aqui (ver `ANIMACOES.md`).
+/// ⚠️ **Isolamento por construção:** esta tela só importa APRESENTAÇÃO (`fx/`,
+/// tema e o enum/badge de conquista) — nunca `services/`, `*_repository`,
+/// `shared_preferences` ou Firestore. Por isso é impossível ela alterar XP,
+/// sequência, medalhas, insígnias ou qualquer estado persistente. Ela fabrica
+/// dados fake e só dispara a camada de apresentação. Não adicione imports de
+/// dados/estado aqui (ver `ANIMACOES.md`).
 class LabScreen extends StatefulWidget {
   const LabScreen({super.key});
 
@@ -24,6 +27,10 @@ class _LabScreenState extends State<LabScreen> {
   /// Valor exibido por efeitos que mostram número (ex.: "+XP").
   double _valor = 50;
 
+  /// Qual das QUATRO conquistas o baú da conquista mostra (0..3) — só o
+  /// Laboratório escolhe; no app o baú recebe a conquista do dia.
+  int _conquista = 1;
+
   /// Muda a cada "Testar" para reiniciar o efeito no palco.
   int _token = 0;
 
@@ -37,11 +44,15 @@ class _LabScreenState extends State<LabScreen> {
 
   void _testarNoPalco() => setState(() => _token++);
 
+  /// O `value` que o tipo selecionado usa (o baú da conquista usa o índice dela).
+  double get _valorDoTipo =>
+      _selecionado == RewardType.chestConquista ? _conquista.toDouble() : _valor;
+
   void _testarComoOverlay() => RewardFx.show(
     context,
     _selecionado,
     params: _params,
-    value: _valor,
+    value: _valorDoTipo,
     // Nos baús com toque, o primeiro toque abre (não dispensa).
     dismissOnTap: !_selecionado.abreComToque,
   );
@@ -80,6 +91,10 @@ class _LabScreenState extends State<LabScreen> {
           _titulo('Recompensa'),
           const SizedBox(height: 8),
           _grade(),
+          if (_selecionado == RewardType.chestConquista) ...[
+            const SizedBox(height: 14),
+            _seletorConquista(),
+          ],
           const SizedBox(height: 20),
           _controles(),
         ],
@@ -126,9 +141,53 @@ class _LabScreenState extends State<LabScreen> {
           context,
           _selecionado,
           _params,
-          value: _valor,
+          value: _valorDoTipo,
         ),
       ),
+    ),
+  );
+
+  /// Preview das QUATRO conquistas no baú (o mesmo badge da galeria do app).
+  Widget _seletorConquista() => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: AppColors.line),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Conquista no baú',
+          style: TextStyle(color: AppColors.dim, fontSize: 12.5),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final t in TipoConquista.values)
+              ChoiceChip(
+                selected: _conquista == t.index,
+                onSelected: (_) => setState(() {
+                  _conquista = t.index;
+                  _token++;
+                }),
+                avatar: ConquistaBadge(tipo: t, size: 15),
+                label: Text(t.tituloCurto),
+                selectedColor: context.accent,
+                labelStyle: TextStyle(
+                  color: _conquista == t.index
+                      ? context.onAccent
+                      : AppColors.text,
+                  fontWeight: FontWeight.w600,
+                ),
+                backgroundColor: AppColors.surface,
+              ),
+          ],
+        ),
+      ],
     ),
   );
 

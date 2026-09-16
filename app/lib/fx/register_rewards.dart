@@ -1,3 +1,5 @@
+import '../models/conquista.dart';
+import '../util/conquista_badge.dart';
 import 'reward_registry.dart';
 import 'reward_type.dart';
 import 'rewards/chest_open2.dart';
@@ -8,7 +10,7 @@ import 'rewards/level_up_reveal.dart';
 ///
 /// Mapa atual (v0.82.0 — só o que o app usa):
 /// - `chestEstrela`   → `ChestOpen2` (a estrela sai de dentro do baú)
-/// - `chestConquista` → `ChestOpen2(medalha)` (medalha/troféu dourado)
+/// - `chestConquista` → `ChestOpen2(medalha)` (o `value` escolhe 🥈🥇🏆)
 /// - `chestSequencia` → `ChestOpen2(chama)` (o marco de 10 em 10 dias)
 /// - `levelUp`        → `LevelUpReveal` (dias comuns: setas + Rating)
 bool _registrado = false;
@@ -23,15 +25,21 @@ void registerBuiltInRewards() {
     (context, params, {value}) => ChestOpen2(params: params, valor: value),
   );
   // Baú da CONQUISTA: abre no toque e a medalha/troféu **sai de dentro** dele,
-  // com o nome do prêmio embaixo (no Lab, a dourada).
+  // com o nome do prêmio embaixo. O `value` escolhe qual das quatro — 0 🥈,
+  // 1 🥇, 2 🏆 prata, 3 🏆 ouro — para o Laboratório ver todas; no app quem
+  // manda é o prêmio do dia (o player monta o baú com a conquista certa).
   RewardRegistry.register(
     RewardType.chestConquista,
-    (context, params, {value}) => ChestOpen2(
-      params: params,
-      item: ChestItem.medalha,
-      itemCor: RewardType.chestConquista.color(context),
-      label: 'Medalha de Ouro',
-    ),
+    (context, params, {value}) {
+      final t = TipoConquista.values[(value?.round() ?? 1).clamp(0, 3)];
+      return ChestOpen2(
+        params: params,
+        item: ChestItem.medalha,
+        itemCor: corConquista(t),
+        label: t.titulo,
+        conteudo: ConquistaBadge(tipo: t, size: 52),
+      );
+    },
   );
   // Baú da SEQUÊNCIA: a chama **sai de dentro** do baú, com os dias embaixo.
   RewardRegistry.register(

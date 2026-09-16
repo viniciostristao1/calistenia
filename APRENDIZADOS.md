@@ -5,6 +5,46 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-16 — Chama ininterrupta, avisos de risco fora e o baú da conquista (v0.83.0)
+
+**Pedido (verificado antes):** o app tinha DOIS números chamados "sequência": `streakAtual`
+(home + marco do baú: qualquer registro mantinha a corrente, inclusive "não consegui") e
+`nivelInfo` (Check-in + conquistas: orçamento de falhas — 1 falta ou 2 tentativas ok).
+O usuário quis separar: **chama = ininterrupta** (só treino completo; falha zera) e
+**conquistas = generosas** (como já eram). Confirmado que "não consegui" em dia agendado
+zera a chama.
+
+**Como:** `streakAtual` virou `sequenciaIninterrupta` (só `completo: true` conta; dia
+agendado passado sem treino completo — faltou OU tentou — quebra; descanso e hoje pendente
+neutros; recebe `diasValidos` como o `nivelInfo`) + `sequenciaRecorde` (maior corrente
+perfeita). Usada no marco do baú (player), no card 🔥 da home e no `_StreakCard` do
+Check-in. `nivelInfo`/`conquistasAtuais` **não mudaram** — as conquistas seguem com o
+orçamento de falhas (o usuário descreveu exatamente essa regra).
+
+**Avisos de risco FORA (pedido):** removidos o `_BannerRisco` (Check-in), a notificação das
+20h (`agendarRisco`) e o `emRiscoDePerda` (virou morto). **Gotcha:** o id fixo (`_idRisco
+= 4300`) continua cancelado no `init`/`cancelarTudo` para não disparar em quem já tinha a
+notificação agendada de versões anteriores.
+
+**Textos:** "Sequência ok · falta progressão" → "Nível ok · falta progressão"; "8/15 dias"
+→ "Nível 8/15"; títulos "Níveis mais longos"/"por falhas"; o texto do "não consegui" perdeu
+a menção à sequência.
+
+**Baú da conquista (4 variantes):** o `value` do `chestConquista` no registry escolhe a
+conquista (0..3) e o conteúdo sai como `ConquistaBadge(tipo, size: 52)` — o MESMO desenho da
+galeria (medalha emoji; troféu ícone tintado prata/ouro, que o emoji 🏆 não diferenciava).
+O Lab ganhou a fileira de chips das 4 (usa o `enum TipoConquista` + badge — apresentação
+pura; segue sem services/repos). No app o player monta o baú direto com `corConquista(t)`,
+`t.titulo` e o badge.
+
+**Gotchas de teste/formatação:**
+- `pumpWidget` com a MESMA árvore reusa o `State` — no teste das 4 conquistas o segundo baú
+  já vinha aberto. Solução: `KeyedSubtree(key: ValueKey(t))` a cada iteração.
+- **`dart format` em arquivo existente reformata linhas intocadas** (o formatter novo muda
+  indentação de mapas/`if` de uma linha): o diff do `checkin_screen.dart` passou de ~40 para
+  340 linhas. Revertido e refeito com edições cirúrgicas. **Só formatar arquivo que você
+  reescreveu** (ou já formatado); em edição pontual, imitar o estilo do arquivo.
+
 ## 2026-09-16 — Conjunto final de recompensas + limpeza (v0.82.0)
 
 **O usuário fechou o mapa:** os baús são para **a estrela** (baú da estrela), **as

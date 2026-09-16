@@ -144,11 +144,6 @@ class Strings {
       _t('Insígnias do mês', 'Badges of the month', 'Insignias del mes');
   String get mesPerfeito =>
       _t('Mês perfeito! ✨', 'Perfect month! ✨', '¡Mes perfecto! ✨');
-  String get sequenciaRisco => _t(
-    'Sequência em risco — treine hoje para não perder seu nível!',
-    'Streak at risk — train today to keep your level!',
-    '¡Racha en riesgo — entrena hoy para no perder tu nivel!',
-  );
   String get conquistasAtuais =>
       _t('Conquistas atuais', 'Current achievements', 'Logros actuales');
   String get nenhumaConquista => _t(
@@ -159,9 +154,9 @@ class Strings {
   String get medalhas => _t('Medalhas', 'Medals', 'Medallas');
   String get trofeus => _t('Troféus', 'Trophies', 'Trofeos');
   String get trofeusDesc => _t(
-    'Sequências mais longas (o Ouro pede progressão)',
-    'Longest streaks (Gold needs progress)',
-    'Rachas más largas (Oro requiere progreso)',
+    'Níveis mais longos (o Ouro pede progressão)',
+    'Longest levels (Gold needs progress)',
+    'Niveles más largos (Oro requiere progreso)',
   );
   String get diasSeguidos => _t(
     'Dias de treino seguidos',
@@ -177,16 +172,16 @@ class Strings {
   String get titulosPerdidos =>
       _t('Títulos perdidos', 'Lost titles', 'Títulos perdidos');
   String get titulosPerdidosDesc => _t(
-    'Medalhas e troféus por quebra de sequência',
-    'Medals and trophies lost by breaking streak',
-    'Medallas y trofeos perdidos por romper la racha',
+    'Medalhas e troféus por falhas',
+    'Medals and trophies lost by failures',
+    'Medallas y trofeos perdidos por fallas',
   );
   String get historicoVazio =>
       _t('Histórico vazio', 'History empty', 'Historial vacío');
   String get historicoVazioDesc => _t(
-    'As estrelas ganhas em meses anteriores e os títulos perdidos (quebra de sequência) ficam guardados aqui, por mês.',
-    'Stars from past months and lost titles (broken streak) are saved here, by month.',
-    'Las estrellas de meses anteriores y los títulos perdidos (racha rota) se guardan aquí, por mes.',
+    'As estrelas ganhas em meses anteriores e os títulos perdidos (por falhas) ficam guardados aqui, por mês.',
+    'Stars from past months and lost titles (by failures) are saved here, by month.',
+    'Las estrellas de meses anteriores y los títulos perdidos (por fallas) se guardan aquí, por mes.',
   );
   String get sequenciaAtual =>
       _t('Sequência atual', 'Current streak', 'Racha actual');

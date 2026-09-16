@@ -1,4 +1,7 @@
+import 'package:calistenia/fx/fx.dart';
 import 'package:calistenia/fx/rewards/chest_open2.dart';
+import 'package:calistenia/models/conquista.dart';
+import 'package:calistenia/util/conquista_badge.dart';
 import 'package:calistenia/fx/rewards/flame_3d.dart';
 import 'package:calistenia/fx/rewards/star_3d.dart';
 import 'package:flutter/material.dart';
@@ -64,5 +67,44 @@ void main() {
       toque: false,
     );
     expect(find.byType(Flame3D), findsNothing);
+  });
+
+  testWidgets('baú da conquista: as QUATRO conquistas saem de dentro', (
+    tester,
+  ) async {
+    registerBuiltInRewards();
+    for (final t in TipoConquista.values) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => Center(
+                // KeyedSubtree: força um baú NOVO a cada conquista (senão o
+                // State do anterior é reusado e o baú já vem aberto).
+                child: KeyedSubtree(
+                  key: ValueKey(t),
+                  child: RewardRegistry.build(
+                    ctx,
+                    RewardType.chestConquista,
+                    const FxParams(),
+                    value: t.index.toDouble(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Toque para abrir'), findsOneWidget);
+      await tester.tap(find.byType(ChestOpen2));
+      for (var i = 0; i < 14; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(tester.takeException(), isNull, reason: 'conquista $t');
+      expect(find.text(t.titulo), findsOneWidget, reason: 'rótulo $t');
+      final badge = tester.widget<ConquistaBadge>(find.byType(ConquistaBadge));
+      expect(badge.tipo, t, reason: 'badge $t');
+    }
   });
 }
