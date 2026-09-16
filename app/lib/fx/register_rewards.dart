@@ -5,7 +5,6 @@ import 'particles/confetti.dart';
 import 'reward_registry.dart';
 import 'reward_type.dart';
 import 'rewards/chest_open.dart';
-import 'rewards/chest_intro_reveal.dart';
 import 'rewards/chest_open2.dart';
 import 'rewards/chest_open3.dart';
 import 'rewards/flame_reveal.dart';
@@ -24,7 +23,9 @@ import 'rewards/xp_gain.dart';
 /// - `xp`          → `XpGain` (usa `value`)
 /// - `chest`       → `ChestOpen` (a mais composta)
 /// - `chest3`      → `ChestOpen3` (pontuação + 3 setas subindo)
-/// - `chestIntro`  → `ChestOpen2(rapido)` (intro: abre no toque, revelação vem depois)
+/// - `chestIntro`  → `ChestOpen2(rapido)` (intro: abre só um pouco, no toque)
+/// - `chestConquista` → `ChestOpen2(medalha)` (a medalha sai de dentro)
+/// - `chestSequencia` → `ChestOpen2(chama)` (a chama sai de dentro)
 /// - `trophy*`     → `IconReveal` (troféu, tom ouro/prata)
 /// - `medal*`      → `IconReveal` (medalha, tom ouro/prata)
 /// - `levelUp`     → `IconReveal` (usa `value` como nº do nível)
@@ -51,7 +52,7 @@ void registerBuiltInRewards() {
   RewardRegistry.register(
     RewardType.chest2,
     (context, params, {value}) =>
-        ChestOpen2(params: params, valorEstrela: value),
+        ChestOpen2(params: params, valor: value),
   );
   // Baú 3: sobe a PONTUAÇÃO com as 3 setas animadas (sem estrela).
   RewardRegistry.register(
@@ -63,25 +64,26 @@ void registerBuiltInRewards() {
     RewardType.chestIntro,
     (context, params, {value}) => ChestOpen2(params: params, rapido: true),
   );
-  // Baú + revelação (o par completo): intro rápida e, no lugar dela, a
-  // medalha/troféu (dourada, para testar no Lab) ou a chama da sequência.
+  // Baú de CONQUISTA: abre no toque e a medalha/troféu **sai de dentro**
+  // dele, com o nome do prêmio embaixo (no Lab, a dourada).
   RewardRegistry.register(
     RewardType.chestConquista,
-    (context, params, {value}) => ChestIntroReveal(
+    (context, params, {value}) => ChestOpen2(
       params: params,
-      child: RewardRegistry.build(context, RewardType.medalGold, params),
+      item: ChestItem.medalha,
+      itemCor: RewardType.medalGold.color(context),
+      label: RewardType.medalGold.label,
     ),
   );
+  // Baú de SEQUÊNCIA: a chama **sai de dentro** do baú, com os dias embaixo.
   RewardRegistry.register(
     RewardType.chestSequencia,
-    (context, params, {value}) => ChestIntroReveal(
+    (context, params, {value}) => ChestOpen2(
       params: params,
-      child: RewardRegistry.build(
-        context,
-        RewardType.streak,
-        params,
-        value: value ?? 10,
-      ),
+      item: ChestItem.chama,
+      itemCor: RewardType.streak.color(context),
+      valor: value,
+      label: value != null ? '${value.round()} dias' : 'Sequência',
     ),
   );
   RewardRegistry.register(

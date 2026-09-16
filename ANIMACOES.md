@@ -155,11 +155,13 @@ insígnias é sempre amarela (`AppColors.estrela`), independente do tema.
 | 5.30 | **Cerimônia real de fim de treino**: baú-intro (mesmo baú, `rapido: true`) + `chestIntro`, Baú 2 com `abreComToque`/`onFim`, `RewardFx` com `dismissOnTap`, regra pura (`marcoSequencia`/`ratingDoDia`/`recompensasDoDia`) e a fila no "Voltar" (estrela por último). | **feita** |
 | 5.31 | fix: baú rápido passou a ser **o mesmo baú** dos outros (`ChestOpen2(rapido: true)`, `v` comprimido → tampa ~30°); `ChestQuick` removido. | **feita** |
 | 5.32 | **`ChestIntroReveal`** (baú-intro → revelação no lugar) + tipos de Lab `chestConquista`/`chestSequencia` + player com uma cena por prêmio (`_cena`). | **feita** |
+| 5.33 | **Generalização do conteúdo do baú** (v0.81.0): `ChestItem` + `itemCor`/`valores`/`conteudo`/`label`/`recompensa` no `ChestOpen2` (`valorEstrela` → `valor`); monte (`itemOnFloor`) e recompensa que sobe seguem o item (estrela/número/medalha/chama). | **feita** |
+| 5.34 | conquista/sequência = **baú cheio** (abre no toque e a medalha/troféu/chama **sai de dentro**), com o rótulo embaixo; Baú 3 com **monte de números** e `ScoreRising`. `ChestIntroReveal` fora do fluxo. | **feita** |
 | 6 | polish / avaliar Rive só se um efeito pedir arte de designer | — |
 
 ## Inventário atual (para quem for continuar)
 
-Estado em v0.80.2. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
+Estado em v0.81.0. **Tudo abaixo é apresentação pura; a lógica de recompensa não foi tocada.**
 
 **Contratos (`fx/`):** `reward_type.dart` (enum + metadados icon/label/`color(context)`; inclui os baús 1/2/3 e `chestIntro`),
 `fx_params.dart` (inclui `valor2` — 2º número, ex.: Rating ao lado da estrela do baú), `reward_registry.dart` (ponte, builder recebe `{num? value}`),
@@ -174,7 +176,7 @@ Estado em v0.80.2. **Tudo abaixo é apresentação pura; a lógica de recompensa
 | `Bounce` | entra quicando | *(toolkit — livre)* |
 | `Shake` | tremida amortecida (tem `start()`) | *(toolkit — livre)* |
 | `GlowHalo` | halo pulsante | `StarBurst`, `IconReveal` |
-| `ShineSweep` | brilho diagonal passando (`cycles` > 1 = várias passadas) | `IconReveal`, `XpGain`, `ChestOpen2` (estrela + pills) |
+| `ShineSweep` | brilho diagonal passando (`cycles` > 1 = várias passadas) | `IconReveal`, `XpGain`, `ChestOpen2` (estrela + pills; item que sai do baú) |
 | `Pulse` | respira em loop | `IconReveal` (sequência) |
 | `ScreenFlash` | clarão que some | *(toolkit — livre)* |
 | `FlyToTarget` | voa de A→B com fade | `ChestOpen` |
@@ -206,10 +208,14 @@ faces com culling por normal, luz direcional e ordenação por profundidade; **f
 lateral direita** visíveis, tampa girando no eixo X na dobradiça traseira, interior
 escuro com brilho e parte de dentro da tampa côncava com tábuas; física — afunda,
 destranca, freia, bate no batente e o baú dá um pulinho; item sai girando com `Star3D`),
-`chest_intro_reveal.dart` (**`ChestIntroReveal`** — o par: baú-intro (`ChestOpen2(rapido)`) e, no lugar dele, a revelação (`child`)), `chest_open2.dart` (**Baú 2** — cópia isolada do baú 1; também é o **baú rápido** via `rapido: true` (mesmo desenho, tampa abre pouco); estreia com
-**estrelas internas facetadas** estilo `Star3D`), `chest_open3.dart` (**Baú 3** — mesma
-abertura/física do baú 2, mas a recompensa é a **pontuação + 3 setas** subindo, no espírito
-do `LevelUpReveal`; recebe o valor pelo slider "Valor"), `placeholder_reward.dart`
+`chest_intro_reveal.dart` (**`ChestIntroReveal`** — o par: baú-intro (`ChestOpen2(rapido)`) e, no lugar dele, a revelação (`child`); **fora do fluxo desde a v0.81.0** — hoje conquista/sequência abrem o baú cheio), `chest_open2.dart` (**Baú 2** —
+cópia isolada do baú 1; também é o **baú rápido** via `rapido: true` (mesmo desenho, tampa
+abre pouco) e o baú de **conquista/sequência**: o `ChestItem` diz o que fica **dentro** e o
+que **sai de dentro** (estrela → `Star3D` + pills; número → `ScoreRising`; medalha → emoji
+girando; chama → `Flame3D`), com monte facetado próprio, `label` e `recompensa` de
+override), `chest_open3.dart` (**Baú 3** — mesma abertura/física do baú 2, mas o **monte é
+de números** e a recompensa é a **pontuação + 3 setas** (`ScoreRising`) subindo, no
+espírito do `LevelUpReveal`; recebe o valor pelo slider "Valor"), `placeholder_reward.dart`
 (fallback — hoje nenhum tipo cai nele).
 
 **Util de pintura:** `fx/shading.dart` — `shade`/`lighten` (HSL) usados por `Star3D`,

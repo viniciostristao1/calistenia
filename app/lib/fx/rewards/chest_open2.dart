@@ -11,6 +11,8 @@ import '../fx_params.dart';
 import '../particles/particle.dart';
 import '../particles/particle_burst.dart';
 import '../shading.dart';
+import 'flame_3d.dart';
+import 'score_rising.dart';
 import 'star_3d.dart';
 
 /// **Recompensa: baú abrindo** — showcase da camada, agora em **vista 3/4**
@@ -25,21 +27,53 @@ import 'star_3d.dart';
 /// axonométrica (yaw + pitch), faces com culling por normal, luz direcional e
 /// ordenação por profundidade. A tampa gira em torno do eixo X (dobradiça
 /// traseira).
+/// **O que fica DENTRO do baú** (o monte que aparece quando ele abre):
+/// estrela (baú da estrela), número (baú 3), medalha (conquista) ou chama
+/// (sequência). O conteúdo **sai de dentro** do baú, como a estrela.
+enum ChestItem { estrela, numero, medalha, chama }
+
 class ChestOpen2 extends StatefulWidget {
   const ChestOpen2({
     super.key,
     this.params = const FxParams(),
-    this.valorEstrela,
+    this.valor,
     this.abreComToque = true,
     this.rapido = false,
+    this.item = ChestItem.estrela,
+    this.itemCor,
+    this.valores = const ['5', '10', '25', '50', '100', '250'],
+    this.recompensa,
+    this.conteudo,
+    this.label,
     this.onFim,
   });
 
   final FxParams params;
 
-  /// Valor da estrela que sai do baú (ex.: +10). `null`/0 = não mostra o pill.
-  /// O ganho de Rating vem em `params.valor2` (slider do Laboratório).
-  final num? valorEstrela;
+  /// Valor principal (a estrela do baú 2, a pontuação do baú 3…). `null`/0 =
+  /// o efeito não mostra número. O ganho de Rating vem em `params.valor2`.
+  final num? valor;
+
+  /// O que tem DENTRO do baú (o monte).
+  final ChestItem item;
+
+  /// Cor do monte (padrão: dourado).
+  final Color? itemCor;
+
+  /// Números usados quando [item] é [ChestItem.numero] (decoração do monte).
+  final List<String> valores;
+
+  /// Recompensa que **sai de dentro** do baú (recebe o `v` da animação e o
+  /// [valor]). Substitui o conteúdo padrão do [item] — movimento incluso.
+  final Widget Function(BuildContext context, double v, num? valor)? recompensa;
+
+  /// Desenho do item que sai do baú (medalha/chama/número). O movimento — subir,
+  /// brilhar e girar — fica por conta do baú. Se `null`, o [item] usa o padrão
+  /// (emoji 🥇, chama desenhada…).
+  final Widget? conteudo;
+
+  /// Rótulo que aparece quando o baú abre (ex.: "Medalha de Ouro", "10 dias").
+  final String? label;
 
   /// `true` = o baú espera um **toque** para abrir (padrão da cerimônia real).
   final bool abreComToque;
@@ -95,6 +129,71 @@ class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
     _ctrl.dispose();
     _pulsa.dispose();
     super.dispose();
+  }
+
+  /// O que **sai de dentro** do baú: o override [ChestOpen2.recompensa] ou o
+  /// conteúdo padrão do [ChestOpen2.item] (com o mesmo movimento: sobe em
+  /// `FlyToTarget`, brilha com `ShineSweep` e gira em `Spin3D`).
+  Widget _recompensa(double v) {
+    final params = _revealParams;
+    if (widget.recompensa != null) {
+      return widget.recompensa!(context, v, widget.valor);
+    }
+    final cor = widget.itemCor ?? const Color(0xFFF4C542);
+    // Movimento padrão de um item que sai do baú girando no próprio eixo.
+    Widget girando(Widget child) => ShineSweep(
+      params: params,
+      cycles: 3,
+      child: Spin3D(params: params, turns: 2, fromScale: 0.3, child: child),
+    );
+    switch (widget.item) {
+      case ChestItem.estrela:
+        return SizedBox(
+          width: 220,
+          height: 100,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Luz passando pela estrela (3 passadas) — fora do Spin3D para a
+              // faixa não girar junto.
+              girando(const Star3D(size: 52)),
+              if ((widget.valor ?? 0) > 0)
+                _Ponto(
+                  icone: Icons.star_rounded,
+                  cor: AppColors.estrela,
+                  texto: '+${widget.valor!.round()}',
+                  opacidade: Interval(0.60, 0.72).transform(v),
+                  deslocamento: const Offset(70, -16),
+                  params: params,
+                ),
+              if (widget.params.valor2 > 0)
+                _Ponto(
+                  // Calendário: é o ganho do dia (check-in, consistência/
+                  // frequência) — mesma linguagem da aba Check-in.
+                  icone: Icons.calendar_month_rounded,
+                  cor: context.accent,
+                  texto: '+${widget.params.valor2.round()}',
+                  opacidade: Interval(0.72, 0.86).transform(v),
+                  deslocamento: const Offset(70, 16),
+                  params: params,
+                ),
+            ],
+          ),
+        );
+      case ChestItem.numero:
+        return ScoreRising(
+          params: params,
+          valor: widget.valor ?? 0,
+          cor: context.accent,
+          entrada: Interval(0.58, 0.74).transform(v),
+        );
+      case ChestItem.medalha:
+        return girando(
+          widget.conteudo ?? const Text('🥇', style: TextStyle(fontSize: 64)),
+        );
+      case ChestItem.chama:
+        return girando(widget.conteudo ?? Flame3D(size: 92, color: cor));
+    }
   }
 
   /// Parâmetros mais curtos para os átomos que entram no meio do timeline.
@@ -182,46 +281,25 @@ class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
                     params: _revealParams,
                     begin: const Offset(0, 16),
                     end: Offset(0, -92 * _intensity.clamp(0.4, 2.0)),
-                    child: SizedBox(
-                      width: 220,
-                      height: 100,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Luz passando pela estrela (3 passadas) — fora do
-                          // Spin3D para a faixa não girar junto.
-                          ShineSweep(
-                            params: _revealParams,
-                            cycles: 3,
-                            child: Spin3D(
-                              params: _revealParams,
-                              turns: 2,
-                              fromScale: 0.3,
-                              child: const Star3D(size: 52),
-                            ),
-                          ),
-                          if ((widget.valorEstrela ?? 0) > 0)
-                            _Ponto(
-                              icone: Icons.star_rounded,
-                              cor: AppColors.estrela,
-                              texto: '+${widget.valorEstrela!.round()}',
-                              opacidade: Interval(0.60, 0.72).transform(v),
-                              deslocamento: const Offset(70, -16),
-                              params: _revealParams,
-                            ),
-                          if (widget.params.valor2 > 0)
-                            _Ponto(
-                              // Calendário: é o ganho do dia (check-in,
-                              // consistência/frequência) — mesma linguagem da
-                              // aba Check-in.
-                              icone: Icons.calendar_month_rounded,
-                              cor: context.accent,
-                              texto: '+${widget.params.valor2.round()}',
-                              opacidade: Interval(0.72, 0.86).transform(v),
-                              deslocamento: const Offset(70, 16),
-                              params: _revealParams,
-                            ),
-                        ],
+                    child: _recompensa(v),
+                  ),
+                // Rótulo do item (ex.: "Medalha de Ouro", "10 dias") quando o
+                // baú abre.
+                if (widget.label != null)
+                  Positioned(
+                    bottom: 0,
+                    child: Opacity(
+                      opacity: Interval(0.62, 0.80).transform(v),
+                      child: Text(
+                        widget.label!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          shadows: [
+                            Shadow(color: Colors.black54, blurRadius: 8),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -270,7 +348,13 @@ class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
         scaleY: 1 - 0.16 * hop * amp,
         child: CustomPaint(
           size: const Size.square(200),
-          painter: _ChestPainter2(v: v, intensity: _intensity),
+          painter: _ChestPainter2(
+            v: v,
+            intensity: _intensity,
+            item: widget.item,
+            itemCor: widget.itemCor,
+            valores: widget.valores,
+          ),
         ),
       ),
     );
@@ -374,10 +458,19 @@ Path _quad(Offset a, Offset b, Offset c, Offset d) => Path()
 /// **Baú em vista 3/4** — renderizador axonométrico com culling, luz
 /// direcional e ordenação por profundidade.
 class _ChestPainter2 extends CustomPainter {
-  _ChestPainter2({required this.v, required this.intensity});
+  _ChestPainter2({
+    required this.v,
+    required this.intensity,
+    required this.item,
+    this.itemCor,
+    this.valores = const ['5', '10', '25', '50', '100', '250'],
+  });
 
   final double v;
   final double intensity;
+  final ChestItem item;
+  final Color? itemCor;
+  final List<String> valores;
 
   static const _corpo1 = Color(0xFF9A5B2A);
   static const _corpo2 = Color(0xFF6E3D1C);
@@ -658,12 +751,15 @@ class _ChestPainter2 extends CustomPainter {
       );
     });
 
-    // ── Estrelinhas no fundo do baú (monte de tesouro) — v2 ──
-    // Cada estrela é desenhada num ÚNICO comando (é plana) com o mesmo relevo
-    // da estrela que salta (`Star3D`): 10 facetas com luz direcional, bisel
-    // (luz no canto de cima / sombra embaixo), núcleo gravado e faíscas.
-    const luzEstrela = Offset(-0.55, -0.83); // luz 2D (canto sup. esquerdo)
-    void starOnFloor(
+    // ── O MONTE dentro do baú (o CONTEÚDO) ──
+    // Cada item é desenhado num ÚNICO comando (é plano) com o relevo da estrela
+    // que salta (`Star3D`): luz direcional, bisel e brilho. O tipo vem de
+    // `ChestItem`: estrela (baú da estrela), número (baú 3), medalha (conquista)
+    // ou chama (sequência) — e o item correspondente **sai de dentro** do baú.
+    const luzItem = Offset(-0.55, -0.83); // luz 2D (canto sup. esquerdo)
+    final corItem = itemCor ?? _ouro;
+
+    void itemOnFloor(
       double cx,
       double cz,
       double r,
@@ -687,165 +783,330 @@ class _ChestPainter2 extends CustomPainter {
         return p..close();
       }
 
-      List<Offset> anel(double dy, double dz, double scale) {
-        final pts = <Offset>[];
-        for (var i = 0; i < 10; i++) {
-          final rad = (i.isEven ? r : r * 0.55) * scale;
-          final a = rot - pi / 2 + i * pi / 5;
-          pts.add(pj(cos(a) * rad, sin(a) * rad, dy, dz));
-        }
-        return pts;
-      }
-
-      final cor = Color.lerp(_ouro, shade(_ouro, 0.42), tone)!;
+      final cor = Color.lerp(corItem, shade(corItem, 0.42), tone)!;
       final claro = lighten(cor, 0.24);
       final escuro = shade(cor, 0.42);
+      final depth = at(0, 0, 0, 0).dot(cam) + order;
 
-      final c0 = pj(0, 0);
-      final topo = anel(0, 0, 1);
-      final casca = anel(-3.0, 2.4, 1);
-      final pentagono = <Offset>[
-        for (var i = 1; i < 10; i += 2)
-          pj(
-            cos(rot - pi / 2 + i * pi / 5) * r * 0.55,
-            sin(rot - pi / 2 + i * pi / 5) * r * 0.55,
-          ),
-      ];
-      final gravada = <Offset>[
+      // Estrela de 10 pontas (usada na estrela e no relevo da medalha).
+      List<Offset> estrela(double rr, double raioInterno) => [
         for (var i = 0; i < 10; i++)
           pj(
-            cos(rot - pi / 2 + i * pi / 5) * (i.isEven ? r * 0.52 : r * 0.26),
-            sin(rot - pi / 2 + i * pi / 5) * (i.isEven ? r * 0.52 : r * 0.26),
+            cos(rot - pi / 2 + i * pi / 5) * (i.isEven ? rr : rr * raioInterno),
+            sin(rot - pi / 2 + i * pi / 5) * (i.isEven ? rr : rr * raioInterno),
           ),
       ];
-
-      push(at(0, 0, 0, 0).dot(cam) + order, (c) {
-        // Sombra no assoalho.
-        c.drawPath(
-          pathOf([
-            for (var i = 0; i < 12; i++)
-              _proj(
-                _V(
-                  cx + cos(i * pi / 6) * r * 1.05,
-                  _floorY + 0.05,
-                  cz - r * ct * 0.15 + sin(i * pi / 6) * r * 0.9 + 1.8,
-                ),
-                yaw,
+      // Disco (medalha), com deslocamento opcional para a espessura.
+      List<Offset> disco(double rr, [double dy = 0, double dz = 0]) => [
+        for (var i = 0; i < 18; i++)
+          pj(cos(i * pi / 9) * rr, sin(i * pi / 9) * rr, dy, dz),
+      ];
+      // Sombra no assoalho (comum a todos os itens).
+      void sombra(Canvas c, double rr) => c.drawPath(
+        pathOf([
+          for (var i = 0; i < 12; i++)
+            _proj(
+              _V(
+                cx + cos(i * pi / 6) * rr * 1.05,
+                _floorY + 0.05,
+                cz - rr * ct * 0.15 + sin(i * pi / 6) * rr * 0.9 + 1.8,
               ),
-          ]),
-          Paint()..color = shade(madeiraDentro, 0.3),
-        );
-        // Espessura (casca de baixo).
-        c.drawPath(pathOf(casca), Paint()..color = escuro);
-        // 10 facetas com luz direcional.
-        for (var i = 0; i < 5; i++) {
-          final tip = topo[i * 2];
-          final left = topo[(i * 2 + 9) % 10];
-          final right = topo[(i * 2 + 1) % 10];
-          for (final inner in [left, right]) {
-            final mid = (c0 + tip + inner) / 3;
-            var dir = mid - c0;
-            final len = dir.distance;
-            dir = len == 0 ? Offset.zero : dir / len;
-            final lam = (dir.dx * luzEstrela.dx + dir.dy * luzEstrela.dy).clamp(
-              -1.0,
-              1.0,
-            );
-            final t = (0.5 + 0.5 * lam).clamp(0.0, 1.0);
+              yaw,
+            ),
+        ]),
+        Paint()..color = shade(madeiraDentro, 0.3),
+      );
+
+      switch (item) {
+        case ChestItem.estrela:
+          List<Offset> anel(double dy, double dz, double scale) => [
+            for (var i = 0; i < 10; i++)
+              pj(
+                cos(rot - pi / 2 + i * pi / 5) *
+                    (i.isEven ? r : r * 0.55) *
+                    scale,
+                sin(rot - pi / 2 + i * pi / 5) *
+                    (i.isEven ? r : r * 0.55) *
+                    scale,
+                dy,
+                dz,
+              ),
+          ];
+          final c0 = pj(0, 0);
+          final topo = anel(0, 0, 1);
+          final casca = anel(-3.0, 2.4, 1);
+          final pentagono = <Offset>[
+            for (var i = 1; i < 10; i += 2)
+              pj(
+                cos(rot - pi / 2 + i * pi / 5) * r * 0.55,
+                sin(rot - pi / 2 + i * pi / 5) * r * 0.55,
+              ),
+          ];
+          final gra = estrela(r * 0.52, 0.5);
+          push(depth, (c) {
+            sombra(c, r);
+            c.drawPath(pathOf(casca), Paint()..color = escuro);
+            // 10 facetas com luz direcional.
+            for (var i = 0; i < 5; i++) {
+              final tip = topo[i * 2];
+              final left = topo[(i * 2 + 9) % 10];
+              final right = topo[(i * 2 + 1) % 10];
+              for (final inner in [left, right]) {
+                final mid = (c0 + tip + inner) / 3;
+                var dir = mid - c0;
+                final len = dir.distance;
+                dir = len == 0 ? Offset.zero : dir / len;
+                final lam = (dir.dx * luzItem.dx + dir.dy * luzItem.dy).clamp(
+                  -1.0,
+                  1.0,
+                );
+                final t = (0.5 + 0.5 * lam).clamp(0.0, 1.0);
+                c.drawPath(
+                  pathOf([c0, tip, inner]),
+                  Paint()
+                    ..color = Color.lerp(
+                      escuro,
+                      claro,
+                      t,
+                    )!.withValues(alpha: 0.92),
+                );
+              }
+            }
+            // Núcleo (pentágono) + estrela gravada (relevo).
+            final nucleo = pathOf(pentagono);
             c.drawPath(
-              pathOf([c0, tip, inner]),
+              nucleo,
               Paint()
-                ..color = Color.lerp(escuro, claro, t)!.withValues(alpha: 0.92),
+                ..shader = RadialGradient(
+                  colors: [
+                    lighten(cor, 0.18).withValues(alpha: 0.85),
+                    shade(cor, 0.35).withValues(alpha: 0.85),
+                  ],
+                ).createShader(nucleo.getBounds()),
             );
+            c.drawPath(
+              pathOf(gra),
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.3
+                ..color = shade(cor, 0.5).withValues(alpha: 0.9),
+            );
+            c.drawPath(
+              pathOf(gra).shift(const Offset(0, -1)),
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 0.8
+                ..color = Colors.white.withValues(alpha: 0.22),
+            );
+            // Bisel: luz em cima, sombra embaixo.
+            final borda = pathOf(topo);
+            c.drawPath(
+              borda,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 2.2
+                ..strokeJoin = StrokeJoin.round
+                ..shader = LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.5),
+                    Colors.white.withValues(alpha: 0.0),
+                    escuro.withValues(alpha: 0.85),
+                  ],
+                  stops: const [0.0, 0.16, 1.0],
+                ).createShader(borda.getBounds()),
+            );
+            c.drawCircle(
+              pj(-r * 0.30, -r * 0.32),
+              1.3,
+              Paint()..color = Colors.white.withValues(alpha: 0.6),
+            );
+          });
+
+        case ChestItem.medalha:
+          final face = disco(r);
+          final baixo = disco(r, -2.8, 2.2);
+          final centro = disco(r * 0.66);
+          final gra = estrela(r * 0.58, 0.46);
+          push(depth, (c) {
+            sombra(c, r);
+            c.drawPath(pathOf(baixo), Paint()..color = escuro);
+            final ff = pathOf(face);
+            c.drawPath(
+              ff,
+              Paint()
+                ..shader = LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [claro, cor, escuro],
+                ).createShader(ff.getBounds()),
+            );
+            // Aro externo + rebaixo interno.
+            c.drawPath(
+              ff,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 2.4
+                ..color = shade(cor, 0.4),
+            );
+            c.drawPath(
+              pathOf(centro),
+              Paint()..color = shade(cor, 0.28).withValues(alpha: 0.5),
+            );
+            // Estrela em relevo no meio da medalha.
+            final g = pathOf(gra);
+            c.drawPath(
+              g,
+              Paint()..color = lighten(cor, 0.42).withValues(alpha: 0.95),
+            );
+            c.drawPath(
+              g.shift(const Offset(0, 1.2)),
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.1
+                ..color = shade(cor, 0.5).withValues(alpha: 0.7),
+            );
+            c.drawCircle(
+              pj(-r * 0.30, -r * 0.34),
+              1.4,
+              Paint()..color = Colors.white.withValues(alpha: 0.6),
+            );
+          });
+
+        case ChestItem.chama:
+          List<Offset> lado(double s) {
+            final pts = <Offset>[];
+            for (var i = 0; i <= 10; i++) {
+              final t = i / 10;
+              final u =
+                  (1 - t) * (1 - t) * (-0.55 * r * s) +
+                  2 * (1 - t) * t * (-0.95 * r * s) +
+                  t * t * 0;
+              final v =
+                  (1 - t) * (1 - t) * (0.95 * r) +
+                  2 * (1 - t) * t * (-0.10 * r) +
+                  t * t * (-1.25 * r);
+              pts.add(pj(u, v));
+            }
+            return pts;
           }
-        }
-        // Núcleo (pentágono) + estrela gravada (relevo).
-        final nucleo = pathOf(pentagono);
-        c.drawPath(
-          nucleo,
-          Paint()
-            ..shader = RadialGradient(
-              colors: [
-                lighten(cor, 0.18).withValues(alpha: 0.85),
-                shade(cor, 0.35).withValues(alpha: 0.85),
-              ],
-            ).createShader(nucleo.getBounds()),
-        );
-        c.drawPath(
-          pathOf(gravada),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.3
-            ..color = shade(cor, 0.5).withValues(alpha: 0.9),
-        );
-        c.drawPath(
-          pathOf(gravada).shift(const Offset(0, -1)),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.8
-            ..color = Colors.white.withValues(alpha: 0.22),
-        );
-        // Bisel: luz em cima, sombra embaixo.
-        final borda = pathOf(topo);
-        c.drawPath(
-          borda,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.2
-            ..strokeJoin = StrokeJoin.round
-            ..shader = LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: 0.5),
-                Colors.white.withValues(alpha: 0.0),
-                escuro.withValues(alpha: 0.85),
-              ],
-              stops: const [0.0, 0.16, 1.0],
-            ).createShader(borda.getBounds()),
-        );
-        // Brilho especular.
-        c.drawCircle(
-          pj(-r * 0.30, -r * 0.32),
-          1.3,
-          Paint()..color = Colors.white.withValues(alpha: 0.6),
-        );
-      });
+
+          final topo = <Offset>[...lado(-1), ...lado(1).reversed];
+          final centroChama = pj(0, -r * 0.05);
+          final interna = <Offset>[
+            for (final p in topo) Offset.lerp(p, centroChama, 0.42)!,
+          ];
+          push(depth, (c) {
+            sombra(c, r * 0.9);
+            c.drawPath(
+              pathOf([for (final p in topo) p.translate(0, -2.4)]),
+              Paint()..color = escuro,
+            );
+            final ff = pathOf(topo);
+            c.drawPath(
+              ff,
+              Paint()
+                ..shader = LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [cor, shade(cor, 0.4)],
+                ).createShader(ff.getBounds()),
+            );
+            c.drawPath(
+              pathOf(interna),
+              Paint()..color = lighten(cor, 0.45).withValues(alpha: 0.9),
+            );
+            c.drawPath(
+              ff,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.3
+                ..color = lighten(cor, 0.6).withValues(alpha: 0.6),
+            );
+          });
+
+        case ChestItem.numero:
+          final txt = valores[(order * 10).round() % valores.length];
+          push(depth, (c) {
+            sombra(c, r * 0.85);
+            // Matriz afim do plano (u,v) → tela: o número fica "deitado".
+            final o = pj(0, 0);
+            final a = pj(1, 0) - o;
+            final b = pj(0, 1) - o;
+            final m = Matrix4.identity()
+              ..setEntry(0, 0, a.dx)
+              ..setEntry(0, 1, b.dx)
+              ..setEntry(0, 3, o.dx)
+              ..setEntry(1, 0, a.dy)
+              ..setEntry(1, 1, b.dy)
+              ..setEntry(1, 3, o.dy);
+            c.save();
+            c.transform(m.storage);
+            c.rotate(rot);
+            void escreve(Offset off, Color cc) {
+              final tp = TextPainter(
+                text: TextSpan(
+                  text: txt,
+                  style: TextStyle(
+                    fontSize: r * 1.5,
+                    fontWeight: FontWeight.w900,
+                    color: cc,
+                  ),
+                ),
+                textDirection: TextDirection.ltr,
+              )..layout();
+              tp.paint(
+                c,
+                Offset(-tp.width / 2 + off.dx, -tp.height / 2 + off.dy),
+              );
+            }
+
+            escreve(const Offset(1.0, 1.4), shade(cor, 0.55));
+            escreve(Offset.zero, cor);
+            c.restore();
+            c.drawCircle(
+              pj(-r * 0.35, -r * 0.30),
+              1.2,
+              Paint()..color = Colors.white.withValues(alpha: 0.55),
+            );
+          });
+      }
     }
 
     // Base: cobre TODO o assoalho (inclusive o canto esquerdo da frente).
-    starOnFloor(-39.1, -19.9, 17.1, 0.2, tone: 0.18, order: 0.0);
-    starOnFloor(-22.3, -10.4, 16.5, -0.5, tone: 0.18, order: 0.1);
-    starOnFloor(-2.8, -23.8, 17.6, 0.6, tone: 0.18, order: 0.2);
-    starOnFloor(16.7, -10.4, 16.5, -0.2, tone: 0.18, order: 0.3);
-    starOnFloor(36.3, -19.9, 16.5, 0.4, tone: 0.18, order: 0.4);
-    starOnFloor(-32.6, -1.9, 17.6, 0.9, tone: 0.22, order: 0.5, tilt: 1.15);
-    starOnFloor(30.7, -0.9, 16.5, -0.7, tone: 0.22, order: 0.6, tilt: 1.15);
-    starOnFloor(-42.8, -11.4, 14.9, 0.35, tone: 0.38, order: 0.55);
-    starOnFloor(-15.8, 0.0, 17.1, -0.35, tone: 0.4, order: 0.7, tilt: 1.2);
-    starOnFloor(14.0, 0.0, 16.5, 0.65, tone: 0.4, order: 0.75, tilt: 1.2);
+    itemOnFloor(-39.1, -19.9, 17.1, 0.2, tone: 0.18, order: 0.0);
+    itemOnFloor(-22.3, -10.4, 16.5, -0.5, tone: 0.18, order: 0.1);
+    itemOnFloor(-2.8, -23.8, 17.6, 0.6, tone: 0.18, order: 0.2);
+    itemOnFloor(16.7, -10.4, 16.5, -0.2, tone: 0.18, order: 0.3);
+    itemOnFloor(36.3, -19.9, 16.5, 0.4, tone: 0.18, order: 0.4);
+    itemOnFloor(-32.6, -1.9, 17.6, 0.9, tone: 0.22, order: 0.5, tilt: 1.15);
+    itemOnFloor(30.7, -0.9, 16.5, -0.7, tone: 0.22, order: 0.6, tilt: 1.15);
+    itemOnFloor(-42.8, -11.4, 14.9, 0.35, tone: 0.38, order: 0.55);
+    itemOnFloor(-15.8, 0.0, 17.1, -0.35, tone: 0.4, order: 0.7, tilt: 1.2);
+    itemOnFloor(14.0, 0.0, 16.5, 0.65, tone: 0.4, order: 0.75, tilt: 1.2);
     // Canto inferior esquerdo (estrelas mais em pé, aparecem sobre a borda).
-    starOnFloor(-41.9, -7.6, 16.5, 0.15, tone: 0.26, order: 0.8, tilt: 1.25);
-    starOnFloor(-29.8, 2.8, 15.4, -0.55, tone: 0.28, order: 0.9, tilt: 1.3);
+    itemOnFloor(-41.9, -7.6, 16.5, 0.15, tone: 0.26, order: 0.8, tilt: 1.25);
+    itemOnFloor(-29.8, 2.8, 15.4, -0.55, tone: 0.28, order: 0.9, tilt: 1.3);
     // Fileira da FRENTE: os topos cobrem a faixa de assoalho que aparece
     // rente à parede da frente (o "canto inferior" na tela).
-    starOnFloor(-23.2, 26.6, 16.5, 0.3, tone: 0.28, order: 0.85, tilt: 1.1);
-    starOnFloor(-2.8, 29.4, 17.1, -0.4, tone: 0.28, order: 0.87, tilt: 1.15);
-    starOnFloor(19.5, 26.6, 16.5, 0.5, tone: 0.28, order: 0.89, tilt: 1.1);
-    starOnFloor(37.2, 27.5, 15.4, -0.2, tone: 0.3, order: 0.91, tilt: 1.2);
+    itemOnFloor(-23.2, 26.6, 16.5, 0.3, tone: 0.28, order: 0.85, tilt: 1.1);
+    itemOnFloor(-2.8, 29.4, 17.1, -0.4, tone: 0.28, order: 0.87, tilt: 1.15);
+    itemOnFloor(19.5, 26.6, 16.5, 0.5, tone: 0.28, order: 0.89, tilt: 1.1);
+    itemOnFloor(37.2, 27.5, 15.4, -0.2, tone: 0.3, order: 0.91, tilt: 1.2);
     // Segunda camada (fecha o meio).
-    starOnFloor(-25.1, -14.2, 15.4, 0.1, lift: 8.5, tone: 0.16, order: 1.0);
-    starOnFloor(-7.4, -15.2, 15.4, -0.6, lift: 8.5, tone: 0.16, order: 1.1);
-    starOnFloor(11.2, -17.1, 14.9, 0.45, lift: 8.5, tone: 0.16, order: 1.2);
-    starOnFloor(28.8, -12.3, 14.3, -0.3, lift: 8.5, tone: 0.16, order: 1.3);
-    starOnFloor(0.0, -7.6, 14.9, 0.8, lift: 8.5, tone: 0.2, order: 1.4);
+    itemOnFloor(-25.1, -14.2, 15.4, 0.1, lift: 8.5, tone: 0.16, order: 1.0);
+    itemOnFloor(-7.4, -15.2, 15.4, -0.6, lift: 8.5, tone: 0.16, order: 1.1);
+    itemOnFloor(11.2, -17.1, 14.9, 0.45, lift: 8.5, tone: 0.16, order: 1.2);
+    itemOnFloor(28.8, -12.3, 14.3, -0.3, lift: 8.5, tone: 0.16, order: 1.3);
+    itemOnFloor(0.0, -7.6, 14.9, 0.8, lift: 8.5, tone: 0.2, order: 1.4);
     // Terceira camada (sobe no centro).
-    starOnFloor(-16.7, -13.3, 13.8, 0.3, lift: 16, tone: 0.06, order: 2.0);
-    starOnFloor(1.9, -14.2, 13.8, -0.5, lift: 16, tone: 0.06, order: 2.1);
-    starOnFloor(17.7, -13.3, 13.2, 0.7, lift: 16, tone: 0.06, order: 2.2);
+    itemOnFloor(-16.7, -13.3, 13.8, 0.3, lift: 16, tone: 0.06, order: 2.0);
+    itemOnFloor(1.9, -14.2, 13.8, -0.5, lift: 16, tone: 0.06, order: 2.1);
+    itemOnFloor(17.7, -13.3, 13.2, 0.7, lift: 16, tone: 0.06, order: 2.2);
     // Topo do monte.
-    starOnFloor(-6.5, -12.3, 12.1, 0.5, lift: 23, tone: 0.0, order: 3.0);
-    starOnFloor(7.4, -11.4, 11.6, -0.4, lift: 23, tone: 0.02, order: 3.1);
+    itemOnFloor(-6.5, -12.3, 12.1, 0.5, lift: 23, tone: 0.0, order: 3.0);
+    itemOnFloor(7.4, -11.4, 11.6, -0.4, lift: 23, tone: 0.02, order: 3.1);
 
     // ── Corpo: frente ──
     face(

@@ -28,7 +28,6 @@ import '../../util/frases.dart';
 import '../../util/fundos.dart';
 import '../../util/gamificacao.dart';
 import '../../util/insignias.dart';
-import '../../fx/rewards/chest_intro_reveal.dart';
 import '../../fx/rewards/chest_open2.dart';
 
 /// Roda o cronômetro: percorre a linha do tempo (preparação → execução × reps
@@ -813,29 +812,30 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Future<void> _tocarPremio(PremioDia p) async {
     switch (p.tipo) {
       case PremioTipo.conquista:
-        // Baú-intro + medalha/troféu (o par completo, igual ao Laboratório).
+        // O baú abre no toque e a medalha/troféu **sai de dentro** dele.
+        final t = p.conquista!;
         await _cena(
-          (ctx, fim) => ChestIntroReveal(
-            params: const FxParams(duration: Duration(milliseconds: 850)),
-            onFim: fim,
-            child: RewardRegistry.build(
-              ctx,
-              _tipoDaConquista(p.conquista!),
-              const FxParams(),
-            ),
+          (ctx, fim) => ChestOpen2(
+            params: const FxParams(duration: Duration(milliseconds: 1000)),
+            item: ChestItem.medalha,
+            itemCor: _tipoDaConquista(t).color(ctx),
+            label: t.titulo,
+            conteudo: Text(t.emoji, style: const TextStyle(fontSize: 64)),
+            onFim: () =>
+                Future<void>.delayed(const Duration(milliseconds: 800), fim),
           ),
         );
       case PremioTipo.sequencia:
+        // Idem: a chama sai de dentro do baú, com os dias embaixo.
         await _cena(
-          (ctx, fim) => ChestIntroReveal(
-            params: const FxParams(duration: Duration(milliseconds: 850)),
-            onFim: fim,
-            child: RewardRegistry.build(
-              ctx,
-              RewardType.streak,
-              const FxParams(),
-              value: p.valor,
-            ),
+          (ctx, fim) => ChestOpen2(
+            params: const FxParams(duration: Duration(milliseconds: 1000)),
+            item: ChestItem.chama,
+            itemCor: RewardType.streak.color(ctx),
+            valor: p.valor,
+            label: '${p.valor} dias',
+            onFim: () =>
+                Future<void>.delayed(const Duration(milliseconds: 800), fim),
           ),
         );
       case PremioTipo.estrela:
@@ -887,7 +887,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         duration: const Duration(milliseconds: 1000),
         valor2: pontosDia.toDouble(),
       ),
-      valorEstrela: 10,
+      valor: 10,
       // Deixa a estrela sair de cena antes de fechar o baú.
       onFim: () => Future<void>.delayed(const Duration(milliseconds: 800), fim),
     ),

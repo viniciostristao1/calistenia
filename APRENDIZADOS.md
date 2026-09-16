@@ -5,6 +5,33 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-16 — O conteúdo do baú (v0.81.0)
+
+**Pedido:** o conteúdo (estrela, número, medalha, chama) tem de ficar **dentro** do baú e
+**sair de dentro dele** — nada de trocar o baú pela imagem do prêmio. Generalizar o baú que
+hoje só sabe renderizar o monte de estrelas.
+
+**Como:** `ChestOpen2` ganhou `item` (`ChestItem.estrela/numero/medalha/chama`), `itemCor`,
+`valores`, `conteudo`, `label` e `recompensa` — o `valorEstrela` virou `valor`. O monte
+(`itemOnFloor`) e a recompensa que sobe (`_recompensa(v)`) seguem o `item`:
+estrela → `Star3D` + pills; número → `ScoreRising`; medalha → emoji/`conteudo` girando;
+chama → `Flame3D`. `ChestOpen3` ganhou o **monte de números** (matriz afim do plano no
+`Canvas` para "deitar" o texto no assoalho) e passou a usar o `ScoreRising` extraído.
+Conquista/sequência agora são `ChestOpen2` de verdade (o `ChestIntroReveal` saiu do fluxo;
+a cerimônia ficou **uma cena por prêmio**).
+
+**Gotcha (custou uns minutos):** `late final AnimationController _ctrl = AnimationController(...)..repeat()`
+que **ninguém lê** é criado **no `dispose()`** — e aí o `createTicker` faz lookup de
+ancestral (`TickerMode`) com o elemento já desativado: *"Looking up a deactivated widget's
+ancestor is unsafe"*. Aconteceu ao extrair o desenho da chama para o `Flame3D` (o
+`AnimatedBuilder` que lia o `_ctrl` do `FlameReveal` sumiu): o correto era **remover** o
+controller do `FlameReveal` (virou `StatelessWidget`). Regra: se o controller deixou de ser
+lido no `build`, tire-o também do `dispose` — nunca deixe um `late final` ser criado só
+para ser descartado.
+
+**Validação:** `test/chest_conteudo_test.dart` (toque abre → o item certo sai de dentro;
+baú rápido não abre sem toque) + `fx_smoke_test` (todos os `RewardType`) e os 56 testes.
+
 ## 2026-09-15 — Baú + revelação no Laboratório (v0.80.2)
 
 **Feedback:** testando "Baú rápido" no Laboratório o usuário viu **só a intro** — faltava a

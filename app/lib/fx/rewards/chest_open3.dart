@@ -9,12 +9,13 @@ import '../fx_params.dart';
 import '../particles/particle.dart';
 import '../particles/particle_burst.dart';
 import '../shading.dart';
+import 'score_rising.dart';
 
 /// **Recompensa: baú abrindo — VERSÃO 3** ("baú 3"), em **vista 3/4**.
 ///
-/// É uma cópia isolada do Baú 2: o baú, o monte de estrelas, a física da tampa e
-/// o giro são os mesmos — o que muda é a **recompensa**: em vez da estrela
-/// girando, sobe a **pontuação** (número grande) com as **três setas animadas**
+/// É uma cópia isolada do Baú 2: o baú, a física da tampa e o giro são os
+/// mesmos — o que muda é o **conteúdo**: o monte é de **números** e quem sobe é
+/// a **pontuação** (número grande, `ScoreRising`) com as **três setas**
 /// subindo em ciclo, no mesmo espírito do "subiu de nível".
 ///
 /// Timeline: antecipação (0–0.30) — treme e dá uma torção no próprio eixo →
@@ -137,7 +138,7 @@ class _ChestOpen3State extends State<ChestOpen3>
                   params: _revealParams,
                   begin: const Offset(0, 16),
                   end: Offset(0, -92 * _intensity.clamp(0.4, 2.0)),
-                  child: _ScoreSubindo(
+                  child: ScoreRising(
                     params: _revealParams,
                     valor: widget.valorScore ?? 0,
                     cor: context.accent,
@@ -170,109 +171,6 @@ class _ChestOpen3State extends State<ChestOpen3>
           size: const Size.square(200),
           painter: _ChestPainter3(v: v, intensity: _intensity),
         ),
-      ),
-    );
-  }
-}
-
-/// A **pontuação** que sai do Baú 3: número grande com as **três setas
-/// subindo** em ciclo (mesma linguagem do "subiu de nível").
-class _ScoreSubindo extends StatefulWidget {
-  const _ScoreSubindo({
-    required this.params,
-    required this.valor,
-    required this.cor,
-    required this.entrada,
-  });
-
-  final FxParams params;
-  final num valor;
-  final Color cor;
-
-  /// 0..1 — entrada do número (pop + fade) sincronizada com o baú.
-  final double entrada;
-
-  @override
-  State<_ScoreSubindo> createState() => _ScoreSubindoState();
-}
-
-class _ScoreSubindoState extends State<_ScoreSubindo>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl = AnimationController(
-    vsync: this,
-    duration: widget.params.effectiveDuration,
-  )..repeat();
-
-  /// Onde cada uma das 3 setas sobe (esquerda, centro, direita).
-  static const _setasX = [-58.0, 0.0, 58.0];
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  Widget _seta(int i) {
-    final ph = (_ctrl.value + i / 3) % 1.0;
-    final op = sin(pi * ph).clamp(0.0, 1.0);
-    return Transform.translate(
-      offset: Offset(_setasX[i], 48 - ph * 108),
-      child: Transform.scale(
-        scale: 0.7 + 0.4 * op,
-        child: Opacity(
-          opacity: (op * 0.95).clamp(0.0, 1.0),
-          child: Icon(
-            Icons.arrow_upward_rounded,
-            size: 28,
-            color: widget.cor,
-            shadows: [
-              Shadow(color: widget.cor.withValues(alpha: 0.6), blurRadius: 14),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final e = widget.entrada.clamp(0.0, 1.0);
-    return SizedBox(
-      width: 220,
-      height: 132,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          AnimatedBuilder(
-            animation: _ctrl,
-            builder: (context, _) => Stack(
-              alignment: Alignment.center,
-              children: [_seta(0), _seta(1), _seta(2)],
-            ),
-          ),
-          // A pontuação por cima das setas (entra com pop).
-          Opacity(
-            opacity: e,
-            child: Transform.scale(
-              scale: 0.7 + 0.3 * e,
-              child: Text(
-                '+${widget.valor.round()}',
-                style: TextStyle(
-                  color: AppColors.text,
-                  fontSize: 46,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                  shadows: [
-                    Shadow(
-                      color: widget.cor.withValues(alpha: 0.75),
-                      blurRadius: 22,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -601,12 +499,13 @@ class _ChestPainter3 extends CustomPainter {
       );
     });
 
-    // ── Estrelinhas no fundo do baú (monte de tesouro) — v2 ──
-    // Cada estrela é desenhada num ÚNICO comando (é plana) com o mesmo relevo
-    // da estrela que salta (`Star3D`): 10 facetas com luz direcional, bisel
-    // (luz no canto de cima / sombra embaixo), núcleo gravado e faíscas.
-    const luzEstrela = Offset(-0.55, -0.83); // luz 2D (canto sup. esquerdo)
-    void starOnFloor(
+    // ── O MONTE dentro do baú: NÚMEROS ──
+    // Cada número é desenhado num ÚNICO comando: a sombra no assoalho, o
+    // número deitado no plano (matriz afim do chão) e o brilho. Os números são
+    // a decoração do monte — quem SOBE do baú é a pontuação (`ScoreRising`),
+    // então o conteúdo combina com a recompensa.
+    const valoresPiso = ['5', '10', '25', '50', '100', '250'];
+    void numeroOnFloor(
       double cx,
       double cz,
       double r,
@@ -614,8 +513,8 @@ class _ChestPainter3 extends CustomPainter {
       double lift = 0,
       double tone = 0,
       double order = 0,
-      double tilt = 0.95,
     }) {
+      const tilt = 0.95;
       final st = sin(tilt);
       final ct = cos(tilt);
       _V at(double u, double v, double dy, double dz) =>
@@ -630,37 +529,8 @@ class _ChestPainter3 extends CustomPainter {
         return p..close();
       }
 
-      List<Offset> anel(double dy, double dz, double scale) {
-        final pts = <Offset>[];
-        for (var i = 0; i < 10; i++) {
-          final rad = (i.isEven ? r : r * 0.55) * scale;
-          final a = rot - pi / 2 + i * pi / 5;
-          pts.add(pj(cos(a) * rad, sin(a) * rad, dy, dz));
-        }
-        return pts;
-      }
-
       final cor = Color.lerp(_ouro, shade(_ouro, 0.42), tone)!;
-      final claro = lighten(cor, 0.24);
-      final escuro = shade(cor, 0.42);
-
-      final c0 = pj(0, 0);
-      final topo = anel(0, 0, 1);
-      final casca = anel(-3.0, 2.4, 1);
-      final pentagono = <Offset>[
-        for (var i = 1; i < 10; i += 2)
-          pj(
-            cos(rot - pi / 2 + i * pi / 5) * r * 0.55,
-            sin(rot - pi / 2 + i * pi / 5) * r * 0.55,
-          ),
-      ];
-      final gravada = <Offset>[
-        for (var i = 0; i < 10; i++)
-          pj(
-            cos(rot - pi / 2 + i * pi / 5) * (i.isEven ? r * 0.52 : r * 0.26),
-            sin(rot - pi / 2 + i * pi / 5) * (i.isEven ? r * 0.52 : r * 0.26),
-          ),
-      ];
+      final txt = valoresPiso[(order * 10).round() % valoresPiso.length];
 
       push(at(0, 0, 0, 0).dot(cam) + order, (c) {
         // Sombra no assoalho.
@@ -669,126 +539,90 @@ class _ChestPainter3 extends CustomPainter {
             for (var i = 0; i < 12; i++)
               _proj(
                 _V(
-                  cx + cos(i * pi / 6) * r * 1.05,
+                  cx + cos(i * pi / 6) * r * 0.9,
                   _floorY + 0.05,
-                  cz - r * ct * 0.15 + sin(i * pi / 6) * r * 0.9 + 1.8,
+                  cz - r * ct * 0.15 + sin(i * pi / 6) * r * 0.78 + 1.8,
                 ),
                 yaw,
               ),
           ]),
           Paint()..color = shade(madeiraDentro, 0.3),
         );
-        // Espessura (casca de baixo).
-        c.drawPath(pathOf(casca), Paint()..color = escuro);
-        // 10 facetas com luz direcional.
-        for (var i = 0; i < 5; i++) {
-          final tip = topo[i * 2];
-          final left = topo[(i * 2 + 9) % 10];
-          final right = topo[(i * 2 + 1) % 10];
-          for (final inner in [left, right]) {
-            final mid = (c0 + tip + inner) / 3;
-            var dir = mid - c0;
-            final len = dir.distance;
-            dir = len == 0 ? Offset.zero : dir / len;
-            final lam = (dir.dx * luzEstrela.dx + dir.dy * luzEstrela.dy).clamp(
-              -1.0,
-              1.0,
-            );
-            final t = (0.5 + 0.5 * lam).clamp(0.0, 1.0);
-            c.drawPath(
-              pathOf([c0, tip, inner]),
-              Paint()
-                ..color = Color.lerp(escuro, claro, t)!.withValues(alpha: 0.92),
-            );
-          }
+        // Matriz afim do plano (u,v) → tela: o número fica "deitado".
+        final o = pj(0, 0);
+        final a = pj(1, 0) - o;
+        final b = pj(0, 1) - o;
+        final m = Matrix4.identity()
+          ..setEntry(0, 0, a.dx)
+          ..setEntry(0, 1, b.dx)
+          ..setEntry(0, 3, o.dx)
+          ..setEntry(1, 0, a.dy)
+          ..setEntry(1, 1, b.dy)
+          ..setEntry(1, 3, o.dy);
+        c.save();
+        c.transform(m.storage);
+        c.rotate(rot);
+
+        void escreve(Offset off, Color cc) {
+          final tp = TextPainter(
+            text: TextSpan(
+              text: txt,
+              style: TextStyle(
+                fontSize: r * 1.5,
+                fontWeight: FontWeight.w900,
+                color: cc,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          tp.paint(c, Offset(-tp.width / 2 + off.dx, -tp.height / 2 + off.dy));
         }
-        // Núcleo (pentágono) + estrela gravada (relevo).
-        final nucleo = pathOf(pentagono);
-        c.drawPath(
-          nucleo,
-          Paint()
-            ..shader = RadialGradient(
-              colors: [
-                lighten(cor, 0.18).withValues(alpha: 0.85),
-                shade(cor, 0.35).withValues(alpha: 0.85),
-              ],
-            ).createShader(nucleo.getBounds()),
-        );
-        c.drawPath(
-          pathOf(gravada),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.3
-            ..color = shade(cor, 0.5).withValues(alpha: 0.9),
-        );
-        c.drawPath(
-          pathOf(gravada).shift(const Offset(0, -1)),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.8
-            ..color = Colors.white.withValues(alpha: 0.22),
-        );
-        // Bisel: luz em cima, sombra embaixo.
-        final borda = pathOf(topo);
-        c.drawPath(
-          borda,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.2
-            ..strokeJoin = StrokeJoin.round
-            ..shader = LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: 0.5),
-                Colors.white.withValues(alpha: 0.0),
-                escuro.withValues(alpha: 0.85),
-              ],
-              stops: const [0.0, 0.16, 1.0],
-            ).createShader(borda.getBounds()),
-        );
-        // Brilho especular.
+
+        // Espessura (sombra dura deslocada) + o número.
+        escreve(const Offset(1.0, 1.4), shade(_ouro, 0.55));
+        escreve(Offset.zero, cor);
+        c.restore();
         c.drawCircle(
-          pj(-r * 0.30, -r * 0.32),
-          1.3,
-          Paint()..color = Colors.white.withValues(alpha: 0.6),
+          pj(-r * 0.35, -r * 0.30),
+          1.2,
+          Paint()..color = Colors.white.withValues(alpha: 0.55),
         );
       });
     }
 
     // Base: cobre TODO o assoalho (inclusive o canto esquerdo da frente).
-    starOnFloor(-39.1, -19.9, 17.1, 0.2, tone: 0.18, order: 0.0);
-    starOnFloor(-22.3, -10.4, 16.5, -0.5, tone: 0.18, order: 0.1);
-    starOnFloor(-2.8, -23.8, 17.6, 0.6, tone: 0.18, order: 0.2);
-    starOnFloor(16.7, -10.4, 16.5, -0.2, tone: 0.18, order: 0.3);
-    starOnFloor(36.3, -19.9, 16.5, 0.4, tone: 0.18, order: 0.4);
-    starOnFloor(-32.6, -1.9, 17.6, 0.9, tone: 0.22, order: 0.5, tilt: 1.15);
-    starOnFloor(30.7, -0.9, 16.5, -0.7, tone: 0.22, order: 0.6, tilt: 1.15);
-    starOnFloor(-42.8, -11.4, 14.9, 0.35, tone: 0.38, order: 0.55);
-    starOnFloor(-15.8, 0.0, 17.1, -0.35, tone: 0.4, order: 0.7, tilt: 1.2);
-    starOnFloor(14.0, 0.0, 16.5, 0.65, tone: 0.4, order: 0.75, tilt: 1.2);
-    // Canto inferior esquerdo (estrelas mais em pé, aparecem sobre a borda).
-    starOnFloor(-41.9, -7.6, 16.5, 0.15, tone: 0.26, order: 0.8, tilt: 1.25);
-    starOnFloor(-29.8, 2.8, 15.4, -0.55, tone: 0.28, order: 0.9, tilt: 1.3);
+    numeroOnFloor(-39.1, -19.9, 17.1, 0.2, tone: 0.18, order: 0.0);
+    numeroOnFloor(-22.3, -10.4, 16.5, -0.5, tone: 0.18, order: 0.1);
+    numeroOnFloor(-2.8, -23.8, 17.6, 0.6, tone: 0.18, order: 0.2);
+    numeroOnFloor(16.7, -10.4, 16.5, -0.2, tone: 0.18, order: 0.3);
+    numeroOnFloor(36.3, -19.9, 16.5, 0.4, tone: 0.18, order: 0.4);
+    numeroOnFloor(-32.6, -1.9, 17.6, 0.9, tone: 0.22, order: 0.5);
+    numeroOnFloor(30.7, -0.9, 16.5, -0.7, tone: 0.22, order: 0.6);
+    numeroOnFloor(-42.8, -11.4, 14.9, 0.35, tone: 0.38, order: 0.55);
+    numeroOnFloor(-15.8, 0.0, 17.1, -0.35, tone: 0.4, order: 0.7);
+    numeroOnFloor(14.0, 0.0, 16.5, 0.65, tone: 0.4, order: 0.75);
+    // Canto inferior esquerdo (frente, aparecem sobre a borda).
+    numeroOnFloor(-41.9, -7.6, 16.5, 0.15, tone: 0.26, order: 0.8);
+    numeroOnFloor(-29.8, 2.8, 15.4, -0.55, tone: 0.28, order: 0.9);
     // Fileira da FRENTE: os topos cobrem a faixa de assoalho que aparece
     // rente à parede da frente (o "canto inferior" na tela).
-    starOnFloor(-23.2, 26.6, 16.5, 0.3, tone: 0.28, order: 0.85, tilt: 1.1);
-    starOnFloor(-2.8, 29.4, 17.1, -0.4, tone: 0.28, order: 0.87, tilt: 1.15);
-    starOnFloor(19.5, 26.6, 16.5, 0.5, tone: 0.28, order: 0.89, tilt: 1.1);
-    starOnFloor(37.2, 27.5, 15.4, -0.2, tone: 0.3, order: 0.91, tilt: 1.2);
+    numeroOnFloor(-23.2, 26.6, 16.5, 0.3, tone: 0.28, order: 0.85);
+    numeroOnFloor(-2.8, 29.4, 17.1, -0.4, tone: 0.28, order: 0.87);
+    numeroOnFloor(19.5, 26.6, 16.5, 0.5, tone: 0.28, order: 0.89);
+    numeroOnFloor(37.2, 27.5, 15.4, -0.2, tone: 0.3, order: 0.91);
     // Segunda camada (fecha o meio).
-    starOnFloor(-25.1, -14.2, 15.4, 0.1, lift: 8.5, tone: 0.16, order: 1.0);
-    starOnFloor(-7.4, -15.2, 15.4, -0.6, lift: 8.5, tone: 0.16, order: 1.1);
-    starOnFloor(11.2, -17.1, 14.9, 0.45, lift: 8.5, tone: 0.16, order: 1.2);
-    starOnFloor(28.8, -12.3, 14.3, -0.3, lift: 8.5, tone: 0.16, order: 1.3);
-    starOnFloor(0.0, -7.6, 14.9, 0.8, lift: 8.5, tone: 0.2, order: 1.4);
+    numeroOnFloor(-25.1, -14.2, 15.4, 0.1, lift: 8.5, tone: 0.16, order: 1.0);
+    numeroOnFloor(-7.4, -15.2, 15.4, -0.6, lift: 8.5, tone: 0.16, order: 1.1);
+    numeroOnFloor(11.2, -17.1, 14.9, 0.45, lift: 8.5, tone: 0.16, order: 1.2);
+    numeroOnFloor(28.8, -12.3, 14.3, -0.3, lift: 8.5, tone: 0.16, order: 1.3);
+    numeroOnFloor(0.0, -7.6, 14.9, 0.8, lift: 8.5, tone: 0.2, order: 1.4);
     // Terceira camada (sobe no centro).
-    starOnFloor(-16.7, -13.3, 13.8, 0.3, lift: 16, tone: 0.06, order: 2.0);
-    starOnFloor(1.9, -14.2, 13.8, -0.5, lift: 16, tone: 0.06, order: 2.1);
-    starOnFloor(17.7, -13.3, 13.2, 0.7, lift: 16, tone: 0.06, order: 2.2);
+    numeroOnFloor(-16.7, -13.3, 13.8, 0.3, lift: 16, tone: 0.06, order: 2.0);
+    numeroOnFloor(1.9, -14.2, 13.8, -0.5, lift: 16, tone: 0.06, order: 2.1);
+    numeroOnFloor(17.7, -13.3, 13.2, 0.7, lift: 16, tone: 0.06, order: 2.2);
     // Topo do monte.
-    starOnFloor(-6.5, -12.3, 12.1, 0.5, lift: 23, tone: 0.0, order: 3.0);
-    starOnFloor(7.4, -11.4, 11.6, -0.4, lift: 23, tone: 0.02, order: 3.1);
+    numeroOnFloor(-6.5, -12.3, 12.1, 0.5, lift: 23, tone: 0.0, order: 3.0);
+    numeroOnFloor(7.4, -11.4, 11.6, -0.4, lift: 23, tone: 0.02, order: 3.1);
 
     // ── Corpo: frente ──
     face(

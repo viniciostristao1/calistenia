@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-16 — v0.81.0 (o que está dentro do baú agora sai de dentro dele):**
+  - **Conquistas e marcos de sequência:** o baú agora abre **de verdade** (toque → tampa aberta) e o **conteúdo sai de dentro dele** — a **medalha/troféu** (com o nome embaixo: "Medalha de Ouro", "Troféu de Prata"…) ou a **chama da sequência** (com os dias: "12 dias"). Antes o baú só abria um pouco e a imagem do prêmio entrava no lugar.
+  - **Dentro do baú é o mesmo prêmio:** o **monte** que aparece quando a tampa abre muda com o baú — estrelas no baú da estrela, **números** no Baú 3, **medalhas** no baú de conquista e **chamas** no de sequência.
+  - **Baú 3 (Lab):** o monte agora é de **números** (combina com a pontuação que sobe).
+  - Correção de bastidor: a chama da sequência podia dar erro ao sair da tela em um caso raro (controller criado na hora de descartar).
+
 - **2026-09-15 — v0.80.2 (baú + revelação juntos no Laboratório):**
   - Agora dá pra testar o **par completo** no 🧪 Laboratório: novos tipos **“Baú conquista”** (toque no baú → medalha) e **“Baú sequência”** (toque → chama com o número). Antes o “Baú rápido” mostrava só a abertura — a revelação ficava só no fluxo real.
   - No app o fluxo segue igual (o baú é só a introdução e a medalha/troféu/chama entra no lugar), agora com o mesmo componente dos dois lados.
