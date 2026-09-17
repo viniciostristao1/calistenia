@@ -27,6 +27,23 @@ pelo número de repetições. Design escuro, simples. Meta futura: **Play Store*
 
 ## ⭐ ESTADO ATUAL (2026-08-17) — ler primeiro pós-/clear
 
+### 🚀 LANÇAMENTO PLAY STORE — em preparação (2026-09-17, v0.84.0)
+Pacote de loja pronto (colável em [`LANCAMENTO.md`](LANCAMENTO.md)):
+- **AAB assinado:** novo workflow **`build-aab.yml`** (workflow_dispatch, só AAB) → anexa o AAB
+  ao Release da versão (latest): `…/calistenia/releases/latest/download/app-release.aab` (repo
+  PÚBLICO → baixa sem login). Assinado c/ upload key SHA-1 `6B:33:…:92:6A`.
+- **🧪 Laboratório escondido no build da loja:** flag `kMostrarLab` (`util/flags.dart`).
+  `build-apk.yml` (teste) passa `--dart-define=LAB=true` (Lab visível); `build-aab.yml` (Play)
+  não → Lab oculto pro usuário final. Ver `ANIMACOES.md` + `APRENDIZADOS.md`.
+- **Idioma segue o aparelho** na 1ª abertura (v0.84.0, `idioma_repository.dart`): en/es/senão pt.
+- **Política + Termos** no ar: https://viniciostristao1.github.io/calistenia-privacidade/ (+ `/termos.html`),
+  repo público `calistenia-privacidade`.
+- **store/**: `icon_512.png` + `feature_graphic.png` (gerado) + 5 screenshots formatados (crus em `originais/`).
+- **Ficha** (nome `Calis Timer: treino calistenia`), **Data Safety**, **classificação**, **alarmes
+  exatos** e roteiro do Console → `LANCAMENTO.md`.
+- **Keystore** entregue ao usuário COM a senha (estava no `key.properties` local).
+- **Falta = só o usuário no Console.** Conta dev = a mesma (aprovada) dos outros apps.
+
 **Publicado no GitHub** (repo `viniciostristao1/calistenia`, CI verde). Versão
 atual = **v0.47.0** (fase de iteração pelo feedback real; último bloco = **insígnias ⭐
 mensais** — 7 estrelas/mês em dias sorteados, só reveladas ao concluir o treino, quadro na
