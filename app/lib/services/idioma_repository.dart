@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +7,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _chaveIdioma = 'idioma_v1';
 
 enum Idioma { pt, en, es }
+
+/// Idioma inicial (1ª abertura, sem escolha salva): segue o **idioma do
+/// aparelho** — inglês → EN, espanhol → ES, qualquer outro → PT (padrão).
+/// Depois o usuário pode trocar manualmente em Config → Idioma.
+Idioma _idiomaDoAparelho() {
+  final code = PlatformDispatcher.instance.locale.languageCode.toLowerCase();
+  return switch (code) {
+    'en' => Idioma.en,
+    'es' => Idioma.es,
+    _ => Idioma.pt,
+  };
+}
 
 extension IdiomaExt on Idioma {
   String get codigo => switch (this) {
@@ -35,7 +48,7 @@ class IdiomaNotifier extends AsyncNotifier<Idioma> {
   Future<Idioma> build() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_chaveIdioma);
-    if (raw == null || raw.isEmpty) return Idioma.pt;
+    if (raw == null || raw.isEmpty) return _idiomaDoAparelho();
     try {
       final m = jsonDecode(raw) as Map<String, dynamic>;
       return IdiomaExt.deCodigo(m['codigo'] as String?);

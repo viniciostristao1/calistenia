@@ -3,6 +3,8 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-17 — v0.84.0 (idioma segue o aparelho na 1ª vez):** ao abrir o app pela primeira vez, ele já vem no **idioma do seu celular** (inglês → English, espanhol → Español, o resto → Português) em vez de sempre começar em Português. Você continua podendo trocar em **Config → Idioma**. *(Preparação para a Play Store, onde chega gente de vários idiomas.)*
+
 - **2026-09-16 — v0.83.0 (chama ininterrupta + baú da conquista com as 4):**
   - **A sequência virou coisa séria:** a chama agora só conta **treino COMPLETO**. Se você **faltar** ou responder **"não consegui"** num dia agendado, ela **zera** — o marco de 10/20/30 dias é só para quem emendou tudo. Dia de descanso não quebra, e o dia de hoje só conta quando você treina.
   - **As conquistas continuam generosas** (nada mudou na regra): 1 falta ou 2 treinos incompletos ainda não derrubam — o que existe é o **nível** delas, e por isso as legendas ficaram **"Nível 8/15"** e **"Nível ok · falta progressão"**.
