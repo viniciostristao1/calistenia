@@ -4,6 +4,12 @@
 > É a fonte de verdade da arquitetura da camada `app/lib/fx/`. Complementa o
 > `INICIO.md` (fluxo de entrega) e o `APRENDIZADOS.md` (diário técnico).
 
+> ⚠️ **O 🧪 Laboratório de Animações é ferramenta de DEV e NÃO vai para a Play Store.**
+> Desde v0.84.0 ele fica atrás do flag `kMostrarLab` (`util/flags.dart`,
+> `--dart-define=LAB=true`): o **build de teste** (`build-apk.yml` do GitHub) liga o flag
+> e mostra o Lab; o **build da Play Store** (`build-aab.yml`) NÃO liga → o Lab some para o
+> usuário final. Ao mexer no Lab, teste pelo APK do GitHub (que tem o flag).
+
 ## Objetivo
 
 Uma **camada de animações/recompensas reutilizável**, com sensação de **impacto,

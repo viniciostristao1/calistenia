@@ -5,6 +5,20 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-17 — Preparação Play Store: idioma do aparelho + Lab só em dev (v0.84.0)
+
+- **Idioma inicial segue o aparelho** (`services/idioma_repository.dart`): na 1ª abertura sem
+  escolha salva, `IdiomaNotifier.build()` lê `PlatformDispatcher.instance.locale.languageCode`
+  → `en`/`es`/senão `pt` (antes era sempre `Idioma.pt`). Prep p/ público multi-idioma da loja.
+- **🧪 Laboratório atrás de flag de compilação** (`util/flags.dart`:
+  `kMostrarLab = bool.fromEnvironment('LAB')`). O item em `config_screen.dart` fica sob
+  `if (kMostrarLab) ...[]`. **`build-apk.yml` (canal de teste)** passa `--dart-define=LAB=true`
+  → Lab visível; **`build-aab.yml` (Play Store)** não passa → Lab oculto. Motivo: é ferramenta
+  de dev, não pode aparecer pro usuário final. Ver também `ANIMACOES.md`.
+- **AAB para a Play Store:** criado `build-aab.yml` (workflow_dispatch, só `flutter build
+  appbundle --release`, anexa o AAB ao Release da versão = "latest"). O `build-apk.yml` segue
+  fazendo os APKs por arquitetura (canal de teste). Assinam com a mesma keystore de upload.
+
 ## 2026-09-16 — Chama ininterrupta, avisos de risco fora e o baú da conquista (v0.83.0)
 
 **Pedido (verificado antes):** o app tinha DOIS números chamados "sequência": `streakAtual`

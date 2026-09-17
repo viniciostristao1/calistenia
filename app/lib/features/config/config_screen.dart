@@ -12,6 +12,7 @@ import '../../services/tema_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
+import '../../util/flags.dart';
 import '../../util/gamificacao.dart' show diasAgendados;
 import '../../l10n/strings.dart';
 import '../lab/lab_screen.dart';
@@ -60,21 +61,26 @@ class ConfigScreen extends ConsumerWidget {
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
           ),
-          const SizedBox(height: 8),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Text('🧪', style: TextStyle(fontSize: 22)),
-            title: const Text('Laboratório de Animações',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            subtitle: Text(
-              'Área de testes das animações e recompensas (não altera seu progresso)',
-              style: TextStyle(color: AppColors.dim, fontSize: 13),
+          // 🧪 Laboratório de Animações = ferramenta de DEV. Só aparece no canal
+          // de teste (build-apk com --dart-define=LAB=true); no build da Play
+          // Store (build-aab, sem o flag) fica oculto. Ver util/flags.dart.
+          if (kMostrarLab) ...[
+            const SizedBox(height: 8),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Text('🧪', style: TextStyle(fontSize: 22)),
+              title: const Text('Laboratório de Animações',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              subtitle: Text(
+                'Área de testes das animações e recompensas (não altera seu progresso)',
+                style: TextStyle(color: AppColors.dim, fontSize: 13),
+              ),
+              trailing: Icon(Icons.chevron_right, color: AppColors.dim),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LabScreen()),
+              ),
             ),
-            trailing: Icon(Icons.chevron_right, color: AppColors.dim),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const LabScreen()),
-            ),
-          ),
+          ],
           const SizedBox(height: 20),
           const _SecaoLembretes(),
           const SizedBox(height: 20),

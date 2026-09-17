@@ -51,9 +51,12 @@ jobs:
         working-directory: app
         run: flutter pub get
 
+      # LAB=true mantém o 🧪 Laboratório de Animações (ferramenta de dev) NESTE
+      # canal de teste. O build da Play Store (build-aab) NÃO passa o flag → o
+      # Laboratório fica oculto para o usuário final.
       - name: Build APK (release, por arquitetura)
         working-directory: app
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --split-per-abi --dart-define=LAB=true
 
       # Publica os APKs direto num Release (assets de release NÃO contam na cota
       # de artefatos do Actions — que é limitada e vivia estourando). O tag vem
