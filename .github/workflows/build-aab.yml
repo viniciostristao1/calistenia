@@ -1,0 +1,66 @@
+name: Build AAB (Play Store)
+
+# Gera SÓ o AAB (Android App Bundle) assinado, para subir na Play Store, e o anexa
+# ao Release da versão atual (o "latest"). Job separado do build-apk (que faz os APKs)
+# para não pesar/estourar o runner. Roda sob demanda (workflow_dispatch).
+on:
+  workflow_dispatch:
+
+jobs:
+  build-aab:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.7
+
+      - name: Firebase (google-services.json + firebase_options.dart)
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > app/android/app/google-services.json
+          echo "${{ secrets.FIREBASE_OPTIONS_DART }}" | base64 -d > app/lib/firebase_options.dart
+
+      - name: Assinatura de release (keystore + key.properties)
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/android/app/upload-keystore.jks
+          cat > app/android/key.properties <<EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=upload
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Dependências
+        working-directory: app
+        run: flutter pub get
+
+      - name: Build AAB (release, para a Play Store)
+        working-directory: app
+        run: flutter build appbundle --release
+
+      - name: Anexa o AAB ao Release da versão atual (latest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(grep '^version:' app/pubspec.yaml | sed 's/version:[[:space:]]*//; s/+.*//')
+          TAG="v$VER"
+          AAB=app/build/app/outputs/bundle/release/app-release.aab
+          echo "Anexando $AAB ao release $TAG"
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$AAB" -R "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" "$AAB" -R "$GITHUB_REPOSITORY" \
+              --title "Calis Timer $TAG" --notes "AAB para a Play Store."
+          fi
