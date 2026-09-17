@@ -2,6 +2,14 @@
 
 Fila pós-MVP. Melhorar aos poucos, guiado pelo uso real. Cada item com status.
 
+## 💰 Monetização — Premium (desbloqueio único) — `[FUTURO]` decidido 2026-09-17
+Modelo escolhido pelo usuário: **freemium com desbloqueio ÚNICO vitalício ~R$ 19,90** (não
+assinatura), igual ao Save List. Lança **grátis**; Premium entra em atualização (sem refazer o
+teste de 14 dias; Play Billing só testa após o app numa trilha). Grátis generoso; Premium
+**adiciona** valor: **temas extras**, **estatísticas avançadas de progressão**, **treinos/pastas
+ilimitados**, **backup automático**. Impl. sugerida = RevenueCat + `PremiumGate` (Riverpod) +
+produto no Console; ao ativar, atualizar Data Safety p/ "contém compras no app".
+
 ## 🏋️ Peso como progressão (dupla progressão) — `[FEITO v0.51.0]` (2026-08-25)
 Aumentar o **peso** conta como progressão junto com as reps. Modelo: por exercício, **max(%melhora
 reps, %melhora peso)** sobre a própria base — sem converter kg↔reps, sem somar (dupla progressão).

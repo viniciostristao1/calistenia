@@ -140,11 +140,11 @@ Pré-requisito ✅: conta de desenvolvedor paga **e aprovada** (a mesma dos outr
 - **Keystore de upload** entregue ao usuário (`CalisTimer-upload-keystore.jks`) **com a senha**
   (está no `key.properties` local). Guarde em lugar seguro — é o que assina as atualizações.
 
-## Monetização (a decidir)
-- Hoje: **grátis, sem anúncios**. Modelo sugerido (igual ao Save List): **Premium por
-  desbloqueio único**. Ideias de features Premium: temas extras, estatísticas avançadas de
-  progressão, treinos ilimitados/pastas, backup automático, sem futura marca d'água. Entra como
-  atualização, sem refazer o teste de 14 dias.
+## Monetização — DECIDIDO (2026-09-17)
+- Lança **grátis, sem anúncios**. **Premium = desbloqueio ÚNICO vitalício ~R$ 19,90** (não
+  assinatura), igual ao Save List. Features Premium: **temas extras**, **estatísticas avançadas
+  de progressão**, **treinos/pastas ilimitados**, **backup automático**. Entra em **atualização**,
+  sem refazer o teste de 14 dias (Play Billing só testa após o app numa trilha). Plano em `IDEIAS.md`.
 
 ## Futuro — App Store (iOS)
 - Conta Apple Developer (US$99/ano) + Mac (ou build em nuvem) + ícones/prints padrão Apple +
