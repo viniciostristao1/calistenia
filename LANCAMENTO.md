@@ -73,18 +73,18 @@ Funciona 100% offline. Se quiser, entre com o Google para sincronizar seus trein
 |---|---|---|
 | **Ícone** | 512×512 PNG | ✅ `store/icon_512.png` |
 | **Feature graphic** | 1024×500 PNG | ✅ `store/feature_graphic.png` |
-| **Screenshots (telefone)** | 2–8, PNG s/ alpha, ≤2:1 | ✅ 5 (16/09), formatados |
+| **Screenshots (telefone)** | 2–8 (a Play aceita **até 8**), PNG s/ alpha, ≤2:1 | ✅ 6, formatados |
 
-**Screenshots** em `store/screenshots/` (app atual, ≈1,98:1 RGB):
+**Screenshots** em `store/screenshots/` (app atual, ≈1,98:1 RGB) — ordem sugerida:
 1. `01-treinos.png` — home: treino do dia + iniciar
-2. `02-editar-treino.png` — montar treino (dias + exercícios)
-3. `03-editar-exercicio.png` — séries/reps/ritmo/preparação/descanso
-4. `04-progressao.png` — gráficos de evolução das repetições
-5. `05-checkin.png` — calendário de assiduidade + insígnias do mês
+2. `02-cronometro.png` — **o cronômetro rodando** (anel de execução, série, "a seguir") — a tela principal
+3. `03-editar-treino.png` — montar treino (dias + exercícios)
+4. `04-editar-exercicio.png` — séries/reps/ritmo/preparação/descanso
+5. `05-progressao.png` — gráficos de evolução das repetições
+6. `06-checkin.png` — calendário de assiduidade + insígnias do mês
 
-> Crus em `store/screenshots/originais/`. Trocar screenshots é edição de ficha (não exige novo
-> AAB nem reinicia o teste de 14 dias). *(Falta bom: um print do cronômetro rodando — dá pra
-> adicionar depois.)*
+> Crus em `store/screenshots/originais/`. Trocar/reordenar screenshots é edição de ficha (não
+> exige novo AAB nem reinicia o teste de 14 dias).
 
 ---
 

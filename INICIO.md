@@ -38,7 +38,8 @@ Pacote de loja pronto (colável em [`LANCAMENTO.md`](LANCAMENTO.md)):
 - **Idioma segue o aparelho** na 1ª abertura (v0.84.0, `idioma_repository.dart`): en/es/senão pt.
 - **Política + Termos** no ar: https://viniciostristao1.github.io/calistenia-privacidade/ (+ `/termos.html`),
   repo público `calistenia-privacidade`.
-- **store/**: `icon_512.png` + `feature_graphic.png` (gerado) + 5 screenshots formatados (crus em `originais/`).
+- **store/**: `icon_512.png` + `feature_graphic.png` (gerado) + **6 screenshots** formatados (inclui
+  `02-cronometro.png` = o cronômetro rodando; crus em `originais/`). Play aceita até 8.
 - **Ficha** (nome `Calis Timer: treino calistenia`), **Data Safety**, **classificação**, **alarmes
   exatos** e roteiro do Console → `LANCAMENTO.md`.
 - **Keystore** entregue ao usuário COM a senha (estava no `key.properties` local).
