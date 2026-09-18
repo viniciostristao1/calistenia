@@ -5,6 +5,15 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-18 — Cronômetro: "A seguir" com a tipografia da fase (v0.84.1)
+
+**Pedido:** o "A seguir: Descanso • 1 min" estava em cinza dim/13 e destoava do rótulo da
+fase dentro do anel ("EXECUÇÃO"/"DESCANSO": cor da fase, 14, w800, letterSpacing 1.5).
+
+**Como:** `_legendaProxima(cor)` agora recebe a cor da fase atual (a mesma que pinta o anel e
+o rótulo) e usa exatamente o mesmo `TextStyle` do rótulo. Uma função só, sem constante
+compartilhada — se o rótulo mudar, muda junto (o acoplamento é o ponto).
+
 ## 2026-09-17 — Preparação Play Store: idioma do aparelho + Lab só em dev (v0.84.0)
 
 - **Idioma inicial segue o aparelho** (`services/idioma_repository.dart`): na 1ª abertura sem

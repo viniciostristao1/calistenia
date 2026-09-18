@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-18 — v0.84.1 (o "A seguir" do cronômetro no mesmo estilo da fase):**
+  - O **"A seguir: Descanso • 1 min"** abaixo do anel agora usa a **mesma tipografia do rótulo da fase** ("EXECUÇÃO", "DESCANSO"…): mesma cor (a cor da fase atual), tamanho, peso e espaçamento. Antes era um cinza menor e mais apagado.
+
 - **2026-09-17 — v0.84.0 (idioma segue o aparelho na 1ª vez):** ao abrir o app pela primeira vez, ele já vem no **idioma do seu celular** (inglês → English, espanhol → Español, o resto → Português) em vez de sempre começar em Português. Você continua podendo trocar em **Config → Idioma**. *(Preparação para a Play Store, onde chega gente de vários idiomas.)*
 
 - **2026-09-16 — v0.83.0 (chama ininterrupta + baú da conquista com as 4):**

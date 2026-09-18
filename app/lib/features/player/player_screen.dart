@@ -500,7 +500,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   const Spacer(flex: 2),
                   _anel(cor, fracao, segundos, fase),
                   const SizedBox(height: 20),
-                  _legendaProxima(),
+                  _legendaProxima(cor),
                   const Spacer(flex: 3),
                   _controles(),
                   const SizedBox(height: 12),
@@ -730,14 +730,21 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     );
   }
 
-  Widget _legendaProxima() {
+  /// "A seguir: …" — MESMA tipografia do rótulo da fase dentro do anel
+  /// ("EXECUÇÃO", "DESCANSO"…): mesma cor da fase, tamanho, peso e espaçamento.
+  Widget _legendaProxima(Color cor) {
     final j = proximaEtapaIdx(_fases, _idx);
     final txt = j < 0
         ? 'A seguir: fim do treino'
         : 'A seguir: ${descricaoEtapa(_fases[j])}';
     return Text(
       txt,
-      style: TextStyle(color: AppColors.dim, fontSize: 13),
+      style: TextStyle(
+        color: cor,
+        fontSize: 14,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.5,
+      ),
       textAlign: TextAlign.center,
     );
   }
