@@ -100,7 +100,7 @@ Funciona 100% offline. Se quiser, entre com o Google para sincronizar seus trein
 
 - **Localização, câmera, contatos, fotos:** não coleta.
 - Dados **criptografados em trânsito**? **Sim** (HTTPS/Firebase).
-- Usuário pode **pedir exclusão**? **Sim** (apaga no app + por e-mail).
+- Usuário pode **pedir exclusão**? **Sim** — página dedicada: https://viniciostristao1.github.io/calistenia-privacidade/exclusao.html (cobre conta E dados sem apagar conta; serve os dois campos de URL do Data Safety).
 - **Compartilhados com terceiros**? **Não.** Coleta p/ **publicidade**? **Não.** App p/ **crianças**? **Não.**
 
 ## Classificação de conteúdo (IARC) — respostas prontas
@@ -116,6 +116,7 @@ No Console pode aparecer a **declaração de "alarmes exatos"** — justifique q
 ## Política de privacidade e Termos
 - **Política (obrigatória):** https://viniciostristao1.github.io/calistenia-privacidade/
 - **Termos de uso (opcional, já criados):** https://viniciostristao1.github.io/calistenia-privacidade/termos.html
+- **Exclusão de conta e dados (Data Safety):** https://viniciostristao1.github.io/calistenia-privacidade/exclusao.html
 - Repo público `viniciostristao1/calistenia-privacidade` (GitHub Pages).
 
 ---
