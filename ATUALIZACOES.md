@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-19 — v0.84.6 (topo do Cronômetro com todos os exercícios; ajustes na série):**
+  - No topo do Cronômetro agora aparecem **todos os exercícios do treino**, na ordem, ligados por " • " (ex.: "Flexão Declinada • Flexão PPP • Argola Pronada") — antes mostrava só "Exercício 1/3" ou o nome do atual. O **contador regressivo** segue no canto direito.
+  - Saiu a **"Série 1/3"** que ficava ao lado do nome do exercício (no topo).
+  - A **"Série 1/3" embaixo do número** ficou um pouquinho maior (15 → 16).
+
 - **2026-09-19 — v0.84.5 (a cerimônia vem DEPOIS da mensagem de treino concluído):**
   - Ao tocar **Voltar**, a tela de fim ("Treino completo!" + cards) **sai de cena** e só então a animação começa — o **baú da conquista**, o **da estrela**, o **da sequência** e as **setas do Rating** não aparecem mais por cima da mensagem. A sequência ficou: pergunta → mensagem de concluído → animação → home.
 

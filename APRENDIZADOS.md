@@ -5,6 +5,20 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-19 — Topo do Cronômetro com todos os exercícios (v0.84.6)
+
+**Pedidos:** (1) a pílula "Série 1/3" sob o número um tico maior; (2) tirar a "Série 1/3" do
+topo (ao lado do nome); (3) no lugar de "Exercício 1/3"/nome do atual, listar **todos os
+exercícios da sessão** ligados por " • ", mantendo o contador regressivo no canto direito.
+
+**Como:** `_progressoRotulo` agora faz `widget.exercicios.map((e) => e.nome).join(' • ')`
+(fallback: nome da fase, se a lista vier vazia), com `maxLines: 2` + ellipsis; a pílula do
+topo saiu junto com o `_nomeExercicio` (que ficou sem uso) e a do anel subiu para 16.
+
+**Nota:** a lista sai de `widget.exercicios` (a SESSÃO), não das fases — num treino inteiro
+são todos os exercícios; num treino avulso, só ele. Se um dia quiser marcar o exercício
+ATUAL na lista, dá para comparar com `_fases[_idx].exercicioNome` e pintar o trecho.
+
 ## 2026-09-19 — Cerimônia DEPOIS da mensagem de fim (v0.84.5)
 
 **Pedido:** a animação (baús/setas) aparecia **em cima** do "Treino completo!" — o diálogo da

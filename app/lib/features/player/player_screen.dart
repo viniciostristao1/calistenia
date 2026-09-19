@@ -598,34 +598,22 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     return (ms / 1000).ceil();
   }
 
-  /// Nome do exercício (ou "Exercício X/Y") da fase — sem a parte da série.
-  String _nomeExercicio(Fase f) => f.totalExercicios > 1
-      ? 'Exercício ${f.exercicioIndex + 1}/${f.totalExercicios}'
-      : f.exercicioNome;
-
   /// "Série X/Y" da fase, quando ela tem mais de uma série.
   String? _serieAtual(Fase f) => (f.serie > 0 && f.totalSeries > 1)
       ? 'Série ${f.serie}/${f.totalSeries}'
       : null;
 
-  /// Rótulo da barra do topo: nome do exercício + a pílula azul da série (o
-  /// MESMO visual do carimbo que pisca ao fechar a série).
+  /// Rótulo da barra do topo: TODOS os exercícios da sessão, na ordem, ligados
+  /// por " • " (ex.: "Flexão Declinada • Flexão PPP • Argola Pronada"). O
+  /// contador regressivo do treino fica no canto direito, na mesma linha.
   Widget _progressoRotulo(TextStyle estilo) {
-    final f = _fases[_idx];
-    final serie = _serieAtual(f);
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: _nomeExercicio(f), style: estilo),
-          if (serie != null) ...[
-            TextSpan(text: ' · ', style: estilo),
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: _pillSerie(serie, fontSize: 12.5),
-            ),
-          ],
-        ],
-      ),
+    final nomes = widget.exercicios.isEmpty
+        ? _fases[_idx].exercicioNome
+        : widget.exercicios.map((e) => e.nome).join(' • ');
+    return Text(
+      nomes,
+      style: estilo,
+      maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
   }
@@ -677,7 +665,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           alignment: PlaceholderAlignment.middle,
           child: _pillSerie(
             serie,
-            fontSize: 15,
+            fontSize: 16,
             // Azul FIXO em TODOS os temas (o mesmo do carimbo do fim da série).
             fundo: AppColors.accentAzul,
             cor: AppColors.onAccentAzul,
