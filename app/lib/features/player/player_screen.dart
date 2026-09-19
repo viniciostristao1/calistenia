@@ -560,7 +560,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           const SizedBox(height: 6),
           Row(
             children: [
-              Expanded(child: Text(_rotuloProgresso(), style: estilo)),
+              Expanded(child: _progressoRotulo(estilo)),
               // Tempo restante do TREINO TODO (canto direito, mesma fonte).
               Icon(Icons.timer_outlined, size: 13, color: AppColors.dim),
               const SizedBox(width: 3),
@@ -583,34 +583,90 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     return (ms / 1000).ceil();
   }
 
-  String _rotuloProgresso() {
+  /// Nome do exercício (ou "Exercício X/Y") da fase — sem a parte da série.
+  String _nomeExercicio(Fase f) => f.totalExercicios > 1
+      ? 'Exercício ${f.exercicioIndex + 1}/${f.totalExercicios}'
+      : f.exercicioNome;
+
+  /// "Série X/Y" da fase, quando ela tem mais de uma série.
+  String? _serieAtual(Fase f) => (f.serie > 0 && f.totalSeries > 1)
+      ? 'Série ${f.serie}/${f.totalSeries}'
+      : null;
+
+  /// Rótulo da barra do topo: nome do exercício + a pílula azul da série (o
+  /// MESMO visual do carimbo que pisca ao fechar a série).
+  Widget _progressoRotulo(TextStyle estilo) {
     final f = _fases[_idx];
-    final ex = f.totalExercicios > 1
-        ? 'Exercício ${f.exercicioIndex + 1}/${f.totalExercicios}'
-        : f.exercicioNome;
-    final ser = (f.serie > 0 && f.totalSeries > 1)
-        ? ' · Série ${f.serie}/${f.totalSeries}'
-        : '';
-    return '$ex$ser';
+    final serie = _serieAtual(f);
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: _nomeExercicio(f), style: estilo),
+          if (serie != null) ...[
+            TextSpan(text: ' · ', style: estilo),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: _pillSerie(serie, fontSize: 11),
+            ),
+          ],
+        ],
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
+  /// Pílula azul da série ("Série 1/3") — mesmo visual do carimbo do fim da
+  /// série: fundo accent, letra onAccent.
+  Widget _pillSerie(String texto, {double fontSize = 12}) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2.5),
+    decoration: BoxDecoration(
+      color: context.accent,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      texto,
+      style: TextStyle(
+        color: context.onAccent,
+        fontWeight: FontWeight.w800,
+        fontSize: fontSize,
+        height: 1.2,
+      ),
+    ),
+  );
+
   /// Subtexto dentro do anel (só lado/série — as repetições viraram a caixa
-  /// amarela acima do cronômetro).
-  String _subtextoAnel(Fase f) {
+  /// amarela acima do cronômetro). O trecho da SÉRIE sai como pílula azul (o
+  /// mesmo visual do carimbo do fim da série); o resto segue no cinza.
+  Widget _subtextoAnel(Fase f) {
+    final dim = TextStyle(color: AppColors.dim, fontSize: 14);
+    final serie = _serieAtual(f);
+    String? prefixo;
     switch (f.tipo) {
       case FaseTipo.preparacao:
-        return f.lado > 0 ? 'Prepare o lado ${f.lado}' : 'Prepare-se';
+        prefixo = f.lado > 0 ? 'Prepare o lado ${f.lado}' : 'Prepare-se';
       case FaseTipo.descanso:
-        return f.totalSeries > 1
-            ? 'Recupere · série ${f.serie}/${f.totalSeries}'
-            : 'Recupere';
+        prefixo = 'Recupere';
       case FaseTipo.execucao:
-        final partes = <String>[
-          if (f.lado > 0) 'Lado ${f.lado}/2',
-          if (f.totalSeries > 1) 'Série ${f.serie}/${f.totalSeries}',
-        ];
-        return partes.isEmpty ? 'Vai!' : partes.join(' · ');
+        prefixo = f.lado > 0 ? 'Lado ${f.lado}/2' : null;
     }
+    final partes = <InlineSpan>[
+      if (prefixo != null) TextSpan(text: prefixo, style: dim),
+      if (serie != null) ...[
+        if (prefixo != null) TextSpan(text: ' · ', style: dim),
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: _pillSerie(serie, fontSize: 13),
+        ),
+      ],
+    ];
+    return Text.rich(
+      TextSpan(
+        children: partes.isEmpty
+            ? [TextSpan(text: 'Vai!', style: dim)]
+            : partes,
+      ),
+      textAlign: TextAlign.center,
+    );
   }
 
   /// Fonte compartilhada pelas tarjas do topo (nome e contador) — "placar" do
@@ -719,10 +775,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                 ),
               ),
               const SizedBox(height: 3),
-              Text(
-                _subtextoAnel(fase),
-                style: TextStyle(color: AppColors.dim, fontSize: 14),
-              ),
+              _subtextoAnel(fase),
             ],
           ),
         ],
@@ -730,15 +783,16 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     );
   }
 
-  /// "A seguir: …" — MESMA tipografia do rótulo da fase dentro do anel
-  /// ("EXECUÇÃO", "DESCANSO"…): mesma cor da fase, tamanho, peso e espaçamento.
+  /// "A SEGUIR: …" — MESMA tipografia do rótulo da fase dentro do anel
+  /// ("EXECUÇÃO", "DESCANSO"…): maiúsculas, cor da fase, tamanho, peso e
+  /// espaçamento.
   Widget _legendaProxima(Color cor) {
     final j = proximaEtapaIdx(_fases, _idx);
     final txt = j < 0
         ? 'A seguir: fim do treino'
         : 'A seguir: ${descricaoEtapa(_fases[j])}';
     return Text(
-      txt,
+      txt.toUpperCase(),
       style: TextStyle(
         color: cor,
         fontSize: 14,

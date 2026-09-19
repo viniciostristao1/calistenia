@@ -5,6 +5,24 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-18 — Cronômetro: pílula da série + "A SEGUIR" maiúsculo (v0.84.2)
+
+**Pedido:** o "Série 1/3" com fundo azul/letra branca (como o carimbo que pisca ao fechar a
+série) e o "A seguir: …" todo em maiúsculas.
+
+**Como:** helper `_pillSerie` (Container `accent` + `onAccent`, radius 20, w800) usado em
+dois lugares com `Text.rich` + `WidgetSpan(alignment: PlaceholderAlignment.middle)`: no
+rótulo do topo (a série depois do nome do exercício) e no subtexto do anel
+("Lado 1/2 · [Série 1/3]", "Recupere · [Série 1/3]"). O resto de cada linha segue no cinza.
+`_rotuloProgresso` virou `_nomeExercicio` + `_serieAtual`; o "A seguir" ganhou
+`.toUpperCase()`.
+
+**Gotchas:**
+- Sem `PlaceholderAlignment.middle` o `WidgetSpan` desalinha do texto (baseline).
+- Antes de rodar `dart format` num arquivo existente, dá para ver o estrago **sem escrever**:
+  `dart format --output=show <arquivo> > /tmp/fmt.dart && diff <arquivo> /tmp/fmt.dart`.
+  Neste arquivo o único diff era a minha linha nova — aí sim é seguro formatar.
+
 ## 2026-09-18 — Cronômetro: "A seguir" com a tipografia da fase (v0.84.1)
 
 **Pedido:** o "A seguir: Descanso • 1 min" estava em cinza dim/13 e destoava do rótulo da

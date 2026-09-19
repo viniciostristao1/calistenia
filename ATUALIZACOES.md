@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-18 — v0.84.2 (Série 1/3 em destaque e "A SEGUIR" em maiúsculas):**
+  - A **"Série 1/3"** agora aparece como uma **pílula azul com letra branca** — o mesmo estilo do carimbo que pisca quando você fecha a série ("Série 2/3 ✓"). Vale no **topo** (depois do nome do exercício) e **embaixo do número** (ex.: "Lado 1/2 · Série 1/3").
+  - O **"A seguir: Descanso • 1 min"** ficou todo em **MAIÚSCULAS** ("A SEGUIR: DESCANSO • 1 MIN"), com a fonte/cor da fase que você já tinha pedido.
+
 - **2026-09-18 — v0.84.1 (o "A seguir" do cronômetro no mesmo estilo da fase):**
   - O **"A seguir: Descanso • 1 min"** abaixo do anel agora usa a **mesma tipografia do rótulo da fase** ("EXECUÇÃO", "DESCANSO"…): mesma cor (a cor da fase atual), tamanho, peso e espaçamento. Antes era um cinza menor e mais apagado.
 
