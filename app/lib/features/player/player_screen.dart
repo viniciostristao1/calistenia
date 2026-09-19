@@ -80,6 +80,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// Fica pendente se o usuário tocar "Repetir treino".
   List<PremioDia> _premios = const [];
 
+  /// Cerimônia em andamento (tocando a fila de prêmios): a tela de fim SAI de
+  /// cena para a animação vir **depois** da mensagem, nunca por cima dela.
+  bool _emCerimonia = false;
+
   String? _carimbo; // "Série 2/3 ✓" mostrado ao concluir uma série
   Timer? _carimboTimer;
 
@@ -296,6 +300,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _novosRecordes = const [];
       _fraseCompleto = null;
       _ganhouInsignia = false;
+      _emCerimonia = false;
       _restanteMs = _fases.isEmpty ? 0 : _fases[0].segundos * 1000;
     });
     _iniciar();
@@ -854,6 +859,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   }
 
   Widget _telaConcluido() {
+    // Cerimônia: some com a tela de fim (mensagem/cards) antes de animar.
+    if (_emCerimonia) {
+      return Scaffold(
+        backgroundColor: AppColors.bg,
+        body: const SizedBox.shrink(),
+      );
+    }
     // Treino inteiro + gamificação ligada e ainda sem resposta -> pergunta.
     if (_gamificaTreino && _respostaCompleto == null) return _telaPergunta();
     if (_gamificaTreino && _respostaCompleto == false) return _telaIncompleto();
@@ -887,9 +899,18 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   }
 
   /// Toca a fila de prêmios do dia (baús e/ou o Rating) e volta pra home.
+  ///
+  /// A cerimônia vem DEPOIS da mensagem: ao tocar "Voltar" a tela de fim sai de
+  /// cena (fica só o fundo) e só então a animação começa — nada de baú/estrela
+  /// por cima do "Treino completo!".
   Future<void> _sairComCerimonia() async {
     final premios = _premios;
     _premios = const []; // consome a fila (uma vez só)
+    if (premios.isNotEmpty && mounted) {
+      setState(() => _emCerimonia = true);
+      // Um respiro de tela limpa antes do 1º prêmio (a troca é visível).
+      await Future<void>.delayed(const Duration(milliseconds: 140));
+    }
     for (final p in premios) {
       if (!mounted) break;
       await _tocarPremio(p);

@@ -5,6 +5,23 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-19 — Cerimônia DEPOIS da mensagem de fim (v0.84.5)
+
+**Pedido:** a animação (baús/setas) aparecia **em cima** do "Treino completo!" — o diálogo da
+cerimônia tem `barrierColor: Colors.black45`, então a tela de fim ficava visível atrás,
+escurecida. O certo: pergunta → mensagem → **depois** a animação.
+
+**Como:** flag `_emCerimonia` no `_PlayerScreenState`. Ao tocar "Voltar", se há fila de
+prêmios, `setState` troca `_telaConcluido()` por um `Scaffold` vazio (só `AppColors.bg`) e
+espera ~140 ms antes do 1º `_tocarPremio`; a animação roda sobre a tela limpa e no fim o
+player dá `pop()` para a home. Sem prêmio nenhum (ex.: tela do "não consegui"), o `pop` é
+direto como antes.
+
+**Por que assim (e não popar e animar na home):** fica tudo dentro do player (nenhum
+plumbing de `Navigator.pop(result)` + cerimônia na home), o mesmo `_emCerimonia` cobre
+baús **e** o overlay do `levelUp` (a tela já está limpa quando as setas entram), e o
+"Repetir treino" continua com a fila pendente.
+
 ## 2026-09-19 — Pílula da série fixa + cores do tema Madeira (v0.84.3/v0.84.4)
 
 **Pedidos:** (1) a "Série 1/3" **embaixo do número** deve ser azul/branca em TODOS os temas
