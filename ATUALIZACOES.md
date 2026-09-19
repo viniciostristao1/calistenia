@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-19 — v0.84.4 (Madeira com título/X brancos e "Série 1/3" maior):**
+  - **Tema Madeira:** o **título do treino** e o **X de fechar** no Cronômetro agora ficam **brancos** (a foto escurecida atrás pede texto claro).
+  - A **"Série 1/3"** ficou um pouco **maior** — tanto no topo (ao lado do nome do exercício) quanto na pílula azul embaixo do número.
+
 - **2026-09-19 — v0.84.3 (pílula da série igual em todos os temas + ajustes no tema Madeira):**
   - A **"Série 1/3" embaixo do número** agora é **azul com letra branca em TODOS os temas** — antes ela pegava a cor do tema (âmbar, marrom…). É o mesmo azul do carimbo que pisca no fim da série.
   - **Tema Madeira (o claro):** o **número da contagem** ficou **branco** (antes saía escuro e sumia sobre a foto) e o **título do treino no topo** ficou **preto**.

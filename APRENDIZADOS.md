@@ -5,7 +5,7 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
-## 2026-09-19 — Pílula da série fixa + cores do tema Madeira (v0.84.3)
+## 2026-09-19 — Pílula da série fixa + cores do tema Madeira (v0.84.3/v0.84.4)
 
 **Pedidos:** (1) a "Série 1/3" **embaixo do número** deve ser azul/branca em TODOS os temas
 (antes usava `context.accent` → âmbar no tema âmbar, marrom no madeira); (2) no tema
@@ -20,6 +20,10 @@ texto do tema, como era).
 **Por que só no Madeira:** é o ÚNICO tema claro (`Paleta.brilho == light`, texto `#382E20`);
 nos temas escuros o texto do tema já é claro. O número fica sobre a FOTO escurecida (ou o
 gradiente suave), então no claro ele sumia.
+
+**Ajuste (v0.84.4):** o título do topo voltou atrás — virou **branco** (junto com o X), e
+não preto: sobre a foto escurecida o branco é o que lê bem. E a pílula da série cresceu
+(12,5 no topo, 15 embaixo do número, com padding 10/3).
 
 **Gotcha:** pílula com cor fixa ≠ pílula do tema — as duas convivem (a do topo segue
 `context.accent`, a de baixo é azul fixo). Se um dia quiser tudo azul, é só passar as

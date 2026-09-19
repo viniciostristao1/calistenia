@@ -301,9 +301,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _iniciar();
   }
 
-  /// No tema **Madeira** (o único claro), o número da contagem vai a BRANCO e o
-  /// título do topo a PRETO (pedido); nos demais temas cada um segue o texto do
-  /// tema.
+  /// No tema **Madeira** (o único claro), o número da contagem, o título do topo
+  /// e o X da barra vão a BRANCO (a foto escurecida por trás pede texto claro);
+  /// nos demais temas cada um segue o texto do tema.
   bool get _temaMadeira => ref.watch(temaProvider).value == TemaApp.madeira;
 
   /// Esta sessão pergunta "treino completo?" no fim? (Só para treino inteiro,
@@ -532,7 +532,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close, color: _temaMadeira ? Colors.white : null),
             onPressed: () => Navigator.of(context).pop(),
           ),
           Expanded(
@@ -541,7 +541,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: _temaMadeira ? Colors.black : null,
+                color: _temaMadeira ? Colors.white : null,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -616,7 +616,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
             TextSpan(text: ' · ', style: estilo),
             WidgetSpan(
               alignment: PlaceholderAlignment.middle,
-              child: _pillSerie(serie, fontSize: 11),
+              child: _pillSerie(serie, fontSize: 12.5),
             ),
           ],
         ],
@@ -633,7 +633,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     Color? fundo,
     Color? cor,
   }) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2.5),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
     decoration: BoxDecoration(
       color: fundo ?? context.accent,
       borderRadius: BorderRadius.circular(20),
@@ -672,7 +672,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           alignment: PlaceholderAlignment.middle,
           child: _pillSerie(
             serie,
-            fontSize: 13,
+            fontSize: 15,
             // Azul FIXO em TODOS os temas (o mesmo do carimbo do fim da série).
             fundo: AppColors.accentAzul,
             cor: AppColors.onAccentAzul,
