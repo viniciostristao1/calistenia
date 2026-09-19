@@ -75,6 +75,9 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
       ..showSnackBar(SnackBar(
         content: const Text('Exercício excluído'),
         duration: const Duration(seconds: 3),
+        // ⚠️ No Flutter atual, SnackBar COM ação persiste por padrão (não some
+        // sozinha). `persist: false` devolve o fechamento automático pelo tempo.
+        persist: false,
         action: SnackBarAction(
           label: 'Desfazer',
           onPressed: () {
@@ -176,6 +179,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
       ..showSnackBar(SnackBar(
         content: const Text('Treino excluído'),
         duration: const Duration(seconds: 3),
+        persist: false, // idem: com ação o padrão é não fechar sozinha
         action: SnackBarAction(
           label: 'Desfazer',
           onPressed: () => notifier.salvar(removido),

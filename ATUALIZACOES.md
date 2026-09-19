@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-19 — v0.84.7 (correção: o "Desfazer" não sumia mais sozinho):**
+  - Corrigido: ao **excluir um exercício** (ou um treino) no editor, a faixa **"Exercício excluído · Desfazer"** ficava **presa na tela** para sempre. Agora ela some sozinha depois de **3 segundos**, como sempre foi — e o **Desfazer** continua funcionando se você tocar a tempo.
+
 - **2026-09-19 — v0.84.6 (topo do Cronômetro com todos os exercícios; ajustes na série):**
   - No topo do Cronômetro agora aparecem **todos os exercícios do treino**, na ordem, ligados por " • " (ex.: "Flexão Declinada • Flexão PPP • Argola Pronada") — antes mostrava só "Exercício 1/3" ou o nome do atual. O **contador regressivo** segue no canto direito.
   - Saiu a **"Série 1/3"** que ficava ao lado do nome do exercício (no topo).

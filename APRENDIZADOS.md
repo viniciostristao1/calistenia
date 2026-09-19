@@ -5,6 +5,24 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-19 — Bug: SnackBar com ação NÃO sumia sozinha (v0.84.7)
+
+**Sintoma:** ao excluir um exercício no editor, a faixa "Exercício excluído · Desfazer"
+ficava **para sempre** (apesar de `duration: Duration(seconds: 3)`).
+
+**Causa (no framework, não no app):** no Flutter atual (3.44.x) o `SnackBar` ganhou o
+parâmetro `persist` e o construtor faz **`persist = persist ?? action != null`** — ou seja,
+**SnackBar com ação persiste por padrão** (fica até o usuário tocar/descartar). O `duration`
+continua valendo, mas o timer em `ScaffoldMessengerState.build` faz `if (snackBar.persist)
+return;` antes do `hideCurrentSnackBar` (ver `material/scaffold.dart`).
+
+**Fix:** `persist: false` explícito nos dois SnackBars com `SnackBarAction` (excluir
+exercício e excluir treino, `treino_editor_screen.dart`).
+
+**Lição:** ao ver um SnackBar "eterno", conferir `persist` no SDK antes de caçar o bug no
+app — e, na dúvida, dar uma olhada no código do framework instalado
+(`/root/flutter/packages/flutter/lib/src/material/`), que é a fonte da verdade da versão.
+
 ## 2026-09-19 — Topo do Cronômetro com todos os exercícios (v0.84.6)
 
 **Pedidos:** (1) a pílula "Série 1/3" sob o número um tico maior; (2) tirar a "Série 1/3" do
