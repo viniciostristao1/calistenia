@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-19 — v0.84.3 (pílula da série igual em todos os temas + ajustes no tema Madeira):**
+  - A **"Série 1/3" embaixo do número** agora é **azul com letra branca em TODOS os temas** — antes ela pegava a cor do tema (âmbar, marrom…). É o mesmo azul do carimbo que pisca no fim da série.
+  - **Tema Madeira (o claro):** o **número da contagem** ficou **branco** (antes saía escuro e sumia sobre a foto) e o **título do treino no topo** ficou **preto**.
+
 - **2026-09-18 — v0.84.2 (Série 1/3 em destaque e "A SEGUIR" em maiúsculas):**
   - A **"Série 1/3"** agora aparece como uma **pílula azul com letra branca** — o mesmo estilo do carimbo que pisca quando você fecha a série ("Série 2/3 ✓"). Vale no **topo** (depois do nome do exercício) e **embaixo do número** (ex.: "Lado 1/2 · Série 1/3").
   - O **"A seguir: Descanso • 1 min"** ficou todo em **MAIÚSCULAS** ("A SEGUIR: DESCANSO • 1 MIN"), com a fonte/cor da fase que você já tinha pedido.

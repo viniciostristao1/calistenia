@@ -5,6 +5,26 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-19 — Pílula da série fixa + cores do tema Madeira (v0.84.3)
+
+**Pedidos:** (1) a "Série 1/3" **embaixo do número** deve ser azul/branca em TODOS os temas
+(antes usava `context.accent` → âmbar no tema âmbar, marrom no madeira); (2) no tema
+**Madeira**, o número da contagem branco e o título do topo preto.
+
+**Como:** `_pillSerie` ganhou `fundo`/`cor` opcionais; o subtexto do anel passa as
+constantes fixas `AppColors.accentAzul`/`onAccentAzul` (o mesmo azul do carimbo). Um getter
+`_temaMadeira` (`ref.watch(temaProvider).value == TemaApp.madeira`) decide as duas cores do
+player: número `Colors.white`, título `Colors.black` (nos outros temas `null` = herda o
+texto do tema, como era).
+
+**Por que só no Madeira:** é o ÚNICO tema claro (`Paleta.brilho == light`, texto `#382E20`);
+nos temas escuros o texto do tema já é claro. O número fica sobre a FOTO escurecida (ou o
+gradiente suave), então no claro ele sumia.
+
+**Gotcha:** pílula com cor fixa ≠ pílula do tema — as duas convivem (a do topo segue
+`context.accent`, a de baixo é azul fixo). Se um dia quiser tudo azul, é só passar as
+constantes também no `_progressoRotulo`.
+
 ## 2026-09-18 — Cronômetro: pílula da série + "A SEGUIR" maiúsculo (v0.84.2)
 
 **Pedido:** o "Série 1/3" com fundo azul/letra branca (como o carimbo que pisca ao fechar a

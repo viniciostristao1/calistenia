@@ -20,6 +20,7 @@ import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
+import '../../services/tema_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
@@ -300,6 +301,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _iniciar();
   }
 
+  /// No tema **Madeira** (o único claro), o número da contagem vai a BRANCO e o
+  /// título do topo a PRETO (pedido); nos demais temas cada um segue o texto do
+  /// tema.
+  bool get _temaMadeira => ref.watch(temaProvider).value == TemaApp.madeira;
+
   /// Esta sessão pergunta "treino completo?" no fim? (Só para treino inteiro,
   /// com a gamificação ligada.)
   bool get _gamificaTreino =>
@@ -532,7 +538,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
           Expanded(
             child: Text(
               widget.titulo,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: _temaMadeira ? Colors.black : null,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -617,16 +627,21 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 
   /// Pílula azul da série ("Série 1/3") — mesmo visual do carimbo do fim da
   /// série: fundo accent, letra onAccent.
-  Widget _pillSerie(String texto, {double fontSize = 12}) => Container(
+  Widget _pillSerie(
+    String texto, {
+    double fontSize = 12,
+    Color? fundo,
+    Color? cor,
+  }) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2.5),
     decoration: BoxDecoration(
-      color: context.accent,
+      color: fundo ?? context.accent,
       borderRadius: BorderRadius.circular(20),
     ),
     child: Text(
       texto,
       style: TextStyle(
-        color: context.onAccent,
+        color: cor ?? context.onAccent,
         fontWeight: FontWeight.w800,
         fontSize: fontSize,
         height: 1.2,
@@ -655,7 +670,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         if (prefixo != null) TextSpan(text: ' · ', style: dim),
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: _pillSerie(serie, fontSize: 13),
+          child: _pillSerie(
+            serie,
+            fontSize: 13,
+            // Azul FIXO em TODOS os temas (o mesmo do carimbo do fim da série).
+            fundo: AppColors.accentAzul,
+            cor: AppColors.onAccentAzul,
+          ),
         ),
       ],
     ];
@@ -766,10 +787,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '$segundos',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 244,
                       fontWeight: FontWeight.w800,
                       height: 0.78,
+                      color: _temaMadeira ? Colors.white : null,
                     ),
                   ),
                 ),
