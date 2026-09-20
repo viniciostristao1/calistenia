@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-20 — v0.85.3 (ícone do app menor, agora dentro da área segura):**
+  - Diminuí de novo o logo do **ícone do aplicativo** (agora no tamanho da **área segura** do Android) — não sobra mais nenhuma parte para fora da máscara do launcher, em nenhum formato. O fundo segue com o brilho da arte original.
+
 - **2026-09-20 — v0.85.2 (ícone do app inteiro dentro da área visível):**
   - O logo do **ícone do aplicativo** agora **cabe inteiro** na área que o launcher mostra — antes ele passava da máscara (a coroa e o botão do cronômetro ficavam "para fora"/cortados). O fundo continua com o brilho da arte original.
   - O logo **de dentro do app** (ao lado de "Calis Timer") segue **igual** — aquele ficou certo.
