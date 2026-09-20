@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-20 — v0.85.2 (ícone do app inteiro dentro da área visível):**
+  - O logo do **ícone do aplicativo** agora **cabe inteiro** na área que o launcher mostra — antes ele passava da máscara (a coroa e o botão do cronômetro ficavam "para fora"/cortados). O fundo continua com o brilho da arte original.
+  - O logo **de dentro do app** (ao lado de "Calis Timer") segue **igual** — aquele ficou certo.
+
 - **2026-09-20 — v0.85.1 (logo do app maior e com a cara da imagem original):**
   - O **ícone do aplicativo** ficou **maior e vivo**: agora usa a **própria arte** (com o brilho azul/laranja do fundo) em vez de um fundo azul chapado com o logo pequeno no meio. O logo ocupa o ícone inteiro e não é cortado pela máscara do launcher.
   - No **cabeçalho da aba Treinos**, o logo ao lado de "Calis Timer" ficou **maior** (quase 1/3 a mais) e com a **imagem completa** (quadradinho arredondado), não mais o recorte apagado.

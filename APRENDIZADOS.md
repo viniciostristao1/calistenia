@@ -33,6 +33,15 @@ canvas com as **bordas esticadas** (média da coluna/linha da borda) — emenda 
 degradê e a coroa/botão não são cortados. No header, o logo agora é a **arte em quadradinho**
 (34px, `ClipRRect` 8) em vez do recorte transparente de 26px.
 
+**Feedback (v0.85.2) — "maior que a dimensão, partes para fora":** a arte a **92%** deixou o
+raio do logo em **0,49 do canvas**, e a máscara do launcher (círculo visível ~0,45-0,5, com
+zoom em algumas launchers) cortava a coroa/botão. Regra prática: medir o **raio máximo do
+logo** (distância do centro até o pixel mais distante do recorte, via numpy) e manter
+**≤ ~0,40 do canvas** — a zona segura "oficial" é 0,333 (os 72dp internos dos 108dp), mas
+na prática os launchers mostram um pouco mais; 0,40 passa em todos os que testamos. Escala
+final: **0,74** (logo a 0,395 do raio). O ícone do header (26→34px, arte no quadradinho)
+foi aprovado e NÃO se mexe mais.
+
 **Gotchas:** `gh api .../contents/arquivo.png` devolve `encoding: none` para arquivos >1MB —
 baixar pelo `download_url` (raw). Remover do repo errado = `gh api -X DELETE` com o `sha`
 (não precisa clonar). As **screenshots** da loja ainda mostram o logo antigo no app bar —
