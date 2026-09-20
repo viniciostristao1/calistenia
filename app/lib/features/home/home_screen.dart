@@ -266,11 +266,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
               child: Image.asset(
                 'assets/icon/logo.png',
-                height: 26,
-                width: 26,
+                height: 34,
+                width: 34,
                 fit: BoxFit.cover,
               ),
             ),

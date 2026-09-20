@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-20 — v0.85.1 (logo do app maior e com a cara da imagem original):**
+  - O **ícone do aplicativo** ficou **maior e vivo**: agora usa a **própria arte** (com o brilho azul/laranja do fundo) em vez de um fundo azul chapado com o logo pequeno no meio. O logo ocupa o ícone inteiro e não é cortado pela máscara do launcher.
+  - No **cabeçalho da aba Treinos**, o logo ao lado de "Calis Timer" ficou **maior** (quase 1/3 a mais) e com a **imagem completa** (quadradinho arredondado), não mais o recorte apagado.
+
 - **2026-09-20 — v0.85.0 (novo logo do Calis Timer):**
   - **Logo novo** (o cronômetro 3D com a figura na prancha) no **ícone do aplicativo** (launcher) e **dentro do app**, ao lado do nome "Calis Timer" na aba Treinos.
   - O ícone do app agora é o **adaptativo** (fundo azul-escuro + logo na zona de segurança, sem corte nas bordas) e o **ícone da loja** (feature graphic do Play) também foi atualizado com o logo novo.

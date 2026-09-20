@@ -24,10 +24,21 @@ usar como logo do ícone do app E no cabeçalho da home.
 6. `store/icon_512.png` e `store/feature_graphic.png` refeitos (mesmo layout/cores do antigo:
    laranja #F5A623, cinza #9AA3B3, Roboto do SDK em `bin/cache/artifacts/material_fonts/`).
 
+**Feedback (v0.85.1) — o ícone ficou pequeno e "opaco":** eu havia usado no adaptativo um
+**fundo azul chapado** (cor do canto da arte) + o **recorte a 62%** (zona segura). Resultado:
+círculo escuro sem brilho com o logo pequeno no meio — nada a ver com a arte. **Certo:** no
+adaptativo, o **background é a própria arte** (com o brilho) e o **foreground fica
+transparente**; para o logo inteiro caber na máscara sem corte, a arte vai a **92%** do
+canvas com as **bordas esticadas** (média da coluna/linha da borda) — emenda invisível no
+degradê e a coroa/botão não são cortados. No header, o logo agora é a **arte em quadradinho**
+(34px, `ClipRRect` 8) em vez do recorte transparente de 26px.
+
 **Gotchas:** `gh api .../contents/arquivo.png` devolve `encoding: none` para arquivos >1MB —
 baixar pelo `download_url` (raw). Remover do repo errado = `gh api -X DELETE` com o `sha`
 (não precisa clonar). As **screenshots** da loja ainda mostram o logo antigo no app bar —
-trocar quando rodar o app de novo.
+trocar quando rodar o app de novo. Ícone adaptativo "de verdade" = arte no BACKGROUND +
+foreground transparente (não é o padrão que o `flutter_launcher_icons` sugere, mas é o que
+preserva a arte gerada).
 
 ## 2026-09-19 — Bug: SnackBar com ação NÃO sumia sozinha (v0.84.7)
 
