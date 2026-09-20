@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-20 — v0.85.0 (novo logo do Calis Timer):**
+  - **Logo novo** (o cronômetro 3D com a figura na prancha) no **ícone do aplicativo** (launcher) e **dentro do app**, ao lado do nome "Calis Timer" na aba Treinos.
+  - O ícone do app agora é o **adaptativo** (fundo azul-escuro + logo na zona de segurança, sem corte nas bordas) e o **ícone da loja** (feature graphic do Play) também foi atualizado com o logo novo.
+  - A imagem original ficou guardada na raiz do repositório (`file_0000000035a4820e98b238802d68146c.png`) e foi **removida do repositório errado** (carlog_app).
+
 - **2026-09-19 — v0.84.7 (correção: o "Desfazer" não sumia mais sozinho):**
   - Corrigido: ao **excluir um exercício** (ou um treino) no editor, a faixa **"Exercício excluído · Desfazer"** ficava **presa na tela** para sempre. Agora ela some sozinha depois de **3 segundos**, como sempre foi — e o **Desfazer** continua funcionando se você tocar a tempo.
 

@@ -5,6 +5,30 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-20 — Logo novo do Calis Timer (v0.85.0)
+
+**Pedido:** a imagem `file_0000000035a4820e98b238802d68146c.png` (cronômetro 3D + figura na
+prancha, 1254×1254) tinha sido enviada no repo errado (carlog_app). Mover para o calistenia e
+usar como logo do ícone do app E no cabeçalho da home.
+
+**Como (pipeline do ícone):**
+1. **Recorte do fundo** (a arte é RGB, sem alpha): *region growing* a partir das bordas —
+   BFS iterativo com numpy aceitando vizinho cuja cor difere < 11 (segue o degradê, para na
+   borda do desenho); depois `MinFilter(3)` (tira o fio escuro) + `GaussianBlur(1)` no alpha.
+   O miolo do mostrador (navy, fechado pelo anel azul) NÃO vaza ✓.
+2. `assets/icon/logo.png` = recorte a 94% do canvas (usado no header da home, 26×26).
+3. `icon_full.png` = a ARTE completa (com o fundo escuro) — ícone "legado".
+4. `icon_background.png` = cor sólida do canto da arte (RGB 1,35,76) e
+   `icon_foreground.png` = recorte a 62% (zona segura do adaptativo: o crown não é cortado).
+5. `dart run flutter_launcher_icons` regenera mipmaps + `drawable-*/ic_launcher_*`.
+6. `store/icon_512.png` e `store/feature_graphic.png` refeitos (mesmo layout/cores do antigo:
+   laranja #F5A623, cinza #9AA3B3, Roboto do SDK em `bin/cache/artifacts/material_fonts/`).
+
+**Gotchas:** `gh api .../contents/arquivo.png` devolve `encoding: none` para arquivos >1MB —
+baixar pelo `download_url` (raw). Remover do repo errado = `gh api -X DELETE` com o `sha`
+(não precisa clonar). As **screenshots** da loja ainda mostram o logo antigo no app bar —
+trocar quando rodar o app de novo.
+
 ## 2026-09-19 — Bug: SnackBar com ação NÃO sumia sozinha (v0.84.7)
 
 **Sintoma:** ao excluir um exercício no editor, a faixa "Exercício excluído · Desfazer"
