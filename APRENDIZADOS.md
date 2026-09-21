@@ -5,6 +5,21 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-20 — Calendário do Check-in: estrela no lugar dos pontinhos (v0.85.4)
+
+**Pedido:** dia com **insígnia** (estrela) não precisa dos pontinhos de cor dos exercícios
+— a estrela já significa "treinou/completou". Se coincidir com **conquista**, mostrar as
+duas: a medalha/troféu e a **estrela ao lado**.
+
+**Como:** `_Celula` ganhou `estrela: bool`; no `_calendario` montei `estrelaPorDia` (set com
+`Insignia.id`, que já é a chave `YYYY-MM-DD`) e passo por dia. Prioridade do miolo da célula:
+**conquista(s) + estrela** → senão **estrela** → senão os **pontinhos**. Quando tem estrela,
+o limite de miniaturas cai para 2 conquistas (`take(estrela ? 2 : 3)`) para caber na célula
+de 7 colunas. `temConteudo` (fundo da célula) também considera a estrela.
+
+**Nota:** o arquivo NÃO está formatado com o formatter novo (a lista `_meses` do topo
+reformata) — conferir com `dart format --output=show` e editar à mão, como sempre.
+
 ## 2026-09-20 — Logo novo do Calis Timer (v0.85.0)
 
 **Pedido:** a imagem `file_0000000035a4820e98b238802d68146c.png` (cronômetro 3D + figura na

@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-20 — v0.85.4 (estrela no lugar dos pontinhos no Check-in):**
+  - No **calendário do Check-in**, os dias em que você ganhou **insígnia** agora mostram a **estrela ⭐** em vez dos pontinhos das cores dos exercícios (a estrela já diz que o dia foi treinado).
+  - Se no mesmo dia cair **conquista + insígnia**, aparecem as **duas**: a medalha/troféu e, ao lado, a estrela.
+
 - **2026-09-20 — v0.85.3 (ícone do app menor, agora dentro da área segura):**
   - Diminuí de novo o logo do **ícone do aplicativo** (agora no tamanho da **área segura** do Android) — não sobra mais nenhuma parte para fora da máscara do launcher, em nenhum formato. O fundo segue com o brilho da arte original.
 

@@ -155,6 +155,15 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
           (conqPorDia['${c.data.year}-${c.data.month}-${c.data.day}'] ??= [])
               .add(t);
         }
+        // Dias com INSÍGNIA (estrela): no calendário a estrela substitui os
+        // pontinhos dos exercícios (ela já diz que o dia foi treinado).
+        final estrelaPorDia = gamiOn
+            ? {
+                for (final i in ref.watch(insigniasProvider).value ??
+                    const <Insignia>[])
+                  i.id,
+              }
+            : const <String>{};
         final diasNoMes = DateTime(_mes.year, _mes.month + 1, 0).day;
         final offset = _mes.weekday - 1; // seg=0 .. dom=6
         final feitosNoMes = todos
@@ -188,12 +197,12 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   if (i < offset) return const SizedBox.shrink();
                   final dia = DateTime(_mes.year, _mes.month, i - offset + 1);
                   final doDia = checkinsDoDia(todos, dia);
+                  final chave = '${dia.year}-${dia.month}-${dia.day}';
                   return _Celula(
                     dia: dia.day,
                     cores: doDia.map((c) => c.corIndex).toList(),
-                    conquistas:
-                        conqPorDia['${dia.year}-${dia.month}-${dia.day}'] ??
-                            const [],
+                    conquistas: conqPorDia[chave] ?? const [],
+                    estrela: estrelaPorDia.contains(chave),
                     hoje: mesmoDia(dia, hoje),
                     onTap: () => _editarDia(dia),
                   );
@@ -298,6 +307,7 @@ class _Celula extends StatelessWidget {
     required this.dia,
     required this.cores,
     required this.conquistas,
+    required this.estrela,
     required this.hoje,
     required this.onTap,
   });
@@ -305,6 +315,7 @@ class _Celula extends StatelessWidget {
   final int dia;
   final List<int> cores; // corIndex dos check-ins do dia
   final List<TipoConquista> conquistas; // conquistas obtidas nesse dia
+  final bool estrela; // ganhou a INSÍGNIA (estrela) nesse dia
   final bool hoje;
   final VoidCallback onTap;
 
@@ -312,7 +323,7 @@ class _Celula extends StatelessWidget {
   Widget build(BuildContext context) {
     final mostrar = cores.take(4).toList();
     final extra = cores.length - mostrar.length;
-    final temConteudo = cores.isNotEmpty || conquistas.isNotEmpty;
+    final temConteudo = cores.isNotEmpty || conquistas.isNotEmpty || estrela;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: onTap,
@@ -337,14 +348,23 @@ class _Celula extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            // Dia com conquista: mostra a medalha/troféu no lugar dos pontinhos.
-            if (conquistas.isNotEmpty)
+            // Dia com CONQUISTA e/ou INSÍGNIA: mostra a medalha/troféu e/ou a
+            // estrela no lugar dos pontinhos (a estrela vem AO LADO da conquista
+            // quando as duas caem no mesmo dia).
+            if (conquistas.isNotEmpty || estrela)
               Wrap(
-                spacing: 1,
+                spacing: 2,
                 alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  for (final t in conquistas.take(3))
+                  for (final t in conquistas.take(estrela ? 2 : 3))
                     ConquistaBadge(tipo: t, size: 13),
+                  if (estrela)
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 16,
+                      color: AppColors.estrela,
+                    ),
                 ],
               )
             else
