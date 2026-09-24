@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-22 — v0.85.5 (botão "Salvar exercício" flutuante):**
+  - No **editor de exercício**, o **Salvar exercício** agora é **flutuante**: ele fica escondido e **surge na parte de baixo** da tela (na cor do tema) assim que você **altera qualquer coisa** — o nome, um tempo, séries, cor… Se voltar tudo ao original, ele some de novo.
+  - Assim você **não precisa mais rolar até o fim** da folha para salvar.
+
 - **2026-09-20 — v0.85.4 (estrela no lugar dos pontinhos no Check-in):**
   - No **calendário do Check-in**, os dias em que você ganhou **insígnia** agora mostram a **estrela ⭐** em vez dos pontinhos das cores dos exercícios (a estrela já diz que o dia foi treinado).
   - Se no mesmo dia cair **conquista + insígnia**, aparecem as **duas**: a medalha/troféu e, ao lado, a estrela.

@@ -58,6 +58,9 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     super.initState();
     final e = widget.existente;
     _nomeCtrl = TextEditingController(text: e?.nome ?? '');
+    // Rebuild ao digitar: o botão "Salvar exercício" (flutuante) só aparece
+    // quando o texto difere do original.
+    _nomeCtrl.addListener(_aoDigitarNome);
     _prep = e?.preparacaoSeg ?? 10;
     _exec = e?.execucaoSeg ?? 3;
     _desc = e?.descansoSeg ?? 60;
@@ -70,10 +73,56 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     _fundo = e?.fundo;
   }
 
+  void _aoDigitarNome() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _nomeCtrl.removeListener(_aoDigitarNome);
     _nomeCtrl.dispose();
     super.dispose();
+  }
+
+  /// O usuário mexeu em algo? (compara com o estado inicial — edição: o
+  /// exercício original; novo: os valores padrão da folha).
+  bool get _temAlteracoes {
+    final e = widget.existente;
+    final nome = _nomeCtrl.text.trim();
+    if (e == null) {
+      return nome.isNotEmpty ||
+          _prep != 10 ||
+          _exec != 3 ||
+          _desc != 60 ||
+          _reps != 10 ||
+          _series != 3 ||
+          _unilateral ||
+          _descansos != null ||
+          _peso != 0 ||
+          _cor != 0 ||
+          _fundo != null;
+    }
+    return nome != e.nome ||
+        _prep != e.preparacaoSeg ||
+        _exec != e.execucaoSeg ||
+        _desc != e.descansoSeg ||
+        _reps != e.repeticoes ||
+        _series != e.series ||
+        _unilateral != e.unilateral ||
+        _peso != e.pesoKg ||
+        _cor != e.corIndex ||
+        _fundo != e.fundo ||
+        !_mesmosDescansos(e.descansos);
+  }
+
+  bool _mesmosDescansos(List<int>? original) {
+    final a = _descansos;
+    if (a == null || original == null) return a == original;
+    if (a.length != original.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != original[i]) return false;
+    }
+    return true;
   }
 
   /// Mantém a lista de descansos por série do tamanho de `_series` (preenche
@@ -197,7 +246,48 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
+    final alterou = _temAlteracoes;
+    return Stack(
+      children: [
+        _conteudo(bottom, alterou),
+        // "Salvar exercício" FLUTUANTE: só surge quando o usuário altera algo;
+        // fica ancorado embaixo, sobre o conteúdo, na cor do tema.
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            ignoring: !alterou,
+            child: AnimatedSlide(
+              offset: alterou ? Offset.zero : const Offset(0, 1.3),
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              child: AnimatedOpacity(
+                opacity: alterou ? 1 : 0,
+                duration: const Duration(milliseconds: 150),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottom),
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: context.accent,
+                      foregroundColor: context.onAccent,
+                      minimumSize: const Size.fromHeight(52),
+                      elevation: 8,
+                      shadowColor: Colors.black54,
+                    ),
+                    onPressed: _salvar,
+                    child: const Text('Salvar exercício'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _conteudo(double bottom, bool alterou) => Padding(
       padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + bottom),
       child: SingleChildScrollView(
         child: Column(
@@ -334,21 +424,12 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               descansos: _descansos,
               unilateral: _unilateral,
             ),
-            const SizedBox(height: 18),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: context.accent,
-                foregroundColor: context.onAccent,
-                minimumSize: const Size.fromHeight(52),
-              ),
-              onPressed: _salvar,
-              child: const Text('Salvar exercício'),
-            ),
+            // espaço p/ o botão flutuante não cobrir o fim do conteúdo
+            if (alterou) const SizedBox(height: 92),
           ],
         ),
       ),
     );
-  }
 }
 
 /// Linha de um tempo (preparação/execução/descanso), em segundos.

@@ -5,6 +5,30 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-22 — Editor de exercício: "Salvar exercício" flutuante (v0.85.5)
+
+**Pedido:** na folha de editar exercício, o **"Salvar exercício"** virou **flutuante**: só
+**surge quando o usuário altera algo** e fica **ancorado embaixo**, na cor do tema (accent).
+
+**Como (`app/lib/features/treino/exercicio_editor_sheet.dart`):**
+- **Detecção de alteração** sem flags espalhadas: getter `_temAlteracoes` comparando o estado
+  atual com o inicial — edição: campos do `Exercicio` original (lista de descansos por série
+  comparada em `_mesmosDescansos`); novo: os padrões da folha (10/3/60/10/3/0/0/null).
+  `_nomeCtrl` ganhou listener (`_aoDigitarNome`) p/ rebuildar enquanto digita.
+- **Layout:** o corpo virou `_conteudo(bottom, alterou)` (o mesmo Padding+SingleChildScrollView)
+  dentro de um `Stack`; o botão é `Positioned(bottom: 0)` com `AnimatedSlide`+`AnimatedOpacity`
+  (surge subindo/some descendo) e `IgnorePointer` quando oculto. Padding inferior
+  `16 + viewInsets.bottom` → sobe junto com o teclado. Com o botão visível, o fim do conteúdo
+  ganha `SizedBox(height: 92)` p/ não ficar por baixo dele. Cores `context.accent`/`onAccent`,
+  `elevation: 8` (destaque de flutuante).
+- **Teste:** `app/test/exercicio_editor_sheet_test.dart` (widget; primeiro da pasta) — escondido
+  no início, aparece ao digitar o nome ou mexer num tempo, some ao reverter ao original, fica
+  ancorado no rodapé; cobre também o caso "novo exercício".
+
+**Gotcha:** `AnimatedOpacity` mantém o filho na árvore (por isso `find.text` acha o botão mesmo
+oculto) — mas com `opacity 0` ele **não pinta nem entra na semântica** (`RenderOpacity`), então
+visual/acessibilidade ok; em teste, asserte a `opacity` do `AnimatedOpacity`, não a ausência.
+
 ## 2026-09-20 — Calendário do Check-in: estrela no lugar dos pontinhos (v0.85.4)
 
 **Pedido:** dia com **insígnia** (estrela) não precisa dos pontinhos de cor dos exercícios
