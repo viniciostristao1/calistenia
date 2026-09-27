@@ -5,6 +5,29 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-09-27 — Logo novo (cronômetro neon + atleta) — ícone e logo interno (v0.86.0)
+
+**Pedido:** trocar o logo do app e o logo interno (home) pela imagem de marca nova
+(`file_...png`, 1254×1254, cronômetro neon com atleta — combina com "Calis Timer").
+
+**Como:** os assets do ícone eram **desenhados** por `tools/gerar_icone.py` (cronômetro âmbar
+antigo). Agora vêm da imagem nova, geradas por PIL a partir dela (não rodar mais o
+`gerar_icone.py`, que sobrescreveria com o antigo):
+- `assets/icon/icon_full.png` = imagem cheia (ícone legacy).
+- `assets/icon/logo.png` = **badge recortado** (bbox do neon, sem a margem preta) → preenche
+  bem os 34px do logo ao lado do título na home (`home_screen.dart`, `ClipRRect(8)` + cover).
+- `assets/icon/icon_background.png` = preto (combina com o fundo do badge).
+- `assets/icon/icon_foreground.png` = badge **inset a ~62%** sobre transparente (safe-zone do
+  adaptive icon — evita o corte do badge pela máscara; mesmo espírito do 0.58 do script antigo).
+- `dart run flutter_launcher_icons` regenerou os mipmaps/drawables (o CI NÃO roda o gerador →
+  os PNGs em `android/app/src/main/res/` vão **commitados**). Ícone final conferido (mipmap-xxhdpi).
+
+**Gotchas:**
+- Imagem RGB (sem alpha), badge com ~5% de margem preta → recortar p/ o logo interno; manter a
+  margem no `icon_full`; inset próprio no `icon_foreground` (senão a máscara adaptativa corta).
+- O logo do Calis é **próprio** (não é a marca VinyApps "W") → esta troca não afeta a marca do
+  desenvolvedor. Ver [[reference-vinyapps-brand]].
+
 ## 2026-09-22 — Editor de exercício: "Salvar exercício" flutuante (v0.85.5)
 
 **Pedido:** na folha de editar exercício, o **"Salvar exercício"** virou **flutuante**: só
