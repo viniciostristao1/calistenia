@@ -17,14 +17,24 @@ antigo). Agora vêm da imagem nova, geradas por PIL a partir dela (não rodar ma
 - `assets/icon/logo.png` = **badge recortado** (bbox do neon, sem a margem preta) → preenche
   bem os 34px do logo ao lado do título na home (`home_screen.dart`, `ClipRRect(8)` + cover).
 - `assets/icon/icon_background.png` = preto (combina com o fundo do badge).
-- `assets/icon/icon_foreground.png` = badge **inset a ~62%** sobre transparente (safe-zone do
-  adaptive icon — evita o corte do badge pela máscara; mesmo espírito do 0.58 do script antigo).
+- `assets/icon/icon_foreground.png` = badge **preenchendo (~0.94)** sobre transparente.
 - `dart run flutter_launcher_icons` regenerou os mipmaps/drawables (o CI NÃO roda o gerador →
   os PNGs em `android/app/src/main/res/` vão **commitados**). Ícone final conferido (mipmap-xxhdpi).
 
+### v0.86.1 — CORREÇÃO do ícone (o logo tem de PREENCHER o quadrado)
+⚠️ Na v0.86.0 eu **insetei o foreground a ~0.62** → o cronômetro ficou **pequeno, no centro, com
+preto em volta**; o usuário: "você colocou o quadrado dentro dos limites do logo — a borda neon
+É a borda do ícone". **A arte já É um ícone rounded-square** (a borda neon é a beirada). Fix:
+`icon_full` = **badge recortado cheio** (borda neon = borda) e `icon_foreground` = badge a
+**~0.94** (preenche; só um respiro mínimo p/ a máscara não comer a borda). **Regra:** ícone que
+JÁ é um badge rounded-square NÃO se inseta — ele preenche; a máscara do launcher (quadrada no
+MIUI) faz o arredondamento. Validado por **preview com máscara** (quadrada + círculo) ANTES de
+subir (0.62 flutua · 0.92-0.94 preenche · 1.0 encosta a borda). Ver [[reference-vinyapps-brand]].
+
 **Gotchas:**
-- Imagem RGB (sem alpha), badge com ~5% de margem preta → recortar p/ o logo interno; manter a
-  margem no `icon_full`; inset próprio no `icon_foreground` (senão a máscara adaptativa corta).
+- Imagem RGB (sem alpha), badge preenche ~95% da arte → recortar (bbox do neon) e usar cheio;
+  NÃO insetar (a máscara do launcher já arredonda). Estático, o launcher mostra ~o 108dp inteiro
+  com máscara (o "reserve 18dp" é p/ parallax, não corta o ícone parado).
 - O logo do Calis é **próprio** (não é a marca VinyApps "W") → esta troca não afeta a marca do
   desenvolvedor. Ver [[reference-vinyapps-brand]].
 

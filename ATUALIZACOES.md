@@ -3,6 +3,7 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-09-27 — v0.86.1 (ícone corrigido):** no ícone do app o logo estava **pequeno, no meio, com preto em volta**. Agora o **cronômetro neon preenche o ícone** — a borda neon é a própria beirada. Re-testar: instale por cima e veja o ícone na gaveta de apps.
 - **2026-09-27 — v0.86.0 (logo novo):** o app ganhou um **logo novo** — um **cronômetro neon com um atleta** treinando. Ele aparece tanto no **ícone do app** (na gaveta de apps) quanto **ao lado do título "Calis Timer"** na tela inicial. Re-testar: instale por cima e confira o ícone novo na tela do celular e o logo no topo da home.
 
 - **2026-09-22 — v0.85.5 (botão "Salvar exercício" flutuante):**
