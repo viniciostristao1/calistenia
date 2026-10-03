@@ -85,10 +85,22 @@ class _CardPreTreinoDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // A arte tem ~310×540 px: limitar perto disso evita ampliar (que
+            // deixava o card grande e borrado). filterQuality medium suaviza.
             Flexible(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(card.asset, fit: BoxFit.contain),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 220,
+                  maxHeight: 384,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    card.asset,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.medium,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 18),

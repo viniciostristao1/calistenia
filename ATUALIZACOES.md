@@ -3,6 +3,7 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-03 — v0.90.1 (card pré-treino menor e mais nítido):** o card que aparece antes do treino estava **grande e borrado** (a arte era ampliada demais). Agora ele aparece **menor**, perto do tamanho real da imagem, ficando **mais nítido**.
 - **2026-10-03 — v0.90.0 (Cards motivacionais: card antes do treino + coleção + moedas):**
   - **Card antes do treino:** ao tocar **"Iniciar treino"**, aparece um **card motivacional** (dos que você tem) — um empurrãozinho antes de começar. Dá pra **ligar/desligar** em **Configurações › "Card antes do treino"**. Você já começa com **1 card grátis** (META).
   - **Moedas 🪙:** a cada **3 dias de sequência** consecutiva você ganha **$10** (aparece na tela de "Treino completo"). As moedas **acumulam**.
