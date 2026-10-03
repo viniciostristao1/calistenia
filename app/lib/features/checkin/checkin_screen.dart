@@ -21,8 +21,18 @@ import '../../util/gamificacao.dart';
 import '../../l10n/strings.dart';
 
 const _meses = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
 ];
 
 /// Aba "Check-in": calendário mensal de assiduidade. Cada dia mostra os
@@ -110,7 +120,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   selectedBackgroundColor: context.accent,
                   foregroundColor: AppColors.dim,
                   textStyle: const TextStyle(
-                      fontSize: 12.5, fontWeight: FontWeight.w600),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 segments: [
                   ButtonSegment(value: 0, label: Text(s.calendario)),
@@ -157,17 +169,23 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         }
         // Dias com INSÍGNIA (estrela): no calendário a estrela substitui os
         // pontinhos dos exercícios (ela já diz que o dia foi treinado).
+        // ⚠️ A chave TEM de casar com `chave` da grade ('$ano-$mes-$dia', SEM
+        // zero à esquerda). `Insignia.id` usa `chaveDia` (ZERO-PADDED, '2026-10-02'),
+        // então NÃO dá pra usar `i.id` aqui — senão a estrela some em dia/mês de um
+        // dígito (era o bug: "ganhei 6 e só vejo os pontinhos").
         final estrelaPorDia = gamiOn
             ? {
-                for (final i in ref.watch(insigniasProvider).value ??
-                    const <Insignia>[])
-                  i.id,
+                for (final i
+                    in ref.watch(insigniasProvider).value ?? const <Insignia>[])
+                  '${i.data.year}-${i.data.month}-${i.data.day}',
               }
             : const <String>{};
         final diasNoMes = DateTime(_mes.year, _mes.month + 1, 0).day;
         final offset = _mes.weekday - 1; // seg=0 .. dom=6
         final feitosNoMes = todos
-            .where((c) => c.data.year == _mes.year && c.data.month == _mes.month)
+            .where(
+              (c) => c.data.year == _mes.year && c.data.month == _mes.month,
+            )
             .map((c) => c.data.day)
             .toSet()
             .length;
@@ -182,7 +200,10 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               onProximo: () => _mudarMes(1),
             ),
             if (gamiOn) ...[
-              _QuadroInsignias(mes: _mes, onTap: () => setState(() => _vista = 2)),
+              _QuadroInsignias(
+                mes: _mes,
+                onTap: () => setState(() => _vista = 2),
+              ),
             ],
             const _LinhaDias(),
             Expanded(
@@ -257,11 +278,14 @@ class _Cabecalho extends StatelessWidget {
                 Text(
                   titulo,
                   style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w700),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                Text(subtitulo,
-                    style:
-                        TextStyle(color: AppColors.dim, fontSize: 12)),
+                Text(
+                  subtitulo,
+                  style: TextStyle(color: AppColors.dim, fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -290,9 +314,10 @@ class _LinhaDias extends StatelessWidget {
                 child: Text(
                   d,
                   style: TextStyle(
-                      color: AppColors.dim,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600),
+                    color: AppColors.dim,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -383,9 +408,10 @@ class _Celula extends StatelessWidget {
                       ),
                     ),
                   if (extra > 0)
-                    Text('+$extra',
-                        style: TextStyle(
-                            color: AppColors.dim, fontSize: 8)),
+                    Text(
+                      '+$extra',
+                      style: TextStyle(color: AppColors.dim, fontSize: 8),
+                    ),
                 ],
               ),
           ],
@@ -430,8 +456,10 @@ class _EditarDiaSheet extends ConsumerWidget {
           if (doDia.isEmpty)
             Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('Nenhum exercício marcado neste dia.',
-                  style: TextStyle(color: AppColors.dim)),
+              child: Text(
+                'Nenhum exercício marcado neste dia.',
+                style: TextStyle(color: AppColors.dim),
+              ),
             )
           else
             for (final c in doDia)
@@ -447,8 +475,7 @@ class _EditarDiaSheet extends ConsumerWidget {
                 ),
                 title: Text(c.exercicio),
                 trailing: IconButton(
-                  icon: Icon(Icons.close,
-                      size: 20, color: AppColors.dim2),
+                  icon: Icon(Icons.close, size: 20, color: AppColors.dim2),
                   onPressed: () async {
                     final eraUltimo = doDia.length == 1;
                     await ref.read(checkinProvider.notifier).remover(c.id);
@@ -494,8 +521,10 @@ class _EditarDiaSheet extends ConsumerWidget {
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text('Marcar qual exercício?',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              child: Text(
+                'Marcar qual exercício?',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
             for (final e in disponiveis)
               ListTile(
@@ -561,23 +590,25 @@ class _QuadroInsignias extends ConsumerWidget {
                 : AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: perfeito ? AppColors.estrela : AppColors.line,
-                width: perfeito ? 1.5 : 1),
+              color: perfeito ? AppColors.estrela : AppColors.line,
+              width: perfeito ? 1.5 : 1,
+            ),
           ),
           child: Row(
             children: [
-              Icon(Icons.star_rounded,
-                  size: 18, color: AppColors.estrela),
+              Icon(Icons.star_rounded, size: 18, color: AppColors.estrela),
               const SizedBox(width: 8),
-              Text(perfeito ? 'Mês perfeito! ✨' : 'Insígnias do mês',
-                  style: TextStyle(
-                      color: perfeito ? AppColors.estrela : AppColors.dim,
-                      fontSize: 12.5,
-                      fontWeight: perfeito ? FontWeight.w800 : FontWeight.w400)),
+              Text(
+                perfeito ? 'Mês perfeito! ✨' : 'Insígnias do mês',
+                style: TextStyle(
+                  color: perfeito ? AppColors.estrela : AppColors.dim,
+                  fontSize: 12.5,
+                  fontWeight: perfeito ? FontWeight.w800 : FontWeight.w400,
+                ),
+              ),
               const Spacer(),
               if (doMes.isEmpty)
-                Text('—',
-                    style: TextStyle(color: AppColors.dim2, fontSize: 14))
+                Text('—', style: TextStyle(color: AppColors.dim2, fontSize: 14))
               else
                 Flexible(
                   child: Wrap(
@@ -586,8 +617,11 @@ class _QuadroInsignias extends ConsumerWidget {
                     runSpacing: 1,
                     children: [
                       for (var i = 0; i < doMes.length; i++)
-                        Icon(Icons.star_rounded,
-                            size: 18, color: AppColors.estrela),
+                        Icon(
+                          Icons.star_rounded,
+                          size: 18,
+                          color: AppColors.estrela,
+                        ),
                     ],
                   ),
                 ),
@@ -624,13 +658,15 @@ class _GaleriaConquistas extends ConsumerWidget {
       diasValidos: diasValidos,
     );
     final total = totalDiasConcluidos(concs);
-    final atuais = conquistasAtuais(concs, treinos, prog, diasValidos: diasValidos);
+    final atuais = conquistasAtuais(
+      concs,
+      treinos,
+      prog,
+      diasValidos: diasValidos,
+    );
 
-    Widget card(TipoConquista t) => _ConquistaCard(
-          tipo: t,
-          ativo: atuais.contains(t),
-          nivel: nivel.atual,
-        );
+    Widget card(TipoConquista t) =>
+        _ConquistaCard(tipo: t, ativo: atuais.contains(t), nivel: nivel.atual);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -656,7 +692,10 @@ class _GaleriaConquistas extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        const _TituloSecao('Troféus', 'Níveis mais longos (o Ouro pede progressão)'),
+        const _TituloSecao(
+          'Troféus',
+          'Níveis mais longos (o Ouro pede progressão)',
+        ),
         const SizedBox(height: 10),
         IntrinsicHeight(
           child: Row(
@@ -681,7 +720,8 @@ class _HistoricoConquistas extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final conquistas = ref.watch(conquistasProvider).value ?? const <Conquista>[];
+    final conquistas =
+        ref.watch(conquistasProvider).value ?? const <Conquista>[];
     final insignias = ref.watch(insigniasProvider).value ?? const <Insignia>[];
     final perdidas = conquistas.where((c) => c.perdidaEm != null).toList();
 
@@ -689,9 +729,9 @@ class _HistoricoConquistas extends ConsumerWidget {
     final agora = DateTime.now();
     final insigniasPorMes = <String, int>{};
     for (final ins in insignias) {
-      if (ins.data.year == agora.year && ins.data.month == agora.month) continue;
-      final k =
-          '${ins.data.year}-${ins.data.month.toString().padLeft(2, '0')}';
+      if (ins.data.year == agora.year && ins.data.month == agora.month)
+        continue;
+      final k = '${ins.data.year}-${ins.data.month.toString().padLeft(2, '0')}';
       insigniasPorMes[k] = (insigniasPorMes[k] ?? 0) + 1;
     }
 
@@ -704,9 +744,10 @@ class _HistoricoConquistas extends ConsumerWidget {
             children: [
               Icon(Icons.history, size: 56, color: AppColors.dim2),
               SizedBox(height: 16),
-              Text('Histórico vazio',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(
+                'Histórico vazio',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
               SizedBox(height: 6),
               Text(
                 'As estrelas ganhas em meses anteriores e os títulos perdidos '
@@ -726,8 +767,9 @@ class _HistoricoConquistas extends ConsumerWidget {
       final t = tipoConquistaDe(c.tipo);
       if (t == null) continue;
       final d = c.perdidaEm!;
-      (mapaConq['${d.year}-${d.month.toString().padLeft(2, '0')}'] ??= [])
-          .add(t);
+      (mapaConq['${d.year}-${d.month.toString().padLeft(2, '0')}'] ??= []).add(
+        t,
+      );
     }
     final chavesIns = insigniasPorMes.keys.toList()
       ..sort((a, b) => b.compareTo(a));
@@ -737,7 +779,10 @@ class _HistoricoConquistas extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
         if (chavesIns.isNotEmpty) ...[
-          const _TituloSecao('Insígnias', 'Estrelas ganhas em meses anteriores'),
+          const _TituloSecao(
+            'Insígnias',
+            'Estrelas ganhas em meses anteriores',
+          ),
           const SizedBox(height: 10),
           for (final k in chavesIns) ...[
             _MesInsignias(chaveMes: k, quantas: insigniasPorMes[k]!),
@@ -747,7 +792,9 @@ class _HistoricoConquistas extends ConsumerWidget {
         ],
         if (chavesConq.isNotEmpty) ...[
           const _TituloSecao(
-              'Títulos perdidos', 'Medalhas e troféus por falhas'),
+            'Títulos perdidos',
+            'Medalhas e troféus por falhas',
+          ),
           const SizedBox(height: 10),
           for (final k in chavesConq) ...[
             _MesHistorico(chaveMes: k, tipos: mapaConq[k]!),
@@ -785,20 +832,21 @@ class _MesInsignias extends StatelessWidget {
             : AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: perfeito ? AppColors.estrela : AppColors.line,
-            width: perfeito ? 1.5 : 1),
+          color: perfeito ? AppColors.estrela : AppColors.line,
+          width: perfeito ? 1.5 : 1,
+        ),
       ),
       child: Row(
         children: [
           Expanded(
             child: Text(
-                perfeito
-                    ? '${_tituloMes(chaveMes)}  ✨'
-                    : _tituloMes(chaveMes),
-                style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                    color: perfeito ? AppColors.estrela : AppColors.text)),
+              perfeito ? '${_tituloMes(chaveMes)}  ✨' : _tituloMes(chaveMes),
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: perfeito ? AppColors.estrela : AppColors.text,
+              ),
+            ),
           ),
           Flexible(
             child: Wrap(
@@ -812,9 +860,13 @@ class _MesInsignias extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text('$quantas',
-              style: TextStyle(
-                  fontWeight: FontWeight.w800, color: AppColors.estrela)),
+          Text(
+            '$quantas',
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: AppColors.estrela,
+            ),
+          ),
         ],
       ),
     );
@@ -851,8 +903,10 @@ class _MesHistorico extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(_titulo,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          Text(
+            _titulo,
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 14,
@@ -864,9 +918,10 @@ class _MesHistorico extends StatelessWidget {
                   children: [
                     ConquistaBadge(tipo: t, size: 26, ativo: false),
                     const SizedBox(height: 3),
-                    Text(t.tituloCurto,
-                        style: TextStyle(
-                            color: AppColors.dim, fontSize: 10)),
+                    Text(
+                      t.tituloCurto,
+                      style: TextStyle(color: AppColors.dim, fontSize: 10),
+                    ),
                   ],
                 ),
             ],
@@ -906,8 +961,10 @@ class _ConquistasAtuaisBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Conquistas atuais',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const Text(
+            'Conquistas atuais',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
           const SizedBox(height: 12),
           if (tipos.isEmpty)
             Text(
@@ -925,9 +982,10 @@ class _ConquistasAtuaisBox extends StatelessWidget {
                     children: [
                       ConquistaBadge(tipo: t, size: 34),
                       const SizedBox(height: 4),
-                      Text(t.tituloCurto,
-                          style: TextStyle(
-                              color: AppColors.dim, fontSize: 11)),
+                      Text(
+                        t.tituloCurto,
+                        style: TextStyle(color: AppColors.dim, fontSize: 11),
+                      ),
                     ],
                   ),
               ],
@@ -966,8 +1024,10 @@ class _StreakCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Sequência atual',
-                    style: TextStyle(color: AppColors.dim, fontSize: 12)),
+                Text(
+                  'Sequência atual',
+                  style: TextStyle(color: AppColors.dim, fontSize: 12),
+                ),
                 Text.rich(
                   TextSpan(
                     children: [
@@ -987,19 +1047,27 @@ class _StreakCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('🏅 Recorde: $recorde ${recorde == 1 ? 'dia' : 'dias'}',
-                    style: TextStyle(color: AppColors.dim, fontSize: 12)),
+                Text(
+                  '🏅 Recorde: $recorde ${recorde == 1 ? 'dia' : 'dias'}',
+                  style: TextStyle(color: AppColors.dim, fontSize: 12),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('$total',
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.w800)),
-              Text('dias no total',
-                  style: TextStyle(color: AppColors.dim, fontSize: 11)),
+              Text(
+                '$total',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                'dias no total',
+                style: TextStyle(color: AppColors.dim, fontSize: 11),
+              ),
             ],
           ),
         ],
@@ -1019,11 +1087,12 @@ class _TituloSecao extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(titulo,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(
+          titulo,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        ),
         const SizedBox(height: 2),
-        Text(subtitulo,
-            style: TextStyle(color: AppColors.dim, fontSize: 12)),
+        Text(subtitulo, style: TextStyle(color: AppColors.dim, fontSize: 12)),
       ],
     );
   }
@@ -1053,9 +1122,9 @@ class _ConquistaCard extends StatelessWidget {
     final legenda = ativo
         ? 'Conquista ativa ✓'
         : ouroFaltaProgresso
-            ? 'Nível ok · falta progressão'
-            : 'Nível $nivel/$alvo'
-                '${tipo == TipoConquista.trofeuOuro ? ' + progressão' : ''}';
+        ? 'Nível ok · falta progressão'
+        : 'Nível $nivel/$alvo'
+              '${tipo == TipoConquista.trofeuOuro ? ' + progressão' : ''}';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
@@ -1100,18 +1169,14 @@ class _ConquistaCard extends StatelessWidget {
               minHeight: 7,
               backgroundColor: AppColors.surface2,
               // Sem cor enquanto não bate; cor da conquista quando ativa.
-              valueColor: AlwaysStoppedAnimation(
-                  ativo ? cor : AppColors.dim2),
+              valueColor: AlwaysStoppedAnimation(ativo ? cor : AppColors.dim2),
             ),
           ),
           const SizedBox(height: 6),
           Text(
             legenda,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: ativo ? cor : AppColors.dim,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: ativo ? cor : AppColors.dim, fontSize: 11),
           ),
         ],
       ),

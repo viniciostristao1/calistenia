@@ -5,6 +5,49 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-03 — Logo s/ moldura, insígnia só no baú, estrela no Check-in, confirmar saída (v0.87.0)
+
+Quatro pedidos do uso real (feedback do usuário):
+
+**1) Logo da home sem o quadrado neon.** O logo ao lado de "Calis Timer" era o badge
+rounded-square CHEIO (`assets/icon/logo.png`). O usuário quer **só o cronômetro**, maior,
+sem a moldura quadrada. Fix: `logo.png` (home) agora é um **recorte** do `icon_full.png`
+com **inset de ~10,8%** (110/1024) por lado → a arte do cronômetro preenche o quadro; o
+glow residual dos cantos some no `ClipRRect(8)` da home. **`icon_full.png`/ícone do launcher
+NÃO mudaram** (o pedido era só o logo interno). O `tools/logo_para_icone.py` foi ajustado p/
+gerar `logo.png` já recortado em regens futuras (icon_full continua o badge cheio).
+
+**2) Insígnia (estrela) só DEPOIS de abrir o baú.** Em `player_screen.dart` a `_telaSucesso`
+mostrava uma **estrela 2D** (`_InsigniaGanha`) assim que o usuário tocava "Sim, completei".
+Removi esse bloco (e o widget `_InsigniaGanha` + o campo `_ganhouInsignia`, que virou morto —
+a estrela já é revelada pela cerimônia do **baú da estrela** no "Voltar", via `_premios`/
+`_bauEstrela`).
+
+**3) "Dois sublinhados" embaixo/ao lado do baú = sublinhado-duplo-amarelo de debug do
+Flutter.** 🧠 **GOTCHA:** `Text` renderizado **sem um ancestral `Material`** (ou `DefaultTextStyle`
+"de verdade") sai com o **double-underline amarelo** — mesmo com `color:` explícito, porque o
+`decoration` vem do fallback e o merge (`inherit:true`) não o apaga. A cerimônia do baú usa
+`showGeneralDialog` (`_cena`) e os reveals usam `Overlay` (`_RewardHost`) — **nenhum traz
+Material**. Fix: envolver os dois em `Material(type: MaterialType.transparency)`. (Confirmado
+por render headless: sem Material = traços amarelos no texto; com Material = limpo.)
+
+**4) Estrelas sumidas no calendário do Check-in (o bug da v0.85.4).** 🐛 **Mismatch de chave:**
+`estrelaPorDia` montava o set com `i.id` = `chaveDia(data)` → **ZERO-PADDED** (`2026-10-02`),
+mas a grade busca com `chave = '$ano-$mes-$dia'` → **SEM padding** (`2026-10-2`). Nunca casava
+em dia/mês de um dígito → a estrela não aparecia ("ganhei 6 e só vejo os pontinhos"). As
+conquistas funcionavam porque usam o MESMO formato (sem padding) nos dois lados. Fix: montar
+`estrelaPorDia` com `'${i.data.year}-${i.data.month}-${i.data.day}'` (sem padding), casando a
+grade. **Lição:** chave de dicionário de dia DEVE ser idêntica dos dois lados — `Insignia.id`
+(padded, p/ dedup do sync) ≠ chave da UI (não-padded).
+
+**5) Confirmar antes de sair do treino.** O `✕` do `_barraTopo` dava `Navigator.pop` direto.
+Agora chama `_confirmarSaida()` (AlertDialog "Sair mesmo? / Você não concluiu o treino.",
+botões "Continuar"/"Sair"). Também envolvi o Scaffold do timer ativo em `PopScope(canPop:false,
+onPopInvokedWithResult: …)` p/ o **voltar do Android** ter a mesma proteção. Só na tela ativa
+(as telas de fim têm seus próprios "Voltar"/cerimônia e continuam livres).
+
+---
+
 ## 2026-09-27 — Logo novo (cronômetro neon + atleta) — ícone e logo interno (v0.86.0)
 
 **Pedido:** trocar o logo do app e o logo interno (home) pela imagem de marca nova

@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-03 — v0.87.0 (logo sem moldura, estrela só no baú, estrelas no Check-in, confirmar saída):**
+  - **Logo da home sem o quadrado:** o logo ao lado de "Calis Timer" perdeu a **moldura quadrada neon** — agora é **só o cronômetro**, maior, preenchendo o espaço. (O ícone do app na gaveta segue igual.)
+  - **Insígnia só depois de abrir o baú:** ao tocar em **"Sim, completei"** não aparece mais a **estrela 2D** antecipada; a estrela agora é **revelada só ao abrir o baú** (no "Voltar").
+  - **Sem os "sublinhados" no baú:** sumiram os **traços amarelos** que apareciam embaixo do baú e ao lado da pontuação.
+  - **Estrelas no calendário do Check-in:** os dias em que você **ganhou insígnia** agora **realmente mostram a estrela ⭐** (antes, por um detalhe de data, ela sumia na maioria dos dias).
+  - **Confirmar antes de sair do treino:** tocar no **✕** (ou no voltar do Android) **durante o treino** agora pergunta **"Sair mesmo? Você não concluiu o treino."** — evita perder o treino por um toque sem querer.
 - **2026-09-27 — v0.86.1 (ícone corrigido):** no ícone do app o logo estava **pequeno, no meio, com preto em volta**. Agora o **cronômetro neon preenche o ícone** — a borda neon é a própria beirada. Re-testar: instale por cima e veja o ícone na gaveta de apps.
 - **2026-09-27 — v0.86.0 (logo novo):** o app ganhou um **logo novo** — um **cronômetro neon com um atleta** treinando. Ele aparece tanto no **ícone do app** (na gaveta de apps) quanto **ao lado do título "Calis Timer"** na tela inicial. Re-testar: instale por cima e confira o ícone novo na tela do celular e o logo no topo da home.
 

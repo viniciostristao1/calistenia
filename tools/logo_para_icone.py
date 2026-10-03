@@ -26,8 +26,17 @@ cx, cy = logo.size[0] // 2, logo.size[1] // 2
 logo = logo.crop(
     (cx - lado // 2, cy - lado // 2, cx + lado // 2, cy + lado // 2)
 ).resize((OUT, OUT), Image.LANCZOS)
-logo.save(os.path.join(ASSETS, "logo.png"))
+# icon_full = badge CHEIO (moldura neon quadrada) — vira o ícone do launcher.
 logo.save(os.path.join(ASSETS, "icon_full.png"))
+# logo.png = o logo DA HOME (ao lado de "Calis Timer"): aproxima no cronômetro,
+# removendo a moldura quadrada neon (o usuário quer só o cronômetro, maior).
+# Inset ~10.8% de cada lado = a arte do cronômetro preenche o quadro; os cantos
+# com glow residual somem no ClipRRect(radius 8) da home.
+inset = int(OUT * 0.108)
+home = logo.crop((inset, inset, OUT - inset, OUT - inset)).resize(
+    (OUT, OUT), Image.LANCZOS
+)
+home.save(os.path.join(ASSETS, "logo.png"))
 bg = logo.getpixel((5, 5))[:3]
 Image.new("RGBA", (OUT, OUT), (*bg, 255)).save(
     os.path.join(ASSETS, "icon_background.png")

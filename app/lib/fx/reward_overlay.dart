@@ -95,12 +95,17 @@ class _RewardHostState extends State<_RewardHost> {
   Widget build(BuildContext context) {
     // Toque em qualquer lugar dispensa (útil e inofensivo). Nos efeitos com
     // toque próprio (baú), o toque vai para o filho.
-    return GestureDetector(
-      behavior: widget.dismissOnTap
-          ? HitTestBehavior.opaque
-          : HitTestBehavior.deferToChild,
-      onTap: widget.dismissOnTap ? widget.onDone : null,
-      child: Center(child: widget.child),
+    // Material (transparente) = o DefaultTextStyle do Overlay (que, cru, renderiza
+    // os textos com o SUBLINHADO DUPLO AMARELO de debug do Flutter).
+    return Material(
+      type: MaterialType.transparency,
+      child: GestureDetector(
+        behavior: widget.dismissOnTap
+            ? HitTestBehavior.opaque
+            : HitTestBehavior.deferToChild,
+        onTap: widget.dismissOnTap ? widget.onDone : null,
+        child: Center(child: widget.child),
+      ),
     );
   }
 }

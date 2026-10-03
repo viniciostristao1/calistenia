@@ -74,7 +74,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   List<String> _novosRecordes =
       const []; // "Nome · N reps" batidos ao completar
   String? _fraseCompleto; // frase sorteada quando completou
-  bool _ganhouInsignia = false; // caiu num dia de insígnia e ganhou a estrela
 
   /// Fila de prêmios do dia (baús/rating), tocada ao tocar "Voltar".
   /// Fica pendente se o usuário tocar "Repetir treino".
@@ -299,7 +298,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _fraseIncompleto = null;
       _novosRecordes = const [];
       _fraseCompleto = null;
-      _ganhouInsignia = false;
       _emCerimonia = false;
       _restanteMs = _fases.isEmpty ? 0 : _fases[0].segundos * 1000;
     });
@@ -373,7 +371,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _novasConquistas = novas;
       _novosRecordes = novosRecordes;
       _fraseCompleto = fraseCompletoAleatoria();
-      _ganhouInsignia = ganhouInsignia;
       _premios = premios;
     });
   }
@@ -472,63 +469,99 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final fundo = (ei >= 0 && ei < widget.exercicios.length)
         ? widget.exercicios[ei].fundo
         : null;
-    return Scaffold(
-      backgroundColor: AppColors.bg,
-      body: Stack(
-        children: [
-          if (fundo != null) ...[
-            Positioned.fill(
-              child: Image.asset(fundoAsset(fundo), fit: BoxFit.cover),
-            ),
-            // Escurece a foto p/ o anel/números ficarem legíveis.
-            Positioned.fill(
-              child: Container(color: Colors.black.withValues(alpha: 0.55)),
-            ),
-          ],
-          SafeArea(
-            child: Container(
-              decoration: fundo != null
-                  ? null
-                  : BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [cor.withValues(alpha: 0.18), AppColors.bg],
-                        stops: const [0, 0.5],
+    // Treino em andamento: o botão voltar do Android também confirma antes de
+    // sair (mesma proteção do X — não perder o treino sem querer).
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmarSaida();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.bg,
+        body: Stack(
+          children: [
+            if (fundo != null) ...[
+              Positioned.fill(
+                child: Image.asset(fundoAsset(fundo), fit: BoxFit.cover),
+              ),
+              // Escurece a foto p/ o anel/números ficarem legíveis.
+              Positioned.fill(
+                child: Container(color: Colors.black.withValues(alpha: 0.55)),
+              ),
+            ],
+            SafeArea(
+              child: Container(
+                decoration: fundo != null
+                    ? null
+                    : BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [cor.withValues(alpha: 0.18), AppColors.bg],
+                          stops: const [0, 0.5],
+                        ),
                       ),
-                    ),
-              child: Column(
-                children: [
-                  _barraTopo(),
-                  const SizedBox(height: 8),
-                  _progressoGeral(),
-                  const SizedBox(height: 12),
-                  // Nome + contador = duas TARJAS empilhadas (um "placar" do
-                  // exercício): mesma largura e mesma fonte.
-                  // Contador colado no nome (sem espaço) — placar do exercício.
-                  _tarjaNome(fase),
-                  _contadorReps(fase),
-                  const Spacer(flex: 2),
-                  _anel(cor, fracao, segundos, fase),
-                  const SizedBox(height: 20),
-                  _legendaProxima(cor),
-                  const Spacer(flex: 3),
-                  _controles(),
-                  const SizedBox(height: 12),
-                ],
+                child: Column(
+                  children: [
+                    _barraTopo(),
+                    const SizedBox(height: 8),
+                    _progressoGeral(),
+                    const SizedBox(height: 12),
+                    // Nome + contador = duas TARJAS empilhadas (um "placar" do
+                    // exercício): mesma largura e mesma fonte.
+                    // Contador colado no nome (sem espaço) — placar do exercício.
+                    _tarjaNome(fase),
+                    _contadorReps(fase),
+                    const Spacer(flex: 2),
+                    _anel(cor, fracao, segundos, fase),
+                    const SizedBox(height: 20),
+                    _legendaProxima(cor),
+                    const Spacer(flex: 3),
+                    _controles(),
+                    const SizedBox(height: 12),
+                  ],
+                ),
               ),
             ),
+            if (_carimbo != null)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 60,
+                left: 0,
+                right: 0,
+                child: Center(child: _CarimboPill(texto: _carimbo!)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Confirma antes de abandonar o treino em andamento (o X é fácil de encostar
+  /// sem querer; sair joga fora o progresso da sessão).
+  Future<void> _confirmarSaida() async {
+    final sair = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Sair mesmo?'),
+        content: const Text('Você não concluiu o treino.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Continuar'),
           ),
-          if (_carimbo != null)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 60,
-              left: 0,
-              right: 0,
-              child: Center(child: _CarimboPill(texto: _carimbo!)),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: context.accent,
+              foregroundColor: context.onAccent,
             ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sair'),
+          ),
         ],
       ),
     );
+    if (sair == true && mounted) Navigator.of(context).pop();
   }
 
   Widget _barraTopo() {
@@ -538,7 +571,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         children: [
           IconButton(
             icon: Icon(Icons.close, color: _temaMadeira ? Colors.white : null),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: _confirmarSaida,
           ),
           Expanded(
             child: Text(
@@ -958,11 +991,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       barrierColor: Colors.black45,
       barrierDismissible: false,
       transitionDuration: const Duration(milliseconds: 160),
-      pageBuilder: (ctx, _, _) => Center(
-        child: build(ctx, () {
-          if (!pronto.isCompleted) pronto.complete();
-          Navigator.of(ctx).pop();
-        }),
+      // Material (transparente) dá o DefaultTextStyle que o showGeneralDialog não
+      // traz: sem ele os textos da cena (rótulo do baú, pills de pontos) saem com
+      // o SUBLINHADO DUPLO AMARELO de debug do Flutter.
+      pageBuilder: (ctx, _, _) => Material(
+        type: MaterialType.transparency,
+        child: Center(
+          child: build(ctx, () {
+            if (!pronto.isCompleted) pronto.complete();
+            Navigator.of(ctx).pop();
+          }),
+        ),
       ),
     );
     return pronto.future;
@@ -1066,15 +1105,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     // Confete para RECORDE (a celebração de conquista/estrela vem nos baús,
     // depois do "Voltar").
     final temCelebracao = _novosRecordes.isNotEmpty;
-    final mesPerfeito =
-        (ref.watch(insigniasProvider).value ?? const [])
-            .where(
-              (i) =>
-                  i.data.year == DateTime.now().year &&
-                  i.data.month == DateTime.now().month,
-            )
-            .length >=
-        7;
     return Stack(
       children: [
         if (temCelebracao) const _ConfettiLayer(),
@@ -1140,16 +1170,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                 child: _NovasConquistas(tipos: _novasConquistas),
               ),
             ),
-          if (_ganhouInsignia)
-            _FadeSlide(
-              idx: 6,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: _InsigniaGanha(mesPerfeito: mesPerfeito),
-              ),
-            ),
+          // A INSÍGNIA (estrela) NÃO aparece mais aqui em 2D: ela é revelada só
+          // ao abrir o baú da estrela (cerimônia no "Voltar", _bauEstrela).
           _FadeSlide(
-            idx: 7,
+            idx: 6,
             child: Padding(
               padding: const EdgeInsets.only(top: 32),
               child: _botoesFim(labelRepetir: 'Repetir treino'),
@@ -1223,51 +1247,6 @@ class _NovasConquistas extends StatelessWidget {
                 ],
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Faixa da INSÍGNIA (estrela) ganha — surpresa revelada depois dos parabéns, só
-/// nos dias sorteados do mês. A estrela é sempre amarela (independe do tema).
-class _InsigniaGanha extends StatelessWidget {
-  const _InsigniaGanha({this.mesPerfeito = false});
-
-  final bool mesPerfeito;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: mesPerfeito
-            ? AppColors.estrela.withOpacity(0.12)
-            : AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.estrela, width: 1.5),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _IconeComemora(
-            Icons.star_rounded,
-            size: 52,
-            color: AppColors.estrela,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            mesPerfeito ? 'Mês perfeito! ✨' : 'Insígnia do dia!',
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            mesPerfeito
-                ? '7 de 7 estrelas — você brilhou o mês inteiro!'
-                : 'Você caiu num dia sorteado e concluiu — estrela rara garantida.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.dim, fontSize: 12.5),
-          ),
         ],
       ),
     );
