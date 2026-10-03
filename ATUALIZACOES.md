@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-03 — v0.88.0 (sequência no Check-in, insígnias abaixo do calendário, logo ajustado):**
+  - **Sequência (🔥) agora no Check-in:** saiu da Galeria e virou uma **linha curta no topo** do Check-in, acima do calendário: *"🔥 Sequência: X dias • Recorde: Y dias"*. Sem o "dias no total".
+  - **Insígnias do mês desceram:** o quadrinho de ⭐ do mês agora fica **abaixo do calendário** (antes era acima).
+  - **Galeria mais limpa:** sem a sequência lá, as **medalhas e troféus sobem** e ficam em destaque.
+  - **Logo da home ajustado:** na v0.87.0 o cronômetro tinha ficado **grande demais e cortava** a coroa/botão; agora está **um pouco menor**, inteiro e com margem.
 - **2026-10-03 — v0.87.0 (logo sem moldura, estrela só no baú, estrelas no Check-in, confirmar saída):**
   - **Logo da home sem o quadrado:** o logo ao lado de "Calis Timer" perdeu a **moldura quadrada neon** — agora é **só o cronômetro**, maior, preenchendo o espaço. (O ícone do app na gaveta segue igual.)
   - **Insígnia só depois de abrir o baú:** ao tocar em **"Sim, completei"** não aparece mais a **estrela 2D** antecipada; a estrela agora é **revelada só ao abrir o baú** (no "Voltar").

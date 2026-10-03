@@ -199,12 +199,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               onAnterior: () => _mudarMes(-1),
               onProximo: () => _mudarMes(1),
             ),
-            if (gamiOn) ...[
-              _QuadroInsignias(
-                mes: _mes,
-                onTap: () => setState(() => _vista = 2),
-              ),
-            ],
+            // Sequência (a chama): linha CURTA acima do calendário — veio da
+            // Galeria p/ cá. As insígnias do mês desceram p/ baixo do calendário.
+            if (gamiOn) const _SequenciaLinha(),
             const _LinhaDias(),
             Expanded(
               child: GridView.builder(
@@ -230,6 +227,13 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                 },
               ),
             ),
+            // Insígnias do mês: agora ABAIXO do calendário (valoriza as medalhas/
+            // troféus, que sobem na Galeria sem a sequência).
+            if (gamiOn)
+              _QuadroInsignias(
+                mes: _mes,
+                onTap: () => setState(() => _vista = 2),
+              ),
           ],
         );
       },
@@ -652,12 +656,6 @@ class _GaleriaConquistas extends ConsumerWidget {
         .toSet();
 
     final nivel = nivelInfo(concs, treinos, diasValidos: diasValidos);
-    final sequencia = sequenciaIninterrupta(
-      concs,
-      treinos,
-      diasValidos: diasValidos,
-    );
-    final total = totalDiasConcluidos(concs);
     final atuais = conquistasAtuais(
       concs,
       treinos,
@@ -672,12 +670,6 @@ class _GaleriaConquistas extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
         _ConquistasAtuaisBox(atuais: atuais),
-        const SizedBox(height: 16),
-        _StreakCard(
-          sequencia: sequencia,
-          recorde: sequenciaRecorde(concs, treinos, diasValidos: diasValidos),
-          total: total,
-        ),
         const SizedBox(height: 20),
         const _TituloSecao('Medalhas', 'Dias de treino seguidos'),
         const SizedBox(height: 10),
@@ -996,81 +988,65 @@ class _ConquistasAtuaisBox extends StatelessWidget {
   }
 }
 
-class _StreakCard extends StatelessWidget {
-  const _StreakCard({
-    required this.sequencia,
-    required this.recorde,
-    required this.total,
-  });
-
-  final int sequencia;
-  final int recorde;
-  final int total;
+/// Sequência (a chama ININTERRUPTA) numa LINHA CURTA — vive no topo do Check-in,
+/// acima do calendário. Mesmo "esqueleto" visual do `_QuadroInsignias` (cabe numa
+/// linha). Sem o "dias no total" (o usuário não quer esse número aqui).
+class _SequenciaLinha extends ConsumerWidget {
+  const _SequenciaLinha();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
-      ),
-      child: Row(
-        children: [
-          const Text('🔥', style: TextStyle(fontSize: 34)),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sequência atual',
-                  style: TextStyle(color: AppColors.dim, fontSize: 12),
-                ),
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: '$sequencia ',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: context.accent,
-                        ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final concs = ref.watch(conclusaoProvider).value ?? const [];
+    final treinos = ref.watch(treinosProvider).value ?? const [];
+    final checkins = ref.watch(checkinProvider).value ?? const [];
+    final diasValidos = checkins
+        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+        .toSet();
+    final seq = sequenciaIninterrupta(concs, treinos, diasValidos: diasValidos);
+    final rec = sequenciaRecorde(concs, treinos, diasValidos: diasValidos);
+    String dias(int n) => n == 1 ? 'dia' : 'dias';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.line),
+        ),
+        child: Row(
+          children: [
+            const Text('🔥', style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text.rich(
+                TextSpan(
+                  style: TextStyle(color: AppColors.text, fontSize: 12.5),
+                  children: [
+                    const TextSpan(text: 'Sequência: '),
+                    TextSpan(
+                      text: '$seq ${dias(seq)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: context.accent,
                       ),
-                      TextSpan(
-                        text: sequencia == 1 ? 'dia' : 'dias',
-                        style: TextStyle(color: AppColors.dim),
-                      ),
-                    ],
-                  ),
+                    ),
+                    TextSpan(
+                      text: '  •  Recorde: ',
+                      style: TextStyle(color: AppColors.dim),
+                    ),
+                    TextSpan(
+                      text: '$rec ${dias(rec)}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '🏅 Recorde: $recorde ${recorde == 1 ? 'dia' : 'dias'}',
-                  style: TextStyle(color: AppColors.dim, fontSize: 12),
-                ),
-              ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$total',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              Text(
-                'dias no total',
-                style: TextStyle(color: AppColors.dim, fontSize: 11),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

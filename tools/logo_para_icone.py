@@ -30,9 +30,9 @@ logo = logo.crop(
 logo.save(os.path.join(ASSETS, "icon_full.png"))
 # logo.png = o logo DA HOME (ao lado de "Calis Timer"): aproxima no cronômetro,
 # removendo a moldura quadrada neon (o usuário quer só o cronômetro, maior).
-# Inset ~10.8% de cada lado = a arte do cronômetro preenche o quadro; os cantos
-# com glow residual somem no ClipRRect(radius 8) da home.
-inset = int(OUT * 0.108)
+# Inset ~6.4% de cada lado = a moldura some (acaba em ~x64) mas a COROA (começa
+# em ~y78) e o botão lateral ficam INTEIROS, com margem. 10.8% cortava a coroa.
+inset = int(OUT * 0.064)
 home = logo.crop((inset, inset, OUT - inset, OUT - inset)).resize(
     (OUT, OUT), Image.LANCZOS
 )

@@ -5,6 +5,34 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-03 — Sequência no Check-in, insígnias abaixo, logo ajustado (v0.88.0)
+
+Dois ajustes de uso real:
+
+**1) Reorg do Check-in (`checkin_screen.dart`).** A sequência (chama) estava na aba
+**Galeria** (`_GaleriaConquistas` → `_StreakCard`, card grande com "dias no total").
+Pedido: trazer p/ o **Check-in**, em **linha curta** no topo (acima do calendário), SEM o
+total; e descer as **insígnias do mês** (`_QuadroInsignias`) p/ **baixo do calendário**.
+- Novo widget `_SequenciaLinha` (ConsumerWidget): lê `sequenciaIninterrupta` +
+  `sequenciaRecorde` e renderiza uma linha *"🔥 Sequência: X dias • Recorde: Y dias"* com o
+  mesmo esqueleto visual do `_QuadroInsignias` (container surface/line, radius 12, padding
+  h14/v8). `maxLines:1 + ellipsis`.
+- No `_calendario`: `_SequenciaLinha` entra onde estava o `_QuadroInsignias` (acima de
+  `_LinhaDias`); o `_QuadroInsignias` foi movido p/ **depois** do `Expanded(GridView)` → fica
+  no rodapé, abaixo do calendário.
+- `_StreakCard` **removido** (e as vars `sequencia`/`total`/`totalDiasConcluidos` que só ele
+  usava). A Galeria agora começa direto nas conquistas → medalhas/troféus sobem.
+
+**2) Logo da home grande demais (fix do v0.87.0).** Inset 10.8% (110/1024) cortava a COROA
+do cronômetro (topo ~y78) e o botão lateral. 🧠 **Geometria (perfis de brilho do
+`icon_full`):** moldura neon acaba em ~x/y64; a coroa começa em ~y78; o círculo em ~x112.
+Logo o inset ideal = **~6.4% (65/1024)**: tira a moldura mas mantém coroa + botão inteiros com
+margem. Confirmado por preview PNG **com máscara arredondada** (ClipRRect radius 8 em 34px ≈
+23,5% do lado) — importante simular o arredondamento p/ ver o que a home realmente corta.
+`tools/logo_para_icone.py` atualizado (0.108 → 0.064). `icon_full.png`/launcher inalterados.
+
+---
+
 ## 2026-10-03 — Logo s/ moldura, insígnia só no baú, estrela no Check-in, confirmar saída (v0.87.0)
 
 Quatro pedidos do uso real (feedback do usuário):
