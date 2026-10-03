@@ -5,6 +5,43 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-03 — Cards motivacionais: pré-treino + coleção + economia (v0.90.0)
+
+Pedido: recompensa ANTES do treino (hoje só há depois). Cards com mensagens, com
+coleção + economia. Usuário aprovou minhas 4 sugestões (1 card grátis inicial;
+moeda por dias de sequência; card em TODO início; moedas acumulam na coleção cheia).
+
+**Recorte das artes:** 2 imagens-mosaico (4×2) → 16 PNGs em `cards/` (root) via PIL
+(detecção de bandas por brilho médio + bbox exato por célula; os gaps de COLUNA
+têm glow — threshold 28 sem merge). Copiados p/ `app/assets/cards/` (+ pubspec).
+
+**Catálogo/economia (`util/cards_catalog.dart`):** 16 `CardMotivacao{id,asset,titulo,
+selo,cor}`; `kCustoCard=50`, `kMoedasPorMarco=10`, `kMarcoDias=3`, `kCardInicial='meta'`.
+
+**Estado (local, NÃO sincroniza — como som/tema):**
+- `services/moedas_repository.dart` — `moedasProvider` (int). `moedasGanhasPorStreak(streak,
+  creditado)` = `(floor(streak/3)-floor(base/3))*10`, `base=0 se streak<creditado` (reset).
+  `creditarPorStreak` (idempotente; persiste `moedas_cred_streak_v1`) + `gastar`.
+- `services/cards_repository.dart` — `cardsProvider` (List<String> ids; 1ª vez dá o starter);
+  `comprar()` sorteia um card não possuído (NÃO mexe em moedas — UI gasta antes);
+  `cardsPreTreinoProvider` (bool, toggle do card pré-treino). Helpers `cardsFaltando`/`colecaoCompleta`.
+
+**UI:**
+- `features/cards/card_pretreino.dart` — `iniciarTreinoComCard(ctx,ref,...)`: se treino inteiro +
+  toggle on + possui cards, mostra 1 card aleatório (evita repetir o último) e então abre o player.
+  **Os 3 pontos de "iniciar treino" (home `_rodar`, play-circle, editor) passaram a usar esse helper.**
+- Progressão ganhou a sub-aba **Cards** (`_Colecao`): carteira 🪙 + "Comprar \$50" + grade 3-col
+  (frente = `Image.asset`; faltando = `_CardBack`); compra = `gastar`→`comprar`→`_RevelarCardDialog`
+  (flip em Y: começa de costas e vira). Segmento "Desenvolvimento" renomeado p/ "Evolução" (caber 3).
+- Player credita moedas no `_marcarCompleto` e mostra `_MoedasGanhasPill` ("🪙 +\$N") no sucesso.
+- Config: switch "Card antes do treino" (`cardsPreTreinoProvider`), texto PT inline.
+
+**Testes:** `test/cards_test.dart` (lógica de moedas 3-dias/idempotente/reset + catálogo +
+repos com `SharedPreferences.setMockInitialValues`). Pendências anotadas: cards/moedas NÃO
+sincronizam (v1 local); i18n do toggle em PT inline.
+
+---
+
 ## 2026-10-03 — Novo troféu: ESCUDO (v0.89.0)
 
 Troféu raro que PROTEGE a sequência. Pedido detalhado do usuário (3 decisões via

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/auth_service.dart';
 import '../../services/backup_service.dart';
+import '../../services/cards_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/idioma_repository.dart';
 import '../../services/lembretes_service.dart';
@@ -26,6 +27,7 @@ class ConfigScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final som = ref.watch(somProvider).value ?? true;
     final gami = ref.watch(gamificacaoProvider).value ?? true;
+    final cardsPre = ref.watch(cardsPreTreinoProvider).value ?? true;
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
     return Scaffold(
@@ -62,6 +64,22 @@ class ConfigScreen extends ConsumerWidget {
             ),
             subtitle: Text(
               s.gamificacaoDesc,
+              style: TextStyle(color: AppColors.dim, fontSize: 13),
+            ),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: cardsPre,
+            onChanged: (v) =>
+                ref.read(cardsPreTreinoProvider.notifier).definir(v),
+            activeThumbColor: context.accent,
+            title: const Text(
+              'Card antes do treino',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
+            subtitle: Text(
+              'Mostra um card motivacional ao iniciar o treino (dos que você tem). '
+              'Colecione mais na aba Progressão › Cards.',
               style: TextStyle(color: AppColors.dim, fontSize: 13),
             ),
           ),

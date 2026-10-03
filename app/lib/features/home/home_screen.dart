@@ -22,8 +22,8 @@ import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 import '../../util/versao.dart';
 import '../../l10n/strings.dart';
+import '../cards/card_pretreino.dart';
 import '../config/config_screen.dart';
-import '../player/player_screen.dart';
 import '../treino/treino_editor_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -527,23 +527,21 @@ class _TreinoCard extends ConsumerWidget {
     MaterialPageRoute(builder: (_) => TreinoEditorScreen(treinoId: treino.id)),
   );
 
-  /// Roda o treino/exercício. Ao voltar do player, reemite o relógio da UI
-  /// (o treino pode ter levado minutos — a previsão "~hora" tem de atualizar).
+  /// Roda o treino/exercício. Treino inteiro mostra ANTES o card motivacional
+  /// (ver [iniciarTreinoComCard]); ao voltar, o relógio da UI é reemitido.
   Future<void> _rodar(
     BuildContext context,
     WidgetRef ref,
     String titulo,
     List<Exercicio> exs, {
     Treino? treino,
-  }) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) =>
-            PlayerScreen(titulo: titulo, exercicios: exs, treino: treino),
-      ),
-    );
-    if (context.mounted) ref.invalidate(relogioProvider);
-  }
+  }) => iniciarTreinoComCard(
+    context,
+    ref,
+    titulo: titulo,
+    exercicios: exs,
+    treino: treino,
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1180,18 +1178,13 @@ class _TreinoLinha extends ConsumerWidget {
               _PlayCircle(
                 grande: false,
                 habilitado: treino.exercicios.isNotEmpty,
-                onTap: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PlayerScreen(
-                        titulo: treino.nome,
-                        exercicios: treino.exercicios,
-                        treino: treino,
-                      ),
-                    ),
-                  );
-                  if (context.mounted) ref.invalidate(relogioProvider);
-                },
+                onTap: () => iniciarTreinoComCard(
+                  context,
+                  ref,
+                  titulo: treino.nome,
+                  exercicios: treino.exercicios,
+                  treino: treino,
+                ),
               ),
             ],
           ),

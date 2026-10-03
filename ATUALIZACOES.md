@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-03 — v0.90.0 (Cards motivacionais: card antes do treino + coleção + moedas):**
+  - **Card antes do treino:** ao tocar **"Iniciar treino"**, aparece um **card motivacional** (dos que você tem) — um empurrãozinho antes de começar. Dá pra **ligar/desligar** em **Configurações › "Card antes do treino"**. Você já começa com **1 card grátis** (META).
+  - **Moedas 🪙:** a cada **3 dias de sequência** consecutiva você ganha **$10** (aparece na tela de "Treino completo"). As moedas **acumulam**.
+  - **Coleção (Progressão › Cards):** nova sub-aba com os **16 cards**. Os que você tem ficam de frente (toque para ampliar); os que faltam ficam **de costas**. Toque em **"Comprar $50"** para comprar um **card surpresa** — ele vem de costas e **vira** revelando qual é. Junte as moedas e **complete a coleção**!
 - **2026-10-03 — v0.89.0 (novo troféu: 🛡️ ESCUDO):** um troféu raro que **protege a sua sequência**.
   - **Como ganha:** ao concluir o treino, num dia sorteado (por sorte) **entre o 13º e o 26º dia** de uma sequência consecutiva. Sai **do baú**, como a estrela e o fogo. **Vale +20 no Rating** e aparece nas **Insígnias** (e na linha do mês, junto das estrelas ⭐).
   - **Como usa:** no **Check-in**, quando você tem um escudo guardado, aparece a faixa **"🛡️ Escudo guardado · tocar para usar"**. Se você faltar/não conseguir um dia, toque nela e **"Usar escudo"** — aquele dia vira **completo** e a sua sequência continua. O dia coberto mostra um **🛡️** no calendário.

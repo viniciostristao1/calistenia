@@ -19,6 +19,7 @@ import '../../services/conquistas_repository.dart';
 import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
+import '../../services/moedas_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
 import '../../services/tema_repository.dart';
@@ -79,6 +80,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// Fila de prêmios do dia (baús/rating), tocada ao tocar "Voltar".
   /// Fica pendente se o usuário tocar "Repetir treino".
   List<PremioDia> _premios = const [];
+
+  /// Moedas ($) ganhas nesta conclusão (marco de 3 dias de sequência).
+  int _moedasGanhas = 0;
 
   /// Cerimônia em andamento (tocando a fila de prêmios): a tela de fim SAI de
   /// cena para a animação vir **depois** da mensagem, nunca por cima dela.
@@ -299,6 +303,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _fraseIncompleto = null;
       _novosRecordes = const [];
       _fraseCompleto = null;
+      _moedasGanhas = 0;
       _emCerimonia = false;
       _restanteMs = _fases.isEmpty ? 0 : _fases[0].segundos * 1000;
     });
@@ -390,6 +395,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         ganhouInsignia = await insigniasNotifier.registrarSeNova(hoje);
       }
     }
+    // Moedas: +$10 a cada 3 dias de sequência consecutiva (acumulam p/ comprar
+    // cards). Idempotente p/ a mesma sequência.
+    final moedasGanhas = await ref
+        .read(moedasProvider.notifier)
+        .creditarPorStreak(streakHoje);
     // Fila da cerimônia: conquista/marco → escudo → estrela (baús) — e, sem baú
     // nenhum, o ganho de Rating do dia (setas do "subiu de nível").
     final premios = recompensasDoDia(
@@ -406,6 +416,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _novosRecordes = novosRecordes;
       _fraseCompleto = fraseCompletoAleatoria();
       _premios = premios;
+      _moedasGanhas = moedasGanhas;
     });
   }
 
@@ -1203,6 +1214,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               ),
             ),
           ),
+          if (_moedasGanhas > 0)
+            _FadeSlide(
+              idx: 4,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: _MoedasGanhasPill(valor: _moedasGanhas),
+              ),
+            ),
           if (_novosRecordes.isNotEmpty)
             _FadeSlide(
               idx: 4,
@@ -1256,6 +1275,45 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 }
 
 /// Faixa comemorativa das conquistas recém-desbloqueadas no fim do treino.
+/// Pílula "🪙 +$N moedas" na tela de sucesso — a cada 3 dias de sequência.
+class _MoedasGanhasPill extends StatelessWidget {
+  const _MoedasGanhasPill({required this.valor});
+
+  final int valor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.estrela.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: AppColors.estrela),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('🪙', style: TextStyle(fontSize: 16)),
+          const SizedBox(width: 6),
+          Text(
+            '+\$$valor',
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 15,
+              color: AppColors.estrela,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'para trocar por cards',
+            style: TextStyle(color: AppColors.dim, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NovasConquistas extends StatelessWidget {
   const _NovasConquistas({required this.tipos});
 

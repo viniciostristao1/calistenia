@@ -1,15 +1,19 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/escudo.dart';
 import '../../models/registro_progressao.dart';
+import '../../services/cards_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
+import '../../services/moedas_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
+import '../../util/cards_catalog.dart';
 import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 
@@ -84,8 +88,9 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
                   ),
                 ),
                 segments: const [
-                  ButtonSegment(value: 0, label: Text('Desenvolvimento')),
+                  ButtonSegment(value: 0, label: Text('Evolução')),
                   ButtonSegment(value: 1, label: Text('Rating')),
+                  ButtonSegment(value: 2, label: Text('Cards')),
                 ],
                 selected: {vista},
                 showSelectedIcon: false,
@@ -98,7 +103,11 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
           Expanded(
             child: KeyedSubtree(
               key: ValueKey('$_animKey-$_vista'),
-              child: vista == 1 ? _rating() : _desenvolvimento(),
+              child: switch (vista) {
+                1 => _rating(),
+                2 => const _Colecao(),
+                _ => _desenvolvimento(),
+              },
             ),
           ),
         ],
@@ -805,6 +814,303 @@ class _Vazio extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ───────────────────────────── COLEÇÃO DE CARDS ─────────────────────────────
+
+/// Sub-aba **Cards**: carteira ($) + grade da coleção (16 cards). Os que você tem
+/// aparecem de frente (tocar amplia); os que faltam ficam DE COSTAS. Comprar
+/// gasta [kCustoCard] e revela um card surpresa (vira a carta).
+class _Colecao extends ConsumerWidget {
+  const _Colecao();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final possuidos = ref.watch(cardsProvider).value ?? const <String>[];
+    final moedas = ref.watch(moedasProvider).value ?? 0;
+    final tidos = possuidos.toSet();
+    final completa = colecaoCompleta(possuidos);
+    final podeComprar = !completa && moedas >= kCustoCard;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.line),
+            ),
+            child: Row(
+              children: [
+                const Text('🪙', style: TextStyle(fontSize: 24)),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '\$$moedas',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 20,
+                      ),
+                    ),
+                    Text(
+                      '${tidos.length}/$totalCardsCatalogo cards',
+                      style: TextStyle(color: AppColors.dim, fontSize: 12),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                if (completa)
+                  const Text(
+                    'Completa ✨',
+                    style: TextStyle(
+                      color: AppColors.estrela,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  )
+                else
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: context.accent,
+                      foregroundColor: context.onAccent,
+                    ),
+                    onPressed: podeComprar
+                        ? () => _comprar(context, ref)
+                        : null,
+                    icon: const Icon(Icons.auto_awesome, size: 18),
+                    label: Text('Comprar \$$kCustoCard'),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        if (!completa && !podeComprar)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+            child: Text(
+              'Complete $kMarcoDias dias seguidos para ganhar \$$kMoedasPorMarco '
+              'e trocar por um card surpresa.',
+              style: TextStyle(color: AppColors.dim, fontSize: 12),
+            ),
+          ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 0.60,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+            ),
+            itemCount: todosCards.length,
+            itemBuilder: (_, i) {
+              final c = todosCards[i];
+              return tidos.contains(c.id)
+                  ? _SlotFrente(card: c)
+                  : const _CardBack();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _comprar(BuildContext context, WidgetRef ref) async {
+    final possuidos = ref.read(cardsProvider).value ?? const <String>[];
+    if (colecaoCompleta(possuidos)) return;
+    final ok = await ref.read(moedasProvider.notifier).gastar(kCustoCard);
+    if (!ok) return;
+    final id = await ref.read(cardsProvider.notifier).comprar();
+    if (id == null || !context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => _RevelarCardDialog(id: id),
+    );
+  }
+}
+
+/// Card POSSUÍDO na grade: a arte (tocar amplia).
+class _SlotFrente extends StatelessWidget {
+  const _SlotFrente({required this.card});
+
+  final CardMotivacao card;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => showDialog<void>(
+        context: context,
+        builder: (_) => _VerCardDialog(card: card),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: ColoredBox(
+          color: Colors.black,
+          child: Image.asset(card.asset, fit: BoxFit.contain),
+        ),
+      ),
+    );
+  }
+}
+
+/// Card ainda NÃO possuído: de costas (surpresa).
+class _CardBack extends StatelessWidget {
+  const _CardBack();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.surface2, AppColors.bg],
+        ),
+        border: Border.all(color: context.accent.withValues(alpha: 0.5)),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.help_outline_rounded,
+              size: 34,
+              color: context.accent.withValues(alpha: 0.9),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'surpresa',
+              style: TextStyle(
+                color: AppColors.dim,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Ampliação de um card possuído (toque fora/fecha).
+class _VerCardDialog extends StatelessWidget {
+  const _VerCardDialog({required this.card});
+
+  final CardMotivacao card;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 36, vertical: 40),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.asset(card.asset, fit: BoxFit.contain),
+        ),
+      ),
+    );
+  }
+}
+
+/// Revelação do card comprado: ele vem DE COSTAS e VIRA (flip em Y).
+class _RevelarCardDialog extends StatefulWidget {
+  const _RevelarCardDialog({required this.id});
+
+  final String id;
+
+  @override
+  State<_RevelarCardDialog> createState() => _RevelarCardDialogState();
+}
+
+class _RevelarCardDialogState extends State<_RevelarCardDialog>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 750),
+  )..forward();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final card = cardPorId(widget.id)!;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 36, vertical: 36),
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          final t = Curves.easeInOut.transform(_ctrl.value);
+          final angle =
+              (1 - t) * pi; // começa de costas (pi) e vira p/ frente (0)
+          final frente = angle <= pi / 2;
+          final revelado = _ctrl.isCompleted;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Opacity(
+                opacity: t.clamp(0.0, 1.0),
+                child: const Text(
+                  'Novo card!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    shadows: [Shadow(color: Colors.black54, blurRadius: 8)],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..rotateY(angle),
+                child: SizedBox(
+                  width: 230,
+                  height: 400,
+                  child: frente
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: ColoredBox(
+                            color: Colors.black,
+                            child: Image.asset(card.asset, fit: BoxFit.contain),
+                          ),
+                        )
+                      : const _CardBack(),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Opacity(
+                opacity: revelado ? 1.0 : 0.0,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: context.accent,
+                    foregroundColor: context.onAccent,
+                    minimumSize: const Size(180, 48),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('${card.titulo} · ${card.selo}'),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

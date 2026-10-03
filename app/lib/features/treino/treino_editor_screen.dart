@@ -8,7 +8,7 @@ import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
 import '../../util/format.dart';
 import '../../util/messenger.dart';
-import '../player/player_screen.dart';
+import '../cards/card_pretreino.dart';
 import 'exercicio_editor_sheet.dart';
 
 /// Edição de um treino. Salva ao vivo (cada mudança persiste), então nada
@@ -220,14 +220,12 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           ),
           onPressed: _t.exercicios.isEmpty
               ? null
-              : () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => PlayerScreen(
-                      titulo: _t.nome,
-                      exercicios: _t.exercicios,
-                      treino: _t,
-                    ),
-                  ),
+              : () => iniciarTreinoComCard(
+                  context,
+                  ref,
+                  titulo: _t.nome,
+                  exercicios: _t.exercicios,
+                  treino: _t,
                 ),
           icon: const Icon(Icons.play_arrow_rounded),
           label: const Text('Iniciar treino'),
