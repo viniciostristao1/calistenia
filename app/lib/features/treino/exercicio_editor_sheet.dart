@@ -151,7 +151,9 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
           ? 'Exercício'
           : _nomeCtrl.text.trim()
       ..preparacaoSeg = _prep
-      ..execucaoSeg = _exec < 0 ? 0 : _exec // 0 = execução ausente (removida)
+      ..execucaoSeg = _exec < 0
+          ? 0
+          : _exec // 0 = execução ausente (removida)
       ..descansoSeg = _desc
       ..repeticoes = _reps < 1 ? 1 : _reps
       ..series = _series < 1 ? 1 : _series
@@ -217,12 +219,13 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
               width: 10,
               height: 10,
               margin: const EdgeInsets.only(right: 10),
-              decoration:
-                  const BoxDecoration(color: AppColors.rest, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: AppColors.rest,
+                shape: BoxShape.circle,
+              ),
             ),
             const Expanded(
-              child: Text('Descanso por série',
-                  style: _kLabelEditor),
+              child: Text('Descanso por série', style: _kLabelEditor),
             ),
             TextButton(
               onPressed: () => setState(() => _descansos = null),
@@ -288,148 +291,149 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
   }
 
   Widget _conteudo(double bottom, bool alterou) => Padding(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + bottom),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.lineStrong,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+    padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + bottom),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: AppColors.lineStrong,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Row(
-              children: [
-                IconButton(
-                  tooltip: 'Voltar',
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.existente == null
-                        ? 'Novo exercício'
-                        : 'Editar exercício',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'Voltar',
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.existente == null
+                      ? 'Novo exercício'
+                      : 'Editar exercício',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                IconButton(
-                  tooltip: 'Copiar o nome do exercício',
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.copy_rounded),
-                  onPressed: _copiarNome,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nomeCtrl,
-              autofocus: widget.existente == null,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: 'Ex.: Flexão, Agachamento, Prancha…',
               ),
-            ),
-            const SizedBox(height: 20),
-            _StepperLinha(
-              rotulo: 'Séries',
-              cor: AppColors.text,
-              valorTexto: '$_series',
-              onMenos: () => _mudarSeries(_series - 1),
-              onMais: () => _mudarSeries(_series + 1),
-              onTapValor: () async {
-                final v = await _pedirNumero(context, 'Séries', _series, 1);
-                if (v != null) _mudarSeries(v);
-              },
-            ),
-            const SizedBox(height: 6),
-            _StepperLinha(
-              rotulo: 'Repetições',
-              cor: AppColors.text,
-              valorTexto: '$_reps',
-              onMenos: () => setState(() => _reps = (_reps - 1).clamp(1, 999)),
-              onMais: () => setState(() => _reps = (_reps + 1).clamp(1, 999)),
-              onTapValor: () async {
-                final v = await _pedirNumero(context, 'Repetições', _reps, 1);
-                if (v != null) setState(() => _reps = v);
-              },
-            ),
-            const SizedBox(height: 4),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              value: _unilateral,
-              onChanged: (v) => setState(() => _unilateral = v),
-              activeThumbColor: context.accent,
-              title: const Text('Um lado por vez',
-                  style: _kLabelEditor),
-              subtitle: Text(
-                'Faz a série de um lado e depois do outro (ex.: um braço por vez).',
-                style: TextStyle(color: AppColors.dim, fontSize: 12),
+              IconButton(
+                tooltip: 'Copiar o nome do exercício',
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.copy_rounded),
+                onPressed: _copiarNome,
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nomeCtrl,
+            autofocus: widget.existente == null,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(
+              hintText: 'Ex.: Flexão, Agachamento, Prancha…',
             ),
-            const Divider(height: 24),
-            _TempoLinha(
-              rotulo: 'Preparação',
-              cor: AppColors.prep,
-              segundos: _prep,
-              removivel: true,
-              onChanged: (v) => setState(() => _prep = v),
+          ),
+          const SizedBox(height: 20),
+          _StepperLinha(
+            rotulo: 'Séries',
+            cor: AppColors.text,
+            valorTexto: '$_series',
+            onMenos: () => _mudarSeries(_series - 1),
+            onMais: () => _mudarSeries(_series + 1),
+            onTapValor: () async {
+              final v = await _pedirNumero(context, 'Séries', _series, 1);
+              if (v != null) _mudarSeries(v);
+            },
+          ),
+          const SizedBox(height: 6),
+          _StepperLinha(
+            rotulo: 'Repetições',
+            cor: AppColors.text,
+            valorTexto: '$_reps',
+            onMenos: () => setState(() => _reps = (_reps - 1).clamp(1, 999)),
+            onMais: () => setState(() => _reps = (_reps + 1).clamp(1, 999)),
+            onTapValor: () async {
+              final v = await _pedirNumero(context, 'Repetições', _reps, 1);
+              if (v != null) setState(() => _reps = v);
+            },
+          ),
+          const SizedBox(height: 4),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _unilateral,
+            onChanged: (v) => setState(() => _unilateral = v),
+            activeThumbColor: context.accent,
+            title: const Text('Um lado por vez', style: _kLabelEditor),
+            subtitle: Text(
+              'Faz a série de um lado e depois do outro (ex.: um braço por vez).',
+              style: TextStyle(color: AppColors.dim, fontSize: 12),
             ),
-            _TempoLinha(
-              rotulo: 'Execução (por rep)',
-              cor: AppColors.exec,
-              segundos: _exec,
-              removivel: true, // agora pode não ter execução (igual preparação)
-              minimo: 0,
-              passo: 1, // ajuste fino: uma flexão pode durar 2, 3, 4s…
-              onChanged: (v) => setState(() => _exec = v),
-            ),
-            ..._descansoSection(),
-            _PesoLinha(
-              peso: _peso,
-              onChanged: (v) => setState(() => _peso = v),
-              onDigitar: () async {
-                final v = await _pedirPeso(context, _peso);
-                if (v != null) setState(() => _peso = v);
-              },
-            ),
-            const Divider(height: 24),
-            _SeletorCor(
-              selecionado: _cor,
-              onSelect: (i) => setState(() => _cor = i),
-            ),
-            const SizedBox(height: 18),
-            _SeletorFundo(
-              selecionado: _fundo,
-              onSelect: (f) => setState(() => _fundo = f),
-            ),
-            const SizedBox(height: 14),
-            _Resumo(
-              series: _series,
-              reps: _reps,
-              execSeg: _exec,
-              descSeg: _desc,
-              descansos: _descansos,
-              unilateral: _unilateral,
-            ),
-            // espaço p/ o botão flutuante não cobrir o fim do conteúdo
-            if (alterou) const SizedBox(height: 92),
-          ],
-        ),
+          ),
+          const Divider(height: 24),
+          _TempoLinha(
+            rotulo: 'Preparação',
+            cor: AppColors.prep,
+            segundos: _prep,
+            removivel: true,
+            onChanged: (v) => setState(() => _prep = v),
+          ),
+          _TempoLinha(
+            rotulo: 'Execução (por rep)',
+            cor: AppColors.exec,
+            segundos: _exec,
+            removivel: true, // agora pode não ter execução (igual preparação)
+            minimo: 0,
+            passo: 1, // ajuste fino: uma flexão pode durar 2, 3, 4s…
+            onChanged: (v) => setState(() => _exec = v),
+          ),
+          ..._descansoSection(),
+          _PesoLinha(
+            peso: _peso,
+            onChanged: (v) => setState(() => _peso = v),
+            onDigitar: () async {
+              final v = await _pedirPeso(context, _peso);
+              if (v != null) setState(() => _peso = v);
+            },
+          ),
+          const Divider(height: 24),
+          _SeletorCor(
+            selecionado: _cor,
+            onSelect: (i) => setState(() => _cor = i),
+          ),
+          const SizedBox(height: 18),
+          _SeletorFundo(
+            selecionado: _fundo,
+            onSelect: (f) => setState(() => _fundo = f),
+          ),
+          const SizedBox(height: 14),
+          _Resumo(
+            series: _series,
+            reps: _reps,
+            execSeg: _exec,
+            descSeg: _desc,
+            descansos: _descansos,
+            unilateral: _unilateral,
+          ),
+          // espaço p/ o botão flutuante não cobrir o fim do conteúdo
+          if (alterou) const SizedBox(height: 92),
+        ],
       ),
-    );
+    ),
+  );
 }
 
 /// Linha de um tempo (preparação/execução/descanso), em segundos.
@@ -489,19 +493,19 @@ class _TempoLinha extends StatelessWidget {
             margin: const EdgeInsets.only(right: 10),
             decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
           ),
-          Expanded(
-            child: Text(rotulo,
-                style: _kLabelEditor),
-          ),
+          Expanded(child: Text(rotulo, style: _kLabelEditor)),
           _Redondo(
             icon: Icons.remove,
-            onTap: () =>
-                onChanged((segundos - passo).clamp(minimo, 3600)),
+            onTap: () => onChanged((segundos - passo).clamp(minimo, 3600)),
           ),
           GestureDetector(
             onTap: () async {
               final v = await _pedirNumero(
-                  context, '$rotulo (segundos)', segundos, minimo);
+                context,
+                '$rotulo (segundos)',
+                segundos,
+                minimo,
+              );
               if (v != null) onChanged(v.clamp(minimo, 3600));
             },
             child: Container(
@@ -510,7 +514,10 @@ class _TempoLinha extends StatelessWidget {
               child: Text(
                 fmtSeg(segundos),
                 style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w700, color: cor),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: cor,
+                ),
               ),
             ),
           ),
@@ -523,8 +530,7 @@ class _TempoLinha extends StatelessWidget {
             child: removivel
                 ? IconButton(
                     tooltip: 'Remover $rotulo',
-                    icon: Icon(Icons.close,
-                        size: 18, color: AppColors.dim2),
+                    icon: Icon(Icons.close, size: 18, color: AppColors.dim2),
                     onPressed: () => onChanged(0),
                   )
                 : const SizedBox.shrink(),
@@ -556,10 +562,7 @@ class _StepperLinha extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: Text(rotulo,
-              style: _kLabelEditor),
-        ),
+        Expanded(child: Text(rotulo, style: _kLabelEditor)),
         _Redondo(icon: Icons.remove, onTap: onMenos),
         GestureDetector(
           onTap: onTapValor,
@@ -569,7 +572,10 @@ class _StepperLinha extends StatelessWidget {
             child: Text(
               valorTexto,
               style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w700, color: cor),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: cor,
+              ),
             ),
           ),
         ),
@@ -600,7 +606,9 @@ class _Resumo extends StatelessWidget {
 
   String get _serieTxt {
     if (execSeg <= 0) return 'sem execução';
-    return reps > 1 ? '$reps reps de ${fmtSeg(execSeg)}' : 'segure ${fmtSeg(execSeg)}';
+    return reps > 1
+        ? '$reps reps de ${fmtSeg(execSeg)}'
+        : 'segure ${fmtSeg(execSeg)}';
   }
 
   String get _descTxt {
@@ -687,12 +695,11 @@ class _PesoLinha extends StatelessWidget {
             height: 10,
             margin: const EdgeInsets.only(right: 10),
             decoration: BoxDecoration(
-                color: AppColors.dim2, shape: BoxShape.circle),
+              color: AppColors.dim2,
+              shape: BoxShape.circle,
+            ),
           ),
-          const Expanded(
-            child: Text('Peso',
-                style: _kLabelEditor),
-          ),
+          const Expanded(child: Text('Peso', style: _kLabelEditor)),
           _Redondo(
             icon: Icons.remove,
             onTap: () => onChanged((peso - 2.5).clamp(0, 999)),
@@ -705,9 +712,10 @@ class _PesoLinha extends StatelessWidget {
               child: Text(
                 fmtPeso(peso),
                 style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.text),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.text,
+                ),
               ),
             ),
           ),
@@ -741,8 +749,7 @@ class _SeletorCor extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Cor do exercício',
-            style: _kLabelEditor),
+        const Text('Cor do exercício', style: _kLabelEditor),
         const SizedBox(height: 12),
         Wrap(
           spacing: 12,
@@ -765,8 +772,11 @@ class _SeletorCor extends StatelessWidget {
                     ),
                   ),
                   child: i == selecionado
-                      ? const Icon(Icons.check,
-                          size: 18, color: Color(0xFF06111F))
+                      ? const Icon(
+                          Icons.check,
+                          size: 18,
+                          color: Color(0xFF06111F),
+                        )
                       : null,
                 ),
               ),
@@ -789,11 +799,12 @@ class _SeletorFundo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Imagem de fundo do cronômetro',
-            style: _kLabelEditor),
+        const Text('Imagem de fundo do cronômetro', style: _kLabelEditor),
         const SizedBox(height: 4),
-        Text('Motivação atrás do contador deste exercício.',
-            style: TextStyle(color: AppColors.dim, fontSize: 13)),
+        Text(
+          'Motivação atrás do contador deste exercício.',
+          style: TextStyle(color: AppColors.dim, fontSize: 13),
+        ),
         const SizedBox(height: 10),
         SizedBox(
           height: 104,
@@ -846,8 +857,7 @@ class _MiniaturaFundo extends StatelessWidget {
           ),
         ),
         child: asset == null
-            ? Center(
-                child: Icon(Icons.block, color: AppColors.dim2, size: 22))
+            ? Center(child: Icon(Icons.block, color: AppColors.dim2, size: 22))
             : Image.asset(asset!, fit: BoxFit.cover),
       ),
     );
@@ -881,8 +891,8 @@ Future<double?> _pedirPeso(BuildContext context, double atual) {
   final txt = atual <= 0
       ? ''
       : (atual == atual.roundToDouble()
-          ? atual.toInt().toString()
-          : atual.toString().replaceAll('.', ','));
+            ? atual.toInt().toString()
+            : atual.toString().replaceAll('.', ','));
   final ctrl = TextEditingController(text: txt);
   return showDialog<double>(
     context: context,
@@ -950,7 +960,10 @@ Future<int?> _pedirNumero(
 }
 
 void _confirmarNumero(
-    BuildContext context, TextEditingController ctrl, int minimo) {
+  BuildContext context,
+  TextEditingController ctrl,
+  int minimo,
+) {
   final v = int.tryParse(ctrl.text);
   Navigator.pop(context, v == null ? null : (v < minimo ? minimo : v));
 }

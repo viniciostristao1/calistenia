@@ -9,6 +9,7 @@ import 'auth_service.dart';
 import 'checkin_repository.dart';
 import 'conclusao_repository.dart';
 import 'conquistas_repository.dart';
+import 'escudo_repository.dart';
 import 'insignias_repository.dart';
 import 'progressao_repository.dart';
 import 'treinos_repository.dart';
@@ -25,8 +26,9 @@ class SyncEstado {
 }
 
 /// Estado atual da sync (a UI observa; o [SyncController] escreve).
-final syncEstadoProvider =
-    NotifierProvider<SyncEstadoNotifier, SyncEstado>(SyncEstadoNotifier.new);
+final syncEstadoProvider = NotifierProvider<SyncEstadoNotifier, SyncEstado>(
+  SyncEstadoNotifier.new,
+);
 
 class SyncEstadoNotifier extends Notifier<SyncEstado> {
   @override
@@ -76,9 +78,12 @@ class SyncController {
     _uid = uid;
     _primeiroSnapshot = true;
     _ultimoSync = null;
-    _sub = _doc(uid).snapshots().listen(_onRemote, onError: (_) {
-      _setFase(SyncFase.erro);
-    });
+    _sub = _doc(uid).snapshots().listen(
+      _onRemote,
+      onError: (_) {
+        _setFase(SyncFase.erro);
+      },
+    );
     _setFase(SyncFase.conectado);
   }
 
@@ -130,6 +135,7 @@ class SyncController {
       _mergeChave(prefs, chaveConclusao, data['conclusao']);
       _mergeChave(prefs, chaveConquistas, data['conquistas']);
       _mergeChave(prefs, chaveInsignias, data['insignias']);
+      _mergeChave(prefs, chaveEscudo, data['escudos']);
       _invalidar();
       _aplicandoRemoto = false;
       _ultimoSync = _estado(prefs);
@@ -138,9 +144,15 @@ class SyncController {
     }
     // Se o conteúdo remoto é o que já temos, ignora (evita o loop de
     // updatedAt: cada push muda o timestamp e voltaria como "mudança").
-    final estadoRemoto = _estadoDe(data['treinos'], data['checkins'],
-        data['progressao'], data['conclusao'], data['conquistas'],
-        data['insignias']);
+    final estadoRemoto = _estadoDe(
+      data['treinos'],
+      data['checkins'],
+      data['progressao'],
+      data['conclusao'],
+      data['conquistas'],
+      data['insignias'],
+      data['escudos'],
+    );
     if (estadoRemoto == _ultimoSync) return;
     // Outro aparelho editou de verdade: a nuvem manda.
     _aplicandoRemoto = true;
@@ -150,6 +162,7 @@ class SyncController {
     _aplicarChave(prefs, chaveConclusao, data['conclusao']);
     _aplicarChave(prefs, chaveConquistas, data['conquistas']);
     _aplicarChave(prefs, chaveInsignias, data['insignias']);
+    _aplicarChave(prefs, chaveEscudo, data['escudos']);
     _invalidar();
     _aplicandoRemoto = false;
     _ultimoSync = _estado(prefs);
@@ -168,6 +181,7 @@ class SyncController {
         'conclusao': prefs.getString(chaveConclusao) ?? '[]',
         'conquistas': prefs.getString(chaveConquistas) ?? '[]',
         'insignias': prefs.getString(chaveInsignias) ?? '[]',
+        'escudos': prefs.getString(chaveEscudo) ?? '[]',
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       _setFase(SyncFase.ok, sucesso: true);
@@ -180,17 +194,25 @@ class SyncController {
   /// "Impressão" do conteúdo dos 3 stores (sem o updatedAt), para detectar se
   /// algo mudou de verdade e cortar o loop de sincronização.
   String _estado(SharedPreferences prefs) => _estadoDe(
-        prefs.getString(chaveTreinos),
-        prefs.getString(chaveCheckin),
-        prefs.getString(chaveProgressao),
-        prefs.getString(chaveConclusao),
-        prefs.getString(chaveConquistas),
-        prefs.getString(chaveInsignias),
-      );
+    prefs.getString(chaveTreinos),
+    prefs.getString(chaveCheckin),
+    prefs.getString(chaveProgressao),
+    prefs.getString(chaveConclusao),
+    prefs.getString(chaveConquistas),
+    prefs.getString(chaveInsignias),
+    prefs.getString(chaveEscudo),
+  );
 
-  String _estadoDe(dynamic t, dynamic c, dynamic p, dynamic cc, dynamic cq,
-          dynamic ci) =>
-      '${t ?? ''}§${c ?? ''}§${p ?? ''}§${cc ?? ''}§${cq ?? ''}§${ci ?? ''}';
+  String _estadoDe(
+    dynamic t,
+    dynamic c,
+    dynamic p,
+    dynamic cc,
+    dynamic cq,
+    dynamic ci,
+    dynamic ce,
+  ) =>
+      '${t ?? ''}§${c ?? ''}§${p ?? ''}§${cc ?? ''}§${cq ?? ''}§${ci ?? ''}§${ce ?? ''}';
 
   void _aplicarChave(SharedPreferences prefs, String chave, dynamic remoto) {
     if (remoto is String) prefs.setString(chave, remoto);
@@ -228,6 +250,7 @@ class SyncController {
     ref.invalidate(conclusaoProvider);
     ref.invalidate(conquistasProvider);
     ref.invalidate(insigniasProvider);
+    ref.invalidate(escudoProvider);
   }
 }
 
@@ -253,6 +276,7 @@ final syncProvider = Provider<SyncController>((ref) {
   ref.listen(conclusaoProvider, (_, _) => controller.onLocalChange());
   ref.listen(conquistasProvider, (_, _) => controller.onLocalChange());
   ref.listen(insigniasProvider, (_, _) => controller.onLocalChange());
+  ref.listen(escudoProvider, (_, _) => controller.onLocalChange());
 
   return controller;
 });

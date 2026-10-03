@@ -7,7 +7,7 @@ import 'particle.dart';
 /// tempo. Sem dependências — só matemática. Desenho fica no [ParticlePainter].
 class ParticleSystem {
   ParticleSystem({this.gravity = 0, this.drag = 0, Random? rng})
-      : _rng = rng ?? Random();
+    : _rng = rng ?? Random();
 
   final double gravity; // px/seg² (positivo = cai)
   final double drag; // 0..~4 (atrito do ar)
@@ -39,16 +39,18 @@ class ParticleSystem {
     for (var i = 0; i < count; i++) {
       final ang = direction + (_rng.nextDouble() - 0.5) * spread;
       final speed = _lerp(speedMin, speedMax);
-      particles.add(Particle(
-        pos: Offset.zero,
-        vel: Offset(cos(ang) * speed, sin(ang) * speed),
-        maxLife: _lerp(lifeMin, lifeMax),
-        size: _lerp(sizeMin, sizeMax),
-        color: colors[_rng.nextInt(colors.length)],
-        rotation: _rng.nextDouble() * pi,
-        spin: (_rng.nextDouble() - 0.5) * 8,
-        shape: shapes[_rng.nextInt(shapes.length)],
-      ));
+      particles.add(
+        Particle(
+          pos: Offset.zero,
+          vel: Offset(cos(ang) * speed, sin(ang) * speed),
+          maxLife: _lerp(lifeMin, lifeMax),
+          size: _lerp(sizeMin, sizeMax),
+          color: colors[_rng.nextInt(colors.length)],
+          rotation: _rng.nextDouble() * pi,
+          spin: (_rng.nextDouble() - 0.5) * 8,
+          shape: shapes[_rng.nextInt(shapes.length)],
+        ),
+      );
     }
   }
 

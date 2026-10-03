@@ -13,8 +13,8 @@ const chaveSorteio = 'insignias_sorteio_v2';
 /// Local, e sincronizada quando logado (ver `sync_service.dart`).
 final insigniasProvider =
     AsyncNotifierProvider<InsigniasNotifier, List<Insignia>>(
-  InsigniasNotifier.new,
-);
+      InsigniasNotifier.new,
+    );
 
 class InsigniasNotifier extends AsyncNotifier<List<Insignia>> {
   @override
@@ -62,23 +62,33 @@ class InsigniasNotifier extends AsyncNotifier<List<Insignia>> {
   /// Sorteio congelado do mês: na primeira consulta do mês calcula com
   /// [agendadosSemana]/[semente] e persiste; depois sempre o mesmo (sem rolling).
   Future<Set<int>> diasSorteadosDoMes(
-      int ano, int mes, Set<int> agendadosSemana, int semente) async {
+    int ano,
+    int mes,
+    Set<int> agendadosSemana,
+    int semente,
+  ) async {
     if (agendadosSemana.isEmpty) return const {};
     final prefs = await SharedPreferences.getInstance();
     final mapa = _decodeSorteio(prefs.getString(chaveSorteio));
     final chave = _chaveMes(ano, mes);
     if (mapa.containsKey(chave)) return mapa[chave]!.toSet();
-    final sorteados =
-        diasInsigniaDoMes(ano, mes, agendadosSemana, semente);
+    final sorteados = diasInsigniaDoMes(ano, mes, agendadosSemana, semente);
     mapa[chave] = sorteados.toList()..sort();
     await prefs.setString(chaveSorteio, jsonEncode(mapa));
     return sorteados;
   }
 
   Future<bool> ehDiaSorteado(
-      DateTime dia, Set<int> agendadosSemana, int semente) async {
-    final dias =
-        await diasSorteadosDoMes(dia.year, dia.month, agendadosSemana, semente);
+    DateTime dia,
+    Set<int> agendadosSemana,
+    int semente,
+  ) async {
+    final dias = await diasSorteadosDoMes(
+      dia.year,
+      dia.month,
+      agendadosSemana,
+      semente,
+    );
     return dias.contains(dia.day);
   }
 }

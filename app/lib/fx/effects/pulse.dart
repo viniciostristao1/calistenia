@@ -26,8 +26,10 @@ class _PulseState extends State<Pulse> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl = AnimationController(
     vsync: this,
     duration: Duration(
-        milliseconds:
-            (widget.params.effectiveDuration.inMilliseconds * 0.7).round().clamp(200, 4000)),
+      milliseconds: (widget.params.effectiveDuration.inMilliseconds * 0.7)
+          .round()
+          .clamp(200, 4000),
+    ),
   )..repeat(reverse: true);
 
   @override
@@ -45,7 +47,10 @@ class _PulseState extends State<Pulse> with SingleTickerProviderStateMixin {
         final base = widget.min + (widget.max - widget.min) * t;
         // amplitude segue a intensidade (1 = padrão)
         final amp = 1 + (base - 1) * widget.params.intensity.clamp(0.0, 2.0);
-        return Transform.scale(scale: (amp * widget.params.scale).clamp(0.0, 3.0), child: child);
+        return Transform.scale(
+          scale: (amp * widget.params.scale).clamp(0.0, 3.0),
+          child: child,
+        );
       },
       child: widget.child,
     );

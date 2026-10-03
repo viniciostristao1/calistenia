@@ -31,7 +31,10 @@ class ParticlePainter extends CustomPainter {
           canvas.save();
           canvas.translate(o.dx, o.dy);
           canvas.rotate(p.rotation);
-          canvas.drawRect(Rect.fromCenter(center: Offset.zero, width: r * 2, height: r * 2), paint);
+          canvas.drawRect(
+            Rect.fromCenter(center: Offset.zero, width: r * 2, height: r * 2),
+            paint,
+          );
           canvas.restore();
         case ParticleShape.spark:
           _drawSpark(canvas, o, r * 1.4, p.rotation, paint);

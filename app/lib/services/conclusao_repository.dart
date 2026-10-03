@@ -12,8 +12,8 @@ const chaveConclusao = 'conclusao_v1';
 /// sincronizada quando logado (ver `sync_service.dart`).
 final conclusaoProvider =
     AsyncNotifierProvider<ConclusaoNotifier, List<Conclusao>>(
-  ConclusaoNotifier.new,
-);
+      ConclusaoNotifier.new,
+    );
 
 class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
   @override
@@ -25,11 +25,14 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
         .map((e) => Conclusao.fromJson(e as Map<String, dynamic>))
         .toList();
     final tem16 = lista.any(
-        (c) => c.data.year == 2026 && c.data.month == 8 && c.data.day == 16);
+      (c) => c.data.year == 2026 && c.data.month == 8 && c.data.day == 16,
+    );
     if (tem16) {
       final filtrada = lista
-          .where((c) =>
-              !(c.data.year == 2026 && c.data.month == 8 && c.data.day == 16))
+          .where(
+            (c) =>
+                !(c.data.year == 2026 && c.data.month == 8 && c.data.day == 16),
+          )
           .toList();
       await prefs.setString(
         chaveConclusao,
@@ -53,30 +56,44 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
   /// false, "não consegui hoje") no dia. Não duplica (mesmo treino/dia); mas se
   /// já havia uma TENTATIVA e agora vem uma conclusão completa, faz o upgrade.
   /// Retorna o registro criado/atualizado, ou `null` se nada mudou.
-  Future<Conclusao?> registrar(Treino t,
-      {DateTime? dia, bool completo = true}) async {
+  Future<Conclusao?> registrar(
+    Treino t, {
+    DateTime? dia,
+    bool completo = true,
+  }) async {
     final atuais = await future; // garante carregado antes de mutar
     final d = dia ?? DateTime.now();
     final nome = t.nome.trim().isEmpty ? 'Treino' : t.nome.trim();
-    final idx = atuais.indexWhere((c) =>
-        c.treinoId == t.id &&
-        c.data.year == d.year &&
-        c.data.month == d.month &&
-        c.data.day == d.day);
+    final idx = atuais.indexWhere(
+      (c) =>
+          c.treinoId == t.id &&
+          c.data.year == d.year &&
+          c.data.month == d.month &&
+          c.data.day == d.day,
+    );
     if (idx >= 0) {
       final ex = atuais[idx];
       // Só faz upgrade de tentativa → completo (nunca o contrário).
       if (completo && !ex.completo) {
         final upg = Conclusao(
-            id: ex.id, data: d, treinoId: t.id, treino: nome, completo: true);
+          id: ex.id,
+          data: d,
+          treinoId: t.id,
+          treino: nome,
+          completo: true,
+        );
         final list = List<Conclusao>.of(atuais)..[idx] = upg;
         await _persist(list);
         return upg;
       }
       return null;
     }
-    final nova =
-        Conclusao(data: d, treinoId: t.id, treino: nome, completo: completo);
+    final nova = Conclusao(
+      data: d,
+      treinoId: t.id,
+      treino: nome,
+      completo: completo,
+    );
     await _persist([...atuais, nova]);
     return nova;
   }
@@ -90,10 +107,12 @@ class ConclusaoNotifier extends AsyncNotifier<List<Conclusao>> {
   Future<void> removerPorDia(DateTime dia) async {
     final d = DateTime(dia.year, dia.month, dia.day);
     final list = List<Conclusao>.of(await future)
-      ..removeWhere((c) =>
-          c.data.year == d.year &&
-          c.data.month == d.month &&
-          c.data.day == d.day);
+      ..removeWhere(
+        (c) =>
+            c.data.year == d.year &&
+            c.data.month == d.month &&
+            c.data.day == d.day,
+      );
     if (list.length != (await future).length) await _persist(list);
   }
 }

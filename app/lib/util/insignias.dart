@@ -43,7 +43,11 @@ int _hashDia(int semente, int ano, int mes, int dia) {
 /// <= 7 candidatos, todos valem; senão, 7 escolhidos de forma determinística
 /// (ordena por um hash de (semente, ano, mês, dia) e pega os 7 primeiros).
 Set<int> diasInsigniaDoMes(
-    int ano, int mes, Set<int> agendadosSemana, int semente) {
+  int ano,
+  int mes,
+  Set<int> agendadosSemana,
+  int semente,
+) {
   if (agendadosSemana.isEmpty) return const {};
   final diasNoMes = DateTime(ano, mes + 1, 0).day;
   final pool = <int>[];
@@ -54,8 +58,12 @@ Set<int> diasInsigniaDoMes(
   }
   if (pool.length <= insigniasPorMes) return pool.toSet();
   pool.sort((a, b) {
-    final c = _hashDia(semente, ano, mes, a)
-        .compareTo(_hashDia(semente, ano, mes, b));
+    final c = _hashDia(
+      semente,
+      ano,
+      mes,
+      a,
+    ).compareTo(_hashDia(semente, ano, mes, b));
     return c != 0 ? c : a.compareTo(b);
   });
   return pool.take(insigniasPorMes).toSet();
@@ -63,5 +71,37 @@ Set<int> diasInsigniaDoMes(
 
 /// O [dia] é um dia de insígnia? (avaliado no fim do treino, ao concluir.)
 bool ehDiaDeInsignia(DateTime dia, Set<int> agendadosSemana, int semente) =>
-    diasInsigniaDoMes(dia.year, dia.month, agendadosSemana, semente)
-        .contains(dia.day);
+    diasInsigniaDoMes(
+      dia.year,
+      dia.month,
+      agendadosSemana,
+      semente,
+    ).contains(dia.day);
+
+// ───────────────────────────── ESCUDO ─────────────────────────────
+// O ESCUDO (troféu raro) é sorteado numa sequência consecutiva: entre o 13º e o
+// 26º dia (nunca no 13º "na cara" — é um intervalo), PULANDO o 20º (que é marco
+// de fogo, p/ não colidir). Determinístico por (semente + dia de INÍCIO da
+// sequência): a "sorte" do usuário é QUAL dia dentro da janela — ganhar é certo.
+
+/// Primeiro e último dia-da-sequência elegíveis p/ o escudo.
+const int escudoMin = 13;
+const int escudoMax = 26;
+
+/// Dia-da-sequência pulado (marco de fogo a cada 10 → 20 cai na janela).
+const int escudoSkip = 20;
+
+/// Candidatos de dia-da-sequência p/ o escudo: [escudoMin]..[escudoMax] exceto
+/// [escudoSkip]. (13..26 sem o 20 = 13 candidatos.)
+List<int> get candidatosEscudo => [
+  for (var k = escudoMin; k <= escudoMax; k++)
+    if (k != escudoSkip) k,
+];
+
+/// Em QUAL contagem de sequência (13..26, pulando 20) o escudo deve cair, para a
+/// sequência que começou em [inicioSeq]. Determinístico por (semente + início).
+int alvoEscudo(int semente, DateTime inicioSeq) {
+  final cand = candidatosEscudo;
+  final h = _hashDia(semente, inicioSeq.year, inicioSeq.month, inicioSeq.day);
+  return cand[h % cand.length];
+}

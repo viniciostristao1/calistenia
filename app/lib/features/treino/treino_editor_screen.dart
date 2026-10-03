@@ -19,8 +19,7 @@ class TreinoEditorScreen extends ConsumerStatefulWidget {
   final String treinoId;
 
   @override
-  ConsumerState<TreinoEditorScreen> createState() =>
-      _TreinoEditorScreenState();
+  ConsumerState<TreinoEditorScreen> createState() => _TreinoEditorScreenState();
 }
 
 class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
@@ -72,20 +71,22 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
     await _salvar();
     scaffoldMessengerKey.currentState
       ?..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: const Text('Exercício excluído'),
-        duration: const Duration(seconds: 3),
-        // ⚠️ No Flutter atual, SnackBar COM ação persiste por padrão (não some
-        // sozinha). `persist: false` devolve o fechamento automático pelo tempo.
-        persist: false,
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () {
-            _t.exercicios.insert(idx.clamp(0, _t.exercicios.length), e);
-            _salvar();
-          },
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Exercício excluído'),
+          duration: const Duration(seconds: 3),
+          // ⚠️ No Flutter atual, SnackBar COM ação persiste por padrão (não some
+          // sozinha). `persist: false` devolve o fechamento automático pelo tempo.
+          persist: false,
+          action: SnackBarAction(
+            label: 'Desfazer',
+            onPressed: () {
+              _t.exercicios.insert(idx.clamp(0, _t.exercicios.length), e);
+              _salvar();
+            },
+          ),
         ),
-      ));
+      );
   }
 
   /// Adiciona uma cópia de um exercício já salvo em outro treino.
@@ -119,8 +120,10 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text('Exercícios já salvos',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              child: Text(
+                'Exercícios já salvos',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+              ),
             ),
             for (final e in disponiveis)
               ListTile(
@@ -133,9 +136,10 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                   ),
                 ),
                 title: Text(e.nome),
-                subtitle: Text(e.resumoCurto,
-                    style:
-                        TextStyle(color: AppColors.dim, fontSize: 12.5)),
+                subtitle: Text(
+                  e.resumoCurto,
+                  style: TextStyle(color: AppColors.dim, fontSize: 12.5),
+                ),
                 onTap: () => Navigator.pop(context, e),
               ),
           ],
@@ -162,8 +166,10 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Excluir',
-                style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'Excluir',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -176,15 +182,17 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
     navigator.pop();
     scaffoldMessengerKey.currentState
       ?..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: const Text('Treino excluído'),
-        duration: const Duration(seconds: 3),
-        persist: false, // idem: com ação o padrão é não fechar sozinha
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () => notifier.salvar(removido),
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Treino excluído'),
+          duration: const Duration(seconds: 3),
+          persist: false, // idem: com ação o padrão é não fechar sozinha
+          action: SnackBarAction(
+            label: 'Desfazer',
+            onPressed: () => notifier.salvar(removido),
+          ),
         ),
-      ));
+      );
   }
 
   @override
@@ -213,14 +221,14 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           onPressed: _t.exercicios.isEmpty
               ? null
               : () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PlayerScreen(
-                        titulo: _t.nome,
-                        exercicios: _t.exercicios,
-                        treino: _t,
-                      ),
+                  MaterialPageRoute(
+                    builder: (_) => PlayerScreen(
+                      titulo: _t.nome,
+                      exercicios: _t.exercicios,
+                      treino: _t,
                     ),
                   ),
+                ),
           icon: const Icon(Icons.play_arrow_rounded),
           label: const Text('Iniciar treino'),
         ),
@@ -241,8 +249,10 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
             },
           ),
           const SizedBox(height: 22),
-          const Text('Dias da semana',
-              style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text(
+            'Dias da semana',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
@@ -278,8 +288,10 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
           const SizedBox(height: 26),
           Row(
             children: [
-              const Text('Exercícios',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                'Exercícios',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const Spacer(),
               Text(
                 fmtSeg(_t.duracaoTotalSeg),

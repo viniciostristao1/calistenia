@@ -30,8 +30,10 @@ class LembretesConfig {
   const LembretesConfig({required this.ativo, required this.horarios});
 
   static const int horarioPadrao = 7 * 60; // 07:00
-  static const LembretesConfig vazio =
-      LembretesConfig(ativo: false, horarios: {});
+  static const LembretesConfig vazio = LembretesConfig(
+    ativo: false,
+    horarios: {},
+  );
 
   int horarioDe(int dia) => horarios[dia] ?? horarioPadrao;
   int horaDe(int dia) => horarioDe(dia) ~/ 60;
@@ -46,22 +48,23 @@ class LembretesConfig {
   }
 
   Map<String, dynamic> toJson() => {
-        'ativo': ativo,
-        'horarios': horarios.map((k, v) => MapEntry(k.toString(), v)),
-      };
+    'ativo': ativo,
+    'horarios': horarios.map((k, v) => MapEntry(k.toString(), v)),
+  };
 
   factory LembretesConfig.fromJson(Map<String, dynamic> j) => LembretesConfig(
-        ativo: (j['ativo'] ?? false) as bool,
-        horarios: ((j['horarios'] ?? {}) as Map).map(
-          (k, v) => MapEntry(int.parse(k as String), (v as num).toInt()),
-        ),
-      );
+    ativo: (j['ativo'] ?? false) as bool,
+    horarios: ((j['horarios'] ?? {}) as Map).map(
+      (k, v) => MapEntry(int.parse(k as String), (v as num).toInt()),
+    ),
+  );
 }
 
 /// Fonte única da config de lembretes (persistida em `lembretes_v1`).
 final lembretesConfigProvider =
     AsyncNotifierProvider<LembretesConfigNotifier, LembretesConfig>(
-        LembretesConfigNotifier.new);
+      LembretesConfigNotifier.new,
+    );
 
 class LembretesConfigNotifier extends AsyncNotifier<LembretesConfig> {
   @override
@@ -70,8 +73,7 @@ class LembretesConfigNotifier extends AsyncNotifier<LembretesConfig> {
     final raw = prefs.getString(_chaveLembretes);
     if (raw == null || raw.isEmpty) return LembretesConfig.vazio;
     try {
-      return LembretesConfig.fromJson(
-          jsonDecode(raw) as Map<String, dynamic>);
+      return LembretesConfig.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {
       return LembretesConfig.vazio;
     }
@@ -123,9 +125,10 @@ class LembretesService {
     enableVibration: true,
   );
 
-  AndroidFlutterLocalNotificationsPlugin? get _android =>
-      _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+  AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
 
   /// Inicializa plugin + timezone + canal. Idempotente. Chamado no `main()`.
   Future<void> init() async {
@@ -152,20 +155,20 @@ class LembretesService {
   }
 
   NotificationDetails _detalhes(String corpo) => NotificationDetails(
-        android: AndroidNotificationDetails(
-          _canalId,
-          _canalNome,
-          channelDescription: _canalDesc,
-          importance: Importance.max,
-          priority: Priority.high,
-          category: AndroidNotificationCategory.reminder,
-          icon: 'ic_stat_notif',
-          visibility: NotificationVisibility.public,
-          playSound: true,
-          enableVibration: true,
-          styleInformation: BigTextStyleInformation(corpo),
-        ),
-      );
+    android: AndroidNotificationDetails(
+      _canalId,
+      _canalNome,
+      channelDescription: _canalDesc,
+      importance: Importance.max,
+      priority: Priority.high,
+      category: AndroidNotificationCategory.reminder,
+      icon: 'ic_stat_notif',
+      visibility: NotificationVisibility.public,
+      playSound: true,
+      enableVibration: true,
+      styleInformation: BigTextStyleInformation(corpo),
+    ),
+  );
 
   /// Próxima ocorrência (no futuro) do [dia] (0=seg..6=dom) às [hora]:[min],
   /// como TZDateTime em UTC reinterpretando o relógio local.
@@ -178,7 +181,9 @@ class LembretesService {
       d = DateTime(d.year, d.month, d.day + 1, hora, min);
     }
     return tz.TZDateTime.fromMillisecondsSinceEpoch(
-        tz.UTC, d.millisecondsSinceEpoch);
+      tz.UTC,
+      d.millisecondsSinceEpoch,
+    );
   }
 
   /// (Re)agenda os lembretes: uma notificação semanal para cada dia em [dias]
@@ -216,7 +221,6 @@ class LembretesService {
     }
     await _plugin.cancel(_idRisco);
   }
-
 }
 
 /// Mantém os lembretes em sincronia com a config e com os dias que têm treino.
@@ -228,11 +232,14 @@ final lembretesControllerProvider = Provider<void>((ref) {
     final treinos = ref.read(treinosProvider).value;
     if (config == null || treinos == null) return;
     try {
-      await LembretesService.instance
-          .reagendar(config, diasAgendados(treinos));
+      await LembretesService.instance.reagendar(config, diasAgendados(treinos));
     } catch (_) {}
   }
 
-  ref.listen(lembretesConfigProvider, (_, _) => agendar(), fireImmediately: true);
+  ref.listen(
+    lembretesConfigProvider,
+    (_, _) => agendar(),
+    fireImmediately: true,
+  );
   ref.listen(treinosProvider, (_, _) => agendar(), fireImmediately: true);
 });

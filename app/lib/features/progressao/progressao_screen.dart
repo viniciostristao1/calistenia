@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../models/escudo.dart';
 import '../../models/registro_progressao.dart';
 import '../../services/conclusao_repository.dart';
+import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
@@ -128,8 +130,23 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
     final prog = ref.watch(progressaoProvider).value ?? const [];
     final insignias = ref.watch(insigniasProvider).value ?? const [];
     final diasIns = diasComInsignia(insignias);
-    final rating = ratingForma(concs, treinos, prog, diasInsignia: diasIns);
-    final serie = serieRating(concs, treinos, prog, diasInsignia: diasIns);
+    final diasEsc = diasEscudoGanho(
+      ref.watch(escudoProvider).value ?? const <Escudo>[],
+    );
+    final rating = ratingForma(
+      concs,
+      treinos,
+      prog,
+      diasInsignia: diasIns,
+      diasEscudoGanho: diasEsc,
+    );
+    final serie = serieRating(
+      concs,
+      treinos,
+      prog,
+      diasInsignia: diasIns,
+      diasEscudoGanho: diasEsc,
+    );
     return KeyedSubtree(
       key: ValueKey(_animKey),
       child: ListView(
@@ -539,6 +556,28 @@ class _RatingCard extends StatelessWidget {
                   Icons.star_rounded,
                   size: 18,
                   color: AppColors.estrela,
+                ),
+              ],
+              if (rating.bonusEscudos > 0) ...[
+                const SizedBox(width: 8),
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: rating.bonusEscudos),
+                  duration: const Duration(milliseconds: 850),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, v, _) => Text(
+                    '+$v',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                      color: AppColors.escudo,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                const Icon(
+                  Icons.shield_rounded,
+                  size: 18,
+                  color: AppColors.escudo,
                 ),
               ],
             ],

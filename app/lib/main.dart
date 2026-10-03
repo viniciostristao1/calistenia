@@ -16,9 +16,7 @@ import 'util/messenger.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Crashlytics: manda para o painel todo erro de Flutter e todo erro assíncrono
   // não tratado, COM stack trace — assim um "erro interno" reportado pelo usuário

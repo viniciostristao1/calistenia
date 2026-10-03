@@ -28,19 +28,20 @@ void registerBuiltInRewards() {
   // com o nome do prêmio embaixo. O `value` escolhe qual das quatro — 0 🥈,
   // 1 🥇, 2 🏆 prata, 3 🏆 ouro — para o Laboratório ver todas; no app quem
   // manda é o prêmio do dia (o player monta o baú com a conquista certa).
-  RewardRegistry.register(
-    RewardType.chestConquista,
-    (context, params, {value}) {
-      final t = TipoConquista.values[(value?.round() ?? 1).clamp(0, 3)];
-      return ChestOpen2(
-        params: params,
-        item: ChestItem.medalha,
-        itemCor: corConquista(t),
-        label: t.titulo,
-        conteudo: ConquistaBadge(tipo: t, size: 52),
-      );
-    },
-  );
+  RewardRegistry.register(RewardType.chestConquista, (
+    context,
+    params, {
+    value,
+  }) {
+    final t = TipoConquista.values[(value?.round() ?? 1).clamp(0, 3)];
+    return ChestOpen2(
+      params: params,
+      item: ChestItem.medalha,
+      itemCor: corConquista(t),
+      label: t.titulo,
+      conteudo: ConquistaBadge(tipo: t, size: 52),
+    );
+  });
   // Baú da SEQUÊNCIA: a chama **sai de dentro** do baú, com os dias embaixo.
   RewardRegistry.register(
     RewardType.chestSequencia,

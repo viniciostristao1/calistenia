@@ -5,8 +5,9 @@ const _chave = 'gamificacao_v1';
 
 /// Preferência de gamificação (medalhas/troféus + pergunta "treino completo?").
 /// Ligada por padrão. É preferência local — não sincroniza (como som/tema).
-final gamificacaoProvider =
-    AsyncNotifierProvider<GamificacaoNotifier, bool>(GamificacaoNotifier.new);
+final gamificacaoProvider = AsyncNotifierProvider<GamificacaoNotifier, bool>(
+  GamificacaoNotifier.new,
+);
 
 class GamificacaoNotifier extends AsyncNotifier<bool> {
   @override

@@ -29,7 +29,7 @@ import 'star_3d.dart';
 /// **O que fica DENTRO do baú** (o monte que aparece quando ele abre):
 /// estrela (baú da estrela), medalha (conquista) ou chama (sequência). O
 /// conteúdo **sai de dentro** do baú, como a estrela.
-enum ChestItem { estrela, medalha, chama }
+enum ChestItem { estrela, medalha, chama, escudo }
 
 class ChestOpen2 extends StatefulWidget {
   const ChestOpen2({
@@ -181,6 +181,30 @@ class _ChestOpen2State extends State<ChestOpen2> with TickerProviderStateMixin {
         );
       case ChestItem.chama:
         return girando(widget.conteudo ?? Flame3D(size: 92, color: cor));
+      case ChestItem.escudo:
+        // Escudo saindo do baú girando + o pill de +N no rating ao lado.
+        return SizedBox(
+          width: 220,
+          height: 100,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              girando(
+                widget.conteudo ??
+                    Icon(Icons.shield_rounded, size: 74, color: cor),
+              ),
+              if ((widget.valor ?? 0) > 0)
+                _Ponto(
+                  icone: Icons.bolt_rounded,
+                  cor: context.accent,
+                  texto: '+${widget.valor!.round()}',
+                  opacidade: Interval(0.62, 0.78).transform(v),
+                  deslocamento: const Offset(72, 0),
+                  params: params,
+                ),
+            ],
+          ),
+        );
     }
   }
 
@@ -909,7 +933,10 @@ class _ChestPainter2 extends CustomPainter {
             );
           });
 
+        // Escudo reusa o "monte" da medalha (disco brilhante na cor do item); o
+        // escudo em si sai voando por cima (ver _recompensa).
         case ChestItem.medalha:
+        case ChestItem.escudo:
           final face = disco(r);
           final baixo = disco(r, -2.8, 2.2);
           final centro = disco(r * 0.66);

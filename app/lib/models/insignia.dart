@@ -6,20 +6,20 @@ class Insignia {
   final DateTime data; // dia normalizado (meia-noite)
 
   Insignia({required DateTime data})
-      : data = DateTime(data.year, data.month, data.day);
+    : data = DateTime(data.year, data.month, data.day);
 
   /// Id estável = o próprio dia (YYYY-MM-DD). Serve à união por id do sync (uma
   /// insígnia por dia, sem duplicar entre aparelhos).
   String get id => chaveDia(data);
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'data': data.millisecondsSinceEpoch,
-      };
+    'id': id,
+    'data': data.millisecondsSinceEpoch,
+  };
 
   factory Insignia.fromJson(Map<String, dynamic> j) => Insignia(
-        data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
-      );
+    data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
+  );
 }
 
 /// Chave de um dia (YYYY-MM-DD) — usada como id estável da insígnia.

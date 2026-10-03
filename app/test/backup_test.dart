@@ -22,8 +22,8 @@ void main() {
 
     final stores = coletarStores(prefs);
     // Simula o ciclo de ARQUIVO (jsonEncode/decode como no export→import real).
-    final decodificado =
-        (jsonDecode(jsonEncode(stores)) as Map).cast<String, dynamic>();
+    final decodificado = (jsonDecode(jsonEncode(stores)) as Map)
+        .cast<String, dynamic>();
 
     await prefs.clear();
     final n = await aplicarStores(prefs, decodificado);

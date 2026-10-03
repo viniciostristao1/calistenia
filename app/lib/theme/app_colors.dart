@@ -11,7 +11,8 @@ enum TemaApp { azul, ambar, espresso, madeira }
 class Paleta {
   final Color bg, surface, surface2, line, lineStrong, text, dim, dim2;
   final Color accent, onAccent;
-  final Color neuHi, neuLo; // sombras neumórficas: luz (topo-esq) / escuro (base-dir)
+  final Color neuHi,
+      neuLo; // sombras neumórficas: luz (topo-esq) / escuro (base-dir)
   final Brightness brilho;
   const Paleta({
     required this.bg,
@@ -73,11 +74,22 @@ abstract final class AppColors {
   /// sempre amarela, por definição do usuário).
   static const estrela = Color(0xFFFFC93C);
 
+  /// Ciano fixo do ESCUDO (troféu raro) — distinto da estrela (âmbar) e das
+  /// cores de fase; não muda com o tema.
+  static const escudo = Color(0xFF34D1C9);
+
   /// 10 cores para marcar exercícios (o "pontinho" antes do nome).
   static const paletaExercicio = <Color>[
-    Color(0xFF5B9CFF), Color(0xFF31C971), Color(0xFFF5A524), Color(0xFFFF6B6B),
-    Color(0xFFB88BFF), Color(0xFF3DD6D0), Color(0xFFFF8FB0), Color(0xFFFF9538),
-    Color(0xFF9CCC65), Color(0xFFC0C7D2),
+    Color(0xFF5B9CFF),
+    Color(0xFF31C971),
+    Color(0xFFF5A524),
+    Color(0xFFFF6B6B),
+    Color(0xFFB88BFF),
+    Color(0xFF3DD6D0),
+    Color(0xFFFF8FB0),
+    Color(0xFFFF9538),
+    Color(0xFF9CCC65),
+    Color(0xFFC0C7D2),
   ];
 
   static Color corExercicio(int i) =>
@@ -85,28 +97,28 @@ abstract final class AppColors {
 
   // ---- as 5 paletas ----
   static Paleta _palDe(TemaApp t) => switch (t) {
-        TemaApp.azul => _navy(const Color(0xFF3B82F6), const Color(0xFFF2F7FF)),
-        TemaApp.ambar => _navy(accentAmbar, onAccentAmbar),
-        TemaApp.espresso => _espresso,
-        TemaApp.madeira => _madeira,
-      };
+    TemaApp.azul => _navy(const Color(0xFF3B82F6), const Color(0xFFF2F7FF)),
+    TemaApp.ambar => _navy(accentAmbar, onAccentAmbar),
+    TemaApp.espresso => _espresso,
+    TemaApp.madeira => _madeira,
+  };
 
   /// Navy escuro histórico (azul/âmbar): muda só o accent.
   static Paleta _navy(Color accent, Color onAccent) => Paleta(
-        bg: const Color(0xFF0A0F1C),
-        surface: const Color(0xFF121A2E),
-        surface2: const Color(0xFF1B2540),
-        line: const Color(0x14FFFFFF),
-        lineStrong: const Color(0x26FFFFFF),
-        text: const Color(0xFFEAF0FB),
-        dim: const Color(0xFF8A96AE),
-        dim2: const Color(0xFF56607A),
-        accent: accent,
-        onAccent: onAccent,
-        neuHi: const Color(0xFF141D33),
-        neuLo: const Color(0xFF05080A),
-        brilho: Brightness.dark,
-      );
+    bg: const Color(0xFF0A0F1C),
+    surface: const Color(0xFF121A2E),
+    surface2: const Color(0xFF1B2540),
+    line: const Color(0x14FFFFFF),
+    lineStrong: const Color(0x26FFFFFF),
+    text: const Color(0xFFEAF0FB),
+    dim: const Color(0xFF8A96AE),
+    dim2: const Color(0xFF56607A),
+    accent: accent,
+    onAccent: onAccent,
+    neuHi: const Color(0xFF141D33),
+    neuLo: const Color(0xFF05080A),
+    brilho: Brightness.dark,
+  );
 
   static const Paleta _espresso = Paleta(
     bg: Color(0xFF2A2620),

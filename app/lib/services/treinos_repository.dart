@@ -11,8 +11,9 @@ const chaveTreinos = 'treinos_v1';
 
 /// Fonte única dos treinos. Carrega/salva em `shared_preferences` (local, sem
 /// login/nuvem). O estado é a lista de treinos.
-final treinosProvider =
-    AsyncNotifierProvider<TreinosNotifier, List<Treino>>(TreinosNotifier.new);
+final treinosProvider = AsyncNotifierProvider<TreinosNotifier, List<Treino>>(
+  TreinosNotifier.new,
+);
 
 class TreinosNotifier extends AsyncNotifier<List<Treino>> {
   @override

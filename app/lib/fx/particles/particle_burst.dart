@@ -52,7 +52,8 @@ class _ParticleBurstState extends State<ParticleBurst>
     _emit();
     _ctrl = AnimationController(
       vsync: this,
-      duration: widget.params.effectiveDuration + const Duration(milliseconds: 250),
+      duration:
+          widget.params.effectiveDuration + const Duration(milliseconds: 250),
     )..addListener(_tick);
     _run();
   }

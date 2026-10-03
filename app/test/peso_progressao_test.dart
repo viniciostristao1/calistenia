@@ -9,16 +9,20 @@ import 'package:flutter_test/flutter_test.dart';
 /// sem prejudicar quem só evolui por repetições (bodyweight).
 void main() {
   final hoje = DateTime(2026, 8, 25);
-  Treino treinoCom(String ex) =>
-      Treino(nome: 'T', dias: const [0], exercicios: [Exercicio(nome: ex)]);
+  Treino treinoCom(String ex) => Treino(
+    nome: 'T',
+    dias: const [0],
+    exercicios: [Exercicio(nome: ex)],
+  );
 
   group('RegistroProgressao com peso', () {
     test('JSON round-trip preserva o peso', () {
       final r = RegistroProgressao(
-          exercicio: 'Agachamento',
-          valor: 8,
-          peso: 42.5,
-          data: DateTime(2026, 8, 20));
+        exercicio: 'Agachamento',
+        valor: 8,
+        peso: 42.5,
+        data: DateTime(2026, 8, 20),
+      );
       final v = RegistroProgressao.fromJson(r.toJson());
       expect(v.valor, 8);
       expect(v.peso, 42.5);
@@ -26,8 +30,12 @@ void main() {
     });
 
     test('registro antigo sem peso vira peso 0 (bodyweight)', () {
-      final v = RegistroProgressao.fromJson(
-          {'id': 'a', 'exercicio': 'Flexão', 'valor': 5, 'data': 0});
+      final v = RegistroProgressao.fromJson({
+        'id': 'a',
+        'exercicio': 'Flexão',
+        'valor': 5,
+        'data': 0,
+      });
       expect(v.peso, 0);
     });
   });
@@ -38,18 +46,19 @@ void main() {
       final treinos = [treinoCom('Agachamento')];
       final prog = [
         RegistroProgressao(
-            exercicio: 'Agachamento',
-            valor: 10,
-            peso: 40,
-            data: hoje.subtract(const Duration(days: 50))), // antes do corte
+          exercicio: 'Agachamento',
+          valor: 10,
+          peso: 40,
+          data: hoje.subtract(const Duration(days: 50)),
+        ), // antes do corte
         RegistroProgressao(
-            exercicio: 'Agachamento',
-            valor: 10,
-            peso: 42.5,
-            data: hoje.subtract(const Duration(days: 5))),
+          exercicio: 'Agachamento',
+          valor: 10,
+          peso: 42.5,
+          data: hoje.subtract(const Duration(days: 5)),
+        ),
       ];
-      final r =
-          ratingForma(const <Conclusao>[], treinos, prog, hoje: hoje);
+      final r = ratingForma(const <Conclusao>[], treinos, prog, hoje: hoje);
       expect(r.progressao, greaterThan(0));
     });
 
@@ -57,18 +66,19 @@ void main() {
       final treinos = [treinoCom('Agachamento')];
       final prog = [
         RegistroProgressao(
-            exercicio: 'Agachamento',
-            valor: 10,
-            peso: 40,
-            data: hoje.subtract(const Duration(days: 50))),
+          exercicio: 'Agachamento',
+          valor: 10,
+          peso: 40,
+          data: hoje.subtract(const Duration(days: 50)),
+        ),
         RegistroProgressao(
-            exercicio: 'Agachamento',
-            valor: 10,
-            peso: 40,
-            data: hoje.subtract(const Duration(days: 5))),
+          exercicio: 'Agachamento',
+          valor: 10,
+          peso: 40,
+          data: hoje.subtract(const Duration(days: 5)),
+        ),
       ];
-      final r =
-          ratingForma(const <Conclusao>[], treinos, prog, hoje: hoje);
+      final r = ratingForma(const <Conclusao>[], treinos, prog, hoje: hoje);
       expect(r.progressao, 0);
     });
   });
@@ -78,15 +88,17 @@ void main() {
       final treinos = [treinoCom('Agachamento')];
       final prog = [
         RegistroProgressao(
-            exercicio: 'Agachamento',
-            valor: 10,
-            peso: 40,
-            data: hoje.subtract(const Duration(days: 30))),
+          exercicio: 'Agachamento',
+          valor: 10,
+          peso: 40,
+          data: hoje.subtract(const Duration(days: 30)),
+        ),
         RegistroProgressao(
-            exercicio: 'Agachamento',
-            valor: 10,
-            peso: 42.5,
-            data: hoje.subtract(const Duration(days: 5))),
+          exercicio: 'Agachamento',
+          valor: 10,
+          peso: 42.5,
+          data: hoje.subtract(const Duration(days: 5)),
+        ),
       ];
       expect(recordesRecentes(treinos, prog, hoje: hoje), 1);
     });

@@ -61,52 +61,58 @@ List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
 
     void addPrep(int serie, int lado) {
       if (e.preparacaoSeg <= 0) return;
-      fases.add(Fase(
-        tipo: FaseTipo.preparacao,
-        exercicioNome: e.nome,
-        segundos: e.preparacaoSeg,
-        rep: 0,
-        totalReps: reps,
-        serie: serie,
-        totalSeries: series,
-        lado: lado,
-        exercicioIndex: ei,
-        totalExercicios: total,
-      ));
-    }
-
-    void addExec(int serie, int lado) {
-      if (e.execucaoSeg <= 0) return;
-      for (var r = 1; r <= reps; r++) {
-        fases.add(Fase(
-          tipo: FaseTipo.execucao,
+      fases.add(
+        Fase(
+          tipo: FaseTipo.preparacao,
           exercicioNome: e.nome,
-          segundos: e.execucaoSeg,
-          rep: r,
+          segundos: e.preparacaoSeg,
+          rep: 0,
           totalReps: reps,
           serie: serie,
           totalSeries: series,
           lado: lado,
           exercicioIndex: ei,
           totalExercicios: total,
-        ));
+        ),
+      );
+    }
+
+    void addExec(int serie, int lado) {
+      if (e.execucaoSeg <= 0) return;
+      for (var r = 1; r <= reps; r++) {
+        fases.add(
+          Fase(
+            tipo: FaseTipo.execucao,
+            exercicioNome: e.nome,
+            segundos: e.execucaoSeg,
+            rep: r,
+            totalReps: reps,
+            serie: serie,
+            totalSeries: series,
+            lado: lado,
+            exercicioIndex: ei,
+            totalExercicios: total,
+          ),
+        );
       }
     }
 
     void addDescanso(int serie) {
       final desc = e.descansoAposSerie(serie);
       if (desc <= 0) return;
-      fases.add(Fase(
-        tipo: FaseTipo.descanso,
-        exercicioNome: e.nome,
-        segundos: desc,
-        rep: 0,
-        totalReps: reps,
-        serie: serie,
-        totalSeries: series,
-        exercicioIndex: ei,
-        totalExercicios: total,
-      ));
+      fases.add(
+        Fase(
+          tipo: FaseTipo.descanso,
+          exercicioNome: e.nome,
+          segundos: desc,
+          rep: 0,
+          totalReps: reps,
+          serie: serie,
+          totalSeries: series,
+          exercicioIndex: ei,
+          totalExercicios: total,
+        ),
+      );
     }
 
     if (e.unilateral) {
@@ -164,8 +170,9 @@ String descricaoEtapa(Fase f) {
       return 'Descanso · ${fmtSeg(f.segundos)}';
     case FaseTipo.execucao:
       final lado = f.lado > 0 ? ' (lado ${f.lado})' : '';
-      final quanto =
-          f.totalReps > 1 ? '${f.totalReps} reps' : fmtSeg(f.segundos);
+      final quanto = f.totalReps > 1
+          ? '${f.totalReps} reps'
+          : fmtSeg(f.segundos);
       return '${f.exercicioNome}$lado · $quanto';
   }
 }

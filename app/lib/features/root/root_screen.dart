@@ -53,8 +53,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.fitness_center_outlined),
-            selectedIcon:
-                Icon(Icons.fitness_center, color: context.accent),
+            selectedIcon: Icon(Icons.fitness_center, color: context.accent),
             label: s.treinos,
           ),
           NavigationDestination(

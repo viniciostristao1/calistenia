@@ -8,9 +8,9 @@ const _ouro = Color(0xFFF4C542);
 
 /// Cor da conquista (prata/ouro) — para tingir badge e barra de progresso.
 Color corConquista(TipoConquista t) => switch (t) {
-      TipoConquista.medalhaPrata || TipoConquista.trofeuPrata => _prata,
-      TipoConquista.medalhaOuro || TipoConquista.trofeuOuro => _ouro,
-    };
+  TipoConquista.medalhaPrata || TipoConquista.trofeuPrata => _prata,
+  TipoConquista.medalhaOuro || TipoConquista.trofeuOuro => _ouro,
+};
 
 /// Ícone visual de uma conquista. Medalhas (🥈/🥇) são emoji; os troféus são
 /// desenhados com o ícone de troféu, tintado de PRATA ou OURO (não há emoji de
@@ -29,8 +29,8 @@ class ConquistaBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ehTrofeu = tipo == TipoConquista.trofeuPrata ||
-        tipo == TipoConquista.trofeuOuro;
+    final ehTrofeu =
+        tipo == TipoConquista.trofeuPrata || tipo == TipoConquista.trofeuOuro;
     if (ehTrofeu) {
       final trofeuSize = size * 1.4;
       return SizedBox(
@@ -39,9 +39,11 @@ class ConquistaBadge extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(Icons.emoji_events,
-                size: trofeuSize,
-                color: ativo ? corConquista(tipo) : AppColors.dim2),
+            Icon(
+              Icons.emoji_events,
+              size: trofeuSize,
+              color: ativo ? corConquista(tipo) : AppColors.dim2,
+            ),
             if (ativo) ...[
               // Brilho diagonal no copo — sensação de metal polido, como nas medalhas.
               Positioned(

@@ -16,6 +16,7 @@ import '../../services/auth_service.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/conquistas_repository.dart';
+import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
@@ -339,29 +340,62 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final notifier = ref.read(conquistasProvider.notifier);
     final novas = await notifier.registrarNovas(atuais);
     await notifier.reconciliar(atuais); // move p/ histórico o que tiver caído
-    // Insígnia do dia (surpresa, sorteio congelado): só ao concluir de verdade,
-    // e só se o dia da conclusão é um dos 7 dias sorteados do mês.
     final uid = ref.read(authStateProvider).value?.uid;
     final hoje = DateTime.now();
+    // Escudos (dias cobertos contam como completos na corrente).
+    final escudos = ref.read(escudoProvider).value ?? const [];
+    final cobertos = diasCobertosPorEscudo(escudos);
+    final streakHoje = sequenciaIninterrupta(
+      concs,
+      treinos,
+      hoje: hoje,
+      diasValidos: diasValidos,
+      diasEscudo: cobertos,
+    );
+    // ESCUDO (troféu raro): sorteado numa sequência consecutiva, num dia entre o
+    // 13º e o 26º (pulando o 20º), seed + "sorte". Máx 1 guardado por vez.
+    var ganhouEscudo = false;
+    if (!temEscudoDisponivel(escudos) &&
+        streakHoje >= escudoMin &&
+        streakHoje <= escudoMax &&
+        streakHoje != escudoSkip) {
+      final inicio = inicioSequenciaAtual(
+        concs,
+        treinos,
+        hoje: hoje,
+        diasValidos: diasValidos,
+        diasEscudo: cobertos,
+      );
+      if (inicio != null &&
+          alvoEscudo(sementeInsignia(uid), inicio) == streakHoje) {
+        ganhouEscudo = await ref.read(escudoProvider.notifier).ganhar(hoje);
+      }
+    }
+    // Insígnia do dia (surpresa, sorteio congelado): só ao concluir de verdade,
+    // e só se o dia é um dos 7 sorteados do mês. CONFLITO: se o escudo também caiu
+    // hoje, o escudo tem prioridade e a insígnia vai pro dia seguinte (calendário).
     final insigniasNotifier = ref.read(insigniasProvider.notifier);
     final ehSorteado = await insigniasNotifier.ehDiaSorteado(
       hoje,
       diasAgendados(treinos),
       sementeInsignia(uid),
     );
-    final ganhouInsignia = ehSorteado
-        ? await insigniasNotifier.registrarSeNova(hoje)
-        : false;
-    // Fila da cerimônia: conquista/marco (baú rápido) → estrela (baú 2) — e,
-    // sem baú nenhum, o ganho de Rating do dia (setas do "subiu de nível").
+    var ganhouInsignia = false;
+    if (ehSorteado) {
+      if (ganhouEscudo) {
+        await insigniasNotifier.registrarSeNova(
+          hoje.add(const Duration(days: 1)),
+        );
+      } else {
+        ganhouInsignia = await insigniasNotifier.registrarSeNova(hoje);
+      }
+    }
+    // Fila da cerimônia: conquista/marco → escudo → estrela (baús) — e, sem baú
+    // nenhum, o ganho de Rating do dia (setas do "subiu de nível").
     final premios = recompensasDoDia(
       novasConquistas: novas,
-      streak: sequenciaIninterrupta(
-        concs,
-        treinos,
-        hoje: hoje,
-        diasValidos: diasValidos,
-      ),
+      streak: streakHoje,
+      ganhouEscudo: ganhouEscudo,
       ganhouEstrela: ganhouInsignia,
       ratingGanho: ratingDoDia(concs, treinos, prog, hoje: hoje),
     );
@@ -968,6 +1002,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                 Future<void>.delayed(const Duration(milliseconds: 800), fim),
           ),
         );
+      case PremioTipo.escudo:
+        await _bauEscudo();
       case PremioTipo.estrela:
         await _bauEstrela(p.valor);
       case PremioTipo.rating:
@@ -1006,6 +1042,19 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     );
     return pronto.future;
   }
+
+  /// **Baú do ESCUDO**: o escudo sai de dentro girando, com o pill de +20 no
+  /// rating ao lado. Mesmo ritmo do baú da estrela.
+  Future<void> _bauEscudo() => _cena(
+    (ctx, fim) => ChestOpen2(
+      params: const FxParams(duration: Duration(milliseconds: 1000)),
+      item: ChestItem.escudo,
+      itemCor: AppColors.escudo,
+      valor: 20, // +20 no rating
+      label: 'Escudo',
+      onFim: () => Future<void>.delayed(const Duration(milliseconds: 800), fim),
+    ),
+  );
 
   /// **Baú da estrela**: espera o toque, faz a abertura completa e, quando a
   /// estrela termina de subir, sai de cena.

@@ -25,14 +25,20 @@ Set<int> diasAgendados(List<Treino> treinos) {
 /// ignoradas — mesma regra do [nivelInfo].
 Map<DateTime, bool> _completoPorDia(
   List<Conclusao> concs,
-  Set<DateTime>? diasValidos,
-) {
+  Set<DateTime>? diasValidos, {
+  Set<DateTime> diasEscudo = const {},
+}) {
   final validos = diasValidos?.map(_dia).toSet();
   final mapa = <DateTime, bool>{};
   for (final c in concs) {
     final d = _dia(c.data);
     if (validos != null && !validos.contains(d)) continue;
     mapa[d] = (mapa[d] ?? false) || c.completo;
+  }
+  // ESCUDO: um dia coberto conta como COMPLETO (mantém a corrente), mesmo que
+  // tenha sido falha/falta. Entra sempre, independente de diasValidos.
+  for (final e in diasEscudo) {
+    mapa[_dia(e)] = true;
   }
   return mapa;
 }
@@ -50,10 +56,11 @@ int sequenciaIninterrupta(
   List<Treino> treinos, {
   DateTime? hoje,
   Set<DateTime>? diasValidos,
+  Set<DateTime> diasEscudo = const {},
 }) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
-  final completo = _completoPorDia(concs, diasValidos);
+  final completo = _completoPorDia(concs, diasValidos, diasEscudo: diasEscudo);
   var seq = 0;
   var d = hj;
   for (var i = 0; i < 4000; i++) {
@@ -76,10 +83,11 @@ int sequenciaRecorde(
   List<Treino> treinos, {
   DateTime? hoje,
   Set<DateTime>? diasValidos,
+  Set<DateTime> diasEscudo = const {},
 }) {
   final hj = _dia(hoje ?? DateTime.now());
   final agendados = diasAgendados(treinos);
-  final completo = _completoPorDia(concs, diasValidos);
+  final completo = _completoPorDia(concs, diasValidos, diasEscudo: diasEscudo);
   if (completo.isEmpty) return 0;
   final inicio = completo.keys.reduce((a, b) => a.isBefore(b) ? a : b);
   var seq = 0, recorde = 0, i = 0;
@@ -95,6 +103,72 @@ int sequenciaRecorde(
     i++;
   }
   return recorde;
+}
+
+/// **Dia de INÍCIO da sequência atual** (o primeiro dia COMPLETO da corrente que
+/// chega até hoje), ou `null` se não há corrente. Serve de âncora determinística
+/// p/ o sorteio do escudo ([alvoEscudo]). Mesmas regras de quebra da
+/// [sequenciaIninterrupta].
+DateTime? inicioSequenciaAtual(
+  List<Conclusao> concs,
+  List<Treino> treinos, {
+  DateTime? hoje,
+  Set<DateTime>? diasValidos,
+  Set<DateTime> diasEscudo = const {},
+}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final agendados = diasAgendados(treinos);
+  final completo = _completoPorDia(concs, diasValidos, diasEscudo: diasEscudo);
+  DateTime? inicio;
+  var d = hj;
+  for (var i = 0; i < 4000; i++) {
+    final wd = d.weekday - 1;
+    if (completo[d] == true) {
+      inicio = d; // o mais antigo visto antes de quebrar
+    } else if (agendados.contains(wd) && d.isBefore(hj)) {
+      break; // dia agendado no passado sem completo -> quebra
+    }
+    d = d.subtract(const Duration(days: 1));
+  }
+  return inicio;
+}
+
+/// **A falta que quebra a sequência atual** — o dia que o escudo cobriria p/
+/// restaurar a corrente (o 1º dia AGENDADO sem conclusão completa, andando p/
+/// trás a partir de hoje). Inclui uma tentativa de HOJE ("não consegui").
+/// `null` = não há falta a cobrir (a corrente não está quebrada).
+DateTime? ultimaFaltaCobrivel(
+  List<Conclusao> concs,
+  List<Treino> treinos, {
+  DateTime? hoje,
+  Set<DateTime>? diasValidos,
+  Set<DateTime> diasEscudo = const {},
+}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final agendados = diasAgendados(treinos);
+  final completo = _completoPorDia(concs, diasValidos, diasEscudo: diasEscudo);
+  // 1º dia completo da história: não faz sentido "cobrir" dias de PRÉ-história
+  // (antes de começar a treinar) — se a corrente está intacta, não há o que cobrir.
+  DateTime? primeiro;
+  for (final e in completo.entries) {
+    if (e.value && (primeiro == null || e.key.isBefore(primeiro))) {
+      primeiro = e.key;
+    }
+  }
+  if (primeiro == null) return null;
+  var d = hj;
+  for (var i = 0; i < 4000; i++) {
+    if (d.isBefore(primeiro)) return null; // antes do 1º treino -> sem quebra
+    final wd = d.weekday - 1;
+    if (completo[d] == true) {
+      // completo ou já coberto -> não é falta, segue p/ trás
+    } else if (agendados.contains(wd)) {
+      if (d.isBefore(hj)) return d; // faltou/tentou num dia agendado passado
+      if (d == hj && completo.containsKey(d)) return d; // tentou HOJE
+    }
+    d = d.subtract(const Duration(days: 1));
+  }
+  return null;
 }
 
 /// Limiares dos prêmios (dias de sequência): 🥈4 · 🥇8 · 🏆Prata15 · 🏆Ouro21.
@@ -376,6 +450,17 @@ int _bonusEstrelas(Set<DateTime> diasInsignia, DateTime hj) {
   return (n.clamp(0, 7)) * 10;
 }
 
+/// Bônus de ESCUDO: EXTRA fora dos 1000, +20 por escudo GANHO no mês-calendário
+/// corrente (mesma lógica do bônus de estrela, reseta todo dia 1º). Escudo é
+/// raro, então na prática some 20/40.
+int _bonusEscudos(Set<DateTime> diasEscudoGanho, DateTime hj) {
+  var n = 0;
+  for (final d in diasEscudoGanho) {
+    if (d.year == hj.year && d.month == hj.month) n++;
+  }
+  return n * 20;
+}
+
 /// Rating de forma = Consistência (400) + Frequência (200) + Progressão (400) =
 /// base 0..1000, MAIS o bônus de estrelas (0..70) como EXTRA fora do teto.
 /// Número único "nota de desempenho": consistência é o alicerce, mas só bater
@@ -387,18 +472,20 @@ class RatingForma {
   final int frequencia; // 0..200
   final int progressao; // 0..400
   final int bonusEstrelas; // 0..70 — EXTRA de insígnias do mês, fora dos 1000
+  final int bonusEscudos; // EXTRA de escudos do mês (+20 cada), fora dos 1000
   const RatingForma(
     this.consistencia,
     this.frequencia,
     this.progressao, [
     this.bonusEstrelas = 0,
+    this.bonusEscudos = 0,
   ]);
 
   /// Nota-base "de forma" (0..1000): consistência + frequência + progressão.
   int get total => consistencia + frequencia + progressao;
 
-  /// Nota com o bônus de estrelas somado (pode passar de 1000 — é o extra).
-  int get totalComBonus => total + bonusEstrelas;
+  /// Nota com os bônus (estrela + escudo) somados (pode passar de 1000 = extra).
+  int get totalComBonus => total + bonusEstrelas + bonusEscudos;
 
   static const int maximo = 1000;
 }
@@ -409,6 +496,7 @@ RatingForma ratingForma(
   List<RegistroProgressao> progressao, {
   DateTime? hoje,
   Set<DateTime> diasInsignia = const {},
+  Set<DateTime> diasEscudoGanho = const {},
 }) {
   final hj = _dia(hoje ?? DateTime.now());
   return RatingForma(
@@ -416,6 +504,7 @@ RatingForma ratingForma(
     _frequencia(concs, hj),
     _progressao(treinos, progressao, hj, 42),
     _bonusEstrelas(diasInsignia, hj),
+    _bonusEscudos(diasEscudoGanho, hj),
   );
 }
 
@@ -458,7 +547,7 @@ int ratingDoDia(
 }
 
 /// **Tipo de prêmio do dia** (o que a cerimônia de fim de treino apresenta).
-enum PremioTipo { conquista, sequencia, estrela, rating }
+enum PremioTipo { conquista, sequencia, escudo, estrela, rating }
 
 /// **Um prêmio do dia.** Conquista e marco de sequência saem do **baú rápido**
 /// (intro); a estrela sai do **baú 2** (completo); o rating é o "subiu de nível"
@@ -473,6 +562,7 @@ class PremioDia {
     : this._(PremioTipo.conquista, conquista: t);
   const PremioDia.sequencia(int dias)
     : this._(PremioTipo.sequencia, valor: dias);
+  const PremioDia.escudo() : this._(PremioTipo.escudo);
   const PremioDia.estrela() : this._(PremioTipo.estrela);
   const PremioDia.rating(int pontos) : this._(PremioTipo.rating, valor: pontos);
 }
@@ -484,6 +574,7 @@ class PremioDia {
 List<PremioDia> recompensasDoDia({
   List<TipoConquista> novasConquistas = const [],
   int streak = 0,
+  bool ganhouEscudo = false,
   bool ganhouEstrela = false,
   int ratingGanho = 0,
 }) {
@@ -493,6 +584,9 @@ List<PremioDia> recompensasDoDia({
   }
   final marco = marcoSequencia(streak);
   if (marco > 0) premios.add(PremioDia.sequencia(marco));
+  // Escudo antes da estrela (mais importante/raro). Na prática não coexistem no
+  // mesmo dia: quando ambos cairiam, a insígnia é adiada p/ o dia seguinte.
+  if (ganhouEscudo) premios.add(const PremioDia.escudo());
   if (ganhouEstrela) premios.add(const PremioDia.estrela());
   if (premios.isEmpty && ratingGanho > 0) {
     premios.add(PremioDia.rating(ratingGanho));
@@ -517,6 +611,7 @@ List<PontoRating> serieRating(
   int semanas = 12,
   DateTime? hoje,
   Set<DateTime> diasInsignia = const {},
+  Set<DateTime> diasEscudoGanho = const {},
 }) {
   final hj = _dia(hoje ?? DateTime.now());
   final pts = <PontoRating>[];
@@ -525,6 +620,7 @@ List<PontoRating> serieRating(
     final concsAte = concs.where((c) => !c.data.isAfter(data)).toList();
     final progAte = progressao.where((r) => !r.data.isAfter(data)).toList();
     final insigAte = diasInsignia.where((d) => !d.isAfter(data)).toSet();
+    final escAte = diasEscudoGanho.where((d) => !d.isAfter(data)).toSet();
     pts.add(
       PontoRating(
         data,
@@ -534,6 +630,7 @@ List<PontoRating> serieRating(
           progAte,
           hoje: data,
           diasInsignia: insigAte,
+          diasEscudoGanho: escAte,
         ).totalComBonus,
       ),
     );

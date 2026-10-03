@@ -29,8 +29,10 @@ class _GlowHaloState extends State<GlowHalo>
   late final AnimationController _ctrl = AnimationController(
     vsync: this,
     duration: Duration(
-        milliseconds:
-            (widget.params.effectiveDuration.inMilliseconds * 0.9).round().clamp(200, 4000)),
+      milliseconds: (widget.params.effectiveDuration.inMilliseconds * 0.9)
+          .round()
+          .clamp(200, 4000),
+    ),
   )..repeat(reverse: true);
 
   @override

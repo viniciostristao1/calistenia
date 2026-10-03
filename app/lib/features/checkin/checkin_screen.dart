@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/checkin.dart';
 import '../../models/conquista.dart';
+import '../../models/escudo.dart';
 import '../../models/exercicio.dart';
 import '../../models/insignia.dart';
 import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/conquistas_repository.dart';
+import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/idioma_repository.dart';
 import '../../services/insignias_repository.dart';
@@ -180,6 +182,16 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   '${i.data.year}-${i.data.month}-${i.data.day}',
               }
             : const <String>{};
+        // Dias COBERTOS por escudo: no calendário o 🛡️ substitui estrela/pontinhos.
+        // Mesma regra de chave (sem zero à esquerda).
+        final escudoPorDia = gamiOn
+            ? {
+                for (final d in diasCobertosPorEscudo(
+                  ref.watch(escudoProvider).value ?? const <Escudo>[],
+                ))
+                  '${d.year}-${d.month}-${d.day}',
+              }
+            : const <String>{};
         final diasNoMes = DateTime(_mes.year, _mes.month + 1, 0).day;
         final offset = _mes.weekday - 1; // seg=0 .. dom=6
         final feitosNoMes = todos
@@ -206,6 +218,8 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               // Sequência (a chama): linha CURTA acima do calendário — veio da
               // Galeria p/ cá. As insígnias do mês ficam logo após a última semana.
               if (gamiOn) const _SequenciaLinha(),
+              // Escudo guardado: banner tocável p/ USAR (cobre a última falta).
+              if (gamiOn) const _EscudoDisponivel(),
               const _LinhaDias(),
               GridView.builder(
                 shrinkWrap: true,
@@ -226,6 +240,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                     cores: doDia.map((c) => c.corIndex).toList(),
                     conquistas: conqPorDia[chave] ?? const [],
                     estrela: estrelaPorDia.contains(chave),
+                    escudo: escudoPorDia.contains(chave),
                     hoje: mesmoDia(dia, hoje),
                     onTap: () => _editarDia(dia),
                   );
@@ -341,6 +356,7 @@ class _Celula extends StatelessWidget {
     required this.cores,
     required this.conquistas,
     required this.estrela,
+    required this.escudo,
     required this.hoje,
     required this.onTap,
   });
@@ -349,6 +365,7 @@ class _Celula extends StatelessWidget {
   final List<int> cores; // corIndex dos check-ins do dia
   final List<TipoConquista> conquistas; // conquistas obtidas nesse dia
   final bool estrela; // ganhou a INSÍGNIA (estrela) nesse dia
+  final bool escudo; // dia COBERTO por um escudo (falha virou completa)
   final bool hoje;
   final VoidCallback onTap;
 
@@ -356,7 +373,8 @@ class _Celula extends StatelessWidget {
   Widget build(BuildContext context) {
     final mostrar = cores.take(4).toList();
     final extra = cores.length - mostrar.length;
-    final temConteudo = cores.isNotEmpty || conquistas.isNotEmpty || estrela;
+    final temConteudo =
+        cores.isNotEmpty || conquistas.isNotEmpty || estrela || escudo;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: onTap,
@@ -381,10 +399,18 @@ class _Celula extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
+            // Dia COBERTO por escudo: mostra o 🛡️ no lugar da estrela/pontinhos
+            // (a falha virou um dia completo).
+            if (escudo)
+              const Icon(
+                Icons.shield_rounded,
+                size: 16,
+                color: AppColors.escudo,
+              )
             // Dia com CONQUISTA e/ou INSÍGNIA: mostra a medalha/troféu e/ou a
             // estrela no lugar dos pontinhos (a estrela vem AO LADO da conquista
             // quando as duas caem no mesmo dia).
-            if (conquistas.isNotEmpty || estrela)
+            else if (conquistas.isNotEmpty || estrela)
               Wrap(
                 spacing: 2,
                 alignment: WrapAlignment.center,
@@ -585,6 +611,12 @@ class _QuadroInsignias extends ConsumerWidget {
     final lista = ref.watch(insigniasProvider).value ?? const <Insignia>[];
     final doMes = insigniasDoMes(lista, mes.year, mes.month);
     final perfeito = doMes.length >= 7;
+    // Escudos ganhos no mês entram na MESMA linha, junto das estrelas.
+    final escudosMes = escudosDoMes(
+      ref.watch(escudoProvider).value ?? const <Escudo>[],
+      mes.year,
+      mes.month,
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
       child: InkWell(
@@ -615,7 +647,7 @@ class _QuadroInsignias extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              if (doMes.isEmpty)
+              if (doMes.isEmpty && escudosMes.isEmpty)
                 Text('—', style: TextStyle(color: AppColors.dim2, fontSize: 14))
               else
                 Flexible(
@@ -629,6 +661,13 @@ class _QuadroInsignias extends ConsumerWidget {
                           Icons.star_rounded,
                           size: 18,
                           color: AppColors.estrela,
+                        ),
+                      // Escudos do mês, junto das estrelas.
+                      for (var i = 0; i < escudosMes.length; i++)
+                        Icon(
+                          Icons.shield_rounded,
+                          size: 18,
+                          color: AppColors.escudo,
                         ),
                     ],
                   ),
@@ -1006,8 +1045,22 @@ class _SequenciaLinha extends ConsumerWidget {
     final diasValidos = checkins
         .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
         .toSet();
-    final seq = sequenciaIninterrupta(concs, treinos, diasValidos: diasValidos);
-    final rec = sequenciaRecorde(concs, treinos, diasValidos: diasValidos);
+    // Dias cobertos por escudo contam como completos na corrente.
+    final cobertos = diasCobertosPorEscudo(
+      ref.watch(escudoProvider).value ?? const <Escudo>[],
+    );
+    final seq = sequenciaIninterrupta(
+      concs,
+      treinos,
+      diasValidos: diasValidos,
+      diasEscudo: cobertos,
+    );
+    final rec = sequenciaRecorde(
+      concs,
+      treinos,
+      diasValidos: diasValidos,
+      diasEscudo: cobertos,
+    );
     String dias(int n) => n == 1 ? 'dia' : 'dias';
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 6),
@@ -1049,6 +1102,143 @@ class _SequenciaLinha extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Banner do ESCUDO guardado (só aparece quando há 1 disponível). Tocar abre a
+/// folha "Usar escudo", que cobre a ÚLTIMA falta (vira dia completo).
+class _EscudoDisponivel extends ConsumerWidget {
+  const _EscudoDisponivel();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final escudos = ref.watch(escudoProvider).value ?? const <Escudo>[];
+    if (!temEscudoDisponivel(escudos)) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          backgroundColor: AppColors.bg,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (_) => const _UsarEscudoSheet(),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.escudo.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.escudo, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.shield_rounded,
+                size: 18,
+                color: AppColors.escudo,
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Escudo guardado',
+                  style: TextStyle(
+                    color: AppColors.escudo,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Text(
+                'tocar para usar',
+                style: TextStyle(color: AppColors.dim, fontSize: 11),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right, color: AppColors.dim, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Folha "Usar escudo": cobre a última falta que quebrou a sequência (vira dia
+/// completo). Se não há falta a cobrir, só explica p/ que serve.
+class _UsarEscudoSheet extends ConsumerWidget {
+  const _UsarEscudoSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final concs = ref.watch(conclusaoProvider).value ?? const [];
+    final treinos = ref.watch(treinosProvider).value ?? const [];
+    final checkins = ref.watch(checkinProvider).value ?? const [];
+    final escudos = ref.watch(escudoProvider).value ?? const <Escudo>[];
+    final diasValidos = checkins
+        .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
+        .toSet();
+    final cobertos = diasCobertosPorEscudo(escudos);
+    final falta = ultimaFaltaCobrivel(
+      concs,
+      treinos,
+      diasValidos: diasValidos,
+      diasEscudo: cobertos,
+    );
+    String fmt(DateTime d) =>
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.shield_rounded, color: AppColors.escudo),
+                const SizedBox(width: 8),
+                const Text(
+                  'Usar escudo',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (falta != null) ...[
+              Text(
+                'Cobrir a falta de ${fmt(falta)} e contar como um dia completo — '
+                'isso mantém a sua sequência. O escudo é gasto (você só tem um).',
+                style: TextStyle(color: AppColors.text),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.escudo,
+                    foregroundColor: AppColors.onFase,
+                    minimumSize: const Size(0, 50),
+                  ),
+                  onPressed: () async {
+                    await ref.read(escudoProvider.notifier).usar(falta);
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.verified_user_rounded),
+                  label: Text('Cobrir ${fmt(falta)}'),
+                ),
+              ),
+            ] else
+              Text(
+                'Guarde o escudo para quando faltar ou não conseguir um dia '
+                'agendado: ele conta como dia completo e protege a sua sequência.',
+                style: TextStyle(color: AppColors.dim),
+              ),
           ],
         ),
       ),

@@ -51,6 +51,18 @@ void main() {
     expect(find.text('🥇'), findsOneWidget);
   });
 
+  testWidgets('escudo: abre com o rótulo e o escudo sai de dentro', (
+    tester,
+  ) async {
+    await _abre(
+      tester,
+      const ChestOpen2(item: ChestItem.escudo, label: 'Escudo', valor: 20),
+    );
+    expect(find.text('Escudo'), findsOneWidget);
+    expect(find.byIcon(Icons.shield_rounded), findsOneWidget);
+    expect(find.text('+20'), findsOneWidget);
+  });
+
   testWidgets('chama: a chama desenhada sai de dentro do baú', (tester) async {
     await _abre(
       tester,

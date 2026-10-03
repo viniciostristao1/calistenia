@@ -42,8 +42,10 @@ class ConfigScreen extends ConsumerWidget {
             value: som,
             onChanged: (v) => ref.read(somProvider.notifier).definir(v),
             activeThumbColor: context.accent,
-            title: Text(s.som,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            title: Text(
+              s.som,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
             subtitle: Text(
               s.somDesc,
               style: TextStyle(color: AppColors.dim, fontSize: 13),
@@ -54,8 +56,10 @@ class ConfigScreen extends ConsumerWidget {
             value: gami,
             onChanged: (v) => ref.read(gamificacaoProvider.notifier).definir(v),
             activeThumbColor: context.accent,
-            title: Text(s.gamificacao,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            title: Text(
+              s.gamificacao,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
             subtitle: Text(
               s.gamificacaoDesc,
               style: TextStyle(color: AppColors.dim, fontSize: 13),
@@ -69,23 +73,27 @@ class ConfigScreen extends ConsumerWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Text('🧪', style: TextStyle(fontSize: 22)),
-              title: const Text('Laboratório de Animações',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              title: const Text(
+                'Laboratório de Animações',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+              ),
               subtitle: Text(
                 'Área de testes das animações e recompensas (não altera seu progresso)',
                 style: TextStyle(color: AppColors.dim, fontSize: 13),
               ),
               trailing: Icon(Icons.chevron_right, color: AppColors.dim),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LabScreen()),
-              ),
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const LabScreen())),
             ),
           ],
           const SizedBox(height: 20),
           const _SecaoLembretes(),
           const SizedBox(height: 20),
-          Text(s.conta,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+          Text(
+            s.conta,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
           const SizedBox(height: 4),
           Text(
             s.contaDesc,
@@ -94,8 +102,10 @@ class ConfigScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           const _SecaoConta(),
           const SizedBox(height: 20),
-          Text(s.backupArquivo,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+          Text(
+            s.backupArquivo,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
           const SizedBox(height: 4),
           Text(
             s.backupDesc,
@@ -136,13 +146,18 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(s.tema,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 16)),
+                    Text(
+                      s.tema,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(s.temaDesc,
-                        style:
-                            TextStyle(color: AppColors.dim, fontSize: 13)),
+                    Text(
+                      s.temaDesc,
+                      style: TextStyle(color: AppColors.dim, fontSize: 13),
+                    ),
                   ],
                 ),
               ),
@@ -164,8 +179,9 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
-                        right: o.$1 == TemaApp.ambar ? 5 : 0,
-                        left: o.$1 == TemaApp.azul ? 5 : 0),
+                      right: o.$1 == TemaApp.ambar ? 5 : 0,
+                      left: o.$1 == TemaApp.azul ? 5 : 0,
+                    ),
                     child: _OpcaoTema(
                       titulo: o.$2,
                       cor: AppColors.accentDoTema(o.$1),
@@ -188,8 +204,9 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
-                        right: o.$1 == TemaApp.espresso ? 5 : 0,
-                        left: o.$1 == TemaApp.madeira ? 5 : 0),
+                      right: o.$1 == TemaApp.espresso ? 5 : 0,
+                      left: o.$1 == TemaApp.madeira ? 5 : 0,
+                    ),
                     child: _OpcaoTema(
                       titulo: o.$2,
                       cor: AppColors.accentDoTema(o.$1),
@@ -234,12 +251,18 @@ class _SecaoIdiomaState extends ConsumerState<_SecaoIdioma> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(s.idiomaLabel,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 16)),
+                    Text(
+                      s.idiomaLabel,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(s.idiomaDesc,
-                        style: TextStyle(color: AppColors.dim, fontSize: 13)),
+                    Text(
+                      s.idiomaDesc,
+                      style: TextStyle(color: AppColors.dim, fontSize: 13),
+                    ),
                   ],
                 ),
               ),
@@ -268,8 +291,11 @@ class _SecaoIdiomaState extends ConsumerState<_SecaoIdioma> {
 }
 
 class _OpcaoIdioma extends StatelessWidget {
-  const _OpcaoIdioma(
-      {required this.idioma, required this.selecionado, required this.onTap});
+  const _OpcaoIdioma({
+    required this.idioma,
+    required this.selecionado,
+    required this.onTap,
+  });
 
   final Idioma idioma;
   final bool selecionado;
@@ -292,18 +318,17 @@ class _OpcaoIdioma extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(
-              switch (idioma) {
-                Idioma.pt => '🇧🇷',
-                Idioma.en => '🇺🇸',
-                Idioma.es => '🇪🇸',
-              },
-              style: const TextStyle(fontSize: 18),
-            ),
+            Text(switch (idioma) {
+              Idioma.pt => '🇧🇷',
+              Idioma.en => '🇺🇸',
+              Idioma.es => '🇪🇸',
+            }, style: const TextStyle(fontSize: 18)),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(idioma.nomeNativo,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              child: Text(
+                idioma.nomeNativo,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
             if (selecionado) Icon(Icons.check_circle, color: context.accent),
           ],
@@ -350,8 +375,10 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
             if (!v) setState(() => _mostrarHorarios = false);
           },
           activeThumbColor: context.accent,
-          title: Text(s.lembrarTreinar,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          title: Text(
+            s.lembrarTreinar,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+          ),
           subtitle: Text(
             config.ativo ? s.lembrarDescOn : s.lembrarDescOff,
             style: TextStyle(color: AppColors.dim, fontSize: 13),
@@ -374,18 +401,20 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
                   foregroundColor: AppColors.text,
                   side: BorderSide(color: AppColors.lineStrong),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () =>
                     setState(() => _mostrarHorarios = !_mostrarHorarios),
                 icon: Icon(
-                    _mostrarHorarios
-                        ? Icons.expand_less
-                        : Icons.expand_more,
-                    size: 20),
-                label: Text(_mostrarHorarios
-                    ? s.ocultarHorarios
-                    : '${s.gerenciarHorarios} · ${s.diasCount(dias.length)}'),
+                  _mostrarHorarios ? Icons.expand_less : Icons.expand_more,
+                  size: 20,
+                ),
+                label: Text(
+                  _mostrarHorarios
+                      ? s.ocultarHorarios
+                      : '${s.gerenciarHorarios} · ${s.diasCount(dias.length)}',
+                ),
               ),
             ),
             if (_mostrarHorarios) ...[
@@ -399,8 +428,7 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
                 child: Column(
                   children: [
                     for (var i = 0; i < dias.length; i++) ...[
-                      if (i > 0)
-                        Divider(height: 1, color: AppColors.line),
+                      if (i > 0) Divider(height: 1, color: AppColors.line),
                       _LinhaDiaHorario(
                         dia: dias[i],
                         minutos: config.horarioDe(dias[i]),
@@ -417,7 +445,9 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
                             await ref
                                 .read(lembretesConfigProvider.notifier)
                                 .definirHorario(
-                                    dias[i], t.hour * 60 + t.minute);
+                                  dias[i],
+                                  t.hour * 60 + t.minute,
+                                );
                           }
                         },
                       ),
@@ -452,18 +482,26 @@ class _LinhaDiaHorario extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            Icon(Icons.notifications_active_outlined,
-                size: 20, color: AppColors.dim),
+            Icon(
+              Icons.notifications_active_outlined,
+              size: 20,
+              color: AppColors.dim,
+            ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(nomesDiasLongos[dia],
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              child: Text(
+                nomesDiasLongos[dia],
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
-            Text(_hhmm(minutos),
-                style: TextStyle(
-                    color: context.accent,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16)),
+            Text(
+              _hhmm(minutos),
+              style: TextStyle(
+                color: context.accent,
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
             const SizedBox(width: 6),
             Icon(Icons.edit, size: 16, color: AppColors.dim),
           ],
@@ -490,9 +528,9 @@ class _SecaoContaState extends ConsumerState<_SecaoConta> {
       await ref.read(authServiceProvider).signInWithGoogle();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Não foi possível entrar: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Não foi possível entrar: $e')));
       }
     } finally {
       if (mounted) setState(() => _ocupado = false);
@@ -544,21 +582,24 @@ class _SecaoContaState extends ConsumerState<_SecaoConta> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(nome.isEmpty ? 'Conectado' : nome,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                          overflow: TextOverflow.ellipsis),
+                      Text(
+                        nome.isEmpty ? 'Conectado' : nome,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       if (email.isNotEmpty)
-                        Text(email,
-                            style: TextStyle(
-                                color: AppColors.dim, fontSize: 12.5),
-                            overflow: TextOverflow.ellipsis),
+                        Text(
+                          email,
+                          style: TextStyle(
+                            color: AppColors.dim,
+                            fontSize: 12.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                     ],
                   ),
                 ),
-                TextButton(
-                  onPressed: _sair,
-                  child: const Text('Sair'),
-                ),
+                TextButton(onPressed: _sair, child: const Text('Sair')),
               ],
             ),
           ),
@@ -590,34 +631,29 @@ class _StatusSync extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(syncEstadoProvider);
     final (IconData icone, String texto, Color cor) = switch (estado.fase) {
-      SyncFase.enviando => (
-          Icons.sync,
-          'Sincronizando…',
-          AppColors.dim,
-        ),
+      SyncFase.enviando => (Icons.sync, 'Sincronizando…', AppColors.dim),
       SyncFase.ok => (
-          Icons.cloud_done_outlined,
-          'Sincronizado${_ha(estado.ultima)}',
-          context.accent,
-        ),
+        Icons.cloud_done_outlined,
+        'Sincronizado${_ha(estado.ultima)}',
+        context.accent,
+      ),
       SyncFase.erro => (
-          Icons.cloud_off_outlined,
-          'Sem sincronizar agora — checando conexão/permissão.',
-          Colors.orangeAccent,
-        ),
+        Icons.cloud_off_outlined,
+        'Sem sincronizar agora — checando conexão/permissão.',
+        Colors.orangeAccent,
+      ),
       _ => (
-          Icons.cloud_queue_outlined,
-          'Backup na nuvem ativo.',
-          AppColors.dim,
-        ),
+        Icons.cloud_queue_outlined,
+        'Backup na nuvem ativo.',
+        AppColors.dim,
+      ),
     };
     return Row(
       children: [
         Icon(icone, size: 16, color: cor),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(texto,
-              style: TextStyle(color: cor, fontSize: 12.5)),
+          child: Text(texto, style: TextStyle(color: cor, fontSize: 12.5)),
         ),
       ],
     );
@@ -661,15 +697,18 @@ class _SecaoBackupState extends ConsumerState<_SecaoBackup> {
       builder: (c) => AlertDialog(
         title: const Text('Restaurar backup?'),
         content: const Text(
-            'Os dados do arquivo vão SUBSTITUIR os treinos, progressão e '
-            'check-ins atuais deste aparelho. Continuar?'),
+          'Os dados do arquivo vão SUBSTITUIR os treinos, progressão e '
+          'check-ins atuais deste aparelho. Continuar?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(c, false),
-              child: const Text('Cancelar')),
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(c, true),
-              child: const Text('Restaurar')),
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Restaurar'),
+          ),
         ],
       ),
     );
@@ -688,8 +727,7 @@ class _SecaoBackupState extends ConsumerState<_SecaoBackup> {
 
   void _aviso(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -708,8 +746,9 @@ class _SecaoBackupState extends ConsumerState<_SecaoBackup> {
               foregroundColor: AppColors.text,
               side: BorderSide(color: AppColors.lineStrong),
               minimumSize: const Size.fromHeight(48),
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             onPressed: _exportar,
             icon: const Icon(Icons.upload_file, size: 20),
@@ -723,8 +762,9 @@ class _SecaoBackupState extends ConsumerState<_SecaoBackup> {
               foregroundColor: AppColors.text,
               side: BorderSide(color: AppColors.lineStrong),
               minimumSize: const Size.fromHeight(48),
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             onPressed: _importar,
             icon: const Icon(Icons.download, size: 20),
@@ -785,8 +825,10 @@ class _OpcaoTema extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(titulo,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              child: Text(
+                titulo,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
             if (selecionado) Icon(Icons.check_circle, color: cor),
           ],

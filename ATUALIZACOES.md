@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-03 — v0.89.0 (novo troféu: 🛡️ ESCUDO):** um troféu raro que **protege a sua sequência**.
+  - **Como ganha:** ao concluir o treino, num dia sorteado (por sorte) **entre o 13º e o 26º dia** de uma sequência consecutiva. Sai **do baú**, como a estrela e o fogo. **Vale +20 no Rating** e aparece nas **Insígnias** (e na linha do mês, junto das estrelas ⭐).
+  - **Como usa:** no **Check-in**, quando você tem um escudo guardado, aparece a faixa **"🛡️ Escudo guardado · tocar para usar"**. Se você faltar/não conseguir um dia, toque nela e **"Usar escudo"** — aquele dia vira **completo** e a sua sequência continua. O dia coberto mostra um **🛡️** no calendário.
+  - Só dá pra ter **1 escudo guardado** por vez; usar gasta. (Se escudo e estrela caíssem no mesmo dia, o escudo tem prioridade e a estrela vai pro dia seguinte.)
 - **2026-10-03 — v0.88.1 (insígnias logo após a última semana):** o quadrinho de ⭐ do mês estava **muito lá embaixo** (colado no rodapé da tela). Agora ele aparece **logo após a última semana** do calendário. O Check-in inteiro rola junto se precisar.
 - **2026-10-03 — v0.88.0 (sequência no Check-in, insígnias abaixo do calendário, logo ajustado):**
   - **Sequência (🔥) agora no Check-in:** saiu da Galeria e virou uma **linha curta no topo** do Check-in, acima do calendário: *"🔥 Sequência: X dias • Recorde: Y dias"*. Sem o "dias no total".

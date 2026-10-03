@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/conclusao.dart';
+import '../../models/escudo.dart';
 import '../../models/exercicio.dart';
 import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
+import '../../services/escudo_repository.dart';
 import '../../services/home_layout_pref.dart';
 import '../../services/idioma_repository.dart';
 import '../../services/insignias_repository.dart';
@@ -833,6 +835,9 @@ class _FaixaDesempenho extends ConsumerWidget {
     final checkins = ref.watch(checkinProvider).value ?? const [];
     final prog = ref.watch(progressaoProvider).value ?? const [];
     final insignias = ref.watch(insigniasProvider).value ?? const [];
+    final cobertos = diasCobertosPorEscudo(
+      ref.watch(escudoProvider).value ?? const <Escudo>[],
+    );
 
     final agora = DateTime.now();
     final hoje0 = DateTime(agora.year, agora.month, agora.day);
@@ -865,10 +870,8 @@ class _FaixaDesempenho extends ConsumerWidget {
         children: [
           _Stat(
             icone: Icons.local_fire_department_rounded,
-            valor: '${sequenciaIninterrupta(concs, treinos, diasValidos: {
-              for (final c in checkins)
-                DateTime(c.data.year, c.data.month, c.data.day),
-            })}',
+            valor:
+                '${sequenciaIninterrupta(concs, treinos, diasValidos: {for (final c in checkins) DateTime(c.data.year, c.data.month, c.data.day)}, diasEscudo: cobertos)}',
             rotulo: s.sequencia,
             cor: AppColors.exec,
           ),

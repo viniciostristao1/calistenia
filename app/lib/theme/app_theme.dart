@@ -9,15 +9,15 @@ ThemeData buildAppTheme(TemaApp tema) {
   AppColors.aplicarTema(tema);
   final claro = AppColors.brilho == Brightness.light;
   final base = ThemeData(useMaterial3: true, brightness: AppColors.brilho);
-  final scheme =
-      (claro ? const ColorScheme.light() : const ColorScheme.dark()).copyWith(
-    primary: AppColors.accentDoTema(tema),
-    onPrimary: AppColors.onAccentDoTema(tema),
-    secondary: AppColors.rest,
-    surface: AppColors.surface,
-    onSurface: AppColors.text,
-    error: AppColors.danger,
-  );
+  final scheme = (claro ? const ColorScheme.light() : const ColorScheme.dark())
+      .copyWith(
+        primary: AppColors.accentDoTema(tema),
+        onPrimary: AppColors.onAccentDoTema(tema),
+        secondary: AppColors.rest,
+        surface: AppColors.surface,
+        onSurface: AppColors.text,
+        error: AppColors.danger,
+      );
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.bg,
@@ -55,9 +55,7 @@ ThemeData buildAppTheme(TemaApp tema) {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       ),
     ),

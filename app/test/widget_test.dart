@@ -304,7 +304,6 @@ void main() {
     },
   );
 
-
   test('chama: "não consegui" num dia agendado passado zera a corrente', () {
     final d = DateTime(2026, 8, 20);
     final treinos = [

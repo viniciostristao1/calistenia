@@ -34,7 +34,9 @@ String _detalhesExercicio(Exercicio e) {
   if (e.execucaoSeg <= 0) {
     partes.add('$series ${series > 1 ? 'séries' : 'série'} · sem execução');
   } else if (reps > 1) {
-    partes.add('$series×$reps repetições · execução ${fmtSeg(e.execucaoSeg)}/rep');
+    partes.add(
+      '$series×$reps repetições · execução ${fmtSeg(e.execucaoSeg)}/rep',
+    );
   } else {
     partes.add('$series× ${fmtSeg(e.execucaoSeg)} (isométrico)');
   }

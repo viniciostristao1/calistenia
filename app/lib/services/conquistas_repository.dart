@@ -11,8 +11,8 @@ const chaveConquistas = 'conquistas_v1';
 /// conquista é permanente. Local, e sincronizada quando logado.
 final conquistasProvider =
     AsyncNotifierProvider<ConquistasNotifier, List<Conquista>>(
-  ConquistasNotifier.new,
-);
+      ConquistasNotifier.new,
+    );
 
 class ConquistasNotifier extends AsyncNotifier<List<Conquista>> {
   @override
@@ -36,12 +36,10 @@ class ConquistasNotifier extends AsyncNotifier<List<Conquista>> {
 
   /// Registra as conquistas de [obtidas] que ainda não existem. Retorna as
   /// NOVAS (para celebrar no fim do treino). Nunca remove nem duplica.
-  Future<List<TipoConquista>> registrarNovas(
-      Set<TipoConquista> obtidas) async {
+  Future<List<TipoConquista>> registrarNovas(Set<TipoConquista> obtidas) async {
     final atuais = await future; // garante carregado antes de comparar
     final jaTem = atuais.map((c) => c.tipo).toSet();
-    final novas =
-        obtidas.where((t) => !jaTem.contains(t.chave)).toList();
+    final novas = obtidas.where((t) => !jaTem.contains(t.chave)).toList();
     if (novas.isEmpty) return [];
     final agora = DateTime.now();
     final list = [

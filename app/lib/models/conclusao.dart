@@ -9,7 +9,8 @@ class Conclusao {
   final DateTime data; // normalizada para o dia (meia-noite)
   final String treinoId; // qual treino
   final String treino; // nome do treino (para exibição)
-  final bool completo; // true = completou tudo; false = tentou mas não completou
+  final bool
+  completo; // true = completou tudo; false = tentou mas não completou
 
   Conclusao({
     String? id,
@@ -17,8 +18,8 @@ class Conclusao {
     required this.treinoId,
     required this.treino,
     this.completo = true,
-  })  : id = id ?? novoId(),
-        data = DateTime(data.year, data.month, data.day);
+  }) : id = id ?? novoId(),
+       data = DateTime(data.year, data.month, data.day);
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -29,11 +30,11 @@ class Conclusao {
   };
 
   factory Conclusao.fromJson(Map<String, dynamic> j) => Conclusao(
-        id: j['id'] as String?,
-        data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
-        treinoId: (j['treinoId'] ?? '') as String,
-        treino: (j['treino'] ?? '') as String,
-        // Registros antigos (sem o campo) contam como completos.
-        completo: (j['completo'] ?? true) as bool,
-      );
+    id: j['id'] as String?,
+    data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
+    treinoId: (j['treinoId'] ?? '') as String,
+    treino: (j['treino'] ?? '') as String,
+    // Registros antigos (sem o campo) contam como completos.
+    completo: (j['completo'] ?? true) as bool,
+  );
 }

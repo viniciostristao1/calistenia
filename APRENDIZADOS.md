@@ -5,6 +5,40 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-03 — Novo troféu: ESCUDO (v0.89.0)
+
+Troféu raro que PROTEGE a sequência. Pedido detalhado do usuário (3 decisões via
+AskUserQuestion: usar=cobre a última falta · sorteio=garantido · máx 1 guardado).
+
+**Arquitetura (espelha as insígnias):**
+- `models/escudo.dart` — Escudo{ganhoEm, usadoEm?}; `usado` = usadoEm!=null; id=chaveDia(ganhoEm).
+- `services/escudo_repository.dart` — `escudoProvider`; `ganhar(dia)` (só se não há guardado =
+  máx 1), `usar(diaCoberto)`; helpers `temEscudoDisponivel`/`diasCobertosPorEscudo`/
+  `diasEscudoGanho`/`escudosDoMes`. Chave `escudos_v1`.
+- `util/insignias.dart` — sorteio: `candidatosEscudo` = 13..26 **sem o 20** (marco de fogo);
+  `alvoEscudo(semente, inicioSeq)` = _hashDia determinístico → 1 dia-alvo na janela.
+- `util/gamificacao.dart` — `diasEscudo` threadado em `_completoPorDia`/`sequenciaIninterrupta`/
+  `sequenciaRecorde` (dia coberto = COMPLETO → mantém a corrente). `inicioSequenciaAtual` (âncora
+  do sorteio) e `ultimaFaltaCobrivel` (dia que o escudo cobre = a quebra da corrente; ⚠️ limitado
+  ao 1º treino p/ não cobrir PRÉ-história). `_bonusEscudos` (+20/escudo do mês, como o de estrela)
+  em `RatingForma.bonusEscudos`/`totalComBonus`. `PremioTipo.escudo` + `recompensasDoDia(ganhouEscudo)`.
+
+**Ganho (player `_marcarCompleto`):** streak de hoje (com cobertos) em [13,26]\{20} + `!temEscudo`
++ `alvoEscudo(semente, inicioSeq)==streak` → `escudoProvider.ganhar(hoje)`. **Conflito:** se escudo E
+insígnia caem hoje, escudo tem prioridade e a insígnia é registrada p/ `hoje+1` (só calendário, sem
+baú). Cerimônia: `ChestItem.escudo` (escudo voa do baú + pill +20) via `_bauEscudo`.
+
+**UI check-in:** `_Celula` ganha estado `escudo` (🛡️ no lugar de estrela/pontinhos no dia coberto);
+banner `_EscudoDisponivel` + folha `_UsarEscudoSheet` (cobre a `ultimaFaltaCobrivel`); `_QuadroInsignias`
+mostra 🛡️ do mês junto das ⭐. Home (stat de sequência) e Progressão (Rating +20 + gráfico) threadam
+o escudo. **Sync:** `escudos` entra no `sync_service` (merge/apply/push/fingerprint/invalidate/listen).
+
+**Escopo deliberado:** escudo afeta a SEQUÊNCIA (chama) e o Rating, **não** os níveis de conquista
+(medalha/troféu têm orçamento de falhas próprio). Cor `AppColors.escudo` (ciano #34D1C9).
+Testes: `test/escudo_test.dart` (janela/skip-20/repair/rating) + caso escudo no `chest_conteudo_test`.
+
+---
+
 ## 2026-10-03 — Insígnias logo após a última semana (v0.88.1)
 
 Fix do v0.88.0: o `_QuadroInsignias` tinha sido posto **depois** de um `Expanded(GridView)`

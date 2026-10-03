@@ -34,8 +34,9 @@ double _opacidadeDoBotao(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('editar: Salvar aparece só ao alterar e some ao reverter',
-      (tester) async {
+  testWidgets('editar: Salvar aparece só ao alterar e some ao reverter', (
+    tester,
+  ) async {
     final ex = Exercicio(
       nome: 'Flexão',
       preparacaoSeg: 10,

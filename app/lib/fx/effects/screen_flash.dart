@@ -30,8 +30,10 @@ class _ScreenFlashState extends State<ScreenFlash>
   late final AnimationController _ctrl = AnimationController(
     vsync: this,
     duration: Duration(
-        milliseconds:
-            (widget.params.effectiveDuration.inMilliseconds * 0.5).round().clamp(120, 2000)),
+      milliseconds: (widget.params.effectiveDuration.inMilliseconds * 0.5)
+          .round()
+          .clamp(120, 2000),
+    ),
   )..forward();
 
   @override
@@ -47,12 +49,14 @@ class _ScreenFlashState extends State<ScreenFlash>
         animation: _ctrl,
         builder: (context, _) {
           // Sobe e desce (sino) ao longo do tempo.
-          final a = sin(pi * _ctrl.value) *
+          final a =
+              sin(pi * _ctrl.value) *
               widget.peak *
               widget.params.intensity.clamp(0.0, 2.0);
           return SizedBox.expand(
             child: ColoredBox(
-                color: widget.color.withValues(alpha: a.clamp(0.0, 1.0))),
+              color: widget.color.withValues(alpha: a.clamp(0.0, 1.0)),
+            ),
           );
         },
       ),

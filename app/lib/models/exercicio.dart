@@ -94,7 +94,9 @@ class Exercicio {
         }
       }
       if (ativos == 0) return '';
-      return mn == mx ? 'desc ${fmtSeg(mn)}' : 'desc ${fmtSeg(mn)}–${fmtSeg(mx)}';
+      return mn == mx
+          ? 'desc ${fmtSeg(mn)}'
+          : 'desc ${fmtSeg(mn)}–${fmtSeg(mx)}';
     }
     return descansoSeg > 0 ? 'desc ${fmtSeg(descansoSeg)}' : '';
   }

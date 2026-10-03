@@ -13,8 +13,8 @@ class CheckIn {
     required DateTime data,
     required this.exercicio,
     required this.corIndex,
-  })  : id = id ?? novoId(),
-        data = DateTime(data.year, data.month, data.day);
+  }) : id = id ?? novoId(),
+       data = DateTime(data.year, data.month, data.day);
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -24,11 +24,11 @@ class CheckIn {
   };
 
   factory CheckIn.fromJson(Map<String, dynamic> j) => CheckIn(
-        id: j['id'] as String?,
-        data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
-        exercicio: (j['exercicio'] ?? '') as String,
-        corIndex: (j['corIndex'] ?? 0) as int,
-      );
+    id: j['id'] as String?,
+    data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
+    exercicio: (j['exercicio'] ?? '') as String,
+    corIndex: (j['corIndex'] ?? 0) as int,
+  );
 }
 
 /// Dois DateTimes caem no mesmo dia?

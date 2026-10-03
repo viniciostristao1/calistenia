@@ -9,8 +9,9 @@ import '../models/exercicio.dart';
 const chaveCheckin = 'checkin_v1';
 
 /// Fonte única dos check-ins (assiduidade). Local, sem login/nuvem.
-final checkinProvider =
-    AsyncNotifierProvider<CheckinNotifier, List<CheckIn>>(CheckinNotifier.new);
+final checkinProvider = AsyncNotifierProvider<CheckinNotifier, List<CheckIn>>(
+  CheckinNotifier.new,
+);
 
 class CheckinNotifier extends AsyncNotifier<List<CheckIn>> {
   @override
@@ -48,8 +49,7 @@ class CheckinNotifier extends AsyncNotifier<List<CheckIn>> {
   }
 
   /// Check-in manual (a partir do calendário): nome + cor + dia.
-  Future<void> adicionarManual(
-      String nome, int corIndex, DateTime dia) async {
+  Future<void> adicionarManual(String nome, int corIndex, DateTime dia) async {
     final list = _atual;
     if (_existe(list, dia, nome)) return;
     list.add(CheckIn(data: dia, exercicio: nome, corIndex: corIndex));

@@ -9,13 +9,13 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   // Exercício que travava: 22 reps × 4 séries (ex.: Rosca direta / Flexão).
   Exercicio flexao22x4() => Exercicio(
-        nome: 'Flexão declinada',
-        preparacaoSeg: 10,
-        execucaoSeg: 3,
-        descansoSeg: 90,
-        repeticoes: 22,
-        series: 4,
-      );
+    nome: 'Flexão declinada',
+    preparacaoSeg: 10,
+    execucaoSeg: 3,
+    descansoSeg: 90,
+    repeticoes: 22,
+    series: 4,
+  );
 
   group('linha do tempo 22×4 (o caso que travava)', () {
     test('estrutura: prep + 88 execuções + 3 descansos = 92 fases', () {
@@ -28,13 +28,16 @@ void main() {
       expect(fases.last.tipo, FaseTipo.execucao);
     });
 
-    test('contador 0-based nunca fica negativo (rep >= 1 em toda execução)', () {
-      final fases = montarLinhaDoTempoDe([flexao22x4()]);
-      for (final f in fases.where((f) => f.tipo == FaseTipo.execucao)) {
-        expect(f.rep, greaterThanOrEqualTo(1)); // na tela: rep-1 >= 0
-        expect(f.rep, lessThanOrEqualTo(f.totalReps));
-      }
-    });
+    test(
+      'contador 0-based nunca fica negativo (rep >= 1 em toda execução)',
+      () {
+        final fases = montarLinhaDoTempoDe([flexao22x4()]);
+        for (final f in fases.where((f) => f.tipo == FaseTipo.execucao)) {
+          expect(f.rep, greaterThanOrEqualTo(1)); // na tela: rep-1 >= 0
+          expect(f.rep, lessThanOrEqualTo(f.totalReps));
+        }
+      },
+    );
   });
 
   group('proximaEtapaIdx: aponta a próxima ETAPA, não a próxima repetição', () {
@@ -60,11 +63,14 @@ void main() {
       expect(fases[j].serie, 2);
     });
 
-    test('última repetição do treino → -1 (fim); índices fora do limite = -1', () {
-      expect(proximaEtapaIdx(fases, fases.length - 1), -1);
-      expect(proximaEtapaIdx(fases, 999), -1);
-      expect(proximaEtapaIdx(fases, -1), -1);
-    });
+    test(
+      'última repetição do treino → -1 (fim); índices fora do limite = -1',
+      () {
+        expect(proximaEtapaIdx(fases, fases.length - 1), -1);
+        expect(proximaEtapaIdx(fases, 999), -1);
+        expect(proximaEtapaIdx(fases, -1), -1);
+      },
+    );
   });
 
   group('descricaoEtapa: texto do "A seguir"', () {
@@ -83,36 +89,41 @@ void main() {
     test('isométrico (1 rep) mostra o tempo, não "1 reps"', () {
       final iso = montarLinhaDoTempoDe([
         Exercicio(
-            nome: 'Prancha',
-            preparacaoSeg: 0,
-            execucaoSeg: 40,
-            descansoSeg: 0,
-            repeticoes: 1,
-            series: 1),
+          nome: 'Prancha',
+          preparacaoSeg: 0,
+          execucaoSeg: 40,
+          descansoSeg: 0,
+          repeticoes: 1,
+          series: 1,
+        ),
       ]);
       final exec = iso.firstWhere((f) => f.tipo == FaseTipo.execucao);
       expect(descricaoEtapa(exec), 'Prancha · 40s');
     });
 
-    test('unilateral: inclui "(lado N)" e a prep do lado 2 vira a próxima etapa',
-        () {
-      final fs = montarLinhaDoTempoDe([
-        Exercicio(
+    test(
+      'unilateral: inclui "(lado N)" e a prep do lado 2 vira a próxima etapa',
+      () {
+        final fs = montarLinhaDoTempoDe([
+          Exercicio(
             nome: 'Pistol',
             preparacaoSeg: 5,
             execucaoSeg: 2,
             descansoSeg: 30,
             repeticoes: 5,
             series: 2,
-            unilateral: true),
-      ]);
-      final execL1 =
-          fs.firstWhere((f) => f.tipo == FaseTipo.execucao && f.lado == 1);
-      expect(descricaoEtapa(execL1), 'Pistol (lado 1) · 5 reps');
-      // Durante o lado 1, a próxima etapa é a PREPARAÇÃO do lado 2.
-      final prox = fs[proximaEtapaIdx(fs, fs.indexOf(execL1))];
-      expect(prox.tipo, FaseTipo.preparacao);
-      expect(prox.lado, 2);
-    });
+            unilateral: true,
+          ),
+        ]);
+        final execL1 = fs.firstWhere(
+          (f) => f.tipo == FaseTipo.execucao && f.lado == 1,
+        );
+        expect(descricaoEtapa(execL1), 'Pistol (lado 1) · 5 reps');
+        // Durante o lado 1, a próxima etapa é a PREPARAÇÃO do lado 2.
+        final prox = fs[proximaEtapaIdx(fs, fs.indexOf(execL1))];
+        expect(prox.tipo, FaseTipo.preparacao);
+        expect(prox.lado, 2);
+      },
+    );
   });
 }

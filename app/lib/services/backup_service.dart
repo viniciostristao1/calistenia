@@ -74,7 +74,9 @@ Map<String, dynamic> coletarStores(SharedPreferences prefs) {
 /// Aplica os stores de volta ao prefs, com o setter do TIPO certo. Retorna
 /// quantas chaves foram restauradas. Puro/testável.
 Future<int> aplicarStores(
-    SharedPreferences prefs, Map<String, dynamic> stores) async {
+  SharedPreferences prefs,
+  Map<String, dynamic> stores,
+) async {
   var n = 0;
   for (final k in [..._chavesDados, ..._chavesConfig]) {
     if (!stores.containsKey(k)) continue;
@@ -162,7 +164,9 @@ Future<ResultadoImport> importarBackup(WidgetRef ref) async {
 
   if (env['app'] != _marcaApp || env['stores'] is! Map) {
     return const ResultadoImport(
-        false, 'Este arquivo não é um backup do Calis Timer.');
+      false,
+      'Este arquivo não é um backup do Calis Timer.',
+    );
   }
 
   final stores = (env['stores'] as Map).cast<String, dynamic>();
@@ -171,15 +175,15 @@ Future<ResultadoImport> importarBackup(WidgetRef ref) async {
 
   if (n == 0) {
     return const ResultadoImport(
-        false, 'O backup não continha dados reconhecidos.');
+      false,
+      'O backup não continha dados reconhecidos.',
+    );
   }
 
   _invalidarTudo(ref);
 
   final quando = env['exportadoEm'];
-  final origem = quando is String
-      ? ' (de ${quando.split('T').first})'
-      : '';
+  final origem = quando is String ? ' (de ${quando.split('T').first})' : '';
   return ResultadoImport(true, 'Backup restaurado$origem.');
 }
 

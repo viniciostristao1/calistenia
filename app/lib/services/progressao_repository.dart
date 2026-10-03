@@ -11,8 +11,8 @@ const chaveProgressao = 'progressao_v1';
 /// Fonte única dos registros de progressão (local, sem login/nuvem).
 final progressaoProvider =
     AsyncNotifierProvider<ProgressaoNotifier, List<RegistroProgressao>>(
-  ProgressaoNotifier.new,
-);
+      ProgressaoNotifier.new,
+    );
 
 class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
   @override
@@ -46,18 +46,25 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
   /// Garante uma "linha de base" (o alvo a bater) para um exercício: se ele
   /// ainda não tem nenhum registro, cria um com as repetições e o peso atuais.
   /// Não duplica se já existir qualquer registro do exercício.
-  Future<void> garantirBaseline(String exercicio, int valor,
-      [double peso = 0]) async {
+  Future<void> garantirBaseline(
+    String exercicio,
+    int valor, [
+    double peso = 0,
+  ]) async {
     final atuais = await future;
     final nome = exercicio.trim();
     if (nome.isEmpty) return;
-    final ja = atuais
-        .any((r) => r.exercicio.trim().toLowerCase() == nome.toLowerCase());
+    final ja = atuais.any(
+      (r) => r.exercicio.trim().toLowerCase() == nome.toLowerCase(),
+    );
     if (ja) return;
     await _persist([
       ...atuais,
       RegistroProgressao(
-          exercicio: nome, valor: valor < 0 ? 0 : valor, peso: peso < 0 ? 0 : peso),
+        exercicio: nome,
+        valor: valor < 0 ? 0 : valor,
+        peso: peso < 0 ? 0 : peso,
+      ),
     ]);
   }
 
@@ -65,8 +72,9 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
   /// têm registro (migração para exercícios já salvos).
   Future<void> garantirBaselines(List<Treino> treinos) async {
     final atuais = await future;
-    final existentes =
-        atuais.map((r) => r.exercicio.trim().toLowerCase()).toSet();
+    final existentes = atuais
+        .map((r) => r.exercicio.trim().toLowerCase())
+        .toSet();
     final novos = <RegistroProgressao>[];
     final vistos = <String>{};
     for (final t in treinos) {
@@ -77,10 +85,13 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
           continue;
         }
         vistos.add(key);
-        novos.add(RegistroProgressao(
+        novos.add(
+          RegistroProgressao(
             exercicio: nome,
             valor: e.repeticoes < 0 ? 0 : e.repeticoes,
-            peso: e.pesoKg < 0 ? 0 : e.pesoKg));
+            peso: e.pesoKg < 0 ? 0 : e.pesoKg,
+          ),
+        );
       }
     }
     if (novos.isNotEmpty) await _persist([...atuais, ...novos]);
@@ -122,7 +133,8 @@ class GrupoProgressao {
 
   int get primeiro => registros.first.valor;
   int get ultimo => registros.last.valor;
-  int get maior => registros.map((r) => r.valor).reduce((a, b) => a > b ? a : b);
+  int get maior =>
+      registros.map((r) => r.valor).reduce((a, b) => a > b ? a : b);
 
   // Peso (kg): mesmas estatísticas para a dimensão de carga.
   double get primeiroPeso => registros.first.peso;

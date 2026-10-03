@@ -19,8 +19,8 @@ class RegistroProgressao {
     required this.valor,
     this.peso = 0,
     DateTime? data,
-  })  : id = id ?? novoId(),
-        data = data ?? DateTime.now();
+  }) : id = id ?? novoId(),
+       data = data ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
     'id': id,

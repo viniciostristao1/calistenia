@@ -10,15 +10,22 @@ void main() {
     registerBuiltInRewards();
 
     for (final type in RewardType.values) {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (ctx) => Center(
-              child: RewardRegistry.build(ctx, type, const FxParams(), value: 50),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => Center(
+                child: RewardRegistry.build(
+                  ctx,
+                  type,
+                  const FxParams(),
+                  value: 50,
+                ),
+              ),
             ),
           ),
         ),
-      ));
+      );
 
       // Avança o tempo para rodar as animações e a integração das partículas.
       // (Não usar pumpAndSettle: o GlowHalo pulsa em loop e não "assenta".)
@@ -39,15 +46,21 @@ void main() {
       particleCount: 200,
       duration: Duration(milliseconds: 300),
     );
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: Builder(
-          builder: (ctx) => Center(
-            child: RewardRegistry.build(ctx, RewardType.chestEstrela, extremo),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (ctx) => Center(
+              child: RewardRegistry.build(
+                ctx,
+                RewardType.chestEstrela,
+                extremo,
+              ),
+            ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump(const Duration(milliseconds: 400));
     expect(tester.takeException(), isNull);

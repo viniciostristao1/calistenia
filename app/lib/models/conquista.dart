@@ -9,34 +9,34 @@ extension TipoConquistaInfo on TipoConquista {
   /// Emoji das MEDALHAS (os troféus são desenhados como ícone colorido — não há
   /// emoji de troféu prateado; ver `ConquistaBadge`).
   String get emoji => switch (this) {
-        TipoConquista.medalhaPrata => '🥈',
-        TipoConquista.medalhaOuro => '🥇',
-        TipoConquista.trofeuPrata => '🏆',
-        TipoConquista.trofeuOuro => '🏆',
-      };
+    TipoConquista.medalhaPrata => '🥈',
+    TipoConquista.medalhaOuro => '🥇',
+    TipoConquista.trofeuPrata => '🏆',
+    TipoConquista.trofeuOuro => '🏆',
+  };
 
   String get titulo => switch (this) {
-        TipoConquista.medalhaPrata => 'Medalha de Prata',
-        TipoConquista.medalhaOuro => 'Medalha de Ouro',
-        TipoConquista.trofeuPrata => 'Troféu de Prata',
-        TipoConquista.trofeuOuro => 'Troféu de Ouro',
-      };
+    TipoConquista.medalhaPrata => 'Medalha de Prata',
+    TipoConquista.medalhaOuro => 'Medalha de Ouro',
+    TipoConquista.trofeuPrata => 'Troféu de Prata',
+    TipoConquista.trofeuOuro => 'Troféu de Ouro',
+  };
 
   /// Nome curto (para chips/legendas compactas).
   String get tituloCurto => switch (this) {
-        TipoConquista.medalhaPrata => 'Medalha Prata',
-        TipoConquista.medalhaOuro => 'Medalha Ouro',
-        TipoConquista.trofeuPrata => 'Troféu Prata',
-        TipoConquista.trofeuOuro => 'Troféu Ouro',
-      };
+    TipoConquista.medalhaPrata => 'Medalha Prata',
+    TipoConquista.medalhaOuro => 'Medalha Ouro',
+    TipoConquista.trofeuPrata => 'Troféu Prata',
+    TipoConquista.trofeuOuro => 'Troféu Ouro',
+  };
 
   /// Descrição da regra (mostrada na galeria).
   String get descricao => switch (this) {
-        TipoConquista.medalhaPrata => '4 dias seguidos',
-        TipoConquista.medalhaOuro => '8 dias seguidos',
-        TipoConquista.trofeuPrata => '15 dias seguidos',
-        TipoConquista.trofeuOuro => '21 dias seguidos + progressão',
-      };
+    TipoConquista.medalhaPrata => '4 dias seguidos',
+    TipoConquista.medalhaOuro => '8 dias seguidos',
+    TipoConquista.trofeuPrata => '15 dias seguidos',
+    TipoConquista.trofeuOuro => '21 dias seguidos + progressão',
+  };
 }
 
 TipoConquista? tipoConquistaDe(String chave) {
@@ -68,10 +68,10 @@ class Conquista {
   };
 
   factory Conquista.fromJson(Map<String, dynamic> j) => Conquista(
-        tipo: (j['tipo'] ?? '') as String,
-        data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
-        perdidaEm: j['perdidaEm'] == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(j['perdidaEm'] as int),
-      );
+    tipo: (j['tipo'] ?? '') as String,
+    data: DateTime.fromMillisecondsSinceEpoch((j['data'] ?? 0) as int),
+    perdidaEm: j['perdidaEm'] == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(j['perdidaEm'] as int),
+  );
 }

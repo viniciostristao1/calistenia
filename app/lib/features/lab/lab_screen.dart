@@ -45,8 +45,9 @@ class _LabScreenState extends State<LabScreen> {
   void _testarNoPalco() => setState(() => _token++);
 
   /// O `value` que o tipo selecionado usa (o baú da conquista usa o índice dela).
-  double get _valorDoTipo =>
-      _selecionado == RewardType.chestConquista ? _conquista.toDouble() : _valor;
+  double get _valorDoTipo => _selecionado == RewardType.chestConquista
+      ? _conquista.toDouble()
+      : _valor;
 
   void _testarComoOverlay() => RewardFx.show(
     context,

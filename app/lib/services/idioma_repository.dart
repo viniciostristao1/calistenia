@@ -22,26 +22,27 @@ Idioma _idiomaDoAparelho() {
 
 extension IdiomaExt on Idioma {
   String get codigo => switch (this) {
-        Idioma.pt => 'pt',
-        Idioma.en => 'en',
-        Idioma.es => 'es',
-      };
+    Idioma.pt => 'pt',
+    Idioma.en => 'en',
+    Idioma.es => 'es',
+  };
 
   String get nomeNativo => switch (this) {
-        Idioma.pt => 'Português',
-        Idioma.en => 'English',
-        Idioma.es => 'Español',
-      };
+    Idioma.pt => 'Português',
+    Idioma.en => 'English',
+    Idioma.es => 'Español',
+  };
 
   static Idioma deCodigo(String? c) => switch (c) {
-        'en' => Idioma.en,
-        'es' => Idioma.es,
-        _ => Idioma.pt,
-      };
+    'en' => Idioma.en,
+    'es' => Idioma.es,
+    _ => Idioma.pt,
+  };
 }
 
-final idiomaProvider =
-    AsyncNotifierProvider<IdiomaNotifier, Idioma>(IdiomaNotifier.new);
+final idiomaProvider = AsyncNotifierProvider<IdiomaNotifier, Idioma>(
+  IdiomaNotifier.new,
+);
 
 class IdiomaNotifier extends AsyncNotifier<Idioma> {
   @override
