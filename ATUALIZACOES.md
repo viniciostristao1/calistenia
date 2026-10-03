@@ -3,6 +3,7 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-03 — v0.88.1 (insígnias logo após a última semana):** o quadrinho de ⭐ do mês estava **muito lá embaixo** (colado no rodapé da tela). Agora ele aparece **logo após a última semana** do calendário. O Check-in inteiro rola junto se precisar.
 - **2026-10-03 — v0.88.0 (sequência no Check-in, insígnias abaixo do calendário, logo ajustado):**
   - **Sequência (🔥) agora no Check-in:** saiu da Galeria e virou uma **linha curta no topo** do Check-in, acima do calendário: *"🔥 Sequência: X dias • Recorde: Y dias"*. Sem o "dias no total".
   - **Insígnias do mês desceram:** o quadrinho de ⭐ do mês agora fica **abaixo do calendário** (antes era acima).

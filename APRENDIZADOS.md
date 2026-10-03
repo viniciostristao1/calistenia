@@ -5,6 +5,18 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-03 — Insígnias logo após a última semana (v0.88.1)
+
+Fix do v0.88.0: o `_QuadroInsignias` tinha sido posto **depois** de um `Expanded(GridView)`
+no Column → o Expanded comia todo o espaço vertical e **empurrava** o quadro p/ o **rodapé**
+da tela (longe da última semana). 🧠 **Regra:** num `Column`, um filho depois de um
+`Expanded` fica colado embaixo. Fix: `GridView` com **`shrinkWrap:true` +
+`NeverScrollableScrollPhysics`** (encolhe p/ a altura das semanas) e o Column inteiro dentro
+de um `SingleChildScrollView` (rola se não couber). Aí o `_QuadroInsignias` vem **logo após**
+a última semana. Bônus: bottom-padding do grid 16→8 p/ não afastar.
+
+---
+
 ## 2026-10-03 — Sequência no Check-in, insígnias abaixo, logo ajustado (v0.88.0)
 
 Dois ajustes de uso real:

@@ -189,23 +189,28 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
             .map((c) => c.data.day)
             .toSet()
             .length;
-        return Column(
-          children: [
-            _Cabecalho(
-              titulo: '${_meses[_mes.month - 1]} ${_mes.year}',
-              subtitulo: feitosNoMes == 0
-                  ? 'Nenhum dia marcado'
-                  : '$feitosNoMes ${feitosNoMes == 1 ? 'dia' : 'dias'} treinados',
-              onAnterior: () => _mudarMes(-1),
-              onProximo: () => _mudarMes(1),
-            ),
-            // Sequência (a chama): linha CURTA acima do calendário — veio da
-            // Galeria p/ cá. As insígnias do mês desceram p/ baixo do calendário.
-            if (gamiOn) const _SequenciaLinha(),
-            const _LinhaDias(),
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.fromLTRB(8, 4, 8, 16),
+        // O calendário rola como um todo: o grid ENCOLHE p/ a altura das semanas
+        // (shrinkWrap, sem scroll próprio) → as insígnias do mês vêm LOGO após a
+        // última semana, não empurradas p/ o rodapé (era o Expanded de antes).
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              _Cabecalho(
+                titulo: '${_meses[_mes.month - 1]} ${_mes.year}',
+                subtitulo: feitosNoMes == 0
+                    ? 'Nenhum dia marcado'
+                    : '$feitosNoMes ${feitosNoMes == 1 ? 'dia' : 'dias'} treinados',
+                onAnterior: () => _mudarMes(-1),
+                onProximo: () => _mudarMes(1),
+              ),
+              // Sequência (a chama): linha CURTA acima do calendário — veio da
+              // Galeria p/ cá. As insígnias do mês ficam logo após a última semana.
+              if (gamiOn) const _SequenciaLinha(),
+              const _LinhaDias(),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 7,
                   childAspectRatio: 0.78,
@@ -226,15 +231,14 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   );
                 },
               ),
-            ),
-            // Insígnias do mês: agora ABAIXO do calendário (valoriza as medalhas/
-            // troféus, que sobem na Galeria sem a sequência).
-            if (gamiOn)
-              _QuadroInsignias(
-                mes: _mes,
-                onTap: () => setState(() => _vista = 2),
-              ),
-          ],
+              // Insígnias do mês: logo após a última semana do calendário.
+              if (gamiOn)
+                _QuadroInsignias(
+                  mes: _mes,
+                  onTap: () => setState(() => _vista = 2),
+                ),
+            ],
+          ),
         );
       },
     );
