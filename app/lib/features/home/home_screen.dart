@@ -390,12 +390,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             HomeLayout.desempenho => Column(
               children: [
                 _FaixaDesempenho(treinos: treinos),
+                // Seletor de dias também neste modo (antes só dava p/ ver HOJE).
+                seletor,
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      '${s.diasLongos[diaDeHoje]}, ${DateTime.now().day}',
+                      _dia == diaDeHoje
+                          ? '${s.diasLongos[_dia]}, ${DateTime.now().day}'
+                          : s.diasLongos[_dia],
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -403,7 +407,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ),
-                Expanded(child: _listaDoDia(treinos, diaDeHoje)),
+                Expanded(child: _listaDoDia(treinos, _dia)),
               ],
             ),
             HomeLayout.abas => _ModoAbas(

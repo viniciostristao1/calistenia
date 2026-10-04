@@ -3,6 +3,7 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-04 — v0.90.3 (modo Desempenho: ver os outros dias):** no modo **Desempenho** da tela Treinos faltava o seletor de dias — só dava pra ver o treino de hoje. Agora o seletor Seg–Dom aparece também nele, e a lista acompanha o dia escolhido.
 - **2026-10-04 — v0.90.2 (card pré-treino ainda menor):** reduzi mais o card que aparece antes do treino (de ~220 p/ ~170 de largura) — fica mais discreto e nítido.
 - **2026-10-03 — v0.90.1 (card pré-treino menor e mais nítido):** o card que aparece antes do treino estava **grande e borrado** (a arte era ampliada demais). Agora ele aparece **menor**, perto do tamanho real da imagem, ficando **mais nítido**.
 - **2026-10-03 — v0.90.0 (Cards motivacionais: card antes do treino + coleção + moedas):**
