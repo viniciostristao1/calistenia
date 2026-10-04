@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-04 — v0.93.0 (Rating por categoria + dica de gargalo):**
+  - **Progressão › Rating:** abaixo do gráfico **Geral** agora há **um gráfico por categoria** — **Consistência**, **Frequência** e **Progressão** — cada um com o valor atual (x/máx) e a tendência. Dá pra ver qual parte está puxando (ou segurando) o seu Rating.
+  - **Resumo:** nova dica **"gargalo do Rating"** — aponta o componente mais fraco e o que fazer. A dica de **risco** avisa, quando você tem um **escudo guardado**, que ele é sua reserva. E o Resumo agora mostra **até 4 dicas**.
 - **2026-10-04 — v0.92.0 (sub-abas sublinhadas + melhorias do Resumo):**
   - **Sub-abas no estilo "sublinhado"** (abas clássicas, só texto com um traço embaixo do ativo) na **Progressão** e no **Check-in** — mais leve e cabe melhor as 4 abas.
   - **Resumo:** o botão **"Ver conquistas"** agora abre direto a **Galeria** (não o calendário); **"Completos"** passou a contar **treinos** (sessões), não dias; e entrou a dica **⚠️ "sua chama está em risco"** quando você tem treino hoje e ainda não concluiu.

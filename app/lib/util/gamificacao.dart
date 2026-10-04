@@ -637,3 +637,55 @@ List<PontoRating> serieRating(
   }
   return pts;
 }
+
+/// Séries do Rating ao longo do tempo, **separadas por componente** (para os
+/// gráficos por categoria abaixo do "Geral"). Cada ponto é recalculado só com os
+/// dados até aquela semana.
+class SeriesRating {
+  final List<PontoRating> total; // com bônus
+  final List<PontoRating> consistencia; // 0..400
+  final List<PontoRating> frequencia; // 0..200
+  final List<PontoRating> progressao; // 0..400
+  const SeriesRating(
+    this.total,
+    this.consistencia,
+    this.frequencia,
+    this.progressao,
+  );
+}
+
+SeriesRating seriesRating(
+  List<Conclusao> concs,
+  List<Treino> treinos,
+  List<RegistroProgressao> progressao, {
+  int semanas = 12,
+  DateTime? hoje,
+  Set<DateTime> diasInsignia = const {},
+  Set<DateTime> diasEscudoGanho = const {},
+}) {
+  final hj = _dia(hoje ?? DateTime.now());
+  final total = <PontoRating>[];
+  final cons = <PontoRating>[];
+  final freq = <PontoRating>[];
+  final prog = <PontoRating>[];
+  for (var w = semanas - 1; w >= 0; w--) {
+    final data = hj.subtract(Duration(days: w * 7));
+    final concsAte = concs.where((c) => !c.data.isAfter(data)).toList();
+    final progAte = progressao.where((r) => !r.data.isAfter(data)).toList();
+    final insigAte = diasInsignia.where((d) => !d.isAfter(data)).toSet();
+    final escAte = diasEscudoGanho.where((d) => !d.isAfter(data)).toSet();
+    final rf = ratingForma(
+      concsAte,
+      treinos,
+      progAte,
+      hoje: data,
+      diasInsignia: insigAte,
+      diasEscudoGanho: escAte,
+    );
+    total.add(PontoRating(data, rf.totalComBonus));
+    cons.add(PontoRating(data, rf.consistencia));
+    freq.add(PontoRating(data, rf.frequencia));
+    prog.add(PontoRating(data, rf.progressao));
+  }
+  return SeriesRating(total, cons, freq, prog);
+}

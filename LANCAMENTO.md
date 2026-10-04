@@ -3,6 +3,21 @@
 Tudo pronto pra preencher o Google Play Console. **Copie e cole daqui.** Criado em 2026-09-17
 (v0.84.0). Mesmo padrão do Save List / CarLog.
 
+> ⚠️ **PENDÊNCIA pré-Play-Store — i18n (decidido 2026-10-04):** o app tem `Strings`
+> (pt/en/es via `_t(pt,en,es)` + escolha pelo idioma do aparelho), mas **muita UI recente
+> está em português chapado** (sem passar pelo `Strings`). Antes de divulgar para EN/ES,
+> fazer um **passe de i18n** nessas áreas:
+> - **Player** (cronômetro): "Treino completo!", "Sim, completei", "Sair mesmo?/Você não
+>   concluiu", "Começar treino", frases de fim, "A seguir", "Repetir treino", "Voltar".
+> - **Check-in**: "Insígnias do mês", "Mês perfeito", "Sequência/Recorde", banner + folha do
+>   **escudo** ("Escudo guardado", "Usar escudo", "Cobrir…"), títulos "Medalhas/Troféus".
+> - **Cards**: "Comprar \$50", "surpresa", "Completa", "Novo card!", toggle "Card antes do treino".
+> - **Treinador/Resumo** (`util/treinador.dart`): placar (Completos/Dias/Sequência…), TODAS as
+>   dicas, nomes dos dias da semana; + sub-abas "Evolução/Rating/Cards/Resumo" e a tela de Rating.
+> Como fazer: mover cada string para um getter em `l10n/strings.dart` (`_t`), ou passar `Strings`
+> para as funções da UI. É mecânico, mas amplo. **Se o foco for só Brasil, pode ficar PT-first.**
+
+
 > **Como ler:** em cima = **material** pra colar; embaixo (**"② No Play Console"**) = roteiro
 > do que **só você faz** logado. Eu (Claude) preparo os arquivos; você faz os cliques.
 

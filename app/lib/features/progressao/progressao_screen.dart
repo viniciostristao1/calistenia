@@ -149,7 +149,7 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
       diasInsignia: diasIns,
       diasEscudoGanho: diasEsc,
     );
-    final serie = serieRating(
+    final series = seriesRating(
       concs,
       treinos,
       prog,
@@ -164,16 +164,50 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
           _RatingCard(rating: rating),
           const SizedBox(height: 18),
           const Text(
-            'Tendência',
+            'Tendência · Geral',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           const SizedBox(height: 2),
           Text(
-            'Seu Rating nas últimas semanas.',
+            'Seu Rating total nas últimas semanas.',
             style: TextStyle(color: AppColors.dim, fontSize: 12),
           ),
           const SizedBox(height: 12),
-          _GraficoLinha(pontos: serie),
+          _GraficoLinha(pontos: series.total),
+          const SizedBox(height: 20),
+          const Text(
+            'Por categoria',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Veja qual parte está puxando (ou segurando) o seu Rating.',
+            style: TextStyle(color: AppColors.dim, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          _CategoriaRating(
+            titulo: 'Consistência',
+            atual: rating.consistencia,
+            max: 400,
+            cor: AppColors.rest,
+            pontos: series.consistencia,
+          ),
+          const SizedBox(height: 10),
+          _CategoriaRating(
+            titulo: 'Frequência',
+            atual: rating.frequencia,
+            max: 200,
+            cor: AppColors.prep,
+            pontos: series.frequencia,
+          ),
+          const SizedBox(height: 10),
+          _CategoriaRating(
+            titulo: 'Progressão',
+            atual: rating.progressao,
+            max: 400,
+            cor: AppColors.exec,
+            pontos: series.progressao,
+          ),
           const SizedBox(height: 16),
           Text(
             'Rating 0–1000 = Consistência (0–400, % dos dias agendados nos últimos '
@@ -185,6 +219,62 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Um bloco de categoria do Rating: título + valor atual (x/max) + mini-gráfico
+/// da tendência daquele componente.
+class _CategoriaRating extends StatelessWidget {
+  const _CategoriaRating({
+    required this.titulo,
+    required this.atual,
+    required this.max,
+    required this.cor,
+    required this.pontos,
+  });
+
+  final String titulo;
+  final int atual;
+  final int max;
+  final Color cor;
+  final List<PontoRating> pontos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              titulo,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            ),
+            const Spacer(),
+            Text(
+              '$atual',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+                color: cor,
+              ),
+            ),
+            Text(
+              ' / $max',
+              style: TextStyle(color: AppColors.dim, fontSize: 12),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _GraficoLinha(pontos: pontos, altura: 86, cor: cor),
+      ],
     );
   }
 }
@@ -631,12 +721,15 @@ class _RatingCard extends StatelessWidget {
 /// Gráfico de linha (tendência do Rating): traços ligando os pontos, com a área
 /// sob a curva. Desenha da esquerda para a direita em 850ms.
 class _GraficoLinha extends StatelessWidget {
-  const _GraficoLinha({required this.pontos});
+  const _GraficoLinha({required this.pontos, this.altura = 160, this.cor});
 
   final List<PontoRating> pontos;
+  final double altura;
+  final Color? cor;
 
   @override
   Widget build(BuildContext context) {
+    final c = cor ?? context.accent;
     return Container(
       padding: const EdgeInsets.fromLTRB(6, 12, 10, 6),
       decoration: BoxDecoration(
@@ -647,7 +740,7 @@ class _GraficoLinha extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(
-            height: 160,
+            height: altura,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
               duration: const Duration(milliseconds: 1100),
@@ -656,7 +749,7 @@ class _GraficoLinha extends StatelessWidget {
                 size: Size.infinite,
                 painter: _LinhaPainter(
                   pontos: pontos,
-                  cor: context.accent,
+                  cor: c,
                   corGrade: AppColors.line,
                   corTexto: AppColors.dim2,
                   progresso: prog,
@@ -1132,15 +1225,15 @@ class _ResumoView extends ConsumerWidget {
     final treinos = ref.watch(treinosProvider).value ?? const [];
     final prog = ref.watch(progressaoProvider).value ?? const [];
     final checkins = ref.watch(checkinProvider).value ?? const [];
-    final cobertos = diasCobertosPorEscudo(
-      ref.watch(escudoProvider).value ?? const <Escudo>[],
-    );
+    final escudos = ref.watch(escudoProvider).value ?? const <Escudo>[];
+    final cobertos = diasCobertosPorEscudo(escudos);
     final r = montarResumo(
       concs,
       treinos,
       prog,
       checkins.map((c) => c.data).toList(),
       diasEscudo: cobertos,
+      temEscudoReserva: temEscudoDisponivel(escudos),
     );
 
     void agir(InsightAcao a) {

@@ -5,6 +5,25 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-04 — Rating por categoria + gargalo + i18n documentado (v0.93.0)
+
+Rodada de sugestões (outra IA). Decisões do usuário: escudo NÃO proativo; i18n só pré-Play-Store.
+- **Gráficos por categoria:** `seriesRating()` novo em `gamificacao.dart` → `SeriesRating{total,
+  consistencia,frequencia,progressao}` (recalcula cada componente por semana). `_GraficoLinha`
+  ganhou `altura`+`cor`. `_rating()` rotula "Tendência · Geral" e adiciona 3 `_CategoriaRating`
+  (Consistência=rest, Frequência=prep, Progressão=exec) com valor atual x/máx + mini-gráfico.
+- **Gargalo do Rating** (`treinador.dart`): componente mais fraco por **fração do teto**
+  (cons/400, freq/200, prog/400); dica direcionada. **Dedup:** se o fraco é progressão e já há
+  platô, não repete. `rf` (RatingForma) agora é capturado p/ reusar os componentes.
+- **Risco + escudo:** `montarResumo(temEscudoReserva)` → texto menciona o 🛡️ de reserva (honesto:
+  "se faltar", pois o escudo cobre a falta DEPOIS; **não** proativo — decisão do usuário).
+- **Cap de dicas 3→4** (o ponto fraco não some tão fácil).
+- **i18n:** DOCUMENTADO como pendência pré-Play-Store em `LANCAMENTO.md` (áreas PT-inline: player,
+  check-in, escudo, cards, treinador/sub-abas). NÃO implementado (PT-first até decidir en/es).
+- Testes `treinador_test`: +risco-com-escudo, +gargalo-progressão. Total do app: 94.
+
+---
+
 ## 2026-10-04 — Sub-abas "sublinhado" + revisão do Resumo (v0.92.0)
 
 Usuário escolheu o estilo **Sublinhado** (da galeria de 12 estilos de sub-aba) e passou uma

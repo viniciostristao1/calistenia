@@ -134,6 +134,39 @@ void main() {
     );
   });
 
+  test('risco com escudo guardado menciona a reserva', () {
+    final cc = [c(d(1)), c(d(2))]; // hoje não concluído, chama de 2
+    final ck = [d(1), d(2)];
+    final res = montarResumo(
+      cc,
+      [
+        _t(['flexao']),
+      ],
+      const [],
+      ck,
+      hoje: hoje,
+      temEscudoReserva: true,
+    );
+    expect(res.insights.first.texto.contains('escudo de reserva'), isTrue);
+  });
+
+  test('gargalo do Rating: sem progressão, aponta a progressão', () {
+    // treinou dias (consistência/frequência > 0), mas nenhum recorde (prog=0).
+    final res = montarResumo(
+      concs,
+      [
+        _t(['flexao']),
+      ],
+      const [],
+      checkins,
+      hoje: hoje,
+    );
+    expect(
+      res.insights.any((i) => i.titulo.toLowerCase().contains('progress')),
+      isTrue,
+    );
+  });
+
   test('exercício fora dos treinos não gera platô', () {
     final prog = [r('remada', 8, d(30)), r('remada', 10, d(20))];
     final res = montarResumo(

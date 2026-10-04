@@ -91,6 +91,7 @@ ResumoSemana montarResumo(
   List<DateTime> diasCheckin, {
   DateTime? hoje,
   Set<DateTime> diasEscudo = const {},
+  bool temEscudoReserva = false,
 }) {
   final hj = _d(hoje ?? DateTime.now());
   final inicioSemana = hj.subtract(Duration(days: hj.weekday - 1)); // segunda
@@ -131,7 +132,8 @@ ResumoSemana montarResumo(
 
   final agendados = diasAgendados(treinos);
 
-  final rating = ratingForma(concs, treinos, prog, hoje: hj).totalComBonus;
+  final rf = ratingForma(concs, treinos, prog, hoje: hj);
+  final rating = rf.totalComBonus;
   final seteAtras = hj.subtract(const Duration(days: 7));
   // Aproximação: usa a AGENDA ATUAL para o rating de 7 dias atrás (se você mudou
   // os dias dos treinos, o "vs" pode desviar um pouco — aceitável p/ tendência).
@@ -196,19 +198,24 @@ ResumoSemana montarResumo(
       diasEscudo.map(_d).contains(hj) ||
       concs.any((c) => _d(c.data) == hj && c.completo);
   if (agendados.contains(hojeWd) && !hojeCompleto && sequencia > 0) {
+    final seqTxt = sequencia == 1 ? '1 dia' : '$sequencia dias';
     candidatos.add(
       Insight(
         '⚠️',
         'Sua chama está em risco',
-        'Você tem treino hoje e a sequência de ${sequencia == 1 ? '1 dia' : '$sequencia dias'} '
-            'zera se faltar. Bora manter a chama acesa!',
+        temEscudoReserva
+            ? 'Você tem treino hoje e a sequência de $seqTxt zera se faltar. '
+                  'Bora treinar — e você ainda tem um 🛡️ escudo de reserva se faltar.'
+            : 'Você tem treino hoje e a sequência de $seqTxt zera se faltar. '
+                  'Bora manter a chama acesa!',
         acao: InsightAcao.treinos,
         acaoLabel: 'Treinar agora',
       ),
     );
   }
 
-  if (platoNome != null && platoDias >= 10) {
+  final temPlato = platoNome != null && platoDias >= 10;
+  if (temPlato) {
     candidatos.add(
       Insight(
         '📈',
@@ -219,6 +226,49 @@ ResumoSemana montarResumo(
         acaoLabel: 'Ver progressão',
       ),
     );
+  }
+
+  // GARGALO do Rating: o componente mais fraco (como % do seu teto). Dá o elo a
+  // puxar. Se o fraco for a Progressão e já houver platô, não repete.
+  final somaComp = rf.consistencia + rf.frequencia + rf.progressao;
+  if (somaComp > 0) {
+    final frac = {
+      'consistencia': rf.consistencia / 400,
+      'frequencia': rf.frequencia / 200,
+      'progressao': rf.progressao / 400,
+    };
+    final menor = frac.entries.reduce((a, b) => a.value <= b.value ? a : b);
+    if (!(menor.key == 'progressao' && temPlato)) {
+      final (emoji, titulo, texto, acao, label) = switch (menor.key) {
+        'consistencia' => (
+          '🎯',
+          'Reforce a consistência',
+          'No Rating, a Consistência é seu elo mais fraco. Cumprir os dias '
+              'agendados (mesmo um treino curto) é o que mais sobe a nota.',
+          InsightAcao.nenhuma,
+          null,
+        ),
+        'frequencia' => (
+          '📅',
+          'Aumente a frequência',
+          'Sua Frequência é o que mais puxa o Rating pra baixo. Treinar mais '
+              'vezes na semana ajuda bastante.',
+          InsightAcao.nenhuma,
+          null,
+        ),
+        _ => (
+          '📈',
+          'Puxe a progressão',
+          'Sua Progressão é o que mais segura o Rating. Bater um recorde (reps '
+              'ou carga) destrava pontos.',
+          InsightAcao.progressao,
+          'Ver progressão',
+        ),
+      };
+      candidatos.add(
+        Insight(emoji, titulo, texto, acao: acao, acaoLabel: label),
+      );
+    }
   }
 
   // Meta próxima: recorde de sequência OU próxima conquista.
@@ -332,6 +382,6 @@ ResumoSemana montarResumo(
     rating: rating,
     ratingAnterior: ratingAnterior,
     recordesRecentes: recordesRecentes.toSet().toList(),
-    insights: candidatos.take(3).toList(),
+    insights: candidatos.take(4).toList(),
   );
 }
