@@ -100,15 +100,12 @@ ResumoSemana montarResumo(
   bool naSemana(DateTime d, DateTime ini) =>
       !_d(d).isBefore(ini) && _d(d).isBefore(ini.add(const Duration(days: 7)));
 
+  // "Completos" = nº de TREINOS completos (sessões), não dias: 2 no mesmo dia = 2.
   final completos = concs
       .where((c) => c.completo && naSemana(c.data, inicioSemana))
-      .map((c) => _d(c.data))
-      .toSet()
       .length;
   final completosAnterior = concs
       .where((c) => c.completo && naSemana(c.data, inicioAnterior))
-      .map((c) => _d(c.data))
-      .toSet()
       .length;
   final diasTreinados = {
     for (final c in concs)
@@ -132,8 +129,12 @@ ResumoSemana montarResumo(
     diasEscudo: diasEscudo,
   );
 
+  final agendados = diasAgendados(treinos);
+
   final rating = ratingForma(concs, treinos, prog, hoje: hj).totalComBonus;
   final seteAtras = hj.subtract(const Duration(days: 7));
+  // Aproximação: usa a AGENDA ATUAL para o rating de 7 dias atrás (se você mudou
+  // os dias dos treinos, o "vs" pode desviar um pouco — aceitável p/ tendência).
   final ratingAnterior = ratingForma(
     concs.where((c) => !_d(c.data).isAfter(seteAtras)).toList(),
     treinos,
@@ -185,8 +186,27 @@ ResumoSemana montarResumo(
     }
   }
 
-  // ───────── insights (prioridade: platô → meta próxima → falha → reforço) ─────────
+  // ─── insights (prioridade: risco de hoje → platô → meta → falha → reforço) ───
   final candidatos = <Insight>[];
+
+  // RISCO DE HOJE (a mais urgente/"agêntica"): hoje é dia agendado, ainda não
+  // concluído, e há uma chama a perder.
+  final hojeWd = hj.weekday - 1;
+  final hojeCompleto =
+      diasEscudo.map(_d).contains(hj) ||
+      concs.any((c) => _d(c.data) == hj && c.completo);
+  if (agendados.contains(hojeWd) && !hojeCompleto && sequencia > 0) {
+    candidatos.add(
+      Insight(
+        '⚠️',
+        'Sua chama está em risco',
+        'Você tem treino hoje e a sequência de ${sequencia == 1 ? '1 dia' : '$sequencia dias'} '
+            'zera se faltar. Bora manter a chama acesa!',
+        acao: InsightAcao.treinos,
+        acaoLabel: 'Treinar agora',
+      ),
+    );
+  }
 
   if (platoNome != null && platoDias >= 10) {
     candidatos.add(
@@ -233,7 +253,6 @@ ResumoSemana montarResumo(
   }
 
   // Falha por dia da semana (últimos 28 dias).
-  final agendados = diasAgendados(treinos);
   final falhasWd = List<int>.filled(7, 0);
   final totalWd = List<int>.filled(7, 0);
   final completoReal = <DateTime, bool>{};

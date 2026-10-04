@@ -18,6 +18,7 @@ import '../../util/cards_catalog.dart';
 import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 import '../../util/treinador.dart';
+import '../../widgets/sub_abas.dart';
 
 /// Aba "Progressão" com duas sub-abas: **Desenvolvimento** (barras de reps por
 /// exercício) e **Rating** (nível de forma + gráfico de tendência).
@@ -82,29 +83,12 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
         children: [
           if (gamiOn)
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-              child: SegmentedButton<int>(
-                style: SegmentedButton.styleFrom(
-                  selectedForegroundColor: context.onAccent,
-                  selectedBackgroundColor: context.accent,
-                  foregroundColor: AppColors.dim,
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  visualDensity: VisualDensity.compact,
-                  textStyle: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                segments: const [
-                  ButtonSegment(value: 0, label: Text('Evolução')),
-                  ButtonSegment(value: 1, label: Text('Rating')),
-                  ButtonSegment(value: 2, label: Text('Cards')),
-                  ButtonSegment(value: 3, label: Text('Resumo')),
-                ],
-                selected: {vista},
-                showSelectedIcon: false,
-                onSelectionChanged: (s) => setState(() {
-                  _vista = s.first;
+              padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+              child: SubAbas(
+                abas: const ['Evolução', 'Rating', 'Cards', 'Resumo'],
+                selecionado: vista,
+                onSelect: (i) => setState(() {
+                  _vista = i;
                   _animKey++;
                 }),
               ),
@@ -1164,7 +1148,9 @@ class _ResumoView extends ConsumerWidget {
         case InsightAcao.progressao:
           onVerEvolucao();
         case InsightAcao.conquistas:
-          onIrAba?.call(1); // Check-in (Galeria)
+          // Deep-link direto na Galeria (sub-aba 1) do Check-in.
+          checkinVistaInicial.value = 1;
+          onIrAba?.call(1);
         case InsightAcao.treinos:
           onIrAba?.call(0); // Treinos
         case InsightAcao.nenhuma:

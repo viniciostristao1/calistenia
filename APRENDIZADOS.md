@@ -5,6 +5,29 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-04 — Sub-abas "sublinhado" + revisão do Resumo (v0.92.0)
+
+Usuário escolheu o estilo **Sublinhado** (da galeria de 12 estilos de sub-aba) e passou uma
+review de outra IA. Veredito e ações:
+- **Sub-abas:** novo `widgets/sub_abas.dart` (`SubAbas`: texto + traço animado sob o ativo,
+  `Expanded` por aba). Substitui o `SegmentedButton` na **Progressão** e no **Check-in**.
+  Resolve o aperto de 4 segmentos.
+- **#2 "Ver conquistas" ia pro calendário:** deep-link via `checkinVistaInicial`
+  (`ValueNotifier<int?>` em `checkin_repository`; ⚠️ **StateProvider não está exportado** nesta
+  versão do Riverpod → usei ValueNotifier + listener no `initState/dispose` do CheckinScreen).
+  Resumo seta `checkinVistaInicial.value=1` e troca de aba.
+- **#3 "Completos" contava dias:** virou contagem de SESSÕES (`.length`, sem dedup por dia).
+- **#5:** documentei a aproximação do `ratingAnterior` (agenda atual). Gami OFF: Resumo é
+  inalcançável (segmentos só com gami on) — sem ação.
+- **Bônus "risco de hoje"** (dica mais agêntica): hoje agendado + não concluído + `sequencia>0`
+  → "sua chama está em risco" (ação `treinos`). Prioridade máxima entre os insights.
+- **i18n (#1):** NÃO feito — é APP-WIDE (check-in/escudo/cards/config também são PT inline), não
+  só o Treinador. Fica como tarefa dedicada se o alvo for en/es. (App usa `Strings(idioma)` com
+  `_t(pt,en,es)`.)
+- Testes `treinador_test`: +sessões, +risco-de-hoje, +sem-risco-quando-concluído. 92/92.
+
+---
+
 ## 2026-10-04 — Resumo/Treinador on-device + fix modo Desempenho (v0.90.3 / v0.91.0)
 
 **v0.90.3 (fix):** `HomeLayout.desempenho` não tinha `_SeletorDias` e a lista era fixa em

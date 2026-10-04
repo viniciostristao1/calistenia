@@ -20,6 +20,7 @@ import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
 import '../../util/dias.dart';
 import '../../util/gamificacao.dart';
+import '../../widgets/sub_abas.dart';
 import '../../l10n/strings.dart';
 
 const _meses = [
@@ -56,6 +57,23 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     final n = DateTime.now();
     _mes = DateTime(n.year, n.month, 1);
     WidgetsBinding.instance.addPostFrameCallback((_) => _reconciliar());
+    // Deep-link (dica "Ver conquistas" do Resumo): abre numa sub-aba específica.
+    checkinVistaInicial.addListener(_aplicarDeepLink);
+    _aplicarDeepLink();
+  }
+
+  @override
+  void dispose() {
+    checkinVistaInicial.removeListener(_aplicarDeepLink);
+    super.dispose();
+  }
+
+  void _aplicarDeepLink() {
+    final v = checkinVistaInicial.value;
+    if (v == null || !mounted) return;
+    setState(() => _vista = v);
+    checkinVistaInicial.value = null;
+    if (v != 0) _reconciliar();
   }
 
   void _mudarMes(int delta) =>
@@ -115,27 +133,13 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         children: [
           if (gamiOn)
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-              child: SegmentedButton<int>(
-                style: SegmentedButton.styleFrom(
-                  selectedForegroundColor: context.onAccent,
-                  selectedBackgroundColor: context.accent,
-                  foregroundColor: AppColors.dim,
-                  textStyle: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                segments: [
-                  ButtonSegment(value: 0, label: Text(s.calendario)),
-                  ButtonSegment(value: 1, label: Text(s.galeria)),
-                  ButtonSegment(value: 2, label: Text(s.historico)),
-                ],
-                selected: {vista},
-                showSelectedIcon: false,
-                onSelectionChanged: (s) {
-                  setState(() => _vista = s.first);
-                  if (s.first != 0) _reconciliar();
+              padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+              child: SubAbas(
+                abas: [s.calendario, s.galeria, s.historico],
+                selecionado: vista,
+                onSelect: (i) {
+                  setState(() => _vista = i);
+                  if (i != 0) _reconciliar();
                 },
               ),
             ),

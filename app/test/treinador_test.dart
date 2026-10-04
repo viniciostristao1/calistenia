@@ -85,6 +85,55 @@ void main() {
     expect(res.insights, isNotEmpty);
   });
 
+  test('"Completos" conta SESSÕES (2 no mesmo dia = 2)', () {
+    final cc = [c(d(0)), c(d(0)), c(d(2))]; // 2 hoje + 1 segunda
+    final ck = [d(0), d(2)];
+    final res = montarResumo(
+      cc,
+      [
+        _t(['flexao']),
+      ],
+      const [],
+      ck,
+      hoje: hoje,
+    );
+    expect(res.completos, 3);
+  });
+
+  test('risco de hoje: dia agendado, não concluído, com chama → dica', () {
+    final cc = [c(d(1)), c(d(2))]; // ontem e anteontem completos; HOJE não
+    final ck = [d(1), d(2)];
+    final res = montarResumo(
+      cc,
+      [
+        _t(['flexao']),
+      ],
+      const [],
+      ck,
+      hoje: hoje,
+    );
+    expect(res.sequencia, 2);
+    final risco = res.insights.first;
+    expect(risco.titulo.toLowerCase().contains('risco'), isTrue);
+    expect(risco.acao, InsightAcao.treinos);
+  });
+
+  test('sem risco quando o treino de hoje já foi concluído', () {
+    final res = montarResumo(
+      concs,
+      [
+        _t(['flexao']),
+      ],
+      const [],
+      checkins,
+      hoje: hoje,
+    );
+    expect(
+      res.insights.any((i) => i.titulo.toLowerCase().contains('risco')),
+      isFalse,
+    );
+  });
+
   test('exercício fora dos treinos não gera platô', () {
     final prog = [r('remada', 8, d(30)), r('remada', 10, d(20))];
     final res = montarResumo(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,6 +8,12 @@ import '../models/checkin.dart';
 import '../models/exercicio.dart';
 
 const chaveCheckin = 'checkin_v1';
+
+/// Deep-link da aba Check-in: quando ≠ null, a `CheckinScreen` abre nessa
+/// sub-aba (0=calendário, 1=galeria/conquistas, 2=histórico) e volta a null.
+/// Usado pela dica "Ver conquistas" do Resumo. (ValueNotifier simples — não
+/// depende da versão do Riverpod p/ StateProvider.)
+final checkinVistaInicial = ValueNotifier<int?>(null);
 
 /// Fonte única dos check-ins (assiduidade). Local, sem login/nuvem.
 final checkinProvider = AsyncNotifierProvider<CheckinNotifier, List<CheckIn>>(
