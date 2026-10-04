@@ -31,7 +31,10 @@ class _RootScreenState extends ConsumerState<RootScreen> {
         children: [
           const HomeScreen(),
           const CheckinScreen(),
-          ProgressaoScreen(key: _progressaoKey),
+          ProgressaoScreen(
+            key: _progressaoKey,
+            onIrParaAba: (i) => setState(() => _aba = i),
+          ),
         ],
       ),
       bottomNavigationBar: NavigationBar(

@@ -5,6 +5,31 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-04 — Resumo/Treinador on-device + fix modo Desempenho (v0.90.3 / v0.91.0)
+
+**v0.90.3 (fix):** `HomeLayout.desempenho` não tinha `_SeletorDias` e a lista era fixa em
+`diaDeHoje` → só dava pra ver hoje. Agora mostra o seletor e usa `_dia` (rótulo: hoje = nome+data,
+senão só o nome do dia).
+
+**v0.91.0 (feature — "algo mais agêntico"):** TREINADOR on-device. Usuário escolheu: **regras no
+aparelho** (offline/privado, sem LLM) e **placar + dicas** juntos; e colocar **dentro da Progressão**
+(sub-aba) "por enquanto", não aba nova.
+- `util/treinador.dart` (PURO, testável): `montarResumo(concs,treinos,prog,diasCheckin,{hoje,diasEscudo})`
+  → `ResumoSemana` (completos vs semana passada, sequência+recorde, dias, rating vs 7d, recordes 7d,
+  e até 3 `Insight`s priorizados). Insights: **platô** (exercício ativo há mais tempo sem recorde ≥10d
+  → ação `progressao`), **meta próxima** (recorde de sequência ou próxima conquista → `conquistas`),
+  **ponto fraco** (dia da semana que mais falha no mês → `treinos`), **reforço** (dia 100%) + fallback
+  boas-vindas. `Insight` carrega `InsightAcao` (enum) + label; a UI mapeia a ação p/ navegação.
+- Progressão ganhou o 4º segmento **Resumo** (`_ResumoView` + `_StatTile` + `_InsightCard`). 4
+  segmentos → reduzi a fonte do SegmentedButton p/ 11 + `visualDensity.compact`.
+- **Navegação das ações:** `ProgressaoScreen.onIrParaAba` (passado pelo `RootScreen` =
+  `setState(_aba=i)`); dentro da Progressão, "Ver progressão" troca o segmento local (`_vista=0`).
+- Testes: `test/treinador_test.dart` (placar/delta/sequência, platô, recorde recente, fallback,
+  exercício fora do treino não gera platô). **Escopo:** só leitura/sugestão; nenhuma ação edita dados
+  ainda (as ações são navegacionais). Camada "Treinador IA" (LLM, opt-in) fica p/ depois.
+
+---
+
 ## 2026-10-03 — Cards motivacionais: pré-treino + coleção + economia (v0.90.0)
 
 Pedido: recompensa ANTES do treino (hoje só há depois). Cards com mensagens, com

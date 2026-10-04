@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/escudo.dart';
 import '../../models/registro_progressao.dart';
 import '../../services/cards_repository.dart';
+import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
@@ -16,11 +17,16 @@ import '../../theme/app_colors.dart';
 import '../../util/cards_catalog.dart';
 import '../../util/format.dart';
 import '../../util/gamificacao.dart';
+import '../../util/treinador.dart';
 
 /// Aba "Progressão" com duas sub-abas: **Desenvolvimento** (barras de reps por
 /// exercício) e **Rating** (nível de forma + gráfico de tendência).
 class ProgressaoScreen extends ConsumerStatefulWidget {
-  const ProgressaoScreen({super.key});
+  const ProgressaoScreen({super.key, this.onIrParaAba});
+
+  /// Troca a aba da barra inferior (0=Treinos, 1=Check-in, 2=Progressão) — usado
+  /// pelos botões de ação das dicas do Resumo.
+  final void Function(int aba)? onIrParaAba;
 
   @override
   ConsumerState<ProgressaoScreen> createState() => _ProgressaoScreenState();
@@ -82,8 +88,10 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
                   selectedForegroundColor: context.onAccent,
                   selectedBackgroundColor: context.accent,
                   foregroundColor: AppColors.dim,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  visualDensity: VisualDensity.compact,
                   textStyle: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -91,6 +99,7 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
                   ButtonSegment(value: 0, label: Text('Evolução')),
                   ButtonSegment(value: 1, label: Text('Rating')),
                   ButtonSegment(value: 2, label: Text('Cards')),
+                  ButtonSegment(value: 3, label: Text('Resumo')),
                 ],
                 selected: {vista},
                 showSelectedIcon: false,
@@ -106,6 +115,13 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
               child: switch (vista) {
                 1 => _rating(),
                 2 => const _Colecao(),
+                3 => _ResumoView(
+                  onVerEvolucao: () => setState(() {
+                    _vista = 0;
+                    _animKey++;
+                  }),
+                  onIrAba: widget.onIrParaAba,
+                ),
                 _ => _desenvolvimento(),
               },
             ),
@@ -1111,6 +1127,321 @@ class _RevelarCardDialogState extends State<_RevelarCardDialog>
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+// ───────────────────────────── RESUMO (TREINADOR) ─────────────────────────────
+
+/// Sub-aba **Resumo**: o Treinador on-device — placar da semana + dicas
+/// inteligentes (até 3), cada uma com ação de 1 toque quando faz sentido.
+class _ResumoView extends ConsumerWidget {
+  const _ResumoView({required this.onVerEvolucao, this.onIrAba});
+
+  final VoidCallback onVerEvolucao;
+  final void Function(int aba)? onIrAba;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final concs = ref.watch(conclusaoProvider).value ?? const [];
+    final treinos = ref.watch(treinosProvider).value ?? const [];
+    final prog = ref.watch(progressaoProvider).value ?? const [];
+    final checkins = ref.watch(checkinProvider).value ?? const [];
+    final cobertos = diasCobertosPorEscudo(
+      ref.watch(escudoProvider).value ?? const <Escudo>[],
+    );
+    final r = montarResumo(
+      concs,
+      treinos,
+      prog,
+      checkins.map((c) => c.data).toList(),
+      diasEscudo: cobertos,
+    );
+
+    void agir(InsightAcao a) {
+      switch (a) {
+        case InsightAcao.progressao:
+          onVerEvolucao();
+        case InsightAcao.conquistas:
+          onIrAba?.call(1); // Check-in (Galeria)
+        case InsightAcao.treinos:
+          onIrAba?.call(0); // Treinos
+        case InsightAcao.nenhuma:
+          break;
+      }
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+      children: [
+        const Text(
+          'Resumo da semana',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'Calculado no seu aparelho, a partir dos seus treinos.',
+          style: TextStyle(color: AppColors.dim, fontSize: 12.5),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: _StatTile(
+                icone: Icons.check_circle_rounded,
+                cor: context.accent,
+                valor: '${r.completos}',
+                rotulo: 'Completos',
+                delta: r.deltaCompletos,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _StatTile(
+                icone: Icons.local_fire_department_rounded,
+                cor: AppColors.exec,
+                valor: '${r.sequencia}',
+                rotulo: 'Sequência',
+                sub: 'recorde ${r.recorde}',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _StatTile(
+                icone: Icons.event_available_rounded,
+                cor: AppColors.rest,
+                valor: '${r.diasTreinados}',
+                rotulo: 'Dias na semana',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _StatTile(
+                icone: Icons.speed_rounded,
+                cor: context.accent,
+                valor: '${r.rating}',
+                rotulo: 'Rating',
+                delta: r.deltaRating,
+              ),
+            ),
+          ],
+        ),
+        if (r.recordesRecentes.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(
+            'Recordes dos últimos 7 dias',
+            style: TextStyle(
+              color: AppColors.dim,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: .3,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final rec in r.recordesRecentes)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(99),
+                    border: Border.all(color: AppColors.estrela),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🏆', style: TextStyle(fontSize: 12)),
+                      const SizedBox(width: 6),
+                      Text(
+                        rec,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 22),
+        const Text(
+          'Dicas pra você',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        for (final ins in r.insights)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _InsightCard(insight: ins, onAgir: () => agir(ins.acao)),
+          ),
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.icone,
+    required this.cor,
+    required this.valor,
+    required this.rotulo,
+    this.sub,
+    this.delta,
+  });
+
+  final IconData icone;
+  final Color cor;
+  final String valor;
+  final String rotulo;
+  final String? sub;
+  final int? delta;
+
+  @override
+  Widget build(BuildContext context) {
+    final d = delta;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, color: cor, size: 20),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                valor,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              if (d != null && d != 0) ...[
+                const SizedBox(width: 6),
+                Text(
+                  d > 0 ? '↑$d' : '↓${-d}',
+                  style: TextStyle(
+                    color: d > 0 ? AppColors.prep : AppColors.danger,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            sub ?? rotulo,
+            style: TextStyle(color: AppColors.dim, fontSize: 12),
+          ),
+          if (sub != null)
+            Text(
+              rotulo,
+              style: TextStyle(color: AppColors.dim2, fontSize: 10.5),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InsightCard extends StatelessWidget {
+  const _InsightCard({required this.insight, required this.onAgir});
+
+  final Insight insight;
+  final VoidCallback onAgir;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(insight.emoji, style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  insight.titulo,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  insight.texto,
+                  style: TextStyle(
+                    color: AppColors.dim,
+                    fontSize: 13,
+                    height: 1.45,
+                  ),
+                ),
+                if (insight.acao != InsightAcao.nenhuma &&
+                    insight.acaoLabel != null) ...[
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: context.accent,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: context.accent.withValues(alpha: 0.12),
+                      ),
+                      onPressed: onAgir,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            insight.acaoLabel!,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_forward_rounded, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -3,6 +3,7 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-04 — v0.91.0 (Resumo / Treinador na Progressão):** nova sub-aba **Resumo** na Progressão (Evolução · Rating · Cards · **Resumo**). Mostra o **placar da semana** (treinos completos com ↑/↓ vs semana passada, sequência 🔥 + recorde, dias treinados, rating, recordes dos últimos 7 dias) e **dicas inteligentes** personalizadas (platô de um exercício, perto de uma conquista, seu dia mais fraco/forte) — cada uma com um botão que leva direto ao lugar certo. **Tudo calculado no seu aparelho** (offline, privado).
 - **2026-10-04 — v0.90.3 (modo Desempenho: ver os outros dias):** no modo **Desempenho** da tela Treinos faltava o seletor de dias — só dava pra ver o treino de hoje. Agora o seletor Seg–Dom aparece também nele, e a lista acompanha o dia escolhido.
 - **2026-10-04 — v0.90.2 (card pré-treino ainda menor):** reduzi mais o card que aparece antes do treino (de ~220 p/ ~170 de largura) — fica mais discreto e nítido.
 - **2026-10-03 — v0.90.1 (card pré-treino menor e mais nítido):** o card que aparece antes do treino estava **grande e borrado** (a arte era ampliada demais). Agora ele aparece **menor**, perto do tamanho real da imagem, ficando **mais nítido**.
