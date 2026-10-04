@@ -90,8 +90,8 @@ class _CardPreTreinoDialog extends StatelessWidget {
             Flexible(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
-                  maxWidth: 220,
-                  maxHeight: 384,
+                  maxWidth: 170,
+                  maxHeight: 300,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
