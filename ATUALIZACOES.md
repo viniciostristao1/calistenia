@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-06 — v0.93.1 (moedas no topo + placar do Resumo em uma linha):**
+  - O **saldo de moedas 🪙** agora aparece no **topo**: na Home (ao lado de Configurações) e no **canto superior direito** do Check-in e da Progressão.
+  - No **Resumo**, o placar da semana virou **uma linha só** (Completos · Sequência+recorde · Dias · Rating±) — a caixinha ficou bem mais baixa.
 - **2026-10-04 — v0.93.0 (Rating por categoria + dica de gargalo):**
   - **Progressão › Rating:** abaixo do gráfico **Geral** agora há **um gráfico por categoria** — **Consistência**, **Frequência** e **Progressão** — cada um com o valor atual (x/máx) e a tendência. Dá pra ver qual parte está puxando (ou segurando) o seu Rating.
   - **Resumo:** nova dica **"gargalo do Rating"** — aponta o componente mais fraco e o que fazer. A dica de **risco** avisa, quando você tem um **escudo guardado**, que ele é sua reserva. E o Resumo agora mostra **até 4 dicas**.

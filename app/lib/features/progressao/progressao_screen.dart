@@ -18,6 +18,7 @@ import '../../util/cards_catalog.dart';
 import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 import '../../util/treinador.dart';
+import '../../widgets/moedas_badge.dart';
 import '../../widgets/sub_abas.dart';
 
 /// Aba "Progressão" com duas sub-abas: **Desenvolvimento** (barras de reps por
@@ -78,6 +79,7 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
             Text('Progressão'),
           ],
         ),
+        actions: const [MoedasBadge()],
       ),
       body: Column(
         children: [
@@ -1264,52 +1266,7 @@ class _ResumoView extends ConsumerWidget {
           style: TextStyle(color: AppColors.dim, fontSize: 12.5),
         ),
         const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _StatTile(
-                icone: Icons.check_circle_rounded,
-                cor: context.accent,
-                valor: '${r.completos}',
-                rotulo: 'Completos',
-                delta: r.deltaCompletos,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatTile(
-                icone: Icons.local_fire_department_rounded,
-                cor: AppColors.exec,
-                valor: '${r.sequencia}',
-                rotulo: 'Sequência',
-                sub: 'recorde ${r.recorde}',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _StatTile(
-                icone: Icons.event_available_rounded,
-                cor: AppColors.rest,
-                valor: '${r.diasTreinados}',
-                rotulo: 'Dias na semana',
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatTile(
-                icone: Icons.speed_rounded,
-                cor: context.accent,
-                valor: '${r.rating}',
-                rotulo: 'Rating',
-                delta: r.deltaRating,
-              ),
-            ),
-          ],
-        ),
+        _PlacarCompacto(r: r),
         if (r.recordesRecentes.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(
@@ -1371,72 +1328,92 @@ class _ResumoView extends ConsumerWidget {
   }
 }
 
-class _StatTile extends StatelessWidget {
-  const _StatTile({
-    required this.icone,
-    required this.cor,
-    required this.valor,
-    required this.rotulo,
-    this.sub,
-    this.delta,
-  });
+/// Placar da semana numa LINHA só (4 células): Completos · Sequência · Dias ·
+/// Rating. Compacto p/ a caixinha ficar baixa.
+class _PlacarCompacto extends StatelessWidget {
+  const _PlacarCompacto({required this.r});
 
-  final IconData icone;
-  final Color cor;
-  final String valor;
-  final String rotulo;
-  final String? sub;
-  final int? delta;
+  final ResumoSemana r;
 
   @override
   Widget build(BuildContext context) {
-    final d = delta;
+    String? deltaTxt(int d) => d == 0 ? null : (d > 0 ? '+$d' : '−${-d}');
+    Color deltaCor(int d) => d >= 0 ? AppColors.prep : AppColors.danger;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.line),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Icon(icone, color: cor, size: 20),
-          const SizedBox(height: 8),
+          _cel(
+            '${r.completos}',
+            deltaTxt(r.deltaCompletos),
+            deltaCor(r.deltaCompletos),
+            'completos',
+          ),
+          _divisor(),
+          _cel(
+            '${r.sequencia}',
+            'rec ${r.recorde}',
+            AppColors.dim,
+            'sequência',
+          ),
+          _divisor(),
+          _cel('${r.diasTreinados}', null, null, 'dias'),
+          _divisor(),
+          _cel(
+            '${r.rating}',
+            deltaTxt(r.deltaRating),
+            deltaCor(r.deltaRating),
+            'rating',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _divisor() => Container(width: 1, height: 30, color: AppColors.line);
+
+  Widget _cel(String valor, String? extra, Color? extraCor, String rotulo) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
                 valor,
                 style: const TextStyle(
-                  fontSize: 26,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              if (d != null && d != 0) ...[
-                const SizedBox(width: 6),
+              if (extra != null) ...[
+                const SizedBox(width: 3),
                 Text(
-                  d > 0 ? '↑$d' : '↓${-d}',
+                  extra,
                   style: TextStyle(
-                    color: d > 0 ? AppColors.prep : AppColors.danger,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: extraCor ?? AppColors.dim,
                   ),
                 ),
               ],
             ],
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 1),
           Text(
-            sub ?? rotulo,
-            style: TextStyle(color: AppColors.dim, fontSize: 12),
+            rotulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: AppColors.dim, fontSize: 9.5),
           ),
-          if (sub != null)
-            Text(
-              rotulo,
-              style: TextStyle(color: AppColors.dim2, fontSize: 10.5),
-            ),
         ],
       ),
     );

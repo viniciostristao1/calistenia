@@ -22,6 +22,7 @@ import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 import '../../util/versao.dart';
 import '../../l10n/strings.dart';
+import '../../widgets/moedas_badge.dart';
 import '../cards/card_pretreino.dart';
 import '../config/config_screen.dart';
 import '../treino/treino_editor_screen.dart';
@@ -341,6 +342,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             }),
             onPressed: _trocarModo,
           ),
+          const MoedasBadge(),
           IconButton(
             tooltip: s.configTitulo,
             icon: const Icon(Icons.settings_outlined),

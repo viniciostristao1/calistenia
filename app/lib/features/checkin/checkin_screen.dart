@@ -20,6 +20,7 @@ import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
 import '../../util/dias.dart';
 import '../../util/gamificacao.dart';
+import '../../widgets/moedas_badge.dart';
 import '../../widgets/sub_abas.dart';
 import '../../l10n/strings.dart';
 
@@ -128,6 +129,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
             Text(s.checkIn),
           ],
         ),
+        actions: const [MoedasBadge()],
       ),
       body: Column(
         children: [

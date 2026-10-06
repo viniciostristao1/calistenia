@@ -5,6 +5,17 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-06 — Moedas no topo + placar do Resumo em 1 linha (v0.93.1)
+
+- `widgets/moedas_badge.dart` (`MoedasBadge`): pílula "🪙 \$N" (some com gami off). Adicionada
+  nas AppBars: Home (antes do botão Config, "ao lado de configurações") e `actions` do Check-in
+  e da Progressão (canto superior direito).
+- Resumo: os 2×2 `_StatTile` (altos) viraram `_PlacarCompacto` — 1 linha com 4 células
+  (Completos±/ Sequência+rec / Dias / Rating±) separadas por divisórias. `_StatTile` removido.
+- UI apenas (sem lógica). 94 testes seguem verdes.
+
+---
+
 ## 2026-10-04 — Rating por categoria + gargalo + i18n documentado (v0.93.0)
 
 Rodada de sugestões (outra IA). Decisões do usuário: escudo NÃO proativo; i18n só pré-Play-Store.
