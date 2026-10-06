@@ -5,6 +5,25 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-06 — Exercício "longo" (bicicleta): min:seg + segue minimizado (v0.95.0)
+
+Pedido: exercício longo (bicicleta, 15min) deve mostrar **min:seg** (número crú fica enorme) e
+**não pausar com o app minimizado**, com **notificação no fim**. Decisão: 1 interruptor por
+exercício faz as 3 coisas.
+- `Exercicio.longo` (novo bool; migração default false; copy/duplicar/toJson/fromJson).
+- Editor: switch "Exercício longo (bicicleta)"; ao ligar, pede permissão de notificação.
+- Player: `_faseAtualLonga` (olha `widget.exercicios[fase.exercicioIndex].longo`). `_anel` passou a
+  receber `String numero`; `_mmss(ms)` formata "m:ss" quando longo (senão '$segundos').
+- **Segundo plano (robusto, sem foreground service):** `didChangeAppLifecycleState` NÃO pausa se
+  longo — agenda a notificação do fim (`LembretesService.agendarFimExercicio`, one-shot id 4400) e
+  segue; o `Stopwatch` anda pelo relógio. No `_tick`, teto do delta é "solto" p/ longo (24h) → ao
+  voltar, SE ACERTA pelo relógio (catch-up). Em bilateral/normal continua pausando (teto 1000ms).
+  Cancela a notif em resume/_iniciar/_pausar/dispose. ⚠️ Timer Dart não tica de verdade em 2º
+  plano no Android — o certo é catch-up + notificação agendada (foreground service = evitado).
+- Testes: round-trip JSON de `longo`. 95 testes.
+
+---
+
 ## 2026-10-06 — Unilateral: preparação só no começo do exercício (v0.94.0)
 
 Pedido: exercício que troca de lado não deve ter preparação na troca — só **entre

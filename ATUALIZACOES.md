@@ -3,6 +3,7 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-06 — v0.95.0 (exercício longo / bicicleta):** no editor do exercício há um novo interruptor **"Exercício longo (bicicleta)"**. Ligado, nele o cronômetro **mostra o tempo em minutos (14:59)** em vez de só segundos (os outros continuam em segundos) **e continua contando com o app minimizado** — ao voltar, ele se acerta pelo relógio, e você recebe uma **notificação quando terminar** mesmo com o celular no bolso.
 - **2026-10-06 — v0.94.0 (unilateral: sem preparação na troca de lado):** em exercícios de **um lado por vez**, a **preparação agora acontece só no começo do exercício** — na troca do lado 1 para o lado 2 (e entre as séries) não tem mais preparação. A preparação fica só **entre exercícios diferentes**. (A previsão de duração do treino também acompanha.)
 - **2026-10-06 — v0.93.1 (moedas no topo + placar do Resumo em uma linha):**
   - O **saldo de moedas 🪙** agora aparece no **topo**: na Home (ao lado de Configurações) e no **canto superior direito** do Check-in e da Progressão.

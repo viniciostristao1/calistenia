@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/exercicio.dart';
+import '../../services/lembretes_service.dart';
 import '../../services/progressao_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/format.dart';
@@ -48,6 +49,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
   late int _reps;
   late int _series;
   late bool _unilateral; // um lado por vez (ex.: um braço)
+  late bool _longo; // exercício longo (bicicleta): min:seg + segue minimizado
   List<int>? _descansos; // descanso por série; null = descanso único (_desc)
   late double _peso;
   late int _cor;
@@ -67,6 +69,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     _reps = e?.repeticoes ?? 10;
     _series = e?.series ?? 3;
     _unilateral = e?.unilateral ?? false;
+    _longo = e?.longo ?? false;
     _descansos = e?.descansos == null ? null : List<int>.of(e!.descansos!);
     _peso = e?.pesoKg ?? 0;
     _cor = e?.corIndex ?? 0;
@@ -97,6 +100,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
           _reps != 10 ||
           _series != 3 ||
           _unilateral ||
+          _longo ||
           _descansos != null ||
           _peso != 0 ||
           _cor != 0 ||
@@ -109,6 +113,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
         _reps != e.repeticoes ||
         _series != e.series ||
         _unilateral != e.unilateral ||
+        _longo != e.longo ||
         _peso != e.pesoKg ||
         _cor != e.corIndex ||
         _fundo != e.fundo ||
@@ -158,6 +163,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
       ..repeticoes = _reps < 1 ? 1 : _reps
       ..series = _series < 1 ? 1 : _series
       ..unilateral = _unilateral
+      ..longo = _longo
       ..descansos = _descansos == null ? null : List<int>.of(_descansos!)
       ..pesoKg = _peso < 0 ? 0 : _peso
       ..corIndex = _cor
@@ -380,6 +386,24 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             title: const Text('Um lado por vez', style: _kLabelEditor),
             subtitle: Text(
               'Faz a série de um lado e depois do outro (ex.: um braço por vez).',
+              style: TextStyle(color: AppColors.dim, fontSize: 12),
+            ),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _longo,
+            onChanged: (v) {
+              setState(() => _longo = v);
+              if (v) LembretesService.instance.pedirPermissao();
+            },
+            activeThumbColor: context.accent,
+            title: const Text(
+              'Exercício longo (bicicleta)',
+              style: _kLabelEditor,
+            ),
+            subtitle: Text(
+              'Mostra o tempo em minutos (14:59) e continua contando com o app '
+              'minimizado — com aviso quando terminar.',
               style: TextStyle(color: AppColors.dim, fontSize: 12),
             ),
           ),

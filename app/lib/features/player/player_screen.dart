@@ -19,6 +19,7 @@ import '../../services/conquistas_repository.dart';
 import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
+import '../../services/lembretes_service.dart';
 import '../../services/moedas_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
@@ -160,16 +161,37 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     }
   }
 
-  /// Ao ir para segundo plano, pausa (o cronômetro não deve correr escondido, e
-  /// isso evita o "travado" ao voltar); ao retomar, força um frame novo para o
-  /// botão responder na hora.
+  /// Ao ir para segundo plano: normalmente PAUSA (o cronômetro não corre
+  /// escondido e evita o "travado" ao voltar). EXCEÇÃO: exercício LONGO
+  /// (bicicleta) não pausa — agenda a notificação do fim e segue contando pelo
+  /// relógio; ao voltar, o próximo tick se acerta (ver [_tick]). Ao retomar,
+  /// cancela a notificação e força um frame.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) {
-      if (_running) _pausar();
+      if (_running) {
+        if (_faseAtualLonga) {
+          _agendarFimLongo();
+        } else {
+          _pausar();
+        }
+      }
     } else if (mounted && !_concluido) {
+      LembretesService.instance.cancelarFimExercicio();
       setState(() {});
     }
+  }
+
+  /// Agenda a notificação do FIM da fase longa atual (one-shot), p/ avisar mesmo
+  /// com o app minimizado.
+  void _agendarFimLongo() {
+    if (_restanteMs <= 0) return;
+    LembretesService.instance
+        .agendarFimExercicio(
+          Duration(milliseconds: _restanteMs),
+          _fases[_idx].exercicioNome,
+        )
+        .catchError((_) {});
   }
 
   @override
@@ -182,11 +204,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     }
     _fim.dispose();
     WakelockPlus.disable();
+    LembretesService.instance.cancelarFimExercicio();
     super.dispose();
   }
 
   void _iniciar() {
     if (_fases.isEmpty || _concluido) return;
+    LembretesService.instance.cancelarFimExercicio();
     WakelockPlus.enable();
     _sw
       ..reset()
@@ -200,16 +224,35 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _timer?.cancel();
     _sw.stop();
     WakelockPlus.disable();
+    LembretesService.instance.cancelarFimExercicio();
     setState(() => _running = false);
   }
 
   void _alternarPausa() => _running ? _pausar() : _iniciar();
 
+  /// A fase atual é de um exercício "longo" (min:seg + segue com app minimizado)?
+  bool get _faseAtualLonga {
+    if (_fases.isEmpty) return false;
+    final ei = _fases[_idx].exercicioIndex;
+    return ei >= 0 &&
+        ei < widget.exercicios.length &&
+        widget.exercicios[ei].longo;
+  }
+
+  /// Formata [ms] como "m:ss" (usado nos exercícios longos).
+  String _mmss(int ms) {
+    final s = (ms / 1000).ceil().clamp(0, 359999);
+    return '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
+  }
+
   void _tick(Timer t) {
     // Limita o avanço por tick: se o app foi suspenso (tela apagada / economia
     // de bateria), o Stopwatch acumula segundos e o Timer volta com um delta
     // gigante — sem o teto, isso faz o cronômetro "pular" as fases até o fim.
-    final delta = _sw.elapsedMilliseconds.clamp(0, 1000);
+    // EXCEÇÃO: exercício LONGO (bicicleta) NÃO pausa em 2º plano e deve SE
+    // ACERTAR pelo relógio ao voltar — por isso o teto é "solto".
+    final teto = _faseAtualLonga ? 24 * 60 * 60 * 1000 : 1000;
+    final delta = _sw.elapsedMilliseconds.clamp(0, teto);
     _sw
       ..reset()
       ..start();
@@ -508,6 +551,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final totalMs = (fase.segundos * 1000).clamp(1, 1 << 30);
     final fracao = (_restanteMs / totalMs).clamp(0.0, 1.0);
     final segundos = (_restanteMs / 1000).ceil().clamp(0, 99999);
+    // Exercício "longo" (bicicleta): número em min:seg (senão fica enorme).
+    final numero = _faseAtualLonga ? _mmss(_restanteMs) : '$segundos';
 
     // Fundo do EXERCÍCIO da fase atual (muda ao longo do treino).
     final ei = fase.exercicioIndex;
@@ -558,7 +603,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                     _tarjaNome(fase),
                     _contadorReps(fase),
                     const Spacer(flex: 2),
-                    _anel(cor, fracao, segundos, fase),
+                    _anel(cor, fracao, numero, fase),
                     const SizedBox(height: 20),
                     _legendaProxima(cor),
                     const Spacer(flex: 3),
@@ -821,7 +866,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     return mostra ? tarja : Opacity(opacity: 0, child: tarja);
   }
 
-  Widget _anel(Color cor, double fracao, int segundos, Fase fase) {
+  Widget _anel(Color cor, double fracao, String numero, Fase fase) {
     return SizedBox(
       width: 292,
       height: 292,
@@ -857,7 +902,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    '$segundos',
+                    numero,
                     style: TextStyle(
                       fontSize: 244,
                       fontWeight: FontWeight.w800,

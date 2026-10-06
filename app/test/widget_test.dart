@@ -250,6 +250,14 @@ void main() {
     expect(antigo.unilateral, isFalse);
   });
 
+  test('longo (bicicleta): JSON round-trip preserva a flag', () {
+    final e = Exercicio(nome: 'Bicicleta', longo: true);
+    expect(Exercicio.fromJson(e.toJson()).longo, isTrue);
+    // Exercício antigo (sem a chave) migra para normal (longo=false).
+    final antigo = Exercicio.fromJson({'nome': 'X', 'execucaoSeg': 3});
+    expect(antigo.longo, isFalse);
+  });
+
   test('chama: dia de descanso (não agendado) não quebra a corrente', () {
     final d = DateTime(2026, 8, 10);
     final wdD = d.weekday - 1;

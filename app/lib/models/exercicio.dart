@@ -36,6 +36,9 @@ class Exercicio {
   int corIndex; // índice na paleta de cores (marca do exercício)
   String? fundo; // imagem de fundo do cronômetro (asset); null = nenhum
   bool unilateral; // um lado por vez (dois lados por série); false = bilateral
+  bool
+  longo; // "exercício longo" (tipo bicicleta): tempo em min:seg no player e
+  // continua contando com o app minimizado (+ notificação no fim); false = normal.
 
   Exercicio({
     String? id,
@@ -50,6 +53,7 @@ class Exercicio {
     this.corIndex = 0,
     this.fundo,
     this.unilateral = false,
+    this.longo = false,
   }) : id = id ?? novoId();
 
   /// Descanso após a série [s] (1-based). Usa o override por série se houver;
@@ -114,6 +118,7 @@ class Exercicio {
     corIndex: corIndex,
     fundo: fundo,
     unilateral: unilateral,
+    longo: longo,
   );
 
   /// Cópia independente (novo id) para reusar o exercício em outro treino.
@@ -129,6 +134,7 @@ class Exercicio {
     corIndex: corIndex,
     fundo: fundo,
     unilateral: unilateral,
+    longo: longo,
   );
 
   Map<String, dynamic> toJson() => {
@@ -144,6 +150,7 @@ class Exercicio {
     'corIndex': corIndex,
     if (fundo != null) 'fundo': fundo,
     if (unilateral) 'unilateral': true,
+    if (longo) 'longo': true,
   };
 
   factory Exercicio.fromJson(Map<String, dynamic> j) {
@@ -168,6 +175,7 @@ class Exercicio {
       corIndex: (j['corIndex'] ?? 0) as int,
       fundo: j['fundo'] as String?,
       unilateral: (j['unilateral'] ?? false) as bool,
+      longo: (j['longo'] ?? false) as bool,
     );
   }
 }

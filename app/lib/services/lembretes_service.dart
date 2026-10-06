@@ -20,6 +20,10 @@ const int _idBase = 4200;
 /// CANCELAR quem ainda tinha a notificação agendada de versões anteriores.
 const int _idRisco = 4300;
 
+/// Id da notificação one-shot de "fim de exercício longo" (bicicleta): avisa o
+/// fim mesmo com o app minimizado.
+const int _idFimExercicio = 4400;
+
 /// Configuração dos lembretes de treino: liga/desliga global + horário (minutos
 /// do dia, 0..1439) por dia da semana. O lembrete só dispara nos dias que TÊM
 /// treino agendado — o horário de um dia sem treino fica guardado, mas inerte.
@@ -213,6 +217,34 @@ class LembretesService {
       );
     }
   }
+
+  /// Agenda uma notificação one-shot para daqui a [daqui] — o FIM de um exercício
+  /// LONGO (bicicleta), para avisar mesmo com o app minimizado. Reagendar
+  /// sobrescreve a anterior (mesmo id).
+  Future<void> agendarFimExercicio(Duration daqui, String nome) async {
+    if (!_pronto) await init();
+    if (daqui.inMilliseconds <= 0) return;
+    if (!await pedirPermissao()) return;
+    final alvo = DateTime.now().add(daqui);
+    final quando = tz.TZDateTime.fromMillisecondsSinceEpoch(
+      tz.UTC,
+      alvo.millisecondsSinceEpoch,
+    );
+    final corpo = nome.trim().isEmpty
+        ? 'Seu exercício terminou. Mandou bem! 💪'
+        : 'O exercício "$nome" terminou. Mandou bem! 💪';
+    await _plugin.zonedSchedule(
+      _idFimExercicio,
+      'Tempo! ⏱️',
+      corpo,
+      quando,
+      _detalhes(corpo),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  /// Cancela a notificação de fim de exercício (ex.: o usuário voltou ao app).
+  Future<void> cancelarFimExercicio() => _plugin.cancel(_idFimExercicio);
 
   /// Cancela todos os lembretes (ex.: usuário desligou a chave).
   Future<void> cancelarTudo() async {
