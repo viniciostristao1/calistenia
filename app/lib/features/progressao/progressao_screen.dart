@@ -11,6 +11,7 @@ import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/moedas_repository.dart';
+import '../../services/navegacao.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
@@ -38,6 +39,30 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
   int _vista = 0; // 0 = Desenvolvimento, 1 = Rating
   int _animKey = 0;
   bool _semeado = false; // baselines dos exercícios já existentes semeadas?
+
+  @override
+  void initState() {
+    super.initState();
+    progressaoVistaInicial.addListener(_irParaVista);
+    _irParaVista();
+  }
+
+  @override
+  void dispose() {
+    progressaoVistaInicial.removeListener(_irParaVista);
+    super.dispose();
+  }
+
+  /// Deep-link (ex.: tocar na moeda → abre os Cards). Troca o segmento.
+  void _irParaVista() {
+    final v = progressaoVistaInicial.value;
+    if (v == null || !mounted) return;
+    setState(() {
+      _vista = v;
+      _animKey++;
+    });
+    progressaoVistaInicial.value = null;
+  }
 
   void restartAnimation() {
     if (mounted) setState(() => _animKey++);

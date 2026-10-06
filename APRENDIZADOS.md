@@ -5,6 +5,22 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-06 — Duração em minutos + versão na Config + moeda→Cards (v0.96.0)
+
+Três pedidos:
+- **Duração em minutos (longo):** `_TempoLinha` ganhou `emMinutos`+`maximo`; ± anda 60s e a
+  digitação é em minutos (×60). No editor, a linha de execução vira "Duração (min)" quando
+  `_longo` (teto 7200s = 2h); ao ligar `_longo`, `_exec` sobe p/ ≥60 (campo não mostra "3s").
+- **Versão na Config:** tirei o `v$kVersao` (e o `_mostrarDebug` dev, com datas Ago/2026
+  hardcoded) de perto do "Calis Timer" na home; a versão agora é um rodapé em `config_screen`.
+- **Moeda → Cards:** `services/navegacao.dart` com `abaSolicitada` + `progressaoVistaInicial`
+  (ValueNotifier). `MoedasBadge` tocável seta os dois; `RootScreen` escuta `abaSolicitada`
+  (troca aba) e `ProgressaoScreen` escuta `progressaoVistaInicial` (troca segmento p/ Cards).
+  IndexedStack constrói todas as telas → os listeners já estão ativos ao tocar.
+- UI apenas; 95 testes seguem.
+
+---
+
 ## 2026-10-06 — Exercício "longo" (bicicleta): min:seg + segue minimizado (v0.95.0)
 
 Pedido: exercício longo (bicicleta, 15min) deve mostrar **min:seg** (número crú fica enorme) e

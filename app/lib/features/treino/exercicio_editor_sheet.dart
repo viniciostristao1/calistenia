@@ -393,7 +393,11 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             contentPadding: EdgeInsets.zero,
             value: _longo,
             onChanged: (v) {
-              setState(() => _longo = v);
+              setState(() {
+                _longo = v;
+                // Começa em 1 min (o campo de minutos não deve mostrar "3s").
+                if (v && _exec < 60) _exec = 60;
+              });
               if (v) LembretesService.instance.pedirPermissao();
             },
             activeThumbColor: context.accent,
@@ -416,12 +420,15 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
             onChanged: (v) => setState(() => _prep = v),
           ),
           _TempoLinha(
-            rotulo: 'Execução (por rep)',
+            // Longo (bicicleta): a duração é digitada/ajustada em MINUTOS.
+            rotulo: _longo ? 'Duração (min)' : 'Execução (por rep)',
             cor: AppColors.exec,
             segundos: _exec,
             removivel: true, // agora pode não ter execução (igual preparação)
             minimo: 0,
             passo: 1, // ajuste fino: uma flexão pode durar 2, 3, 4s…
+            emMinutos: _longo,
+            maximo: _longo ? 7200 : 3600,
             onChanged: (v) => setState(() => _exec = v),
           ),
           ..._descansoSection(),
@@ -471,6 +478,8 @@ class _TempoLinha extends StatelessWidget {
     required this.onChanged,
     this.minimo = 0,
     this.passo = 5,
+    this.emMinutos = false,
+    this.maximo = 3600,
   });
 
   final String rotulo;
@@ -479,6 +488,8 @@ class _TempoLinha extends StatelessWidget {
   final bool removivel;
   final int minimo;
   final int passo;
+  final bool emMinutos; // ajuste/digitação em MINUTOS (ex.: bicicleta)
+  final int maximo; // teto do valor em segundos
   final ValueChanged<int> onChanged;
 
   /// Primeira palavra do rótulo ("Descanso (entre séries)" -> "descanso").
@@ -520,17 +531,25 @@ class _TempoLinha extends StatelessWidget {
           Expanded(child: Text(rotulo, style: _kLabelEditor)),
           _Redondo(
             icon: Icons.remove,
-            onTap: () => onChanged((segundos - passo).clamp(minimo, 3600)),
+            onTap: () {
+              final p = emMinutos ? 60 : passo;
+              onChanged((segundos - p).clamp(minimo, maximo));
+            },
           ),
           GestureDetector(
             onTap: () async {
+              final unidade = emMinutos ? 'minutos' : 'segundos';
+              final atual = emMinutos ? (segundos / 60).round() : segundos;
+              final minArg = emMinutos ? (minimo / 60).ceil() : minimo;
               final v = await _pedirNumero(
                 context,
-                '$rotulo (segundos)',
-                segundos,
-                minimo,
+                '$rotulo ($unidade)',
+                atual,
+                minArg,
               );
-              if (v != null) onChanged(v.clamp(minimo, 3600));
+              if (v != null) {
+                onChanged((emMinutos ? v * 60 : v).clamp(minimo, maximo));
+              }
             },
             child: Container(
               width: 52,
@@ -547,7 +566,10 @@ class _TempoLinha extends StatelessWidget {
           ),
           _Redondo(
             icon: Icons.add,
-            onTap: () => onChanged((segundos + passo).clamp(minimo, 3600)),
+            onTap: () {
+              final p = emMinutos ? 60 : passo;
+              onChanged((segundos + p).clamp(minimo, maximo));
+            },
           ),
           SizedBox(
             width: 40,

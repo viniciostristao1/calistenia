@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/idioma_repository.dart';
+import '../../services/navegacao.dart';
 import '../../l10n/strings.dart';
 import '../../theme/app_colors.dart';
 import '../checkin/checkin_screen.dart';
@@ -19,6 +20,26 @@ class RootScreen extends ConsumerStatefulWidget {
 class _RootScreenState extends ConsumerState<RootScreen> {
   int _aba = 0;
   final _progressaoKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    abaSolicitada.addListener(_irParaAbaSolicitada);
+  }
+
+  @override
+  void dispose() {
+    abaSolicitada.removeListener(_irParaAbaSolicitada);
+    super.dispose();
+  }
+
+  /// Deep-link (ex.: tocar na moeda → Progressão): troca a aba e limpa o pedido.
+  void _irParaAbaSolicitada() {
+    final a = abaSolicitada.value;
+    if (a == null || !mounted) return;
+    setState(() => _aba = a);
+    abaSolicitada.value = null;
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -12,6 +12,7 @@ import '../../services/sync_service.dart';
 import '../../services/tema_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
+import '../../util/versao.dart';
 import '../../util/dias.dart';
 import '../../util/flags.dart';
 import '../../util/gamificacao.dart' show diasAgendados;
@@ -131,6 +132,18 @@ class ConfigScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           const _SecaoBackup(),
+          const SizedBox(height: 28),
+          Center(
+            child: Text(
+              'Calis Timer · v$kVersao',
+              style: TextStyle(
+                color: AppColors.dim2,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );
