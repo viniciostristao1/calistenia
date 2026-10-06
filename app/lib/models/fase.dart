@@ -45,12 +45,13 @@ List<Fase> montarLinhaDoTempo(Treino t) => montarLinhaDoTempoDe(t.exercicios);
 
 /// Expande uma lista de exercícios na sequência de fases:
 ///   bilateral:  preparação (1×) -> [ execução×reps -> descanso ] × séries.
-///   unilateral: por série -> prep(lado 1) -> exec×reps(lado 1) ->
-///               prep(lado 2) -> exec×reps(lado 2) -> descanso.
-/// Não há descanso entre repetições (elas são seguidas); o descanso é entre
-/// séries (e, no unilateral, ao fim dos dois lados). Tempos em 0 são pulados,
-/// e um descanso no fim absoluto é removido (não faz sentido descansar quando
-/// acabou).
+///   unilateral: preparação (1×, no COMEÇO do exercício) ->
+///               [ exec×reps(lado 1) -> exec×reps(lado 2) -> descanso ] × séries.
+/// **A preparação só acontece entre exercícios DIFERENTES** (1× no início de cada
+/// exercício) — NÃO na troca de lado nem entre séries. Não há descanso entre
+/// repetições (elas são seguidas); o descanso é entre séries (e, no unilateral, ao
+/// fim dos dois lados). Tempos em 0 são pulados, e um descanso no fim absoluto é
+/// removido (não faz sentido descansar quando acabou).
 List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
   final fases = <Fase>[];
   final total = exercicios.length;
@@ -116,12 +117,12 @@ List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
     }
 
     if (e.unilateral) {
-      // Um lado por vez: cada série faz o lado 1 e depois o lado 2, com uma
-      // preparação antes de cada lado e um só descanso ao fim da série.
+      // Um lado por vez: UMA preparação no começo do exercício; depois cada série
+      // faz o lado 1 e emenda no lado 2 (SEM preparação na troca de lado nem
+      // entre séries), com um só descanso ao fim da série.
+      addPrep(1, 1);
       for (var s = 1; s <= series; s++) {
-        addPrep(s, 1);
         addExec(s, 1);
-        addPrep(s, 2);
         addExec(s, 2);
         addDescanso(s);
       }

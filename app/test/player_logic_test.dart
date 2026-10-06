@@ -102,7 +102,7 @@ void main() {
     });
 
     test(
-      'unilateral: inclui "(lado N)" e a prep do lado 2 vira a próxima etapa',
+      'unilateral: inclui "(lado N)" e o lado 2 (sem prep) vira a próxima etapa',
       () {
         final fs = montarLinhaDoTempoDe([
           Exercicio(
@@ -119,10 +119,12 @@ void main() {
           (f) => f.tipo == FaseTipo.execucao && f.lado == 1,
         );
         expect(descricaoEtapa(execL1), 'Pistol (lado 1) · 5 reps');
-        // Durante o lado 1, a próxima etapa é a PREPARAÇÃO do lado 2.
+        // Troca de lado NÃO tem preparação: a próxima etapa é a EXECUÇÃO do lado 2.
         final prox = fs[proximaEtapaIdx(fs, fs.indexOf(execL1))];
-        expect(prox.tipo, FaseTipo.preparacao);
+        expect(prox.tipo, FaseTipo.execucao);
         expect(prox.lado, 2);
+        // Só UMA preparação (no começo do exercício).
+        expect(fs.where((f) => f.tipo == FaseTipo.preparacao).length, 1);
       },
     );
   });

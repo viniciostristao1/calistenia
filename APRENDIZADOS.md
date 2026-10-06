@@ -5,6 +5,20 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-06 — Unilateral: preparação só no começo do exercício (v0.94.0)
+
+Pedido: exercício que troca de lado não deve ter preparação na troca — só **entre
+exercícios diferentes**. Antes, `montarLinhaDoTempoDe` (unilateral) fazia
+`prep(l1) exec(l1) prep(l2) exec(l2) desc` **por série** (prep antes de cada lado, toda série).
+- Novo (`models/fase.dart`): `addPrep(1,1)` **UMA vez** no começo do exercício; depois
+  `for série: exec(l1) exec(l2) desc` (sem prep na troca de lado nem entre séries).
+- ⚠️ **2 fontes modelam o tempo** — alinhei as duas: `Treino.duracaoTotalSeg` (estimativa)
+  também passou de `preparacaoSeg*2*series` → `preparacaoSeg` (1×) no unilateral.
+- Testes atualizados (mudança de comportamento, não bug): `player_logic_test` (próxima etapa
+  do lado 2 = execução, não prep; 1 prep) e `widget_test` (10 fases, 1 prep, dur 154).
+
+---
+
 ## 2026-10-06 — Moedas no topo + placar do Resumo em 1 linha (v0.93.1)
 
 - `widgets/moedas_badge.dart` (`MoedasBadge`): pílula "🪙 \$N" (some com gami off). Adicionada

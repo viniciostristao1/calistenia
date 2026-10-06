@@ -208,7 +208,7 @@ void main() {
     expect(e.execucaoSeg, 30);
   });
 
-  test('unilateral: prep(1) exec(1) prep(2) exec(2) descanso, por série', () {
+  test('unilateral: 1 prep no começo; troca de lado SEM preparação', () {
     final t = Treino(
       nome: 'Teste',
       exercicios: [
@@ -224,20 +224,22 @@ void main() {
       ],
     );
     final fases = montarLinhaDoTempo(t);
-    // Por série: 2 prep + 4 exec + 1 desc = 7; ×2 séries = 14; -1 desc final = 13.
-    expect(fases.length, 13);
-    // Preparação antes de cada lado, em cada série (2 lados × 2 séries).
-    expect(fases.where((f) => f.tipo == FaseTipo.preparacao).length, 4);
+    // 1 prep + [4 exec + 1 desc]×2 séries - 1 desc final = 1 + 8 + 1 = 10.
+    expect(fases.length, 10);
+    // Preparação só UMA vez (no começo do exercício).
+    expect(fases.where((f) => f.tipo == FaseTipo.preparacao).length, 1);
     expect(fases.where((f) => f.tipo == FaseTipo.execucao).length, 8);
     expect(fases.where((f) => f.tipo == FaseTipo.descanso).length, 1);
-    // A sequência começa no lado 1 e passa ao lado 2.
+    // Começa na prep (lado 1), depois execução lado 1.
     expect(fases[0].tipo, FaseTipo.preparacao);
     expect(fases[0].lado, 1);
-    expect(fases[1].lado, 1); // execução do lado 1
-    final prepLado2 = fases.firstWhere((f) => f.lado == 2);
-    expect(prepLado2.tipo, FaseTipo.preparacao);
-    // Duração: prep 10×2×2 + exec 3×2×2×2 + descanso 60×2 = 40 + 24 + 120 = 184.
-    expect(t.duracaoTotalSeg, 184);
+    expect(fases[1].tipo, FaseTipo.execucao);
+    expect(fases[1].lado, 1);
+    // O lado 2 aparece como EXECUÇÃO (não preparação).
+    final lado2 = fases.firstWhere((f) => f.lado == 2);
+    expect(lado2.tipo, FaseTipo.execucao);
+    // Duração: prep 10 (1×) + exec 3×2×2×2 + descanso 60×2 = 10 + 24 + 120 = 154.
+    expect(t.duracaoTotalSeg, 154);
   });
 
   test('unilateral: JSON round-trip preserva a flag', () {
