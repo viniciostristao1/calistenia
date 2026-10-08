@@ -1291,7 +1291,40 @@ class _ResumoView extends ConsumerWidget {
           style: TextStyle(color: AppColors.dim, fontSize: 12.5),
         ),
         const SizedBox(height: 14),
+        if (r.frase.isNotEmpty) ...[
+          _FraseTreinador(frase: r.frase),
+          const SizedBox(height: 14),
+        ],
         _PlacarCompacto(r: r),
+        const SizedBox(height: 14),
+        _Sparkline8(valores: r.completosPorSemana),
+        if (r.temAlta || r.temProjecao || r.temRanking) ...[
+          const SizedBox(height: 12),
+          if (r.temAlta)
+            _MiniResumoCard(
+              emoji: '🔼',
+              titulo: 'Em alta · últimos 14 dias',
+              texto:
+                  '${r.altaNome} · ${r.altaDe} → ${r.altaPara} reps (+${r.altaPct}%)',
+              cor: AppColors.prep,
+            ),
+          if (r.temProjecao)
+            _MiniResumoCard(
+              emoji: '🎯',
+              titulo: 'No seu ritmo',
+              texto:
+                  '${r.projRotulo} em ~${r.projDias} ${r.projDias == 1 ? 'dia' : 'dias'}',
+            ),
+          if (r.temRanking)
+            _MiniResumoCard(
+              emoji: '🏅',
+              titulo: 'Ranking do ano',
+              texto: r.rankingPos == 1
+                  ? 'Sua melhor semana do ano!'
+                  : '${r.rankingPos}ª melhor semana (de ${r.rankingTotal})',
+              cor: r.rankingPos <= 3 ? AppColors.estrela : null,
+            ),
+        ],
         if (r.recordesRecentes.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(
@@ -1438,6 +1471,209 @@ class _PlacarCompacto extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(color: AppColors.dim, fontSize: 9.5),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Frase-resumo do Treinador (voz "inteligente"): ícone de IA + texto natural.
+class _FraseTreinador extends StatelessWidget {
+  const _FraseTreinador({required this.frase});
+
+  final String frase;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.auto_awesome, size: 18, color: AppColors.accent),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Treinador',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'resumo inteligente',
+                      style: TextStyle(fontSize: 10.5, color: AppColors.dim),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  frase,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.35,
+                    color: AppColors.text,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Micro-gráfico: treinos concluídos por semana nas últimas 8 semanas.
+class _Sparkline8 extends StatelessWidget {
+  const _Sparkline8({required this.valores});
+
+  final List<int> valores; // 8 inteiros, antiga→recente
+
+  @override
+  Widget build(BuildContext context) {
+    final maxV = valores.fold<int>(1, (a, b) => a > b ? a : b);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Treinos por semana (8 sem.)',
+            style: TextStyle(
+              color: AppColors.dim,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: .3,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 46,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (var i = 0; i < valores.length; i++)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${valores[i]}',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: i == valores.length - 1
+                                  ? AppColors.accent
+                                  : AppColors.dim,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Container(
+                            height: (valores[i] / maxV * 26).clamp(3.0, 26.0),
+                            decoration: BoxDecoration(
+                              color: i == valores.length - 1
+                                  ? AppColors.accent
+                                  : AppColors.dim2,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Cartão compacto de 1 linha (emoji + rótulo + valor) dos destaques do Resumo
+/// (em alta / projeção / ranking).
+class _MiniResumoCard extends StatelessWidget {
+  const _MiniResumoCard({
+    required this.emoji,
+    required this.titulo,
+    required this.texto,
+    this.cor,
+  });
+
+  final String emoji;
+  final String titulo;
+  final String texto;
+  final Color? cor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  titulo,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.dim,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: .3,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  texto,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: cor ?? AppColors.text,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -38,6 +38,21 @@ class ResumoSemana {
   final int ratingAnterior; // rating 7 dias atrás
   final List<String> recordesRecentes; // "Nome · N reps/kg" (últimos 7 dias)
   final List<Insight> insights; // já priorizadas (até 3)
+  // ── EXERCÍCIO EM ALTA (janela de 14 dias): maior ganho relativo de reps ──
+  final String? altaNome; // null = ninguém subiu na janela
+  final int altaDe; // reps no registro mais antigo da janela
+  final int altaPara; // melhor reps na janela
+  // ── PROJEÇÃO (no ritmo atual → próxima conquista) ──
+  final int projDias; // 0 = sem projeção
+  final String projRotulo; // ex.: "Medalha de Ouro"
+  final double projPorSemana; // ritmo usado (dias concluídos/semana)
+  // ── RANKING PESSOAL (posição da semana atual no último ano) ──
+  final int rankingPos; // 0 = sem ranking; 1 = melhor semana do ano
+  final int rankingTotal; // nº de semanas com atividade no período
+  // ── MICRO-GRÁFICO: completos por semana, 8 semanas (antiga→recente) ──
+  final List<int> completosPorSemana;
+  // ── FRASE-RESUMO em linguagem natural (voz do Treinador) ──
+  final String frase;
   const ResumoSemana({
     required this.completos,
     required this.completosAnterior,
@@ -48,10 +63,26 @@ class ResumoSemana {
     required this.ratingAnterior,
     required this.recordesRecentes,
     required this.insights,
+    this.altaNome,
+    this.altaDe = 0,
+    this.altaPara = 0,
+    this.projDias = 0,
+    this.projRotulo = '',
+    this.projPorSemana = 0,
+    this.rankingPos = 0,
+    this.rankingTotal = 0,
+    this.completosPorSemana = const [],
+    this.frase = '',
   });
 
   int get deltaCompletos => completos - completosAnterior;
   int get deltaRating => rating - ratingAnterior;
+
+  bool get temAlta => altaNome != null && altaPara > altaDe && altaDe > 0;
+  int get altaPct =>
+      temAlta ? (((altaPara - altaDe) / altaDe) * 100).round() : 0;
+  bool get temProjecao => projDias > 0 && projRotulo.isNotEmpty;
+  bool get temRanking => rankingPos > 0 && rankingTotal >= 3;
 }
 
 DateTime _d(DateTime x) => DateTime(x.year, x.month, x.day);
@@ -373,6 +404,105 @@ ResumoSemana montarResumo(
     );
   }
 
+  // ─── EXERCÍCIO EM ALTA (janela de 14 dias): maior ganho relativo de reps ───
+  final jan14 = hj.subtract(const Duration(days: 14));
+  String? altaNome;
+  int altaDe = 0, altaPara = 0;
+  double altaMelhorPct = 0;
+  for (final g in grupos) {
+    final nome = g.exercicio.trim();
+    if (!ativos.contains(nome.toLowerCase())) continue;
+    final naJanela =
+        g.registros.where((r) => !_d(r.data).isBefore(jan14)).toList();
+    if (naJanela.length < 2) continue;
+    final de = naJanela.first.valor; // mais antigo da janela (já ordenado asc)
+    final para = naJanela.map((r) => r.valor).reduce((a, b) => a > b ? a : b);
+    if (de <= 0 || para <= de) continue;
+    final pct = (para - de) / de;
+    if (pct > altaMelhorPct) {
+      altaMelhorPct = pct;
+      altaNome = nome;
+      altaDe = de;
+      altaPara = para;
+    }
+  }
+
+  // ─── PROJEÇÃO: no ritmo dos últimos 28 dias, dias até a próxima conquista ───
+  final jan28 = hj.subtract(const Duration(days: 28));
+  final diasConcluidos28 = <DateTime>{
+    for (final c in concs)
+      if (c.completo && !_d(c.data).isBefore(jan28) && !_d(c.data).isAfter(hj))
+        _d(c.data),
+  }.length;
+  final porDia = diasConcluidos28 / 28.0;
+  final porSemanaRitmo = diasConcluidos28 / 4.0;
+  final nivelAtual = nivelInfo(
+    concs,
+    treinos,
+    hoje: hj,
+    diasValidos: diasValidos,
+  ).atual;
+  int projDias = 0;
+  String projRotulo = '';
+  if (porDia > 0) {
+    for (final tier in tiersPremios) {
+      if (tier > nivelAtual) {
+        final faltam = tier - nivelAtual;
+        final dias = (faltam / porDia).ceil();
+        if (dias >= 1 && dias <= 120) {
+          projDias = dias;
+          projRotulo = _nomeTier(tier);
+        }
+        break;
+      }
+    }
+  }
+
+  // ─── RANKING PESSOAL: posição da semana atual entre as do último ano ───
+  final inicioAno = hj.subtract(const Duration(days: 364));
+  final completosPorSemanaMap = <DateTime, int>{};
+  for (final c in concs) {
+    if (!c.completo) continue;
+    final dd = _d(c.data);
+    if (dd.isBefore(inicioAno) || dd.isAfter(hj)) continue;
+    final ini = dd.subtract(Duration(days: dd.weekday - 1));
+    completosPorSemanaMap[ini] = (completosPorSemanaMap[ini] ?? 0) + 1;
+  }
+  final atualNaSemana = completosPorSemanaMap[inicioSemana] ?? 0;
+  final rankingTotal = completosPorSemanaMap.length;
+  var rankingPos = 0;
+  if (atualNaSemana > 0) {
+    rankingPos = 1 +
+        completosPorSemanaMap.values.where((v) => v > atualNaSemana).length;
+  }
+
+  // ─── MICRO-GRÁFICO: completos por semana (8 semanas, antiga→recente) ───
+  final completosPorSemana = <int>[
+    for (var w = 7; w >= 0; w--)
+      concs
+          .where(
+            (c) =>
+                c.completo &&
+                naSemana(c.data, inicioSemana.subtract(Duration(days: 7 * w))),
+          )
+          .length,
+  ];
+
+  // ─── FRASE-RESUMO (linguagem natural, personalizada) ───
+  final frase = _montarFrase(
+    completos: completos,
+    deltaCompletos: completos - completosAnterior,
+    sequencia: sequencia,
+    altaNome: altaNome,
+    altaDe: altaDe,
+    altaPara: altaPara,
+    recordesRecentes: recordesRecentes,
+    rankingPos: rankingPos,
+    hojeAgendadoEmAberto: agendados.contains(hojeWd) && !hojeCompleto,
+    piorWd: piorWd,
+    melhorWd: melhorWd,
+  );
+
   return ResumoSemana(
     completos: completos,
     completosAnterior: completosAnterior,
@@ -383,5 +513,69 @@ ResumoSemana montarResumo(
     ratingAnterior: ratingAnterior,
     recordesRecentes: recordesRecentes.toSet().toList(),
     insights: candidatos.take(4).toList(),
+    altaNome: altaNome,
+    altaDe: altaDe,
+    altaPara: altaPara,
+    projDias: projDias,
+    projRotulo: projRotulo,
+    projPorSemana: porSemanaRitmo,
+    rankingPos: rankingPos,
+    rankingTotal: rankingTotal,
+    completosPorSemana: completosPorSemana,
+    frase: frase,
   );
+}
+
+/// Monta a frase-resumo do Treinador (linguagem natural) a partir dos números
+/// já calculados. Puro/determinístico — nada sai do aparelho, sem IA externa.
+String _montarFrase({
+  required int completos,
+  required int deltaCompletos,
+  required int sequencia,
+  required String? altaNome,
+  required int altaDe,
+  required int altaPara,
+  required List<String> recordesRecentes,
+  required int rankingPos,
+  required bool hojeAgendadoEmAberto,
+  required int piorWd,
+  required int melhorWd,
+}) {
+  if (completos == 0) {
+    return hojeAgendadoEmAberto
+        ? 'Nenhum treino concluído ainda esta semana — e hoje é dia de treino. '
+              'Bora começar e acender a chama.'
+        : 'Semana ainda sem treinos concluídos. Conclua o primeiro e eu começo '
+              'a enxergar os seus padrões.';
+  }
+  final b = StringBuffer();
+  final sess = completos == 1 ? '1 treino' : '$completos treinos';
+  b.write('Você concluiu $sess esta semana');
+  if (deltaCompletos > 0) {
+    b.write(' (+$deltaCompletos vs. a passada)');
+  } else if (deltaCompletos < 0) {
+    b.write(' ($deltaCompletos vs. a passada)');
+  }
+  b.write('. ');
+  if (sequencia >= 2) b.write('Sequência de $sequencia dias acesa. ');
+  if (altaNome != null && altaPara > altaDe && altaDe > 0) {
+    final pct = (((altaPara - altaDe) / altaDe) * 100).round();
+    b.write(
+      'Destaque: $altaNome subiu de $altaDe para $altaPara reps (+$pct%). ',
+    );
+  } else if (recordesRecentes.isNotEmpty) {
+    final nome = recordesRecentes.first.split(' · ').first;
+    b.write('Novo recorde recente em $nome. ');
+  }
+  if (rankingPos == 1) {
+    b.write('É a sua melhor semana do ano! ');
+  } else if (rankingPos == 2) {
+    b.write('2ª melhor semana do ano. ');
+  }
+  if (piorWd >= 0) {
+    b.write('Ponto a cuidar: as ${_diasPlural[piorWd]}.');
+  } else if (melhorWd >= 0) {
+    b.write('Seu dia mais forte é ${_diasSingular[melhorWd]} — mandou bem.');
+  }
+  return b.toString().trim();
 }

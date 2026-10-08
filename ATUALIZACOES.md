@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-08 — v0.97.0 (Resumo mais inteligente: frase do Treinador + mini-gráfico + destaques):**
+  - **Frase do Treinador** no topo do Resumo (Progressão › Resumo): um texto em **linguagem natural** que resume sua semana — treinos, sequência, destaque e ponto a cuidar. Calculado **no seu aparelho**, nada sai do celular.
+  - **Mini-gráfico** "treinos por semana" (últimas 8 semanas).
+  - **Em alta (14 dias):** o exercício que mais subiu em repetições.
+  - **No seu ritmo:** projeção de quantos dias faltam até a próxima conquista.
+  - **Ranking do ano:** diz se esta é a sua melhor semana (ou 2ª, 3ª…).
 - **2026-10-06 — v0.96.0 (duração em minutos, versão na Config, toque na moeda):**
   - **Exercício longo:** a **duração** agora é digitada/ajustada em **minutos** no editor (não precisa mais converter pra segundos).
   - **Moeda 🪙:** tocar no saldo (na aba Treinos ou Check-in) **leva direto aos Cards** (Progressão › Cards).

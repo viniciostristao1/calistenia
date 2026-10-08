@@ -5,6 +5,32 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-08 — Resumo "mais IA": frase natural + projeção + ranking + sparkline (v0.97.0)
+
+Pedido: deixar o Resumo com **mais informação** e **"mais cara de IA"**, **tudo grátis e offline**
+(sem LLM). Tudo on-device em `treinador.dart` (lógica pura, testável) + UI em
+`features/progressao/progressao_screen.dart` (`_ResumoView`):
+
+- **Exercício em alta (14 dias):** maior ganho **relativo** de reps na janela (`agruparPorExercicio`,
+  registros com `data >= hoje-14`; `de` = mais antigo na janela, `para` = melhor na janela; só se
+  `para > de`). Campos `altaNome/altaDe/altaPara` + getters `temAlta/altaPct`.
+- **Projeção ("No seu ritmo"):** dias CONCLUÍDOS distintos nos últimos 28 / dia = ritmo; estima dias
+  até o próximo tier de `tiersPremios` acima de `nivelInfo().atual` (clamp 1..120). Honesto: ignora
+  possíveis quedas de nível (otimista, por isso "no seu ritmo"). Campos `projDias/projRotulo/projPorSemana`.
+- **Ranking pessoal:** posição da semana atual entre as semanas (início seg) com conclusões no
+  último ano; `rankingPos=1` = melhor. `temRanking` exige `rankingTotal >= 3` (evita "1º de 1").
+- **Micro-gráfico:** `completosPorSemana` = completos por semana nas últimas 8 (antiga→recente);
+  widget `_Sparkline8` (barras, última em `accent`).
+- **Frase-resumo:** `_montarFrase(...)` monta 1-2 frases **determinísticas** dos números (completos+delta,
+  sequência, em alta/recorde, ranking, pior/melhor dia). Card `_FraseTreinador` com `Icons.auto_awesome`.
+- Novos campos em `ResumoSemana` com **defaults** (não quebram construções via `montarResumo`).
+- Testes novos em `treinador_test.dart` (sparkline 8 células, frase cita treinos, em-alta dentro/fora
+  da janela de 14d, projeção > 0, ranking 1º de 3).
+- **Decisão (honesta, registrada p/ não re-perguntar):** "cara de IA" = apresentação + inferência; a
+  frase templada on-device entrega ~90% da sensação **sem LLM/backend**, mantendo o diferencial do
+  app (**offline, privado, grátis**). LLM (ex.: gateway Zen do Cread) ficou como "talvez depois",
+  opt-in — quebraria offline/privacidade/custo.
+
 ## 2026-10-06 — Duração em minutos + versão na Config + moeda→Cards (v0.96.0)
 
 Três pedidos:
