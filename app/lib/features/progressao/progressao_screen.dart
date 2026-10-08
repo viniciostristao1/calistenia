@@ -1320,15 +1320,15 @@ class _ResumoView extends ConsumerWidget {
               emoji: '🏅',
               titulo: 'Ranking do ano',
               texto: r.rankingPos == 1
-                  ? 'Sua melhor semana do ano!'
-                  : '${r.rankingPos}ª melhor semana (de ${r.rankingTotal})',
-              cor: r.rankingPos <= 3 ? AppColors.estrela : null,
+                  ? 'Melhor semana do ano até agora!'
+                  : '${r.rankingPos}ª melhor semana do ano (até agora)',
+              cor: AppColors.estrela,
             ),
         ],
         if (r.recordesRecentes.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(
-            'Recordes dos últimos 7 dias',
+            'Recordes dos últimos 14 dias',
             style: TextStyle(
               color: AppColors.dim,
               fontSize: 12,

@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-08 — v0.97.1 (Resumo mais justo: comparação no mesmo ponto da semana + recordes em 14 dias):**
+  - **Comparações justas:** o "vs. semana passada" (no placar e na frase do Treinador) e o **ranking** agora comparam **no mesmo ponto da semana** — se hoje é quinta, compara com **até a quinta** da semana passada (e não a sua semana parcial contra a semana cheia). Acaba o "−2" injusto no meio da semana.
+  - **Ranking só quando é bom:** o cartão de ranking só aparece quando você está no **pódio** do ano (1º/2º/3º no mesmo ritmo) — não mostra mais "9ª de 10".
+  - **Recordes agora são dos últimos 14 dias** (era 7).
 - **2026-10-08 — v0.97.0 (Resumo mais inteligente: frase do Treinador + mini-gráfico + destaques):**
   - **Frase do Treinador** no topo do Resumo (Progressão › Resumo): um texto em **linguagem natural** que resume sua semana — treinos, sequência, destaque e ponto a cuidar. Calculado **no seu aparelho**, nada sai do celular.
   - **Mini-gráfico** "treinos por semana" (últimas 8 semanas).

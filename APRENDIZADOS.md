@@ -5,6 +5,24 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-08 — Resumo justo: comparação no mesmo ponto da semana + recordes 14d (v0.97.1)
+
+Feedback do usuário sobre a v0.97.0: comparar a semana ATUAL (parcial) contra a semana passada
+CHEIA é injusto ("−2 vs. a passada", "9ª de 10"); e os recordes deviam ser de **14 dias** (não 7).
+- **Delta justo (mesmo ponto):** novo campo `completosAteHojeAnterior` = conclusões da semana passada
+  **só até o mesmo dia-da-semana de hoje** (`limiteAnterior = inicioAnterior + (hj.weekday-1) dias`).
+  `deltaCompletos` passou a usá-lo (placar + frase, "vs. a passada até <dia>"; empate = "mesmo ritmo").
+- **Ranking no mesmo ponto:** no loop do ranking, conta cada semana só enquanto `dd.weekday <= hj.weekday`.
+  E `temRanking` agora exige **pódio** (`rankingPos <= 3`) — ranking é reforço positivo, não "vergonha";
+  textos "até agora"/"até aqui" (é ritmo parcial, honesto).
+- **Recordes 14 dias:** `if (dias <= 14)` (era 7) + rótulo "Recordes dos últimos 14 dias".
+- `completosAnterior` (semana cheia) foi **mantido** no modelo; só o delta/ranking viraram "mesmo ponto".
+- Testes novos em `treinador_test.dart`: delta justo (parcial×parcial → 0, não −2 nem comparar com cheia),
+  recorde de 10 dias atrás aparece (janela 14d). Os testes antigos de delta/ranking seguem válidos
+  (no exemplo de quarta-feira, "até quarta" = semana cheia).
+- **Lição:** métrica de período em app de hábito deve comparar **janelas equivalentes** (mesmo ponto),
+  senão o meio da semana sempre "perde" contra a semana cheia e desmotiva. Reutilizável p/ outros apps.
+
 ## 2026-10-08 — Resumo "mais IA": frase natural + projeção + ranking + sparkline (v0.97.0)
 
 Pedido: deixar o Resumo com **mais informação** e **"mais cara de IA"**, **tudo grátis e offline**

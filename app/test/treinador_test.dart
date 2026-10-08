@@ -239,4 +239,28 @@ void main() {
     expect(res.rankingPos, 1);
     expect(res.rankingTotal, 3);
   });
+
+  test('delta JUSTO: compara no MESMO ponto (parcial x parcial), não -2', () {
+    // hoje = quarta. Atual: seg/ter/qua = 3. Passada: seg/ter/qua (=3) + sáb/dom
+    // (depois de qua). Semana cheia passada = 5, mas ATÉ QUARTA = 3 → delta 0.
+    final cs = [
+      c(d(0)), c(d(1)), c(d(2)), // atual: qua, ter, seg
+      c(d(7)), c(d(8)), c(d(9)), // passada até qua: qua, ter, seg
+      c(d(3)), c(d(4)), // passada depois de qua: dom, sáb
+    ];
+    final res = montarResumo(cs, [
+      _t(['flexao']),
+    ], const [], cs.map((e) => e.data).toList(), hoje: hoje);
+    expect(res.completosAteHojeAnterior, 3);
+    expect(res.deltaCompletos, 0); // justo (antes dava -2)
+    expect(res.completosAnterior, greaterThan(3)); // semana cheia é maior
+  });
+
+  test('recordes: janela de 14 dias (recorde de 10 dias atrás aparece)', () {
+    final prog = [r('flexao', 10, d(12)), r('flexao', 16, d(10))];
+    final res = montarResumo(concs, [
+      _t(['flexao']),
+    ], prog, checkins, hoje: hoje);
+    expect(res.recordesRecentes.any((s) => s.contains('flexao')), isTrue);
+  });
 }

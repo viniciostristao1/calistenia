@@ -30,13 +30,14 @@ class Insight {
 /// O resumo da semana + as dicas.
 class ResumoSemana {
   final int completos; // conclusões completas nesta semana (seg→hoje)
-  final int completosAnterior; // semana passada
+  final int completosAnterior; // semana passada (completa)
+  final int completosAteHojeAnterior; // semana passada SÓ até o mesmo dia da semana
   final int sequencia; // chama atual
   final int recorde; // recorde da chama
   final int diasTreinados; // dias distintos com atividade nesta semana
   final int rating; // rating atual (com bônus)
   final int ratingAnterior; // rating 7 dias atrás
-  final List<String> recordesRecentes; // "Nome · N reps/kg" (últimos 7 dias)
+  final List<String> recordesRecentes; // "Nome · N reps/kg" (últimos 14 dias)
   final List<Insight> insights; // já priorizadas (até 3)
   // ── EXERCÍCIO EM ALTA (janela de 14 dias): maior ganho relativo de reps ──
   final String? altaNome; // null = ninguém subiu na janela
@@ -56,6 +57,7 @@ class ResumoSemana {
   const ResumoSemana({
     required this.completos,
     required this.completosAnterior,
+    this.completosAteHojeAnterior = 0,
     required this.sequencia,
     required this.recorde,
     required this.diasTreinados,
@@ -75,14 +77,18 @@ class ResumoSemana {
     this.frase = '',
   });
 
-  int get deltaCompletos => completos - completosAnterior;
+  // Delta JUSTO: compara no MESMO ponto da semana (ex.: até quinta vs. até quinta
+  // da semana passada), não a semana parcial contra a semana cheia.
+  int get deltaCompletos => completos - completosAteHojeAnterior;
   int get deltaRating => rating - ratingAnterior;
 
   bool get temAlta => altaNome != null && altaPara > altaDe && altaDe > 0;
   int get altaPct =>
       temAlta ? (((altaPara - altaDe) / altaDe) * 100).round() : 0;
   bool get temProjecao => projDias > 0 && projRotulo.isNotEmpty;
-  bool get temRanking => rankingPos > 0 && rankingTotal >= 3;
+  // Ranking só é exibido quando é POSITIVO (pódio) — não serve p/ "envergonhar"
+  // uma semana fraca; é um destaque de reforço.
+  bool get temRanking => rankingPos >= 1 && rankingPos <= 3 && rankingTotal >= 3;
 }
 
 DateTime _d(DateTime x) => DateTime(x.year, x.month, x.day);
@@ -138,6 +144,19 @@ ResumoSemana montarResumo(
       .length;
   final completosAnterior = concs
       .where((c) => c.completo && naSemana(c.data, inicioAnterior))
+      .length;
+  // Comparação JUSTA: a semana passada contada só até o MESMO dia da semana de
+  // hoje (ex.: hoje quinta → conta seg..qui da semana passada), para não comparar
+  // uma semana PARCIAL contra uma semana cheia.
+  final diaDaSemana = hj.weekday; // 1=seg … 7=dom
+  final limiteAnterior = inicioAnterior.add(Duration(days: diaDaSemana - 1));
+  final completosAteHojeAnterior = concs
+      .where(
+        (c) =>
+            c.completo &&
+            !_d(c.data).isBefore(inicioAnterior) &&
+            !_d(c.data).isAfter(limiteAnterior),
+      )
       .length;
   final diasTreinados = {
     for (final c in concs)
@@ -203,8 +222,8 @@ ResumoSemana montarResumo(
     );
     if (ultimoRecorde == null) continue;
     final dias = hj.difference(_d(ultimoRecorde)).inDays;
-    // recorde recente?
-    if (dias <= 7) {
+    // recorde recente? (janela de 14 dias)
+    if (dias <= 14) {
       if (g.maior > g.primeiro) recordesRecentes.add('$nome · ${g.maior} reps');
       if (g.maiorPeso > 0 && g.maiorPeso > g.primeiroPeso) {
         recordesRecentes.add(
@@ -465,6 +484,10 @@ ResumoSemana montarResumo(
     if (!c.completo) continue;
     final dd = _d(c.data);
     if (dd.isBefore(inicioAno) || dd.isAfter(hj)) continue;
+    // mesmo PONTO da semana: conta cada semana só até o dia-da-semana de hoje
+    // (ex.: hoje quinta → só seg..qui de cada semana) → ranking justo mesmo
+    // com a semana atual ainda em andamento.
+    if (dd.weekday > diaDaSemana) continue;
     final ini = dd.subtract(Duration(days: dd.weekday - 1));
     completosPorSemanaMap[ini] = (completosPorSemanaMap[ini] ?? 0) + 1;
   }
@@ -491,7 +514,8 @@ ResumoSemana montarResumo(
   // ─── FRASE-RESUMO (linguagem natural, personalizada) ───
   final frase = _montarFrase(
     completos: completos,
-    deltaCompletos: completos - completosAnterior,
+    deltaCompletos: completos - completosAteHojeAnterior,
+    diaNome: _diasSingular[diaDaSemana - 1],
     sequencia: sequencia,
     altaNome: altaNome,
     altaDe: altaDe,
@@ -506,6 +530,7 @@ ResumoSemana montarResumo(
   return ResumoSemana(
     completos: completos,
     completosAnterior: completosAnterior,
+    completosAteHojeAnterior: completosAteHojeAnterior,
     sequencia: sequencia,
     recorde: recorde,
     diasTreinados: diasTreinados,
@@ -531,6 +556,7 @@ ResumoSemana montarResumo(
 String _montarFrase({
   required int completos,
   required int deltaCompletos,
+  required String diaNome,
   required int sequencia,
   required String? altaNome,
   required int altaDe,
@@ -551,10 +577,13 @@ String _montarFrase({
   final b = StringBuffer();
   final sess = completos == 1 ? '1 treino' : '$completos treinos';
   b.write('Você concluiu $sess esta semana');
+  // Comparação JUSTA: mesmo ponto da semana (até o mesmo dia da semana passada).
   if (deltaCompletos > 0) {
-    b.write(' (+$deltaCompletos vs. a passada)');
+    b.write(' (+$deltaCompletos vs. a passada até $diaNome)');
   } else if (deltaCompletos < 0) {
-    b.write(' ($deltaCompletos vs. a passada)');
+    b.write(' ($deltaCompletos vs. a passada até $diaNome)');
+  } else {
+    b.write(' (mesmo ritmo da passada até $diaNome)');
   }
   b.write('. ');
   if (sequencia >= 2) b.write('Sequência de $sequencia dias acesa. ');
@@ -568,9 +597,9 @@ String _montarFrase({
     b.write('Novo recorde recente em $nome. ');
   }
   if (rankingPos == 1) {
-    b.write('É a sua melhor semana do ano! ');
+    b.write('Seu melhor ritmo do ano até aqui! ');
   } else if (rankingPos == 2) {
-    b.write('2ª melhor semana do ano. ');
+    b.write('2º melhor ritmo do ano até aqui. ');
   }
   if (piorWd >= 0) {
     b.write('Ponto a cuidar: as ${_diasPlural[piorWd]}.');
