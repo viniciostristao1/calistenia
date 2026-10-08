@@ -49,12 +49,13 @@ List<Fase> montarLinhaDoTempo(Treino t) => montarLinhaDoTempoDe(t.exercicios);
 ///               [ exec×reps(lado 1) -> PREPARAÇÃO -> exec×reps(lado 2) -> descanso ] × séries,
 ///               mas SEM preparação no início das séries seguintes (após o descanso
 ///               começa direto na execução do lado 1).
-/// **Preparação (bilateral):** 1× no início de cada exercício. **Preparação
-/// (unilateral):** 1× no começo do exercício + 1× na TROCA DE LADO em cada série;
-/// depois do DESCANSO vai direto para a execução (sem prep). Não há descanso entre
-/// repetições (elas são seguidas); o descanso é entre séries (e, no unilateral, ao
-/// fim dos dois lados). Tempos em 0 são pulados, e um descanso no fim absoluto é
-/// removido (não faz sentido descansar quando acabou).
+/// **Preparação: só no COMEÇO DO TREINO (1º exercício) e, no unilateral, na TROCA
+/// DE LADO (antes do lado 2) em cada série.** NUNCA depois de um descanso — nem
+/// entre séries, nem entre exercícios (o exercício seguinte começa direto na
+/// execução, logo após o descanso do anterior). Não há descanso entre repetições
+/// (elas são seguidas); o descanso é entre séries (e, no unilateral, ao fim dos
+/// dois lados). Tempos em 0 são pulados, e um descanso no fim absoluto é removido
+/// (não faz sentido descansar quando acabou).
 List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
   final fases = <Fase>[];
   final total = exercicios.length;
@@ -120,20 +121,23 @@ List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
     }
 
     if (e.unilateral) {
-      // Um lado por vez. Preparação em DOIS momentos: (1) no começo do exercício
-      // (1ª série, lado 1) e (2) na TROCA DE LADO (antes do lado 2), em toda série.
-      // Depois do DESCANSO NÃO há preparação — a próxima série começa direto na
-      // execução do lado 1. Um só descanso ao fim de cada série (após os 2 lados).
+      // Um lado por vez. Preparação só em DOIS momentos: (1) no COMEÇO DO TREINO
+      // (1º exercício, 1ª série) e (2) na TROCA DE LADO (antes do lado 2), toda
+      // série. NUNCA depois de um descanso — nem entre séries, nem entre exercícios
+      // (exercício seguinte começa direto na execução, logo após o descanso do
+      // anterior). Um só descanso ao fim de cada série (após os 2 lados).
       for (var s = 1; s <= series; s++) {
-        if (s == 1) addPrep(s, 1); // preparação inicial do exercício
+        if (s == 1 && ei == 0) addPrep(s, 1); // prep inicial só no 1º exercício
         addExec(s, 1);
         addPrep(s, 2); // preparação na troca de lado (antes do lado 2)
         addExec(s, 2);
         addDescanso(s);
       }
     } else {
-      // Bilateral (padrão): uma preparação e depois as séries.
-      addPrep(0, 0);
+      // Bilateral: preparação só no COMEÇO DO TREINO (1º exercício). Exercícios
+      // seguintes começam direto na execução — vêm logo após o descanso do anterior,
+      // então não levam preparação.
+      if (ei == 0) addPrep(0, 0);
       for (var s = 1; s <= series; s++) {
         addExec(s, 0);
         addDescanso(s);

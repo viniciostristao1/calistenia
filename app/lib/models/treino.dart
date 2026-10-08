@@ -22,16 +22,19 @@ class Treino {
   /// última série; a linha do tempo real remove o descanso do fim absoluto).
   int get duracaoTotalSeg {
     var total = 0;
-    for (final e in exercicios) {
+    for (var ei = 0; ei < exercicios.length; ei++) {
+      final e = exercicios[ei];
       final series = e.series < 1 ? 1 : e.series;
       final reps = e.repeticoes < 1 ? 1 : e.repeticoes;
+      // Preparação inicial só no 1º exercício do treino (os seguintes começam
+      // direto na execução, após o descanso do anterior).
+      final prepInicial = ei == 0 ? 1 : 0;
       if (e.unilateral) {
-        // Preparação: 1 no começo + 1 na TROCA DE LADO em cada série (após o
-        // descanso começa direto na execução) = (series + 1) preparações.
-        total += e.preparacaoSeg * (series + 1);
+        // Prep = inicial (só no 1º exercício) + 1 na TROCA DE LADO por série.
+        total += e.preparacaoSeg * (series + prepInicial);
         total += e.execucaoSeg * reps * 2 * series;
       } else {
-        total += e.preparacaoSeg;
+        total += e.preparacaoSeg * prepInicial;
         total += e.execucaoSeg * reps * series;
       }
       for (var s = 1; s <= series; s++) {

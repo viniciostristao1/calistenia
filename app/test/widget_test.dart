@@ -248,6 +248,42 @@ void main() {
     expect(t.duracaoTotalSeg, 174);
   });
 
+  test('troca de exercício: sem preparação após o descanso do anterior', () {
+    final t = Treino(
+      nome: 'Dois',
+      dias: const [0],
+      exercicios: [
+        Exercicio(
+          nome: 'A',
+          preparacaoSeg: 10,
+          execucaoSeg: 5,
+          descansoSeg: 30,
+          repeticoes: 1,
+          series: 2,
+        ),
+        Exercicio(
+          nome: 'B',
+          preparacaoSeg: 10,
+          execucaoSeg: 5,
+          descansoSeg: 30,
+          repeticoes: 1,
+          series: 2,
+        ),
+      ],
+    );
+    final f = montarLinhaDoTempo(t);
+    // Só UMA preparação no treino todo (no começo do 1º exercício).
+    expect(f.where((x) => x.tipo == FaseTipo.preparacao).length, 1);
+    expect(f.first.tipo, FaseTipo.preparacao);
+    expect(f.first.exercicioIndex, 0);
+    // O 2º exercício começa direto em EXECUÇÃO, logo após o descanso do 1º.
+    final primeiroDoB = f.firstWhere((x) => x.exercicioIndex == 1);
+    expect(primeiroDoB.tipo, FaseTipo.execucao);
+    final idxB = f.indexOf(primeiroDoB);
+    expect(f[idxB - 1].tipo, FaseTipo.descanso);
+    expect(f[idxB - 1].exercicioIndex, 0);
+  });
+
   test('unilateral: JSON round-trip preserva a flag', () {
     final e = Exercicio(nome: 'Agachamento uma perna', unilateral: true);
     expect(Exercicio.fromJson(e.toJson()).unilateral, isTrue);

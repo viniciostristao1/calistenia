@@ -3,6 +3,8 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-08 — v0.99.2 (sem preparação na troca de exercícios):**
+  - Agora a **preparação só acontece no começo do treino** (1º exercício) e **na troca de lado** (exercício de dois lados). Na **troca de um exercício para outro** não vem mais preparação — como já houve o descanso ao fim do exercício anterior, o próximo começa **direto na execução**.
 - **2026-10-08 — v0.99.1 (Coach: "Seu momento (14 dias)" = consistência + progressão recentes):**
   - A consistência passou de "do mês" para **últimos 14 dias** (janela rolante) — representa o **seu momento / desempenho atual** e não fica fraca nos primeiros dias do mês.
   - Agrupada com o **"Em alta (14 dias)"** sob o título **"Seu momento (14 dias)"** — consistência + progressão recentes juntas.

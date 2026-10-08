@@ -5,6 +5,21 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-08 — Preparação NUNCA depois de descanso (inclui troca de exercícios) (v0.99.2)
+
+Retorno do usuário: a regra "prep só na troca de lado, nunca após descanso" (v0.98.0) valia só
+DENTRO do exercício; na **troca de exercícios** o 2º ainda abria com preparação (logo após o
+descanso final do 1º). Regra unificada: **preparação só (1) no COMEÇO DO TREINO (1º exercício) e
+(2) na TROCA DE LADO; nunca depois de um descanso** (entre séries NEM entre exercícios).
+- `montarLinhaDoTempoDe` (`fase.dart`): a prep de abertura do exercício passou a ser gated em
+  **`ei == 0`** (bilateral: `if (ei==0) addPrep(0,0)`; unilateral: `if (s==1 && ei==0) addPrep(s,1)`).
+  A prep da troca de lado (`addPrep(s,2)`) segue em todo exercício unilateral.
+- `treino.duracaoTotalSeg`: loop indexado; `prepInicial = ei==0 ? 1 : 0`; unilateral soma
+  `preparacaoSeg * (series + prepInicial)`, bilateral `preparacaoSeg * prepInicial`.
+- Testes: os de 1 exercício seguem válidos (ei==0, prep mantida); **novo** teste multi-exercício
+  (`widget_test`): 2 bilaterais → só 1 prep no treino, 2º exercício começa em EXECUÇÃO logo após o
+  descanso do 1º. Testes de duração single-exercício (280/285) intactos.
+
 ## 2026-10-08 — Coach: "Seu momento (14 dias)" = consistência + progressão recentes (v0.99.1)
 
 Refinamento do pedido (v0.99.0): a consistência "do mês" tinha o MESMO vício de janela curta no
