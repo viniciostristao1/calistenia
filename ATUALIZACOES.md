@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-08 — v0.99.1 (Coach: "Seu momento (14 dias)" = consistência + progressão recentes):**
+  - A consistência passou de "do mês" para **últimos 14 dias** (janela rolante) — representa o **seu momento / desempenho atual** e não fica fraca nos primeiros dias do mês.
+  - Agrupada com o **"Em alta (14 dias)"** sob o título **"Seu momento (14 dias)"** — consistência + progressão recentes juntas.
 - **2026-10-08 — v0.99.0 (Coach: consistência do mês no lugar do "ranking"; aba renomeada):**
   - A sub-aba **"Resumo" virou "Coach"**.
   - Saiu o "melhor semana/ritmo do ano" (soava falso — no começo da semana quase sempre ficava em 1º). No lugar entrou **"Consistência do mês"**: a % dos treinos **agendados do mês** (do dia 1 até hoje) que você concluiu — com o número (ex.: *"85% · 11 de 13 treinos"*). Métrica honesta de aderência.

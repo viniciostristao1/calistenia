@@ -1298,33 +1298,47 @@ class _ResumoView extends ConsumerWidget {
         _PlacarCompacto(r: r),
         const SizedBox(height: 14),
         _Sparkline8(valores: r.completosPorSemana),
-        if (r.temAlta || r.temProjecao || r.temConsistencia) ...[
-          const SizedBox(height: 12),
+        // "Seu momento (14 dias)": combina CONSISTÊNCIA + PROGRESSÃO recentes =
+        // desempenho atual (janela rolante, evita "poucos dias" no começo do mês).
+        if (r.temConsistencia || r.temAlta) ...[
+          const SizedBox(height: 16),
+          Text(
+            'Seu momento (14 dias)',
+            style: TextStyle(
+              color: AppColors.dim,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: .3,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (r.temConsistencia)
+            _MiniResumoCard(
+              emoji: '📅',
+              titulo: 'Consistência (14 dias)',
+              texto:
+                  '${r.consistenciaPct}% · ${r.consistenciaFeitos} de ${r.consistenciaTotal} treinos',
+              cor: r.consistenciaPct >= 80
+                  ? AppColors.prep
+                  : (r.consistenciaPct >= 50 ? AppColors.estrela : null),
+            ),
           if (r.temAlta)
             _MiniResumoCard(
               emoji: '🔼',
-              titulo: 'Em alta · últimos 14 dias',
+              titulo: 'Em alta (14 dias)',
               texto:
                   '${r.altaNome} · ${r.altaDe} → ${r.altaPara} reps (+${r.altaPct}%)',
               cor: AppColors.prep,
             ),
-          if (r.temProjecao)
-            _MiniResumoCard(
-              emoji: '🎯',
-              titulo: 'No seu ritmo',
-              texto:
-                  '${r.projRotulo} em ~${r.projDias} ${r.projDias == 1 ? 'dia' : 'dias'}',
-            ),
-          if (r.temConsistencia)
-            _MiniResumoCard(
-              emoji: '📅',
-              titulo: 'Consistência do mês',
-              texto:
-                  '${r.consistenciaMesPct}% · ${r.consistenciaMesFeitos} de ${r.consistenciaMesTotal} treinos',
-              cor: r.consistenciaMesPct >= 80
-                  ? AppColors.prep
-                  : (r.consistenciaMesPct >= 50 ? AppColors.estrela : null),
-            ),
+        ],
+        if (r.temProjecao) ...[
+          const SizedBox(height: 12),
+          _MiniResumoCard(
+            emoji: '🎯',
+            titulo: 'No seu ritmo',
+            texto:
+                '${r.projRotulo} em ~${r.projDias} ${r.projDias == 1 ? 'dia' : 'dias'}',
+          ),
         ],
         if (r.recordesRecentes.isNotEmpty) ...[
           const SizedBox(height: 16),

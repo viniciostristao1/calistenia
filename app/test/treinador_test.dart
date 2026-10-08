@@ -226,9 +226,10 @@ void main() {
     expect(res.projRotulo, isNotEmpty);
   });
 
-  test('consistência do mês: % dos treinos agendados do mês já feitos', () {
-    // Treino só seg (0) e qua (2). hoje = qua 17/06. Agendados em junho até hoje:
-    // seg 1/8/15 + qua 3/10/17 = 6. Concluídos: qua 17 (d0), seg 15 (d2), qua 10 (d7) = 3.
+  test('consistência (14 dias): % dos agendados da janela já feitos', () {
+    // Treino seg(0)/qua(2). hoje = qua 17/06 → janela 04/06..17/06.
+    // Agendados na janela: seg 8/15 + qua 10/17 = 4. Feitos: qua17 (d0), seg15 (d2),
+    // qua10 (d7) = 3 → 75%. (seg 1 e qua 3 ficam FORA da janela de 14 dias.)
     final treino = Treino(
       nome: 'MW',
       dias: const [0, 2],
@@ -238,9 +239,9 @@ void main() {
     final res = montarResumo(cs, [
       treino,
     ], const [], cs.map((e) => e.data).toList(), hoje: hoje);
-    expect(res.consistenciaMesTotal, 6);
-    expect(res.consistenciaMesFeitos, 3);
-    expect(res.consistenciaMesPct, 50);
+    expect(res.consistenciaTotal, 4);
+    expect(res.consistenciaFeitos, 3);
+    expect(res.consistenciaPct, 75);
     expect(res.temConsistencia, isTrue);
   });
 

@@ -5,6 +5,21 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-08 — Coach: "Seu momento (14 dias)" = consistência + progressão recentes (v0.99.1)
+
+Refinamento do pedido (v0.99.0): a consistência "do mês" tinha o MESMO vício de janela curta no
+começo (poucos dias). O usuário quer **últimos 14 dias** (rolante) = "seu momento / desempenho
+atual", e que **combine consistência + progressão** (a de 14 dias já existente, o "em alta").
+- `montarResumo`: janela da consistência mudou de `DateTime(ano,mês,1)→hoje` para **rolante**
+  `inicio14 = hj - 13 dias` (14 dias incl. hoje). Campos renomeados `consistenciaMes*` → `consistencia*`.
+- UI (`_ResumoView`): novo título **"Seu momento (14 dias)"** agrupando **Consistência (14 dias)** +
+  **Em alta (14 dias)** (progressão). Projeção ("No seu ritmo") ficou num bloco separado abaixo.
+- Teste atualizado: treino seg/qua, janela 04–17/06 → 4 agendados, 3 feitos = **75%** (seg 1 e qua 3
+  caem fora da janela).
+- **Lição (reforço de v0.99.0):** métrica de "forma/momentum" deve usar **janela rolante** (não
+  calendário mês/semana) p/ não distorcer no início do período; e ganha significado quando une
+  aderência (consistência) + evolução (progressão) no MESMO horizonte (14d aqui).
+
 ## 2026-10-08 — Coach: consistência do mês substitui o "ranking"; aba renomeada (v0.99.0)
 
 Feedback do usuário sobre o "Resumo inteligente" (v0.97.x): o **"melhor ritmo/semana do ano até

@@ -47,10 +47,10 @@ class ResumoSemana {
   final int projDias; // 0 = sem projeção
   final String projRotulo; // ex.: "Medalha de Ouro"
   final double projPorSemana; // ritmo usado (dias concluídos/semana)
-  // ── CONSISTÊNCIA DO MÊS (% dos treinos agendados do mês já feitos) ──
-  final int consistenciaMesPct; // 0..100
-  final int consistenciaMesFeitos;
-  final int consistenciaMesTotal; // treinos agendados do mês, do dia 1 até hoje
+  // ── "SEU MOMENTO": CONSISTÊNCIA dos últimos 14 dias (% dos agendados feitos) ──
+  final int consistenciaPct; // 0..100 (janela rolante de 14 dias)
+  final int consistenciaFeitos;
+  final int consistenciaTotal; // treinos agendados nos últimos 14 dias
   // ── MICRO-GRÁFICO: completos por semana, 8 semanas (antiga→recente) ──
   final List<int> completosPorSemana;
   // ── FRASE-RESUMO em linguagem natural (voz do Treinador) ──
@@ -72,9 +72,9 @@ class ResumoSemana {
     this.projDias = 0,
     this.projRotulo = '',
     this.projPorSemana = 0,
-    this.consistenciaMesPct = 0,
-    this.consistenciaMesFeitos = 0,
-    this.consistenciaMesTotal = 0,
+    this.consistenciaPct = 0,
+    this.consistenciaFeitos = 0,
+    this.consistenciaTotal = 0,
     this.completosPorSemana = const [],
     this.frase = '',
   });
@@ -88,7 +88,7 @@ class ResumoSemana {
   int get altaPct =>
       temAlta ? (((altaPara - altaDe) / altaDe) * 100).round() : 0;
   bool get temProjecao => projDias > 0 && projRotulo.isNotEmpty;
-  bool get temConsistencia => consistenciaMesTotal > 0;
+  bool get temConsistencia => consistenciaTotal > 0;
 }
 
 DateTime _d(DateTime x) => DateTime(x.year, x.month, x.day);
@@ -477,23 +477,25 @@ ResumoSemana montarResumo(
     }
   }
 
-  // ─── CONSISTÊNCIA DO MÊS: % dos treinos AGENDADOS do mês (dia 1 → hoje) feitos ───
-  // (concluído OU coberto por escudo). Métrica honesta de aderência — ao contrário
-  // de um "ranking da semana", não fica trivialmente em 1º no começo da semana.
-  final inicioMes = DateTime(hj.year, hj.month, 1);
+  // ─── "SEU MOMENTO": CONSISTÊNCIA dos ÚLTIMOS 14 DIAS (janela rolante) ───
+  // % dos treinos AGENDADOS nos últimos 14 dias que foram feitos (concluído OU
+  // coberto por escudo). Janela recente e sempre significativa (evita "poucos dias"
+  // no começo do mês) → desempenho ATUAL; combina com a progressão de 14 dias ("em
+  // alta"). Ao contrário de um "ranking da semana", não fica trivialmente em 1º.
+  final inicio14 = hj.subtract(const Duration(days: 13)); // 14 dias incl. hoje
   final escudoSet = diasEscudo.map(_d).toSet();
-  var consistenciaMesTotal = 0;
-  var consistenciaMesFeitos = 0;
-  for (var d = inicioMes; !d.isAfter(hj); d = d.add(const Duration(days: 1))) {
+  var consistenciaTotal = 0;
+  var consistenciaFeitos = 0;
+  for (var d = inicio14; !d.isAfter(hj); d = d.add(const Duration(days: 1))) {
     if (!agendados.contains(d.weekday - 1)) continue;
-    consistenciaMesTotal++;
+    consistenciaTotal++;
     final feito =
         escudoSet.contains(d) ||
         concs.any((c) => _d(c.data) == d && c.completo);
-    if (feito) consistenciaMesFeitos++;
+    if (feito) consistenciaFeitos++;
   }
-  final consistenciaMesPct = consistenciaMesTotal > 0
-      ? (consistenciaMesFeitos * 100 / consistenciaMesTotal).round()
+  final consistenciaPct = consistenciaTotal > 0
+      ? (consistenciaFeitos * 100 / consistenciaTotal).round()
       : 0;
 
   // ─── MICRO-GRÁFICO: completos por semana (8 semanas, antiga→recente) ───
@@ -540,9 +542,9 @@ ResumoSemana montarResumo(
     projDias: projDias,
     projRotulo: projRotulo,
     projPorSemana: porSemanaRitmo,
-    consistenciaMesPct: consistenciaMesPct,
-    consistenciaMesFeitos: consistenciaMesFeitos,
-    consistenciaMesTotal: consistenciaMesTotal,
+    consistenciaPct: consistenciaPct,
+    consistenciaFeitos: consistenciaFeitos,
+    consistenciaTotal: consistenciaTotal,
     completosPorSemana: completosPorSemana,
     frase: frase,
   );
