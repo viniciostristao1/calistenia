@@ -226,18 +226,22 @@ void main() {
     expect(res.projRotulo, isNotEmpty);
   });
 
-  test('ranking pessoal: melhor semana do ano fica em 1º', () {
-    final cs = [
-      c(d(0)), c(d(1)), c(d(2)), // semana atual: 3
-      c(d(7)), c(d(8)), // semana passada: 2
-      c(d(14)), // 2 semanas atrás: 1
-    ];
+  test('consistência do mês: % dos treinos agendados do mês já feitos', () {
+    // Treino só seg (0) e qua (2). hoje = qua 17/06. Agendados em junho até hoje:
+    // seg 1/8/15 + qua 3/10/17 = 6. Concluídos: qua 17 (d0), seg 15 (d2), qua 10 (d7) = 3.
+    final treino = Treino(
+      nome: 'MW',
+      dias: const [0, 2],
+      exercicios: [Exercicio(nome: 'flexao')],
+    );
+    final cs = [c(d(0)), c(d(2)), c(d(7))];
     final res = montarResumo(cs, [
-      _t(['flexao']),
+      treino,
     ], const [], cs.map((e) => e.data).toList(), hoje: hoje);
-    expect(res.temRanking, isTrue);
-    expect(res.rankingPos, 1);
-    expect(res.rankingTotal, 3);
+    expect(res.consistenciaMesTotal, 6);
+    expect(res.consistenciaMesFeitos, 3);
+    expect(res.consistenciaMesPct, 50);
+    expect(res.temConsistencia, isTrue);
   });
 
   test('delta JUSTO: compara no MESMO ponto (parcial x parcial), não -2', () {

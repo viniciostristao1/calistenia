@@ -112,7 +112,7 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
               child: SubAbas(
-                abas: const ['Evolução', 'Rating', 'Cards', 'Resumo'],
+                abas: const ['Evolução', 'Rating', 'Cards', 'Coach'],
                 selecionado: vista,
                 onSelect: (i) => setState(() {
                   _vista = i;
@@ -1298,7 +1298,7 @@ class _ResumoView extends ConsumerWidget {
         _PlacarCompacto(r: r),
         const SizedBox(height: 14),
         _Sparkline8(valores: r.completosPorSemana),
-        if (r.temAlta || r.temProjecao || r.temRanking) ...[
+        if (r.temAlta || r.temProjecao || r.temConsistencia) ...[
           const SizedBox(height: 12),
           if (r.temAlta)
             _MiniResumoCard(
@@ -1315,14 +1315,15 @@ class _ResumoView extends ConsumerWidget {
               texto:
                   '${r.projRotulo} em ~${r.projDias} ${r.projDias == 1 ? 'dia' : 'dias'}',
             ),
-          if (r.temRanking)
+          if (r.temConsistencia)
             _MiniResumoCard(
-              emoji: '🏅',
-              titulo: 'Ranking do ano',
-              texto: r.rankingPos == 1
-                  ? 'Melhor semana do ano até agora!'
-                  : '${r.rankingPos}ª melhor semana do ano (até agora)',
-              cor: AppColors.estrela,
+              emoji: '📅',
+              titulo: 'Consistência do mês',
+              texto:
+                  '${r.consistenciaMesPct}% · ${r.consistenciaMesFeitos} de ${r.consistenciaMesTotal} treinos',
+              cor: r.consistenciaMesPct >= 80
+                  ? AppColors.prep
+                  : (r.consistenciaMesPct >= 50 ? AppColors.estrela : null),
             ),
         ],
         if (r.recordesRecentes.isNotEmpty) ...[

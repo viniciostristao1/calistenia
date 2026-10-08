@@ -47,9 +47,10 @@ class ResumoSemana {
   final int projDias; // 0 = sem projeção
   final String projRotulo; // ex.: "Medalha de Ouro"
   final double projPorSemana; // ritmo usado (dias concluídos/semana)
-  // ── RANKING PESSOAL (posição da semana atual no último ano) ──
-  final int rankingPos; // 0 = sem ranking; 1 = melhor semana do ano
-  final int rankingTotal; // nº de semanas com atividade no período
+  // ── CONSISTÊNCIA DO MÊS (% dos treinos agendados do mês já feitos) ──
+  final int consistenciaMesPct; // 0..100
+  final int consistenciaMesFeitos;
+  final int consistenciaMesTotal; // treinos agendados do mês, do dia 1 até hoje
   // ── MICRO-GRÁFICO: completos por semana, 8 semanas (antiga→recente) ──
   final List<int> completosPorSemana;
   // ── FRASE-RESUMO em linguagem natural (voz do Treinador) ──
@@ -71,8 +72,9 @@ class ResumoSemana {
     this.projDias = 0,
     this.projRotulo = '',
     this.projPorSemana = 0,
-    this.rankingPos = 0,
-    this.rankingTotal = 0,
+    this.consistenciaMesPct = 0,
+    this.consistenciaMesFeitos = 0,
+    this.consistenciaMesTotal = 0,
     this.completosPorSemana = const [],
     this.frase = '',
   });
@@ -86,9 +88,7 @@ class ResumoSemana {
   int get altaPct =>
       temAlta ? (((altaPara - altaDe) / altaDe) * 100).round() : 0;
   bool get temProjecao => projDias > 0 && projRotulo.isNotEmpty;
-  // Ranking só é exibido quando é POSITIVO (pódio) — não serve p/ "envergonhar"
-  // uma semana fraca; é um destaque de reforço.
-  bool get temRanking => rankingPos >= 1 && rankingPos <= 3 && rankingTotal >= 3;
+  bool get temConsistencia => consistenciaMesTotal > 0;
 }
 
 DateTime _d(DateTime x) => DateTime(x.year, x.month, x.day);
@@ -477,27 +477,24 @@ ResumoSemana montarResumo(
     }
   }
 
-  // ─── RANKING PESSOAL: posição da semana atual entre as do último ano ───
-  final inicioAno = hj.subtract(const Duration(days: 364));
-  final completosPorSemanaMap = <DateTime, int>{};
-  for (final c in concs) {
-    if (!c.completo) continue;
-    final dd = _d(c.data);
-    if (dd.isBefore(inicioAno) || dd.isAfter(hj)) continue;
-    // mesmo PONTO da semana: conta cada semana só até o dia-da-semana de hoje
-    // (ex.: hoje quinta → só seg..qui de cada semana) → ranking justo mesmo
-    // com a semana atual ainda em andamento.
-    if (dd.weekday > diaDaSemana) continue;
-    final ini = dd.subtract(Duration(days: dd.weekday - 1));
-    completosPorSemanaMap[ini] = (completosPorSemanaMap[ini] ?? 0) + 1;
+  // ─── CONSISTÊNCIA DO MÊS: % dos treinos AGENDADOS do mês (dia 1 → hoje) feitos ───
+  // (concluído OU coberto por escudo). Métrica honesta de aderência — ao contrário
+  // de um "ranking da semana", não fica trivialmente em 1º no começo da semana.
+  final inicioMes = DateTime(hj.year, hj.month, 1);
+  final escudoSet = diasEscudo.map(_d).toSet();
+  var consistenciaMesTotal = 0;
+  var consistenciaMesFeitos = 0;
+  for (var d = inicioMes; !d.isAfter(hj); d = d.add(const Duration(days: 1))) {
+    if (!agendados.contains(d.weekday - 1)) continue;
+    consistenciaMesTotal++;
+    final feito =
+        escudoSet.contains(d) ||
+        concs.any((c) => _d(c.data) == d && c.completo);
+    if (feito) consistenciaMesFeitos++;
   }
-  final atualNaSemana = completosPorSemanaMap[inicioSemana] ?? 0;
-  final rankingTotal = completosPorSemanaMap.length;
-  var rankingPos = 0;
-  if (atualNaSemana > 0) {
-    rankingPos = 1 +
-        completosPorSemanaMap.values.where((v) => v > atualNaSemana).length;
-  }
+  final consistenciaMesPct = consistenciaMesTotal > 0
+      ? (consistenciaMesFeitos * 100 / consistenciaMesTotal).round()
+      : 0;
 
   // ─── MICRO-GRÁFICO: completos por semana (8 semanas, antiga→recente) ───
   final completosPorSemana = <int>[
@@ -521,7 +518,6 @@ ResumoSemana montarResumo(
     altaDe: altaDe,
     altaPara: altaPara,
     recordesRecentes: recordesRecentes,
-    rankingPos: rankingPos,
     hojeAgendadoEmAberto: agendados.contains(hojeWd) && !hojeCompleto,
     piorWd: piorWd,
     melhorWd: melhorWd,
@@ -544,8 +540,9 @@ ResumoSemana montarResumo(
     projDias: projDias,
     projRotulo: projRotulo,
     projPorSemana: porSemanaRitmo,
-    rankingPos: rankingPos,
-    rankingTotal: rankingTotal,
+    consistenciaMesPct: consistenciaMesPct,
+    consistenciaMesFeitos: consistenciaMesFeitos,
+    consistenciaMesTotal: consistenciaMesTotal,
     completosPorSemana: completosPorSemana,
     frase: frase,
   );
@@ -562,7 +559,6 @@ String _montarFrase({
   required int altaDe,
   required int altaPara,
   required List<String> recordesRecentes,
-  required int rankingPos,
   required bool hojeAgendadoEmAberto,
   required int piorWd,
   required int melhorWd,
@@ -595,11 +591,6 @@ String _montarFrase({
   } else if (recordesRecentes.isNotEmpty) {
     final nome = recordesRecentes.first.split(' · ').first;
     b.write('Novo recorde recente em $nome. ');
-  }
-  if (rankingPos == 1) {
-    b.write('Seu melhor ritmo do ano até aqui! ');
-  } else if (rankingPos == 2) {
-    b.write('2º melhor ritmo do ano até aqui. ');
   }
   if (piorWd >= 0) {
     b.write('Ponto a cuidar: as ${_diasPlural[piorWd]}.');

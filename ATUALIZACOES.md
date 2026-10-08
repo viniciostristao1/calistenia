@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-08 — v0.99.0 (Coach: consistência do mês no lugar do "ranking"; aba renomeada):**
+  - A sub-aba **"Resumo" virou "Coach"**.
+  - Saiu o "melhor semana/ritmo do ano" (soava falso — no começo da semana quase sempre ficava em 1º). No lugar entrou **"Consistência do mês"**: a % dos treinos **agendados do mês** (do dia 1 até hoje) que você concluiu — com o número (ex.: *"85% · 11 de 13 treinos"*). Métrica honesta de aderência.
 - **2026-10-08 — v0.98.0 (unilateral: preparação na troca de lado, mas execução direta após o descanso):**
   - Em exercícios de **dois lados**, agora há **preparação ao trocar do lado 1 para o lado 2** (tempo para se posicionar).
   - **Depois do descanso** (início da próxima série) o cronômetro vai **direto para a execução** — sem preparação. (A preparação do começo do exercício continua.) A previsão de duração do treino acompanha.

@@ -5,6 +5,23 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-08 — Coach: consistência do mês substitui o "ranking"; aba renomeada (v0.99.0)
+
+Feedback do usuário sobre o "Resumo inteligente" (v0.97.x): o **"melhor ritmo/semana do ano até
+aqui" soava FALSO** — com ranking no mesmo ponto da semana, no começo da semana quase toda semana
+empata e fica trivialmente em 1º (segunda treinada = "melhor do ano"). Lição: **ranking de janela
+muito curta/parcial é hollow** — vira elogio vazio. Substituído por métrica de aderência real.
+- **Removido:** `rankingPos`/`rankingTotal`/`temRanking` + bloco de cálculo (mapa por semana no ano)
+  + cartão "Ranking do ano" + 2 linhas da frase. Nada em `lib/` referencia mais ranking.
+- **Adicionado — consistência do mês:** `consistenciaMesPct/Feitos/Total` em `ResumoSemana`;
+  em `montarResumo`, varre do **dia 1 do mês até hoje** os dias AGENDADOS (`agendados` = `diasAgendados`),
+  conta quantos foram concluídos (conclusão `completo` OU coberto por escudo) → %. Cartão
+  "Consistência do mês" (`📅`, verde ≥80% / âmbar ≥50%). Getter `temConsistencia = total > 0`.
+- **Aba renomeada:** `['Evolução','Rating','Cards','Resumo']` → `[...,'Coach']` (`progressao_screen`).
+  O card da voz segue "Treinador"; o header interno segue "Resumo da semana".
+- Teste de ranking → teste de consistência (`treinador_test.dart`: treino seg/qua, 6 agendados no mês,
+  3 feitos → 50%).
+
 ## 2026-10-08 — Unilateral: prep na troca de lado, mas exec direta após descanso (v0.98.0)
 
 Pedido do usuário: em exercício de dois lados, QUERER preparação **na troca de lado**, mas **após o
