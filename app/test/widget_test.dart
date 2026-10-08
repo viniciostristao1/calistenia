@@ -208,7 +208,7 @@ void main() {
     expect(e.execucaoSeg, 30);
   });
 
-  test('unilateral: 1 prep no começo; troca de lado SEM preparação', () {
+  test('unilateral: prep no começo + na troca de lado; exec direta após descanso', () {
     final t = Treino(
       nome: 'Teste',
       exercicios: [
@@ -224,10 +224,12 @@ void main() {
       ],
     );
     final fases = montarLinhaDoTempo(t);
-    // 1 prep + [4 exec + 1 desc]×2 séries - 1 desc final = 1 + 8 + 1 = 10.
-    expect(fases.length, 10);
-    // Preparação só UMA vez (no começo do exercício).
-    expect(fases.where((f) => f.tipo == FaseTipo.preparacao).length, 1);
+    // s1: prep + 2exec(l1) + prep(troca) + 2exec(l2) + desc
+    // s2: 2exec(l1) + prep(troca) + 2exec(l2) + desc(removido no fim)
+    // = 3 prep + 8 exec + 1 desc = 12.
+    expect(fases.length, 12);
+    // Preparação = 1 (começo) + 1 por série (troca de lado) = series + 1 = 3.
+    expect(fases.where((f) => f.tipo == FaseTipo.preparacao).length, 3);
     expect(fases.where((f) => f.tipo == FaseTipo.execucao).length, 8);
     expect(fases.where((f) => f.tipo == FaseTipo.descanso).length, 1);
     // Começa na prep (lado 1), depois execução lado 1.
@@ -235,11 +237,15 @@ void main() {
     expect(fases[0].lado, 1);
     expect(fases[1].tipo, FaseTipo.execucao);
     expect(fases[1].lado, 1);
-    // O lado 2 aparece como EXECUÇÃO (não preparação).
+    // O lado 2 aparece PRIMEIRO como PREPARAÇÃO (a prep da troca de lado).
     final lado2 = fases.firstWhere((f) => f.lado == 2);
-    expect(lado2.tipo, FaseTipo.execucao);
-    // Duração: prep 10 (1×) + exec 3×2×2×2 + descanso 60×2 = 10 + 24 + 120 = 154.
-    expect(t.duracaoTotalSeg, 154);
+    expect(lado2.tipo, FaseTipo.preparacao);
+    // Após o DESCANSO (fim da série 1), começa direto na execução do lado 1.
+    final idxDesc = fases.indexWhere((f) => f.tipo == FaseTipo.descanso);
+    expect(fases[idxDesc + 1].tipo, FaseTipo.execucao);
+    expect(fases[idxDesc + 1].lado, 1);
+    // Duração: prep 10 × (2+1) + exec 3×2×2×2 + descanso 60×2 = 30 + 24 + 120 = 174.
+    expect(t.duracaoTotalSeg, 174);
   });
 
   test('unilateral: JSON round-trip preserva a flag', () {

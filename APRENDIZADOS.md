@@ -5,6 +5,30 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-08 — Unilateral: prep na troca de lado, mas exec direta após descanso (v0.98.0)
+
+Pedido do usuário: em exercício de dois lados, QUERER preparação **na troca de lado**, mas **após o
+descanso ir direto para a execução** (sem prep). Inverte parcialmente a v0.94.0 (que tirou toda prep
+da troca de lado). Regra nova em `montarLinhaDoTempoDe` (`models/fase.dart`):
+```
+for s in 1..series:
+  if s == 1: addPrep(s, 1)   // prep SÓ no começo do exercício
+  addExec(s, 1)
+  addPrep(s, 2)              // prep na TROCA de lado (antes do lado 2), toda série
+  addExec(s, 2)
+  addDescanso(s)             // após o descanso, próxima série começa em addExec(lado1)
+```
+- Preparações no unilateral = **series + 1** (1 no começo + 1 por série na troca). `preparacaoSeg<=0`
+  → `addPrep` pula (sem fase) → 0, consistente.
+- `treino.duracaoTotalSeg`: unilateral agora soma `preparacaoSeg * (series + 1)` (era 1×). O player
+  (`player_screen`) já deriva a duração da lista de fases → não precisou mexer.
+- "A seguir" durante o lado 1 agora aponta a PREP (lado 2) — correto (há prep vindo); `descricaoEtapa`
+  intacto.
+- Testes atualizados: `player_logic_test.dart` (prox após lado1 = preparacao; 3 preps; exec direta pós
+  descanso) e `widget_test.dart` (12 fases, 3 preps, duração 174, lado2 1º aparece como prep).
+- ⚠️ A v0.94.0 tinha o comportamento oposto ("troca de lado SEM prep"); isto o substitui — não
+  reintroduzir a versão sem-prep sem rever este pedido.
+
 ## 2026-10-08 — Resumo justo: comparação no mesmo ponto da semana + recordes 14d (v0.97.1)
 
 Feedback do usuário sobre a v0.97.0: comparar a semana ATUAL (parcial) contra a semana passada

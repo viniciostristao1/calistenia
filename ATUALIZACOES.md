@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-08 — v0.98.0 (unilateral: preparação na troca de lado, mas execução direta após o descanso):**
+  - Em exercícios de **dois lados**, agora há **preparação ao trocar do lado 1 para o lado 2** (tempo para se posicionar).
+  - **Depois do descanso** (início da próxima série) o cronômetro vai **direto para a execução** — sem preparação. (A preparação do começo do exercício continua.) A previsão de duração do treino acompanha.
 - **2026-10-08 — v0.97.1 (Resumo mais justo: comparação no mesmo ponto da semana + recordes em 14 dias):**
   - **Comparações justas:** o "vs. semana passada" (no placar e na frase do Treinador) e o **ranking** agora comparam **no mesmo ponto da semana** — se hoje é quinta, compara com **até a quinta** da semana passada (e não a sua semana parcial contra a semana cheia). Acaba o "−2" injusto no meio da semana.
   - **Ranking só quando é bom:** o cartão de ranking só aparece quando você está no **pódio** do ano (1º/2º/3º no mesmo ritmo) — não mostra mais "9ª de 10".

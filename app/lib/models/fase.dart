@@ -45,10 +45,13 @@ List<Fase> montarLinhaDoTempo(Treino t) => montarLinhaDoTempoDe(t.exercicios);
 
 /// Expande uma lista de exercícios na sequência de fases:
 ///   bilateral:  preparação (1×) -> [ execução×reps -> descanso ] × séries.
-///   unilateral: preparação (1×, no COMEÇO do exercício) ->
-///               [ exec×reps(lado 1) -> exec×reps(lado 2) -> descanso ] × séries.
-/// **A preparação só acontece entre exercícios DIFERENTES** (1× no início de cada
-/// exercício) — NÃO na troca de lado nem entre séries. Não há descanso entre
+///   unilateral: preparação (começo) ->
+///               [ exec×reps(lado 1) -> PREPARAÇÃO -> exec×reps(lado 2) -> descanso ] × séries,
+///               mas SEM preparação no início das séries seguintes (após o descanso
+///               começa direto na execução do lado 1).
+/// **Preparação (bilateral):** 1× no início de cada exercício. **Preparação
+/// (unilateral):** 1× no começo do exercício + 1× na TROCA DE LADO em cada série;
+/// depois do DESCANSO vai direto para a execução (sem prep). Não há descanso entre
 /// repetições (elas são seguidas); o descanso é entre séries (e, no unilateral, ao
 /// fim dos dois lados). Tempos em 0 são pulados, e um descanso no fim absoluto é
 /// removido (não faz sentido descansar quando acabou).
@@ -117,12 +120,14 @@ List<Fase> montarLinhaDoTempoDe(List<Exercicio> exercicios) {
     }
 
     if (e.unilateral) {
-      // Um lado por vez: UMA preparação no começo do exercício; depois cada série
-      // faz o lado 1 e emenda no lado 2 (SEM preparação na troca de lado nem
-      // entre séries), com um só descanso ao fim da série.
-      addPrep(1, 1);
+      // Um lado por vez. Preparação em DOIS momentos: (1) no começo do exercício
+      // (1ª série, lado 1) e (2) na TROCA DE LADO (antes do lado 2), em toda série.
+      // Depois do DESCANSO NÃO há preparação — a próxima série começa direto na
+      // execução do lado 1. Um só descanso ao fim de cada série (após os 2 lados).
       for (var s = 1; s <= series; s++) {
+        if (s == 1) addPrep(s, 1); // preparação inicial do exercício
         addExec(s, 1);
+        addPrep(s, 2); // preparação na troca de lado (antes do lado 2)
         addExec(s, 2);
         addDescanso(s);
       }

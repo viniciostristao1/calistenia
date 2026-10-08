@@ -26,9 +26,9 @@ class Treino {
       final series = e.series < 1 ? 1 : e.series;
       final reps = e.repeticoes < 1 ? 1 : e.repeticoes;
       if (e.unilateral) {
-        // UMA preparação no começo do exercício (sem prep na troca de lado nem
-        // entre séries); execução dos dois lados em cada série.
-        total += e.preparacaoSeg;
+        // Preparação: 1 no começo + 1 na TROCA DE LADO em cada série (após o
+        // descanso começa direto na execução) = (series + 1) preparações.
+        total += e.preparacaoSeg * (series + 1);
         total += e.execucaoSeg * reps * 2 * series;
       } else {
         total += e.preparacaoSeg;
