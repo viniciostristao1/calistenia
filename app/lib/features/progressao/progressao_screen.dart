@@ -1491,7 +1491,7 @@ class _FraseTreinador extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.45)),
+        border: Border.all(color: context.accent.withValues(alpha: 0.45)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1500,10 +1500,10 @@ class _FraseTreinador extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.16),
+              color: context.accent.withValues(alpha: 0.16),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.auto_awesome, size: 18, color: AppColors.accent),
+            child: Icon(Icons.auto_awesome, size: 18, color: context.accent),
           ),
           const SizedBox(width: 11),
           Expanded(
@@ -1517,7 +1517,7 @@ class _FraseTreinador extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.accent,
+                        color: context.accent,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -1592,7 +1592,7 @@ class _Sparkline8 extends StatelessWidget {
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
                               color: i == valores.length - 1
-                                  ? AppColors.accent
+                                  ? context.accent
                                   : AppColors.dim,
                             ),
                           ),
@@ -1601,7 +1601,7 @@ class _Sparkline8 extends StatelessWidget {
                             height: (valores[i] / maxV * 26).clamp(3.0, 26.0),
                             decoration: BoxDecoration(
                               color: i == valores.length - 1
-                                  ? AppColors.accent
+                                  ? context.accent
                                   : AppColors.dim2,
                               borderRadius: BorderRadius.circular(3),
                             ),
