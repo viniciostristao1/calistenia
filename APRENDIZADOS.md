@@ -5,6 +5,28 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-08 — Rating: extrato das últimas pontuações (derivado, sem persistência) (v0.100.0)
+
+Pedido do usuário: no fim da aba Rating, um "extrato de tudo que pontuou" — "misto", guardando só as
+**últimas 10 pontuações**. Decisão: **derivar dos dados** (sem guardar histórico) — mais simples e
+honesto; mostra o que PONTUOU (positivos). Quedas passivas ("−X por não treinar") exigiriam snapshot
+diário (ficou de fora; combinado com o usuário).
+- **Novo `util/extrato_rating.dart`** (puro, testável):
+  - `extratoRating(...)`: para cada dia com conclusão completa OU recorde (janela 60d), o valor é
+    quanto aquele dia somou à nota de HOJE — **mesma conta do `ratingDoDia`**: `ratingForma(dados ≤
+    dia).total − ratingForma(dados ≤ véspera).total`, com `hoje` FIXO (não mexer na janela, senão dá
+    "ganho fantasma"). Rotula "Recorde · <nome>" (PR de reps/peso naquele dia) ou "Treino concluído".
+    Insígnia (+10) e escudo (+20) entram como pontuações próprias. Ordena desc, corta em `max`.
+  - `ganhoSeTreinarHoje(...)`: `ratingForma(concs + conclusão sintética de hoje) − atual`. Dá positivo
+    porque concluir hoje tira "hoje" do neutro na consistência (`_consistencia` linha "k==0 && peso==0
+    → neutro") e soma na frequência. 0 se já concluiu hoje.
+- **UI** (`_rating()` em `progressao_screen`): seção "Últimas pontuações" (cartão com data DD/MM +
+  emoji + motivo + +pts verde) + cartão "Concluir o treino de hoje → +N" (só se >0).
+- Testes: `extrato_rating_test.dart` (treino>0, insígnia 10, escudo 20, recorde rotulado, cap 10,
+  ganhoHoje >0/0).
+- **Reaproveitamento-chave:** o app já tinha `ratingDoDia`/`recompensasDoDia` (ganho-do-dia) — o
+  extrato usa a MESMA decomposição, então o número bate com o que o app já mostra no fim do treino.
+
 ## 2026-10-08 — Preparação NUNCA depois de descanso (inclui troca de exercícios) (v0.99.2)
 
 Retorno do usuário: a regra "prep só na troca de lado, nunca após descanso" (v0.98.0) valia só

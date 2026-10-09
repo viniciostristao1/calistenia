@@ -16,6 +16,7 @@ import '../../services/progressao_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/cards_catalog.dart';
+import '../../util/extrato_rating.dart';
 import '../../util/format.dart';
 import '../../util/gamificacao.dart';
 import '../../util/treinador.dart';
@@ -183,6 +184,14 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
       diasInsignia: diasIns,
       diasEscudoGanho: diasEsc,
     );
+    final extrato = extratoRating(
+      concs,
+      treinos,
+      prog,
+      diasInsignia: diasIns,
+      diasEscudo: diasEsc,
+    );
+    final ganhoHoje = ganhoSeTreinarHoje(concs, treinos, prog);
     return KeyedSubtree(
       key: ValueKey(_animKey),
       child: ListView(
@@ -244,8 +253,142 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
             'passar do platô, bata recordes.',
             style: TextStyle(color: AppColors.dim, fontSize: 12),
           ),
+          const SizedBox(height: 22),
+          _ExtratoRating(itens: extrato, ganhoHoje: ganhoHoje),
         ],
       ),
+    );
+  }
+}
+
+/// Extrato do Rating: as últimas pontuações (eventos que somaram) + "o que dá pra
+/// ganhar hoje". Derivado dos dados — nada é guardado.
+class _ExtratoRating extends StatelessWidget {
+  const _ExtratoRating({required this.itens, required this.ganhoHoje});
+
+  final List<PontuacaoExtrato> itens;
+  final int ganhoHoje;
+
+  String _dm(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Últimas pontuações',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'De onde vieram seus últimos pontos (calculado dos seus dados; nada é guardado).',
+          style: TextStyle(color: AppColors.dim, fontSize: 12),
+        ),
+        const SizedBox(height: 10),
+        if (itens.isEmpty)
+          Text(
+            'Conclua treinos para ver suas pontuações aqui.',
+            style: TextStyle(color: AppColors.dim, fontSize: 13),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.line),
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < itens.length; i++) ...[
+                  if (i > 0) Divider(height: 1, color: AppColors.line),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 44,
+                          child: Text(
+                            _dm(itens[i].data),
+                            style: TextStyle(
+                              color: AppColors.dim,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          itens[i].emoji,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            itens[i].motivo,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '+${itens[i].pontos}',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.prep,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        if (ganhoHoje > 0) ...[
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: context.accent.withValues(alpha: 0.45)),
+            ),
+            child: Row(
+              children: [
+                const Text('🎯', style: TextStyle(fontSize: 15)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Concluir o treino de hoje',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.text,
+                    ),
+                  ),
+                ),
+                Text(
+                  '+$ganhoHoje',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w900,
+                    color: context.accent,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
