@@ -11,7 +11,7 @@ Quando o usuário pedir "aumenta/diminui/mais espaço/mais pra cima", **consulta
 | # | Elemento | Widget/local | Valor atual |
 |---|----------|--------------|-------------|
 | 1 | Barra topo (✕ + título) | `_barraTopo` | título fonte 15 |
-| 2 | Barra de progresso geral + rótulo + **relógio do treino** | `_progressoGeral` | barra `minHeight 6`; `Row`: rótulo "Exercício X/Y · Série S/T" (dim, 12, `Expanded`) à esquerda **+ à direita `⏱ mm:ss`** = tempo restante do TREINO TODO (`_restanteTreinoSeg`, mesma fonte dim 12, ícone `timer_outlined` size 13) |
+| 2 | Previsão de fim + barra de progresso geral + rótulo + **relógio do treino** | `_progressoGeral` (+ `_horaFimTreino`) | ACIMA da barra, à direita: `~HH:MM` (`access_time` size 13 + `fmtHora(agora + _restanteTreinoSeg)`, dim 12) + gap 6; barra `minHeight 6`; ABAIXO: `Row`: rótulo "Exercício X/Y · Série S/T" (dim, 12, `Expanded`) à esquerda **+ à direita `⏱ mm:ss`** = tempo restante do TREINO TODO (`_restanteTreinoSeg`, mesma fonte dim 12, ícone `timer_outlined` size 13) |
 | 3 | gap | `SizedBox` | 12 |
 | 4 | **Nome do exercício = TARJA** | `_tarjaNome`/`_tarja` | logo abaixo do progresso; largura total (inset h12), `surface2`, radius 12, padding h14/v8, **branco**, **fonte 34** (`_fonteTarja`) w800, MAIÚSCULO, centralizado; **auto-fit em UMA linha** (`FittedBox scaleDown` + `maxLines:1` — nomes longos encolhem, não quebram) |
 | 5 | **Contador de reps = TARJA amarela** | `_contadorReps`/`_tarja` | **colado no nome (sem gap)**, como placar; MESMA largura e MESMA **fonte 34**; `accentAmbar`/`onAccentAmbar`; só na execução (fora dela invisível via `Opacity 0`, mesma altura); reps CONCLUÍDAS (`f.rep-1`) |

@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-10 — v0.101.0 (horário de término no player + moedas legíveis no Madeira):**
+  - No player, acima da barra de progresso, um **mostrador `~HH:MM` com a previsão de término do treino** (mesmo tamanho do regressivo de baixo, à direita). Dinâmico: pausa empurra para frente, pular etapa antecipa.
+  - No tema **Madeira**, a pílula **"+$N moedas"** do fim do treino agora usa ouro escurecido (antes o amarelo sumia no fundo bege).
+
 - **2026-10-08 — v0.100.0 (Rating: extrato das últimas pontuações + "+N ao treinar hoje"):**
   - No fim da aba **Rating**, um **extrato das últimas 10 pontuações**: de onde vieram seus últimos pontos — *Treino concluído +N*, *Recorde · Flexão +N*, *Insígnia +10*, *Escudo +20* — em ordem do mais recente.
   - E um **"Concluir o treino de hoje → +N"** (calculado de verdade), pra você ver quanto ganha ao treinar.

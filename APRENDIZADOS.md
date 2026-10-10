@@ -5,6 +5,25 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-10 — Previsão de término no player + contraste das moedas no Madeira (v0.101.0)
+
+- **Mostrador `~HH:MM` acima da barra** (`_progressoGeral` em `player_screen.dart`): `Row`
+  alinhada à direita com `access_time size 13` + `fmtHora(DateTime.now() + restante)`, estilo
+  `dim 12` idêntico ao regressivo de baixo; `SizedBox 6` espelhando o gap inferior. Novo helper
+  `_horaFimTreino()` reutilizando `_restanteTreinoSeg()` (sem novo estado). Player já faz
+  `setState` a cada 100ms no `_tick`, então `DateTime.now()` se atualiza sozinho — sem precisar
+  do `relogioProvider`. Na pausa o tick para (tela congela) e ao retomar a previsão escorrega
+  corretamente. Anel/tarjas/controles intocados. `LAYOUT_CRONOMETRO.md` atualizado.
+- **Contraste das moedas no Madeira** (`_MoedasGanhasPill`): texto/borda usavam o amarelo fixo
+  `estrela #FFC93C`, que some no fundo bege `#D8C7AC`. Pílula agora sensível ao tema via
+  `AppColors.brilho == Brightness.light` → ouro escurecido `#8A5A00` (texto + borda) e fundo
+  `estrela 18%`; temas escuros mantêm o amarelo. Bege-claro no texto sobre bege seria ainda pior
+  (pedido inicial do usuário) — documentado na entrega. `MoedasBadge` e carteira dos Cards já
+  usam cores do tema (OK, fora do escopo).
+- `analyze` limpo, `flutter test` 108/108. Versão `0.101.0+156`.
+
+---
+
 ## 2026-10-08 — Rating: extrato das últimas pontuações (derivado, sem persistência) (v0.100.0)
 
 Pedido do usuário: no fim da aba Rating, um "extrato de tudo que pontuou" — "misto", guardando só as

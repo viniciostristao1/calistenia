@@ -686,6 +686,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Previsão de término do TREINO TODO (canto direito, acima da barra,
+          // espelhando o regressivo de baixo; mesma fonte dim 12).
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Icon(Icons.access_time, size: 13, color: AppColors.dim),
+              const SizedBox(width: 3),
+              Text('~${fmtHora(_horaFimTreino())}', style: estilo),
+            ],
+          ),
+          const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
@@ -709,6 +720,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       ),
     );
   }
+
+  /// Horário previsto do FIM do treino: agora + o que falta (dinâmico — anda
+  /// para frente se pausar ou voltar etapas, igual ao "~hora" do card da home).
+  DateTime _horaFimTreino() =>
+      DateTime.now().add(Duration(seconds: _restanteTreinoSeg()));
 
   /// Segundos restantes até o FIM do treino: o que falta da fase atual + a soma
   /// das fases seguintes. Atualiza a cada tick (contagem regressiva).
@@ -1328,12 +1344,16 @@ class _MoedasGanhasPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // No tema claro (Madeira, fundo bege), o amarelo fixo da estrela some;
+    // usa um ouro escurecido para manter o contraste sem perder a identidade.
+    final claro = AppColors.brilho == Brightness.light;
+    final ouro = claro ? const Color(0xFF8A5A00) : AppColors.estrela;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.estrela.withValues(alpha: 0.14),
+        color: AppColors.estrela.withValues(alpha: claro ? 0.18 : 0.14),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: AppColors.estrela),
+        border: Border.all(color: ouro),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1342,10 +1362,10 @@ class _MoedasGanhasPill extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             '+\$$valor',
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: 15,
-              color: AppColors.estrela,
+              color: ouro,
             ),
           ),
           const SizedBox(width: 6),
