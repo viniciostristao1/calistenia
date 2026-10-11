@@ -144,3 +144,13 @@ class GrupoProgressao {
 
   DateTime get ultimaData => registros.last.data;
 }
+
+/// É um novo RECORDE fazer [reps] repetições com [peso] kg, dados os [anteriores]
+/// registros do MESMO exercício? Critério "não dominado": NÃO é recorde apenas
+/// quando algum registro anterior tem, AO MESMO TEMPO, reps ≥ [reps] E peso ≥
+/// [peso]. Assim, progredir em repetições numa carga maior é reconhecido — ex.:
+/// 21×10kg supera 15×10kg mesmo tendo-se feito 27 reps SEM carga (o antigo código
+/// comparava reps e peso separadamente e de forma global, e travava a progressão).
+/// Lista vazia = primeiro registro, sempre conta.
+bool ehNovoRecorde(List<RegistroProgressao> anteriores, int reps, double peso) =>
+    !anteriores.any((r) => r.valor >= reps && r.peso >= peso);

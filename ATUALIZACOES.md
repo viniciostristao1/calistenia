@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-11 — v0.103.0 (progressão reconhece ganho de reps numa carga maior):**
+  - **Corrigido:** ao concluir o treino, a Progressão não registrava, por exemplo, "21 reps × 10kg" se você já tivesse feito mais repetições SEM carga (ex.: 27 sem peso). Resultado: a progressão de exercícios com carga ficava "travada". Agora conta como recorde quando é uma melhora real (mais reps na mesma carga, ou mais carga) — então progredir em repetições numa carga maior é reconhecido.
+  - Re-testar: num exercício com carga, faça mais reps que o último registro NAQUELA carga e conclua o treino → deve entrar um novo registro na Progressão.
 - **2026-10-11 — v0.102.0 (troca de tema instantânea + horário de término na linha do nome):**
   - **Corrigido o bug da troca de tema:** os quadrados dos dias no Check-in, o contador de moedas e a barra inferior ficavam com as cores do tema ANTERIOR ("como se não tivesse carregado"). Agora repintam na hora ao trocar de tema (claro ↔ escuro).
   - No player, o **`~HH:MM` (previsão de término)** saiu de cima da linha do tempo e foi para a **mesma linha do nome do treino** (à direita, fonte pequena).

@@ -5,6 +5,29 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-11 — Progressão travava ao trocar reps por carga (v0.103.0)
+
+**Sintoma (usuário):** fazia 21 reps de Rosca direta (plano 3x21@10kg), mas a Progressão
+mostrava 15. O histórico real: 22/25/27 reps SEM carga (ago–set) e depois 15 reps × 10kg
+(24/09). Nenhum registro novo depois, mesmo concluindo o treino que tem Rosca direta.
+
+**Causa-raiz:** `_registrarRecordes()` em `player_screen.dart` comparava reps e carga
+**separadamente e de forma GLOBAL**: só gravava se `repeticoes > maxRepsDeTodosOsTempos`
+(=27, do peso corporal) **ou** `pesoKg > maxPesoDeTodosOsTempos` (=10). Logo, 21 reps × 10kg
+não passava (21 ≤ 27 e 10 ≤ 10) → progressão com carga **travava** assim que o usuário já
+tivesse feito mais reps numa carga menor/zero.
+
+**Fix:** função pura `ehNovoRecorde(anteriores, reps, peso)` em `progressao_repository.dart`,
+critério **"não dominado"**: é recorde quando NENHUM registro anterior tem, ao mesmo tempo,
+`valor ≥ reps` E `peso ≥ peso`. Assim 21×10kg conta (nenhum registro tem ≥21 reps E ≥10kg),
+e repetir/regredir não conta. Usada no player (substitui a comparação global); só "celebra"
+recorde quando já havia base (não no 1º registro). Testes: 7 casos em `peso_progressao_test.dart`
+(inclui o caso real 21×10kg). **Auto-cura:** o registro certo entra na PRÓXIMA conclusão do
+treino; dados antigos não são reescritos.
+
+- **Gotcha:** recordes em exercícios com carga precisam ser avaliados por PAR (reps, carga),
+  não por máximos independentes — senão trocar reps por carga "esconde" o avanço.
+
 ## 2026-10-11 — Bug da troca de tema (cores estáticas não repintavam) + ajustes no player (v0.102.0)
 
 **Sintoma (relatado):** ao trocar de tema, os quadrados dos dias no Check-in, o contador de

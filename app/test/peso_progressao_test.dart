@@ -2,6 +2,7 @@ import 'package:calistenia/models/conclusao.dart';
 import 'package:calistenia/models/exercicio.dart';
 import 'package:calistenia/models/registro_progressao.dart';
 import 'package:calistenia/models/treino.dart';
+import 'package:calistenia/services/progressao_repository.dart';
 import 'package:calistenia/util/gamificacao.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -101,6 +102,35 @@ void main() {
         ),
       ];
       expect(recordesRecentes(treinos, prog, hoje: hoje), 1);
+    });
+  });
+
+  group('ehNovoRecorde (critério "não dominado")', () {
+    RegistroProgressao reg(int v, double p) =>
+        RegistroProgressao(exercicio: 'Rosca direta', valor: v, peso: p);
+    // Histórico real do usuário: 22/25/27 reps sem carga, depois 15 reps × 10kg.
+    final hist = [reg(22, 0), reg(25, 0), reg(27, 0), reg(15, 10)];
+
+    test('21 reps × 10kg É recorde (supera 15×10kg na MESMA carga)', () {
+      expect(ehNovoRecorde(hist, 21, 10), isTrue);
+    });
+    test('repetir 15 × 10kg NÃO é recorde (dominado por si mesmo)', () {
+      expect(ehNovoRecorde(hist, 15, 10), isFalse);
+    });
+    test('20 × 10kg é recorde (mais reps que 15 na mesma carga)', () {
+      expect(ehNovoRecorde(hist, 20, 10), isTrue);
+    });
+    test('10 reps sem carga NÃO é recorde (dominado por 27×0kg)', () {
+      expect(ehNovoRecorde(hist, 10, 0), isFalse);
+    });
+    test('28 reps sem carga É recorde (supera as 27)', () {
+      expect(ehNovoRecorde(hist, 28, 0), isTrue);
+    });
+    test('carga maior (10 × 12kg) É recorde', () {
+      expect(ehNovoRecorde(hist, 10, 12), isTrue);
+    });
+    test('primeiro registro (sem base) É recorde', () {
+      expect(ehNovoRecorde(const [], 5, 0), isTrue);
     });
   });
 }

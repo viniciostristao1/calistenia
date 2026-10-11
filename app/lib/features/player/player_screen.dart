@@ -473,11 +473,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final grupos = agruparPorExercicio(
       ref.read(progressaoProvider).value ?? const [],
     );
-    final recReps = {
-      for (final g in grupos) g.exercicio.trim().toLowerCase(): g.maior,
-    };
-    final recPeso = {
-      for (final g in grupos) g.exercicio.trim().toLowerCase(): g.maiorPeso,
+    // Registros anteriores por exercício (para a checagem de recorde "não
+    // dominado" — reps numa carga maior também contam; ver ehNovoRecorde).
+    final anteriores = {
+      for (final g in grupos) g.exercicio.trim().toLowerCase(): g.registros,
     };
     final batidos = <String>[];
     final vistos = <String>{};
@@ -486,11 +485,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       final key = nome.toLowerCase();
       if (nome.isEmpty || e.repeticoes < 1 || vistos.contains(key)) continue;
       vistos.add(key);
-      final rr = recReps[key]; // recorde de reps (null = sem base ainda)
-      final rp = recPeso[key]; // recorde de peso
-      final baterReps = rr == null || e.repeticoes > rr;
-      final baterPeso = e.pesoKg > 0 && (rp == null || e.pesoKg > rp);
-      if (baterReps || baterPeso) {
+      final base = anteriores[key] ?? const <RegistroProgressao>[];
+      if (ehNovoRecorde(base, e.repeticoes, e.pesoKg)) {
         await notifier.adicionar(
           RegistroProgressao(
             exercicio: nome,
@@ -498,11 +494,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
             peso: e.pesoKg,
           ),
         );
-        final partes = <String>[
-          if (baterReps && rr != null) '${e.repeticoes} reps',
-          if (baterPeso && rp != null && rp > 0) fmtPeso(e.pesoKg),
-        ];
-        if (partes.isNotEmpty) batidos.add('$nome · ${partes.join(' · ')}');
+        // Só celebra quando havia base para comparar (não no 1º registro).
+        if (base.isNotEmpty) {
+          final partes = <String>[
+            '${e.repeticoes} reps',
+            if (e.pesoKg > 0) fmtPeso(e.pesoKg),
+          ];
+          batidos.add('$nome · ${partes.join(' · ')}');
+        }
       }
     }
     return batidos;
