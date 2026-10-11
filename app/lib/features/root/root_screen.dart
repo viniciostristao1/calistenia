@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/idioma_repository.dart';
 import '../../services/navegacao.dart';
+import '../../services/tema_repository.dart';
 import '../../l10n/strings.dart';
 import '../../theme/app_colors.dart';
 import '../checkin/checkin_screen.dart';
@@ -43,6 +44,10 @@ class _RootScreenState extends ConsumerState<RootScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // A barra inferior usa AppColors.surface (cor estática). Observa o tema p/
+    // repintar na troca — senão a barra fica com a cor do tema anterior
+    // (mesmo motivo do MoedasBadge; ver test/tema_troca_repinta_test.dart).
+    ref.watch(temaProvider);
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
     return Scaffold(

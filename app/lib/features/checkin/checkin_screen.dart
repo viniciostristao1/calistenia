@@ -15,6 +15,7 @@ import '../../services/gamificacao_pref.dart';
 import '../../services/idioma_repository.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
+import '../../services/tema_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
@@ -109,6 +110,10 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Os quadrados dos dias usam AppColors.surface (cor estática). Observa o
+    // tema p/ repintar na troca — senão ficam com a cor do tema anterior
+    // ("como se não tivesse carregado"); ver test/tema_troca_repinta_test.dart.
+    ref.watch(temaProvider);
     ref.listen(conclusaoProvider, (_, v) {
       if (v.hasValue) Future.microtask(_reconciliar);
     });

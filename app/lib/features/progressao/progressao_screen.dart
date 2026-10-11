@@ -13,6 +13,7 @@ import '../../services/insignias_repository.dart';
 import '../../services/moedas_repository.dart';
 import '../../services/navegacao.dart';
 import '../../services/progressao_repository.dart';
+import '../../services/tema_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/cards_catalog.dart';
@@ -89,6 +90,9 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Observa o tema p/ repintar cartões de cor estática na troca; ver
+    // test/tema_troca_repinta_test.dart.
+    ref.watch(temaProvider);
     final gamiOn = ref.watch(gamificacaoProvider).value ?? true;
     // Observa os dois para reconstruir quando carregarem (dispara a semeadura).
     ref.watch(treinosProvider);

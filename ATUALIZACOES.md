@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-11 — v0.102.0 (troca de tema instantânea + horário de término na linha do nome):**
+  - **Corrigido o bug da troca de tema:** os quadrados dos dias no Check-in, o contador de moedas e a barra inferior ficavam com as cores do tema ANTERIOR ("como se não tivesse carregado"). Agora repintam na hora ao trocar de tema (claro ↔ escuro).
+  - No player, o **`~HH:MM` (previsão de término)** saiu de cima da linha do tempo e foi para a **mesma linha do nome do treino** (à direita, fonte pequena).
+  - O **cronômetro voltou ao tamanho grande** de antes (a linha extra que apertava o layout saiu).
 - **2026-10-10 — v0.101.0 (horário de término no player + moedas legíveis no Madeira):**
   - No player, acima da barra de progresso, um **mostrador `~HH:MM` com a previsão de término do treino** (mesmo tamanho do regressivo de baixo, à direita). Dinâmico: pausa empurra para frente, pular etapa antecipa.
   - No tema **Madeira**, a pílula **"+$N moedas"** do fim do treino agora usa ouro escurecido (antes o amarelo sumia no fundo bege).

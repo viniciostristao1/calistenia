@@ -655,6 +655,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   }
 
   Widget _barraTopo() {
+    // Horário previsto do FIM do treino, pequeno, na MESMA linha do nome do
+    // treino (à direita). Dinâmico: anda se pausar/voltar etapas.
+    final corSec = _temaMadeira ? Colors.white : AppColors.dim;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
       child: Row(
@@ -674,6 +677,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
+          Icon(Icons.access_time, size: 13, color: corSec),
+          const SizedBox(width: 3),
+          Text(
+            '~${fmtHora(_horaFimTreino())}',
+            style: TextStyle(fontSize: 12, color: corSec),
+          ),
         ],
       ),
     );
@@ -686,17 +696,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Previsão de término do TREINO TODO (canto direito, acima da barra,
-          // espelhando o regressivo de baixo; mesma fonte dim 12).
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Icon(Icons.access_time, size: 13, color: AppColors.dim),
-              const SizedBox(width: 3),
-              Text('~${fmtHora(_horaFimTreino())}', style: estilo),
-            ],
-          ),
-          const SizedBox(height: 6),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(

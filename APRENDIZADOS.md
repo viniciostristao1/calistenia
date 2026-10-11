@@ -5,6 +5,41 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-11 — Bug da troca de tema (cores estáticas não repintavam) + ajustes no player (v0.102.0)
+
+**Sintoma (relatado):** ao trocar de tema, os quadrados dos dias no Check-in, o contador de
+moedas (`MoedasBadge`) e a barra inferior ficavam com as cores do tema ANTERIOR — "como se
+não tivesse carregado o tema" (ex.: pôr tema Claro e os quadros continuarem escuros).
+
+**Causa-raiz:** `AppColors` é uma **paleta estática global mutável** (`_pal`, trocada por
+`AppColors.aplicarTema` dentro de `buildAppTheme`). Widgets que leem `AppColors.surface`/
+`estrela`/`surface2` **direto** (não via `Theme.of`) só mudam de cor quando são
+**reconstruídos**. Os culpados eram widgets **persistentes e `const`**: as 3 abas do
+`IndexedStack` (`const HomeScreen()`/`const CheckinScreen()`) e o `const [MoedasBadge()]` das
+appbars. Ao trocar o tema, só o `MaterialApp` reconstrói; o Flutter **curto-circuita o rebuild
+de instâncias `const` idênticas**, então essas subárvores mantinham a paleta velha. O
+`context.accent` (via `Theme.of`, InheritedWidget) atualizava — por isso só PARTE da tela
+trocava, reforçando a sensação de "meio carregado".
+
+**Fix:** fazer esses widgets persistentes **observarem o tema** — `ref.watch(temaProvider)` em
+`RootScreen` (barra inferior), `HomeScreen`, `CheckinScreen`, `ProgressaoScreen` e
+`MoedasBadge`. Riverpod reconstrói o **Element** quando o provider muda, **mesmo o widget sendo
+`const`** (a identidade `const` não bloqueia rebuild por dependência de provider). Assim as
+leituras estáticas de `AppColors` são relidas com a paleta nova, na hora.
+
+- **Gotcha p/ o futuro:** qualquer widget **`const` persistente** que leia cor ESTÁTICA de
+  `AppColors` fica stale na troca de tema. Ou ele observa `temaProvider`, ou lê a cor via
+  `Theme.of(context)` (que já tem `surface`/`onSurface`/`primary` no `ColorScheme`).
+- **Regressão coberta:** `test/tema_troca_repinta_test.dart` reproduz o bug (const + cor
+  estática não repinta) e prova o fix (observando o tema, repinta mesmo const).
+
+**Player (mesma release):**
+- `~HH:MM` (previsão de término) **saiu de cima da barra** (`_progressoGeral`) e foi para a
+  **mesma linha do nome do treino** (`_barraTopo`, à direita, fonte 12 dim; branco no Madeira).
+- Com isso o `_progressoGeral` voltou a ter só a barra → **o anel/cronômetro recuperou o
+  espaço vertical** (o nº segue `fontSize 244` em `FittedBox` numa `SizedBox(270)` dentro do
+  anel 292; nunca foi reduzido no código — o aperto da linha extra é que o fazia parecer menor).
+
 ## 2026-10-10 — Previsão de término no player + contraste das moedas no Madeira (v0.101.0)
 
 - **Mostrador `~HH:MM` acima da barra** (`_progressoGeral` em `player_screen.dart`): `Row`

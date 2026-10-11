@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/gamificacao_pref.dart';
 import '../services/moedas_repository.dart';
 import '../services/navegacao.dart';
+import '../services/tema_repository.dart';
 import '../theme/app_colors.dart';
 
 /// Pílula "🪙 \$N" com o saldo de moedas — mostrada no topo (Home, Check-in,
@@ -13,6 +14,11 @@ class MoedasBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Esta pílula usa cores ESTÁTICAS (AppColors.surface2/line). Como fica fixa
+    // em barras `const [...]`, o Flutter pula seu rebuild na troca de tema;
+    // observar o tema força o repintar com a paleta nova (senão fica "do tema
+    // anterior"). Ver test/tema_troca_repinta_test.dart.
+    ref.watch(temaProvider);
     final gamiOn = ref.watch(gamificacaoProvider).value ?? true;
     if (!gamiOn) return const SizedBox.shrink();
     final moedas = ref.watch(moedasProvider).value ?? 0;

@@ -14,6 +14,7 @@ import '../../services/idioma_repository.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/relogio.dart';
+import '../../services/tema_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
@@ -159,6 +160,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Vários cartões usam cores estáticas (AppColors.surface etc.). Observa o
+    // tema p/ repintar na troca; ver test/tema_troca_repinta_test.dart.
+    ref.watch(temaProvider);
     final async = ref.watch(treinosProvider);
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
