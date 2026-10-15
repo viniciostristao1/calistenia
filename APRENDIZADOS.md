@@ -3335,3 +3335,17 @@ voltou a `AppColors.accentAmbar` (fixo). Na home, `_DiaPill` volta à borda e `_
 ficaram na `Paleta` mas sem uso (dead code inofensivo, caso a profundidade volte). `analyze` limpo,
 `flutter test` **33/33**. Versão `0.46.0+46`. **Lição:** neumorphism foi uma aposta estética que o
 usuário rejeitou — cores dos temas OK, profundidade não.
+
+---
+
+## 2026-10-14 — v0.104.0: renomear exercício migra o histórico (progressão + check-ins)
+
+Caso real: "Agachamento com peso" → "Agachamento com halteres" orfanou o histórico (o
+gráfico agrupa por nome exato) e o `garantirBaseline` ainda criou um gráfico fantasma
+novo. Migrei os dados na nuvem na hora (2 progressões + 6 check-ins) e o app ganhou a
+migração automática: `ProgressaoNotifier.renomear` + `CheckinNotifier.renomear` (com
+dedupe de mesmo dia, sem apagar nada), chamados no `_salvar` do editor ANTES do baseline
+(que então não duplica). Se o nome novo já tem histórico, confirma a junção ("Juntar
+históricos?"); senão move em silêncio com snackbar de confirmação. 7 testes novos em
+`renomear_exercicio_test.dart`. `analyze` limpo nos arquivos novos, `flutter test`
+**124/124**. Versão `0.104.0+159`.

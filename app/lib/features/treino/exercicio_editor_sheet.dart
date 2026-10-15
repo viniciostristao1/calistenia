@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/exercicio.dart';
+import '../../services/checkin_repository.dart';
 import '../../services/lembretes_service.dart';
 import '../../services/progressao_repository.dart';
 import '../../theme/app_colors.dart';
@@ -149,12 +150,62 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     });
   }
 
-  void _salvar() {
+  Future<void> _salvar() async {
     if (_descansos != null) _ajustarDescansos();
+    final nomeNovo = _nomeCtrl.text.trim().isEmpty
+        ? 'Exercício'
+        : _nomeCtrl.text.trim();
+    final nomeAntigo = widget.existente?.nome.trim() ?? '';
+    // Renomeou um exercício existente? Leva o HISTÓRICO junto (progressão +
+    // check-ins) — senão o gráfico orfana e abre um novo vazio. A migração vem
+    // ANTES do garantirBaseline, que então não cria linha de base fantasma.
+    if (widget.existente != null &&
+        nomeAntigo.isNotEmpty &&
+        nomeNovo != nomeAntigo) {
+      final prog = await ref.read(progressaoProvider.future);
+      final checks = await ref.read(checkinProvider.future);
+      final colide = prog.any((r) => r.exercicio.trim() == nomeNovo) ||
+          checks.any((c) => c.exercicio.trim() == nomeNovo);
+      if (colide && mounted) {
+        final juntar = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: AppColors.surface,
+            title: const Text('Juntar históricos?'),
+            content: Text(
+                '“$nomeNovo” já tem registros. Juntar o histórico de “$nomeAntigo” nele?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Juntar'),
+              ),
+            ],
+          ),
+        );
+        if (juntar != true) return;
+      }
+      final movProg = await ref
+          .read(progressaoProvider.notifier)
+          .renomear(nomeAntigo, nomeNovo);
+      final movCheck = await ref
+          .read(checkinProvider.notifier)
+          .renomear(nomeAntigo, nomeNovo);
+      final total = movProg + movCheck;
+      if (total > 0 && mounted) {
+        scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Histórico movido para “$nomeNovo” '
+                  '($total registro${total == 1 ? '' : 's'}).')),
+        );
+      }
+    }
     final e = (widget.existente ?? Exercicio(nome: ''))
-      ..nome = _nomeCtrl.text.trim().isEmpty
-          ? 'Exercício'
-          : _nomeCtrl.text.trim()
+      ..nome = nomeNovo
       ..preparacaoSeg = _prep
       ..execucaoSeg = _exec < 0
           ? 0
@@ -173,6 +224,7 @@ class _ExercicioEditorState extends ConsumerState<_ExercicioEditor> {
     ref
         .read(progressaoProvider.notifier)
         .garantirBaseline(e.nome, e.repeticoes, e.pesoKg);
+    if (!mounted) return;
     Navigator.of(context).pop(e);
   }
 

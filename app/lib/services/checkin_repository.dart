@@ -67,6 +67,39 @@ class CheckinNotifier extends AsyncNotifier<List<CheckIn>> {
     final list = _atual..removeWhere((c) => c.id == id);
     await _persist(list);
   }
+
+  /// Renomeia um exercício no HISTÓRICO: todos os check-ins com o nome antigo
+  /// passam para o nome novo (mesmo motivo do `ProgressaoNotifier.renomear`).
+  /// Se antigo e novo já tinham check-in no MESMO dia, fica só o primeiro
+  /// (nunca duplica o dia). Devolve quantos check-ins foram movidos.
+  Future<int> renomear(String antigo, String novo) async {
+    final de = antigo.trim();
+    final para = novo.trim();
+    if (de.isEmpty || para.isEmpty || de == para) return 0;
+    final list = List<CheckIn>.of(await future);
+    var movidos = 0;
+    for (var i = 0; i < list.length; i++) {
+      final c = list[i];
+      if (c.exercicio.trim() == de) {
+        list[i] = CheckIn(
+          id: c.id,
+          data: c.data,
+          exercicio: para,
+          corIndex: c.corIndex,
+        );
+        movidos++;
+      }
+    }
+    if (movidos == 0) return 0;
+    final vistos = <String>{};
+    list.retainWhere((c) {
+      final k = '${c.data.year}-${c.data.month}-${c.data.day}§${c.exercicio}';
+      if (!vistos.add(k)) return false;
+      return true;
+    });
+    await _persist(list);
+    return movidos;
+  }
 }
 
 /// Os check-ins de um dia.

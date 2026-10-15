@@ -102,6 +102,34 @@ class ProgressaoNotifier extends AsyncNotifier<List<RegistroProgressao>> {
     await _persist(list);
   }
 
+  /// Renomeia um exercício no HISTÓRICO: todos os registros com o nome antigo
+  /// passam para o nome novo (o gráfico da Progressão liga pelo nome exato —
+  /// sem isso, renomear no treino orfana o histórico e abre um gráfico novo
+  /// vazio). Comparação exata após trim (igual ao agrupamento). Devolve quantos
+  /// registros foram movidos.
+  Future<int> renomear(String antigo, String novo) async {
+    final de = antigo.trim();
+    final para = novo.trim();
+    if (de.isEmpty || para.isEmpty || de == para) return 0;
+    final list = List<RegistroProgressao>.of(await future);
+    var movidos = 0;
+    for (var i = 0; i < list.length; i++) {
+      final r = list[i];
+      if (r.exercicio.trim() == de) {
+        list[i] = RegistroProgressao(
+          id: r.id,
+          exercicio: para,
+          valor: r.valor,
+          peso: r.peso,
+          data: r.data,
+        );
+        movidos++;
+      }
+    }
+    if (movidos > 0) await _persist(list);
+    return movidos;
+  }
+
   Future<void> removerExercicio(String exercicio) async {
     final list = _atual..removeWhere((r) => r.exercicio == exercicio);
     await _persist(list);
