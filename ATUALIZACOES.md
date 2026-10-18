@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-18 — v0.105.0 (bloco de notas no Check-in):**
+  - No **Check-in**, à **esquerda das moedas 🪙**, um **ícone de notas**: abre o **bloco de notas** — dá pra criar **quantas notas quiser** (“Nova nota”).
+  - Barra de ferramentas com **desfazer, editar, limpar, copiar e fechar** (além de copiar/limpar/excluir por nota).
+  - As notas **ficam salvas no aparelho** e entram no **backup e na sincronização** da conta.
+  - Re-testar: Check-in → ícone de notas → Nova nota → escrever → fechar e reabrir (tem que estar lá).
 - **2026-10-11 — v0.103.0 (progressão reconhece ganho de reps numa carga maior):**
   - **Corrigido:** ao concluir o treino, a Progressão não registrava, por exemplo, "21 reps × 10kg" se você já tivesse feito mais repetições SEM carga (ex.: 27 sem peso). Resultado: a progressão de exercícios com carga ficava "travada". Agora conta como recorde quando é uma melhora real (mais reps na mesma carga, ou mais carga) — então progredir em repetições numa carga maior é reconhecido.
   - Re-testar: num exercício com carga, faça mais reps que o último registro NAQUELA carga e conclua o treino → deve entrar um novo registro na Progressão.

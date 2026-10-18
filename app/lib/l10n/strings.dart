@@ -118,6 +118,34 @@ class Strings {
   String get fechar => _t('Fechar', 'Close', 'Cerrar');
   String get copiar => _t('Copiar', 'Copy', 'Copiar');
   String get copiado => _t('Copiado!', 'Copied!', '¡Copiado!');
+  String get desfazer => _t('Desfazer', 'Undo', 'Deshacer');
+  String get desfeito => _t('Desfeito', 'Undone', 'Deshecho');
+  String get editar => _t('Editar', 'Edit', 'Editar');
+  String get limpar => _t('Limpar', 'Clear', 'Limpiar');
+  String get apagar => _t('Apagar', 'Delete', 'Borrar');
+  String get blocoNotas => _t('Bloco de notas', 'Notes', 'Notas');
+  String get novaNota => _t('Nova nota', 'New note', 'Nueva nota');
+  String get notaTitulo => _t('Nota', 'Note', 'Nota');
+  String get notaDica =>
+      _t('Escreva sua nota...', 'Write your note...', 'Escribe tu nota...');
+  String get nenhumaNota => _t(
+    'Nenhuma nota ainda. Toque em “Nova nota” para criar a primeira.',
+    'No notes yet. Tap “New note” to create the first one.',
+    'Aún no hay notas. Toca “Nueva nota” para crear la primera.',
+  );
+  String notasQtd(int n) => _t(
+    '$n ${n == 1 ? 'nota' : 'notas'}',
+    '$n ${n == 1 ? 'note' : 'notes'}',
+    '$n ${n == 1 ? 'nota' : 'notas'}',
+  );
+  String get excluirNota => _t('Excluir nota', 'Delete note', 'Borrar nota');
+  String get limparNotasTitulo =>
+      _t('Apagar todas as notas?', 'Delete all notes?', '¿Borrar todas?');
+  String get limparNotasDesc => _t(
+    'Isso apaga o texto de todas as notas. Dá para desfazer logo depois.',
+    'This clears all notes. You can undo right after.',
+    'Esto borra todas las notas. Puedes deshacer justo después.',
+  );
   String get modoLayout =>
       _t('Modo de layout', 'Layout mode', 'Modo de diseño');
   String modoLayoutNome(String nome) =>

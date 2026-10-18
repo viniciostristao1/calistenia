@@ -5,6 +5,25 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-18 — Bloco de notas no Check-in (v0.105.0)
+
+**Pedido:** ícone de notas à esquerda das moedas na aba Check-in; ao clicar, bloco com
+ferramentas desfazer/editar/limpar/copiar/fechar; suportar várias notas (não só uma).
+
+**Feito:**
+- Novo model `models/nota.dart` (`id`/`texto`/`atualizadoEm` + `notasParaTexto()` pura)
+  e `services/notas_repository.dart` (`notas_v1`, CRUD + `restaurar()` p/ o desfazer).
+- Nova UI `widgets/notas_bloco.dart`: `NotasButton` (com badge da qtd) + `_BlocoNotasSheet`
+  (toolbar com os 5 botões + lista de cards + "Nova nota"). Editores com debounce 500ms,
+  histórico de snapshots (máx 30) p/ o desfazer, confirmação ao limpar tudo.
+- `checkin_screen.dart`: `actions: [NotasButton(), MoedasBadge()]`.
+- `l10n/strings.dart`: strings pt/en/es do bloco. Backup (`_chavesDados` + invalidate) e
+  sync (`notas`, `_estado`, merge, listen) incluídos. Teste `notas_test.dart` (4 casos).
+
+- **Gotcha:** `ConsumerState.build` recebe SÓ `BuildContext` (o `ref` vem de `this.ref`);
+  assinar `(context, ref)` dá `invalid_override`. E `AppColors` estático exige
+  `ref.watch(temaProvider)` nos widgets persistentes p/ repintar (padrão já documentado).
+
 ## 2026-10-11 — Progressão travava ao trocar reps por carga (v0.103.0)
 
 **Sintoma (usuário):** fazia 21 reps de Rosca direta (plano 3x21@10kg), mas a Progressão
