@@ -8,6 +8,10 @@ import '../services/medidas_repository.dart';
 import '../services/tema_repository.dart';
 import '../theme/app_colors.dart';
 import '../l10n/strings.dart';
+import 'sub_abas.dart';
+
+/// Ícone do botão/folha de medidas: uma RÉGUA (bem distinta do ícone de notas).
+const IconData _iconeMedidas = Icons.straighten;
 
 /// Botão das MEDIDAS do corpo p/ a AppBar do Check-in — fica à ESQUERDA do
 /// bloco de notas (pedido do usuário). Abre a folha [_MedidasSheet].
@@ -25,7 +29,7 @@ class MedidasButton extends ConsumerWidget {
       children: [
         IconButton(
           tooltip: s.medidas,
-          icon: const Icon(Icons.monitor_weight_outlined),
+          icon: const Icon(_iconeMedidas),
           onPressed: () => abrirMedidas(context),
         ),
         if (qtd > 0)
@@ -87,8 +91,9 @@ String _rotuloMetrica(Strings s, MetricaCorporal m) => switch (m) {
   MetricaCorporal.coxa => s.coxa,
 };
 
-/// Folha de MEDIDAS: seletor de métrica + gráfico de aumento/diminuição +
-/// resumo da tendência + lista de medições + botão "Nova medição".
+/// Folha de MEDIDAS: sub-abas Gráfico | Histórico. Gráfico = evolução de UMA
+/// métrica (linha de aumento/diminuição + resumo). Histórico = tabela de TODAS
+/// as medidas por data, com seta de evolução por valor (comparar o passado).
 class _MedidasSheet extends ConsumerStatefulWidget {
   const _MedidasSheet();
 
@@ -98,6 +103,7 @@ class _MedidasSheet extends ConsumerStatefulWidget {
 
 class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
   MetricaCorporal _metrica = MetricaCorporal.peso;
+  int _vista = 0; // 0 = Gráfico, 1 = Histórico
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +138,7 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
             ),
             Row(
               children: [
-                const Icon(Icons.monitor_weight_outlined, size: 20),
+                const Icon(_iconeMedidas, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -149,23 +155,13 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            // Seletor de métrica (rola na horizontal se não couber).
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final m in MetricaCorporal.values) ...[
-                    _ChipMetrica(
-                      rotulo: _rotuloMetrica(s, m),
-                      selecionado: _metrica == m,
-                      onTap: () => setState(() => _metrica = m),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ],
+            const SizedBox(height: 10),
+            if (todas.isNotEmpty)
+              SubAbas(
+                abas: [s.grafico, s.historico],
+                selecionado: _vista,
+                onSelect: (i) => setState(() => _vista = i),
               ),
-            ),
             const SizedBox(height: 12),
             Flexible(
               child: async.when(
@@ -178,14 +174,9 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
                 error: (e, _) => Center(child: Text('$e')),
                 data: (_) => todas.isEmpty
                     ? _vazio(s)
-                    : ListView(
-                        shrinkWrap: true,
-                        children: [
-                          _PainelMetrica(metrica: _metrica, medidas: todas, s: s),
-                          const SizedBox(height: 16),
-                          ..._listaMedicoes(s, todas),
-                        ],
-                      ),
+                    : (_vista == 0
+                          ? _vistaGrafico(s, todas)
+                          : _vistaHistorico(s, todas)),
               ),
             ),
             const SizedBox(height: 12),
@@ -205,12 +196,49 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
     );
   }
 
+  /// Gráfico: seletor de métrica + painel (valor atual + variações + linha).
+  Widget _vistaGrafico(Strings s, List<Medida> todas) => ListView(
+    shrinkWrap: true,
+    children: [
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final m in MetricaCorporal.values) ...[
+              _ChipMetrica(
+                rotulo: _rotuloMetrica(s, m),
+                selecionado: _metrica == m,
+                onTap: () => setState(() => _metrica = m),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ],
+        ),
+      ),
+      const SizedBox(height: 12),
+      _PainelMetrica(metrica: _metrica, medidas: todas, s: s),
+    ],
+  );
+
+  /// Histórico: tabela de todas as medidas por data, com evolução por valor.
+  Widget _vistaHistorico(Strings s, List<Medida> todas) => ListView(
+    shrinkWrap: true,
+    children: [
+      _TabelaHistorico(medidas: todas, s: s, onEditar: (m) => _editar(s, m)),
+      const SizedBox(height: 8),
+      Text(
+        s.medidasLegenda,
+        style: TextStyle(color: AppColors.dim2, fontSize: 11),
+      ),
+    ],
+  );
+
   Widget _vazio(Strings s) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 28),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.straighten, size: 48, color: AppColors.dim2),
+        Icon(_iconeMedidas, size: 48, color: AppColors.dim2),
         const SizedBox(height: 12),
         Text(
           s.nenhumaMedida,
@@ -221,91 +249,56 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
     ),
   );
 
-  List<Widget> _listaMedicoes(Strings s, List<Medida> todas) => [
-    for (final m in todas)
-      Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: _MedicaoCard(
-          medida: m,
-          s: s,
-          onEditar: () => _editar(s, m),
-          onExcluir: () => _excluir(s, m),
-        ),
-      ),
-  ];
-
   Future<void> _novaMedicao(Strings s) async {
     final hoje = DateTime.now();
     // Se já há medição de hoje, edita-a (evita duplicata no mesmo dia).
     final doDia = ref.read(medidasProvider.notifier).doDia(hoje);
-    await _abrirEditor(s, inicial: doDia, dataPadrao: hoje);
-  }
-
-  Future<void> _editar(Strings s, Medida m) =>
-      _abrirEditor(s, inicial: m, dataPadrao: m.data);
-
-  Future<void> _abrirEditor(
-    Strings s, {
-    Medida? inicial,
-    required DateTime dataPadrao,
-  }) async {
-    final salvou = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: AppColors.bg,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) =>
-          _EditorMedicaoSheet(inicial: inicial, dataPadrao: dataPadrao),
-    );
-    if (salvou == true && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(s.salvar)));
+    final r = await _abrirEditor(inicial: doDia, dataPadrao: hoje);
+    if (mounted && r == 'salvou') {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(SnackBar(content: Text(s.salvo)));
     }
   }
 
-  Future<void> _excluir(Strings s, Medida m) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(s.excluirMedicao),
-        content: Text(s.excluirMedicaoDesc),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(s.cancelar),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              s.apagar,
-              style: const TextStyle(color: AppColors.danger),
+  Future<void> _editar(Strings s, Medida m) async {
+    // Snapshot ANTES de abrir (p/ o desfazer, caso a edição vire exclusão).
+    final antes = ref.read(medidasProvider).value ?? const <Medida>[];
+    final r = await _abrirEditor(inicial: m, dataPadrao: m.data);
+    if (!mounted) return;
+    if (r == 'excluiu') {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(s.excluirMedicao),
+            action: SnackBarAction(
+              label: s.desfazer,
+              onPressed: () =>
+                  ref.read(medidasProvider.notifier).restaurar(antes),
             ),
           ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    // Snapshot p/ o DESFAZER via snackbar.
-    final antes = ref.read(medidasProvider).value ?? const <Medida>[];
-    await ref.read(medidasProvider.notifier).remover(m.id);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(s.excluirMedicao),
-          action: SnackBarAction(
-            label: s.desfazer,
-            onPressed: () =>
-                ref.read(medidasProvider.notifier).restaurar(antes),
-          ),
-        ),
-      );
+        );
+    } else if (r == 'salvou') {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(SnackBar(content: Text(s.salvo)));
+    }
   }
+
+  Future<String?> _abrirEditor({
+    Medida? inicial,
+    required DateTime dataPadrao,
+  }) => showModalBottomSheet<String>(
+    context: context,
+    backgroundColor: AppColors.bg,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) =>
+        _EditorMedicaoSheet(inicial: inicial, dataPadrao: dataPadrao),
+  );
 }
 
 /// Uma pílula do seletor de métrica.
@@ -363,9 +356,11 @@ class _PainelMetrica extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Só as medições que têm a métrica, em ordem CRONOLÓGICA (antiga → nova).
-    final pontos =
-        medidas.where((m) => m.valorDe(metrica) != null).toList().reversed
-            .toList();
+    final pontos = medidas
+        .where((m) => m.valorDe(metrica) != null)
+        .toList()
+        .reversed
+        .toList();
     final unidade = metrica.unidade;
 
     if (pontos.isEmpty) {
@@ -373,7 +368,7 @@ class _PainelMetrica extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 18),
           child: Text(
-            s.nenhumaMedida,
+            s.semDadosMetrica,
             style: TextStyle(color: AppColors.dim),
             textAlign: TextAlign.center,
           ),
@@ -385,8 +380,9 @@ class _PainelMetrica extends StatelessWidget {
     final atual = valores.last;
     final primeiro = valores.first;
     final deltaInicio = atual - primeiro;
-    final deltaAnterior =
-        valores.length >= 2 ? atual - valores[valores.length - 2] : null;
+    final deltaAnterior = valores.length >= 2
+        ? atual - valores[valores.length - 2]
+        : null;
 
     return _box(
       child: Column(
@@ -531,74 +527,167 @@ class _DeltaChip extends StatelessWidget {
   }
 }
 
-/// Card de uma medição na lista: data + os valores preenchidos + editar/excluir.
-class _MedicaoCard extends StatelessWidget {
-  const _MedicaoCard({
-    required this.medida,
+/// Tabela de histórico: linhas = medições (mais recente em cima), colunas =
+/// Data + cada métrica. Cada valor traz uma setinha vs. o valor ANTERIOR
+/// (cronológico) daquela métrica — verde subiu, vermelho desceu — p/ comparar a
+/// evolução. Rola na horizontal se não couber. Tocar numa linha edita.
+class _TabelaHistorico extends StatelessWidget {
+  const _TabelaHistorico({
+    required this.medidas,
     required this.s,
     required this.onEditar,
-    required this.onExcluir,
   });
 
-  final Medida medida;
+  final List<Medida> medidas; // mais recente primeiro
   final Strings s;
-  final VoidCallback onEditar;
-  final VoidCallback onExcluir;
+  final void Function(Medida) onEditar;
+
+  static const double _wData = 66;
+  static const double _wCol = 68;
 
   @override
   Widget build(BuildContext context) {
-    final partes = <String>[
-      for (final m in MetricaCorporal.values)
-        if (medida.valorDe(m) != null)
-          '${_rotuloMetrica(s, m)} ${_fmtNum(medida.valorDe(m)!)}${m.unidade}',
-    ];
-    return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: onEditar,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.line),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _fmtData(medida.data),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13.5,
+    // Delta por (id da medição, métrica): valor − valor anterior daquela
+    // métrica (na ordem cronológica, pulando medições que não a têm).
+    final asc = medidas.reversed.toList(); // antiga → nova
+    final deltas = <String, Map<MetricaCorporal, double?>>{};
+    for (final metrica in MetricaCorporal.values) {
+      double? prev;
+      for (final m in asc) {
+        final v = m.valorDe(metrica);
+        if (v == null) continue;
+        (deltas[m.id] ??= {})[metrica] = prev == null ? null : v - prev;
+        prev = v;
+      }
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Cabeçalho.
+          Container(
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: AppColors.line)),
+            ),
+            child: Row(
+              children: [
+                _celulaCabecalho(s.data, _wData, esquerda: true),
+                for (final m in MetricaCorporal.values)
+                  _celulaCabecalho(_rotuloMetrica(s, m), _wCol),
+              ],
+            ),
+          ),
+          for (final medida in medidas)
+            InkWell(
+              onTap: () => onEditar(medida),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.line.withValues(alpha: 0.5)),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: _wData,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        child: Text(
+                          _fmtDataCurta(medida.data),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ),
                     ),
+                    for (final metrica in MetricaCorporal.values)
+                      _celulaValor(
+                        medida.valorDe(metrica),
+                        deltas[medida.id]?[metrica],
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _celulaCabecalho(String txt, double w, {bool esquerda = false}) =>
+      SizedBox(
+        width: w,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            txt,
+            textAlign: esquerda ? TextAlign.left : TextAlign.center,
+            style: TextStyle(
+              color: AppColors.dim,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      );
+
+  Widget _celulaValor(double? valor, double? delta) {
+    if (valor == null) {
+      return SizedBox(
+        width: _wCol,
+        child: Center(
+          child: Text('—', style: TextStyle(color: AppColors.dim2)),
+        ),
+      );
+    }
+    final sobe = delta != null && delta > 0.0001;
+    final desce = delta != null && delta < -0.0001;
+    final cor = sobe
+        ? AppColors.prep
+        : desce
+        ? AppColors.danger
+        : AppColors.dim2;
+    return SizedBox(
+      width: _wCol,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _fmtNum(valor),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            ),
+            const SizedBox(height: 2),
+            if (delta == null)
+              const SizedBox(height: 12)
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    sobe
+                        ? Icons.arrow_upward_rounded
+                        : desce
+                        ? Icons.arrow_downward_rounded
+                        : Icons.remove_rounded,
+                    size: 11,
+                    color: cor,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    partes.join('  ·  '),
-                    style: TextStyle(color: AppColors.dim, fontSize: 12.5),
-                  ),
+                  if (sobe || desce)
+                    Text(
+                      _fmtNum(delta.abs()),
+                      style: TextStyle(
+                        color: cor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                 ],
               ),
-            ),
-            IconButton(
-              tooltip: s.editar,
-              visualDensity: VisualDensity.compact,
-              icon: Icon(Icons.edit_outlined, size: 18, color: AppColors.dim),
-              onPressed: onEditar,
-            ),
-            IconButton(
-              tooltip: s.excluirMedicao,
-              visualDensity: VisualDensity.compact,
-              icon: Icon(
-                Icons.delete_outline_rounded,
-                size: 19,
-                color: AppColors.dim,
-              ),
-              onPressed: onExcluir,
-            ),
           ],
         ),
       ),
@@ -606,8 +695,8 @@ class _MedicaoCard extends StatelessWidget {
   }
 }
 
-/// Editor de uma medição: data + os 5 campos (todos opcionais). Devolve `true`
-/// pelo Navigator quando salvou.
+/// Editor de uma medição: data + os 5 campos (todos opcionais) + (ao editar)
+/// um botão de excluir. Devolve pelo Navigator: `'salvou'`, `'excluiu'` ou nada.
 class _EditorMedicaoSheet extends ConsumerStatefulWidget {
   const _EditorMedicaoSheet({required this.inicial, required this.dataPadrao});
 
@@ -666,11 +755,13 @@ class _EditorMedicaoSheetState extends ConsumerState<_EditorMedicaoSheet> {
       lastDate: DateTime(hoje.year, hoje.month, hoje.day),
     );
     if (escolhida != null) {
-      setState(() => _data = DateTime(
-        escolhida.year,
-        escolhida.month,
-        escolhida.day,
-      ));
+      setState(
+        () => _data = DateTime(
+          escolhida.year,
+          escolhida.month,
+          escolhida.day,
+        ),
+      );
     }
   }
 
@@ -695,7 +786,34 @@ class _EditorMedicaoSheetState extends ConsumerState<_EditorMedicaoSheet> {
       coxa: valores[MetricaCorporal.coxa],
     );
     await notifier.salvar(m);
-    if (mounted) Navigator.of(context).pop(true);
+    if (mounted) Navigator.of(context).pop('salvou');
+  }
+
+  Future<void> _excluir(Strings s) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(s.excluirMedicao),
+        content: Text(s.excluirMedicaoDesc),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(s.cancelar),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              s.apagar,
+              style: const TextStyle(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(medidasProvider.notifier).remover(widget.inicial!.id);
+    if (mounted) Navigator.of(context).pop('excluiu');
   }
 
   @override
@@ -729,14 +847,29 @@ class _EditorMedicaoSheetState extends ConsumerState<_EditorMedicaoSheet> {
                   ),
                 ),
               ),
-              Text(
-                editando ? s.editarMedicao : s.novaMedicao,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      editando ? s.editarMedicao : s.novaMedicao,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  if (editando)
+                    IconButton(
+                      tooltip: s.excluirMedicao,
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: AppColors.danger,
+                      ),
+                      onPressed: () => _excluir(s),
+                    ),
+                ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               // Data (tocar abre o seletor).
               InkWell(
                 borderRadius: BorderRadius.circular(12),
@@ -994,7 +1127,11 @@ class _GraficoMedidaPainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: txt,
-        style: TextStyle(color: cor, fontSize: tam, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: cor,
+          fontSize: tam,
+          fontWeight: FontWeight.w700,
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

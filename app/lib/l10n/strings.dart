@@ -161,6 +161,18 @@ class Strings {
   String get coxa => _t('Coxa', 'Thigh', 'Muslo');
   String get data => _t('Data', 'Date', 'Fecha');
   String get salvar => _t('Salvar', 'Save', 'Guardar');
+  String get salvo => _t('Salvo!', 'Saved!', '¡Guardado!');
+  String get grafico => _t('Gráfico', 'Chart', 'Gráfico');
+  String get medidasLegenda => _t(
+    'Peso em kg · demais em cm. Toque numa linha para editar.',
+    'Weight in kg · others in cm. Tap a row to edit.',
+    'Peso en kg · resto en cm. Toca una fila para editar.',
+  );
+  String get semDadosMetrica => _t(
+    'Sem dados desta medida ainda.',
+    'No data for this measure yet.',
+    'Aún no hay datos de esta medida.',
+  );
   String get nenhumaMedida => _t(
     'Nenhuma medição ainda. Toque em “Nova medição” para registrar peso e medidas.',
     'No entries yet. Tap “New entry” to log weight and measurements.',

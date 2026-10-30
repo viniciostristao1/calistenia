@@ -5,6 +5,34 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-30 — Medidas: ícone de régua + aba Histórico/comparação (v0.107.0)
+
+**Feedback do usuário:** (1) ícone de medidas (`monitor_weight_outlined`) parecido demais
+com o de notas → trocar por uma **régua**; (2) poder acompanhar o **histórico** e comparar a
+evolução de cada medida ao longo do tempo.
+
+**Feito (`widgets/medidas_bloco.dart`):**
+- Ícone único `_iconeMedidas = Icons.straighten` (régua), usado no botão da AppBar, no
+  cabeçalho e no estado vazio.
+- `_MedidasSheet` ganhou sub-abas via `SubAbas` (mesmo componente da Progressão/Check-in):
+  **Gráfico** (chips de métrica + `_PainelMetrica`, o que já existia) e **Histórico**
+  (`_TabelaHistorico`).
+- `_TabelaHistorico`: tabela rolável na horizontal, linhas = medições (recente em cima),
+  colunas = Data + 5 métricas. Cada valor traz uma setinha de evolução vs. o **valor
+  anterior cronológico daquela métrica** (pulando medições sem ela): verde subiu
+  (`AppColors.prep`), vermelho desceu (`AppColors.danger`). Delta pré-computado por
+  `(id, métrica)`. Tocar numa linha → editor.
+- Excluir saiu dos cards de lista (removidos) e foi p/ o **editor** (`IconButton` de lixeira
+  no cabeçalho quando editando → confirma → `remover` → `pop('excluiu')`). O editor agora
+  devolve `'salvou'`/`'excluiu'`/`null`; o pai mostra o snackbar (salvo / desfazer da
+  exclusão, com snapshot capturado ANTES de abrir o editor).
+- i18n: `grafico`, `salvo`, `semDadosMetrica`, `medidasLegenda` (pt/en/es); `historico` já
+  existia.
+
+**Nota:** nenhuma mudança de dados/model/sync — só UI. O store `medidas_v1` segue igual.
+
+---
+
 ## 2026-10-30 — Medidas do corpo (peso + circunferências) com gráfico (v0.106.0)
 
 **Pedido:** botão ao lado das notas no Check-in; abre data + peso; gráfico

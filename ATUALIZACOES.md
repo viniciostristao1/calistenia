@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-30 — v0.107.0 (medidas: ícone de régua + histórico/comparação):**
+  - O botão de medidas agora é uma **régua** (antes estava parecido demais com o de notas).
+  - Dentro das medidas, duas abas: **Gráfico** (a evolução de uma medida que já existia) e **Histórico** — uma **tabela com todas as datas × todas as medidas**, cada valor com uma **setinha** mostrando se **subiu (verde) ou desceu (vermelho)** em relação à medição anterior. Assim dá pra olhar o passado e comparar a evolução de qualquer medida.
+  - Tocar numa linha do histórico **abre a medição pra editar**; dentro do editor há um botão de **excluir** (com desfazer).
+  - Re-testar: Check-in → ícone de régua → aba **Histórico** (registre 2+ datas antes) → conferir a tabela e as setinhas.
 - **2026-10-30 — v0.106.0 (medidas do corpo: peso + circunferências com gráfico):**
   - No **Check-in**, à **esquerda do bloco de notas**, um botão de **medidas do corpo** (ícone de balança).
   - Abre um painel onde você registra, por **data**: **peso, cintura, braço, peito e coxa** (todos opcionais — dá pra anotar só o peso, por exemplo). A data vem como hoje por padrão e dá pra escolher outra.
