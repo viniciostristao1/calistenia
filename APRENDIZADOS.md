@@ -5,6 +5,44 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-30 — Medidas do corpo (peso + circunferências) com gráfico (v0.106.0)
+
+**Pedido:** botão ao lado das notas no Check-in; abre data + peso; gráfico
+inteligente de aumento/diminuição; também medidas: peso, cintura, braço, peito, coxa.
+
+**Feito (seguindo o molde do bloco de notas):**
+- `models/medida.dart`: `Medida` (`id`/`data`/`peso`/`cintura`/`braco`/`peito`/`coxa`
+  + `atualizadoEm`). `data` normalizada p/ meia-noite. Valores opcionais (`double?`);
+  `toJson` OMITE campos nulos (não vira 0 no round-trip). Enum `MetricaCorporal`
+  (ordem = ordem de exibição) + extension `.unidade` (peso=kg, resto=cm) + `valorDe`.
+- `services/medidas_repository.dart`: `medidasProvider` (AsyncNotifier, chave
+  `medidas_v1`), ordenado por data desc. `salvar` = upsert por id (ignora vazio);
+  `doDia(dia)` acha a medição do dia p/ editar no lugar de duplicar; `remover`;
+  `restaurar` (desfazer). Mesmo padrão/segurança do notas_repository.
+- `widgets/medidas_bloco.dart`: `MedidasButton` (AppBar, à ESQUERDA do `NotasButton`)
+  + folha com seletor de métrica (chips), painel (valor atual + variação desde a 1ª e
+  vs. anterior em pílulas verde/vermelha) e **gráfico por CustomPainter**
+  (`_GraficoMedidaPainter`) — linha com segmentos coloridos pela direção (sobe=verde
+  `AppColors.prep`, desce=vermelho `AppColors.danger`, igual=cinza), último ponto no
+  accent, rótulos de min/máx e datas das pontas. Editor (`_EditorMedicaoSheet`) com
+  date picker + 5 campos numéricos (aceita vírgula ou ponto). Excluir tem desfazer via
+  snackbar. **Sem pacote de chart** (como a Progressão).
+- Plugado no `checkin_screen.dart` (`actions: [MedidasButton(), NotasButton(), MoedasBadge()]`).
+- **Sync** (`sync_service.dart`): novo store `medidas` em TODOS os pontos (import,
+  `_mergeChave`/`_aplicarChave`, `_push`, `_estado`/`_estadoDe` com novo param `mm`,
+  `_invalidar`, `ref.listen`). **Backup em arquivo** (`backup_service.dart`): `chaveMedidas`
+  em `_chavesDados` + invalidate. União por id como os outros.
+- i18n: entradas em `l10n/strings.dart` (pt/en/es).
+- Teste: `test/medida_test.dart` (round-trip, normalização de data, `temAlgo`, `valorDe`,
+  unidade, omissão de nulos). 6/6 verdes.
+
+**Gotcha do harness (anotado):** a ferramenta de escrita anexou `</content>`/`</invoke>`
+literais no fim de alguns arquivos gerados; o `flutter analyze` apontou "expected
+executable" na última linha. Fix = remover as linhas de tag. Conferir o tail de arquivo
+recém-criado quando o analyze reclamar da última linha.
+
+---
+
 ## 2026-10-30 — Card pré-treino não abria no 1º treino (v0.105.1)
 
 **Sintoma (usuário):** "não está abrindo card sempre que eu começo um treino".

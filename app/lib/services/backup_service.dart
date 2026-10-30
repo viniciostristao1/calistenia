@@ -14,6 +14,7 @@ import 'conquistas_repository.dart';
 import 'gamificacao_pref.dart';
 import 'insignias_repository.dart';
 import 'lembretes_service.dart';
+import 'medidas_repository.dart';
 import 'notas_repository.dart';
 import 'progressao_repository.dart';
 import 'som_repository.dart';
@@ -38,6 +39,7 @@ const List<String> _chavesDados = [
   chaveConquistas, // 'conquistas_v1'
   chaveInsignias, // 'insignias_v1'
   chaveNotas, // 'notas_v1'
+  chaveMedidas, // 'medidas_v1'
 ];
 
 /// Preferências (tema, som, gamificação, lembretes) — completam o backup.
@@ -199,6 +201,7 @@ void _invalidarTudo(WidgetRef ref) {
   ref.invalidate(conquistasProvider);
   ref.invalidate(insigniasProvider);
   ref.invalidate(notasProvider);
+  ref.invalidate(medidasProvider);
   ref.invalidate(temaProvider);
   ref.invalidate(somProvider);
   ref.invalidate(gamificacaoProvider);

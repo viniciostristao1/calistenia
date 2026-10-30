@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-30 — v0.106.0 (medidas do corpo: peso + circunferências com gráfico):**
+  - No **Check-in**, à **esquerda do bloco de notas**, um botão de **medidas do corpo** (ícone de balança).
+  - Abre um painel onde você registra, por **data**: **peso, cintura, braço, peito e coxa** (todos opcionais — dá pra anotar só o peso, por exemplo). A data vem como hoje por padrão e dá pra escolher outra.
+  - **Gráfico inteligente de aumento/diminuição**: escolha a métrica (peso, cintura…) e veja a linha ao longo do tempo — cada trecho **verde = subiu, vermelho = desceu**. Mostra também o valor **atual** e quanto variou **desde a 1ª medição** e **vs. a anterior**.
+  - Uma medição por dia (se registrar de novo no mesmo dia, ela é atualizada). As medições **entram no backup e na sincronização** da conta, como o resto.
+  - Re-testar: Check-in → ícone de balança → Nova medição → preencher peso/medidas → salvar; registrar em dois dias diferentes e conferir o gráfico subindo/descendo.
 - **2026-10-30 — v0.105.1 (card pré-treino aparece sempre):**
   - **Corrigido:** o card motivacional de antes do treino às vezes **não abria no 1º treino depois de abrir o app** (abria só a partir do 2º, ou se você tivesse passado pela aba Cards antes). Era uma corrida de carregamento da coleção de cards. Agora o app **espera a coleção carregar** antes de decidir, então o card aparece **sempre** que deveria.
   - Re-testar: feche o app completamente, reabra e toque em ▶ num treino inteiro logo de cara — o card deve aparecer já nesse primeiro.

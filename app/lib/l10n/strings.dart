@@ -146,6 +146,48 @@ class Strings {
     'This clears all notes. You can undo right after.',
     'Esto borra todas las notas. Puedes deshacer justo después.',
   );
+  // Medidas corporais (peso + circunferências)
+  String get medidas => _t('Medidas', 'Measurements', 'Medidas');
+  String get medidasCorpo =>
+      _t('Medidas do corpo', 'Body measurements', 'Medidas del cuerpo');
+  String get novaMedicao =>
+      _t('Nova medição', 'New entry', 'Nueva medición');
+  String get editarMedicao =>
+      _t('Editar medição', 'Edit entry', 'Editar medición');
+  String get peso => _t('Peso', 'Weight', 'Peso');
+  String get cintura => _t('Cintura', 'Waist', 'Cintura');
+  String get braco => _t('Braço', 'Arm', 'Brazo');
+  String get peito => _t('Peito', 'Chest', 'Pecho');
+  String get coxa => _t('Coxa', 'Thigh', 'Muslo');
+  String get data => _t('Data', 'Date', 'Fecha');
+  String get salvar => _t('Salvar', 'Save', 'Guardar');
+  String get nenhumaMedida => _t(
+    'Nenhuma medição ainda. Toque em “Nova medição” para registrar peso e medidas.',
+    'No entries yet. Tap “New entry” to log weight and measurements.',
+    'Aún no hay mediciones. Toca “Nueva medición” para registrar peso y medidas.',
+  );
+  String get preenchaAlgo => _t(
+    'Preencha pelo menos um valor.',
+    'Fill in at least one value.',
+    'Completa al menos un valor.',
+  );
+  String get desdeInicio =>
+      _t('desde a 1ª', 'since first', 'desde la 1ª');
+  String get vsAnterior =>
+      _t('vs. anterior', 'vs. previous', 'vs. anterior');
+  String get precisaDuasMedicoes => _t(
+    'Registre pelo menos duas medições para ver o gráfico.',
+    'Log at least two entries to see the chart.',
+    'Registra al menos dos mediciones para ver el gráfico.',
+  );
+  String get excluirMedicao =>
+      _t('Excluir medição', 'Delete entry', 'Borrar medición');
+  String get excluirMedicaoDesc => _t(
+    'Remover esta medição? Dá para desfazer logo depois.',
+    'Remove this entry? You can undo right after.',
+    '¿Quitar esta medición? Puedes deshacer justo después.',
+  );
+
   String get modoLayout =>
       _t('Modo de layout', 'Layout mode', 'Modo de diseño');
   String modoLayoutNome(String nome) =>

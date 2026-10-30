@@ -21,6 +21,7 @@ import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
 import '../../util/dias.dart';
 import '../../util/gamificacao.dart';
+import '../../widgets/medidas_bloco.dart';
 import '../../widgets/moedas_badge.dart';
 import '../../widgets/notas_bloco.dart';
 import '../../widgets/sub_abas.dart';
@@ -135,8 +136,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
             Text(s.checkIn),
           ],
         ),
-        // Bloco de notas À ESQUERDA das moedas (pedido do usuário).
-        actions: const [NotasButton(), MoedasBadge()],
+        // Medidas do corpo + bloco de notas À ESQUERDA das moedas (pedido do
+        // usuário: o botão de medidas fica ao lado das notas).
+        actions: const [MedidasButton(), NotasButton(), MoedasBadge()],
       ),
       body: Column(
         children: [
