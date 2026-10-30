@@ -37,16 +37,26 @@ Future<void> iniciarTreinoComCard(
   Treino? treino,
 }) async {
   if (treino != null) {
-    final ligado = ref.read(cardsPreTreinoProvider).value ?? true;
-    final possuidos = ref.read(cardsProvider).value ?? const <String>[];
-    if (ligado && possuidos.isNotEmpty) {
-      final id = _sortearCard(possuidos);
-      if (id != null && context.mounted) {
-        await showDialog<void>(
-          context: context,
-          builder: (_) => _CardPreTreinoDialog(id: id),
-        );
+    // IMPORTANTE: await no `.future` (não `.value`). O `cardsProvider` é um
+    // AsyncNotifier que carrega do SharedPreferences e NÃO é observado na home,
+    // então no 1º treino após abrir o app ele ainda está em loading — ler
+    // `.value` devolvia `null` → lista vazia → o card simplesmente não aparecia
+    // (aparecia só nos treinos seguintes). Awaitar garante a lista carregada.
+    // try/catch: uma falha ao carregar NUNCA deve travar o início do treino.
+    try {
+      final ligado = await ref.read(cardsPreTreinoProvider.future);
+      final possuidos = await ref.read(cardsProvider.future);
+      if (ligado && possuidos.isNotEmpty) {
+        final id = _sortearCard(possuidos);
+        if (id != null && context.mounted) {
+          await showDialog<void>(
+            context: context,
+            builder: (_) => _CardPreTreinoDialog(id: id),
+          );
+        }
       }
+    } catch (_) {
+      // segue direto para o player
     }
   }
   if (!context.mounted) return;

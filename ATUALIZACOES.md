@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-30 — v0.105.1 (card pré-treino aparece sempre):**
+  - **Corrigido:** o card motivacional de antes do treino às vezes **não abria no 1º treino depois de abrir o app** (abria só a partir do 2º, ou se você tivesse passado pela aba Cards antes). Era uma corrida de carregamento da coleção de cards. Agora o app **espera a coleção carregar** antes de decidir, então o card aparece **sempre** que deveria.
+  - Re-testar: feche o app completamente, reabra e toque em ▶ num treino inteiro logo de cara — o card deve aparecer já nesse primeiro.
 - **2026-10-18 — v0.105.0 (bloco de notas no Check-in):**
   - No **Check-in**, à **esquerda das moedas 🪙**, um **ícone de notas**: abre o **bloco de notas** — dá pra criar **quantas notas quiser** (“Nova nota”).
   - Barra de ferramentas com **desfazer, editar, limpar, copiar e fechar** (além de copiar/limpar/excluir por nota).

@@ -5,6 +5,35 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-30 — Card pré-treino não abria no 1º treino (v0.105.1)
+
+**Sintoma (usuário):** "não está abrindo card sempre que eu começo um treino".
+
+**Causa:** `iniciarTreinoComCard` (`features/cards/card_pretreino.dart`) decidia mostrar o
+card lendo o VALOR SÍNCRONO dos providers:
+`ref.read(cardsProvider).value ?? const <String>[]`. O `cardsProvider` é um
+`AsyncNotifierProvider` (carrega do SharedPreferences) e **não é observado em nenhum lugar
+da home** — só na aba Progressão→Cards. Logo, na 1ª abertura do app, a primeira leitura
+acontecia no próprio toque em ▶, quando o `build()` async ainda não terminou → `.value` era
+`null` → caía no default **lista vazia** → `possuidos.isNotEmpty == false` → **card pulado**.
+Depois que o provider carregava (ou se o usuário tivesse aberto a aba Cards antes), aparecia.
+Daí o "não aparece *sempre*": sumia no 1º treino pós-abertura, voltava nos seguintes.
+
+**Fix:** awaitar o `.future` em vez de ler `.value` — resolve na hora se já carregado, espera
+o load se não:
+```dart
+final ligado = await ref.read(cardsPreTreinoProvider.future);
+final possuidos = await ref.read(cardsProvider.future);
+```
+Envolto em `try/catch` para que uma falha de carregamento NUNCA trave o início do treino
+(apenas pula o card). As guardas `context.mounted` já existentes cobrem o gap assíncrono.
+
+**Gotcha p/ lembrar:** ao decidir fluxo com base em `AsyncNotifierProvider` que o usuário
+pode disparar antes de você observar em algum lugar, use `.future` (await), não `.value`
+(síncrono) — senão você lê `AsyncLoading`/`null` e cai no default silenciosamente.
+
+---
+
 ## 2026-10-18 — Bloco de notas no Check-in (v0.105.0)
 
 **Pedido:** ícone de notas à esquerda das moedas na aba Check-in; ao clicar, bloco com
