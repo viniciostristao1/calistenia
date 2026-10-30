@@ -250,10 +250,10 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
   );
 
   Future<void> _novaMedicao(Strings s) async {
-    final hoje = DateTime.now();
-    // Se já há medição de hoje, edita-a (evita duplicata no mesmo dia).
-    final doDia = ref.read(medidasProvider.notifier).doDia(hoje);
-    final r = await _abrirEditor(inicial: doDia, dataPadrao: hoje);
+    // SEMPRE cria um registro novo (em branco). Cada medição que o usuário faz é
+    // um item do histórico — nunca sobrescreve a anterior. Para alterar uma
+    // medição já feita, ele toca na linha dela no Histórico (aí sim edita).
+    final r = await _abrirEditor(inicial: null, dataPadrao: DateTime.now());
     if (mounted && r == 'salvou') {
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
@@ -773,11 +773,12 @@ class _EditorMedicaoSheetState extends ConsumerState<_EditorMedicaoSheet> {
       setState(() => _erro = s.preenchaAlgo);
       return;
     }
-    // Reaproveita o id ao editar; senão, se já há medição deste dia, edita-a.
+    // Só reaproveita o id quando está EDITANDO uma medição existente (linha do
+    // Histórico). "Nova medição" tem inicial == null → vira um registro novo,
+    // mesmo que já exista outra no mesmo dia (o usuário quer TODAS no histórico).
     final notifier = ref.read(medidasProvider.notifier);
-    final existente = widget.inicial ?? notifier.doDia(_data);
     final m = Medida(
-      id: existente?.id,
+      id: widget.inicial?.id,
       data: _data,
       peso: valores[MetricaCorporal.peso],
       cintura: valores[MetricaCorporal.cintura],

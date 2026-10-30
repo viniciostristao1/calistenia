@@ -52,17 +52,8 @@ class MedidasNotifier extends AsyncNotifier<List<Medida>> {
 
   List<Medida> get _atual => List<Medida>.of(state.value ?? const []);
 
-  /// A medição já registrada neste dia (ou `null`). Usado p/ editar no lugar de
-  /// criar uma duplicata ao abrir "nova medição" no mesmo dia.
-  Medida? doDia(DateTime dia) {
-    final d = DateTime(dia.year, dia.month, dia.day);
-    for (final m in _atual) {
-      if (m.data == d) return m;
-    }
-    return null;
-  }
-
   /// Cria/atualiza uma medição (upsert por id). Medições vazias são ignoradas.
+  /// Ids diferentes convivem no MESMO dia (o histórico guarda todas as medições).
   Future<void> salvar(Medida m) async {
     if (!m.temAlgo) return;
     final list = _atual;

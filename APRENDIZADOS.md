@@ -5,6 +5,28 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-10-30 — Medidas: histórico guarda TODAS as medições (v0.107.1)
+
+**Sintoma (usuário):** "no histórico só aparece a última medição que eu fiz" — ele quer
+ver todas, nas datas que fez, medida por medida.
+
+**Causa:** o fluxo de "Nova medição" fazia **upsert por dia**. `_novaMedicao` abria o editor
+com `inicial: doDia(hoje)` e o `_salvar` usava `id: (widget.inicial ?? doDia(_data))?.id`.
+Ou seja: se já havia uma medição no dia, cada "Nova medição" REAPROVEITAVA aquele id →
+sobrescrevia a anterior. Com testes feitos no mesmo dia, sobrava exatamente 1 registro (o
+último). Pior: ao trocar a data no editor, o `?? doDia` podia sequestrar o id de outro dia.
+
+**Fix (só UI, `widgets/medidas_bloco.dart`):**
+- `_novaMedicao` → `_abrirEditor(inicial: null, ...)` SEMPRE (registro em branco novo).
+- `_salvar` → `id: widget.inicial?.id` (reaproveita id só ao EDITAR uma linha do Histórico).
+- Removido `MedidasNotifier.doDia` (`medidas_repository.dart`), que virou código morto.
+  `salvar` segue upsert por id; ids diferentes convivem no mesmo dia.
+
+**Lição:** "dedupe por dia" brigou com o modelo mental do usuário (cada medição = 1 item do
+histórico). Quando o recurso é um DIÁRIO/histórico, o default é append, não merge.
+
+---
+
 ## 2026-10-30 — Medidas: ícone de régua + aba Histórico/comparação (v0.107.0)
 
 **Feedback do usuário:** (1) ícone de medidas (`monitor_weight_outlined`) parecido demais

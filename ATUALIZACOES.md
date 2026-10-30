@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-10-30 — v0.107.1 (correção: o histórico guarda TODAS as medições):**
+  - **Corrigido:** "Nova medição" estava **sobrescrevendo** a medição anterior do mesmo dia, então sobrava só a última. Agora **cada medição que você faz vira um registro próprio** no histórico — todas aparecem, nas datas que você fez. (Para alterar uma já feita, toque na linha dela no Histórico.)
+  - Obs.: medições anteriores que já tinham sido sobrescritas não têm como voltar; daqui pra frente fica tudo guardado.
 - **2026-10-30 — v0.107.0 (medidas: ícone de régua + histórico/comparação):**
   - O botão de medidas agora é uma **régua** (antes estava parecido demais com o de notas).
   - Dentro das medidas, duas abas: **Gráfico** (a evolução de uma medida que já existia) e **Histórico** — uma **tabela com todas as datas × todas as medidas**, cada valor com uma **setinha** mostrando se **subiu (verde) ou desceu (vermelho)** em relação à medição anterior. Assim dá pra olhar o passado e comparar a evolução de qualquer medida.
