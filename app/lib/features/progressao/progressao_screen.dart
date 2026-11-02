@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/escudo.dart';
+import '../../models/exercicio.dart';
 import '../../models/registro_progressao.dart';
 import '../../services/arquivados_repository.dart';
 import '../../services/cards_repository.dart';
@@ -155,7 +156,7 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
       error: (e, _) => Center(child: Text('Erro ao carregar: $e')),
       data: (registros) {
         if (registros.isEmpty) return const _Vazio();
-        final arquivados = ref.watch(arquivadosProvider).value ?? const <String>{};
+        final arquivados = nomesArquivados(ref.watch(arquivadosProvider).value);
         final todos = agruparPorExercicio(registros);
         // Arquivados vão para o FIM da lista (ordem relativa preservada).
         final grupos = [
@@ -493,15 +494,16 @@ class _ExercicioProgressoCard extends ConsumerWidget {
       ),
     );
     if (ok != true) return;
-    await ref.read(arquivadosProvider.notifier).arquivar(grupo.exercicio);
-    final n =
-        await ref.read(treinosProvider.notifier).removerExercicioPorNome(grupo.exercicio);
+    final def = await ref
+        .read(treinosProvider.notifier)
+        .removerExercicioPorNome(grupo.exercicio);
+    await ref
+        .read(arquivadosProvider.notifier)
+        .arquivar(def ?? Exercicio(nome: grupo.exercicio));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            n > 0 ? 'Arquivado e removido de $n treino(s).' : 'Arquivado.',
-          ),
+          content: Text(def != null ? 'Arquivado (saiu dos treinos).' : 'Arquivado.'),
         ),
       );
     }

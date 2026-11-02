@@ -5,6 +5,29 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-02 — Desarquivar no editor + arquivo guarda a DEFINIÇÃO (v0.108.2)
+
+**Pedido:** no editor do treino, uma linha "N arquivado" (abaixo de "Adicionar de exercícios já
+salvos") com ⋮ para **desarquivar** ali — mais intuitivo que na Progressão.
+
+**Feito:**
+- `arquivados_repository.dart`: o store passou de `Set<String>` (só nomes) para
+  **`List<Exercicio>`** (a DEFINIÇÃO inteira) — assim desarquivar **restaura** o exercício ao
+  treino com os mesmos tempos/séries. `build()` é compat (aceita o formato antigo só-nome).
+  Helper `nomesArquivados(lista)` p/ a UI; `pegar(nome)` devolve a def.
+- `treinos_repository.removerExercicioPorNome` agora **devolve o `Exercicio?` removido** (p/ o
+  arquivo guardar).
+- `progressao_screen`: deriva o set de nomes via `nomesArquivados`; `_arquivar` = remove do
+  treino (pega a def) + `arquivar(def ?? Exercicio(nome:...))`.
+- `treino_editor_screen`: linha **"N arquivado(s)" + PopupMenu** (desarquivar cada) →
+  `_desarquivarDoEditor(nome)` = `pegar(nome)` + `desarquivar` + re-adiciona a def ao `_t` + salvar.
+  `_arquivarExercicio` passa a def (`arquivar(e)`).
+- Backup: `chaveArquivados` segue (agora JSON de Exercicio; backup copia a string igual).
+
+134/134 testes, analyze limpo.
+
+---
+
 ## 2026-11-02 — Arquivar no editor do treino (v0.108.1)
 
 Além da aba Progressão, o **editor do treino** (`treino_editor_screen.dart`) ganhou "Arquivar":

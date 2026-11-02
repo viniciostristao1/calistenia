@@ -117,7 +117,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
       ),
     );
     if (ok != true) return;
-    await ref.read(arquivadosProvider.notifier).arquivar(e.nome);
+    await ref.read(arquivadosProvider.notifier).arquivar(e);
     setState(() => _t.exercicios.removeWhere((x) => x.nome == e.nome));
     await ref.read(treinosProvider.notifier).salvar(_t);
     await ref.read(treinosProvider.notifier).removerExercicioPorNome(e.nome);
@@ -126,6 +126,26 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
       ..showSnackBar(
         const SnackBar(
           content: Text('Exercício arquivado (veja no fim da Progressão).'),
+        ),
+      );
+  }
+
+  /// Desarquiva [nome]: restaura a definição guardada neste treino (se houver)
+  /// e tira do arquivo. Chamado pelo resumo "N arquivado" no editor.
+  Future<void> _desarquivarDoEditor(String nome) async {
+    final def = ref.read(arquivadosProvider.notifier).pegar(nome);
+    await ref.read(arquivadosProvider.notifier).desarquivar(nome);
+    if (def != null) {
+      setState(() => _t.exercicios.add(def));
+      await ref.read(treinosProvider.notifier).salvar(_t);
+    }
+    scaffoldMessengerKey.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(def != null
+              ? '“$nome” desarquivado e adicionado a este treino.'
+              : '“$nome” desarquivado.'),
         ),
       );
   }
@@ -392,6 +412,50 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
             onPressed: _adicionarExistente,
             icon: const Icon(Icons.playlist_add, size: 20),
             label: const Text('Adicionar de exercícios já salvos'),
+          ),
+          Builder(
+            builder: (_) {
+              final arq = ref.watch(arquivadosProvider).value ?? const <Exercicio>[];
+              if (arq.isEmpty) return const SizedBox.shrink();
+              final nomes = arq.map((e) => e.nome).toList()..sort();
+              return Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.inventory_2_outlined, size: 18, color: AppColors.dim2),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${nomes.length} arquivado${nomes.length == 1 ? '' : 's'}',
+                      style: TextStyle(color: AppColors.dim, fontSize: 13),
+                    ),
+                    const Spacer(),
+                    PopupMenuButton<String>(
+                      tooltip: 'Desarquivar',
+                      icon: Icon(Icons.more_vert, size: 20, color: AppColors.dim2),
+                      onSelected: _desarquivarDoEditor,
+                      itemBuilder: (_) => [
+                        for (final n in nomes)
+                          PopupMenuItem(
+                            value: n,
+                            child: Row(
+                              children: [
+                                const Icon(Icons.unarchive_outlined, size: 18),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'Desarquivar “${n.isEmpty ? 'Sem nome' : n}”',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

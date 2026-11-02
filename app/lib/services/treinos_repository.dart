@@ -67,19 +67,29 @@ class TreinosNotifier extends AsyncNotifier<List<Treino>> {
 
   /// Remove um exercício (por NOME) de TODOS os treinos — usado ao ARQUIVAR, pra
   /// tirá-lo do cronômetro e do check-in. Preserva o histórico de progressão
-  /// (que é por nome). Devolve quantos treinos foram afetados.
-  Future<int> removerExercicioPorNome(String nome) async {
+  /// (que é por nome). Devolve a DEFINIÇÃO removida (a 1ª encontrada), para que
+  /// o arquivo guarde e o desarquivar possa restaurar — ou null se não achou.
+  Future<Exercicio?> removerExercicioPorNome(String nome) async {
     final list = _atual;
+    Exercicio? removido;
     var afetados = 0;
     for (var i = 0; i < list.length; i++) {
-      if (list[i].exercicios.any((e) => e.nome == nome)) {
+      Exercicio? achado;
+      for (final e in list[i].exercicios) {
+        if (e.nome == nome) {
+          achado = e;
+          break;
+        }
+      }
+      if (achado != null) {
+        removido ??= achado;
         final novo = list[i].copy()..exercicios.removeWhere((e) => e.nome == nome);
         list[i] = novo;
         afetados++;
       }
     }
     if (afetados > 0) await _persist(list);
-    return afetados;
+    return removido;
   }
 }
 

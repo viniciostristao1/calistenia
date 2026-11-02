@@ -3,6 +3,9 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-02 — v0.108.2 (desarquivar fácil no editor + restaura o exercício):**
+  - No **editor do treino**, abaixo de "Adicionar de exercícios já salvos", aparece **"N arquivado(s)"** com um **⋮** — toque e escolha **"Desarquivar"** direto ali (mais intuitivo que pela Progressão).
+  - Agora **desarquivar devolve o exercício ao treino** com os mesmos tempos/séries (o app guarda a definição ao arquivar), pronto para treinar de novo.
 - **2026-11-02 — v0.108.1 (arquivar também no editor do treino):**
   - Agora dá para **arquivar** um exercício direto **no editor do treino** (menu ⋮ na linha do exercício → "Arquivar exercício"), além da aba Progressão. Mesmo efeito: sai dos treinos e vai pro fim da Progressão, com histórico guardado.
 - **2026-11-02 — v0.108.0 (arquivar exercício):**

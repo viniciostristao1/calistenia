@@ -3,45 +3,66 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/exercicio.dart';
+
 const chaveArquivados = 'prog_arquivados_v1';
 
-/// Nomes de exercícios ARQUIVADOS (aposentados): na aba Progressão eles vão para
-/// o FIM da lista, com um aviso, e o exercício sai dos treinos (fora do timer e
-/// do check-in). O histórico de progressão é preservado. Local + backup (não
-/// sincroniza: é uma organização da visão, e o exercício arquivado já sai dos
-/// treinos sincronizados).
-final arquivadosProvider = AsyncNotifierProvider<ArquivadosNotifier, Set<String>>(
+/// Exercícios ARQUIVADOS (aposentados). Guarda a DEFINIÇÃO inteira do exercício
+/// (não só o nome) para que desarquivar possa devolvê-lo a um treino com os
+/// mesmos tempos/séries. Na aba Progressão eles vão para o FIM (com aviso) e no
+/// editor do treino aparecem num resumo "N arquivado". O histórico de
+/// progressão (por nome) é preservado. Local + backup (não sincroniza).
+final arquivadosProvider =
+    AsyncNotifierProvider<ArquivadosNotifier, List<Exercicio>>(
   ArquivadosNotifier.new,
 );
 
-class ArquivadosNotifier extends AsyncNotifier<Set<String>> {
+class ArquivadosNotifier extends AsyncNotifier<List<Exercicio>> {
   @override
-  Future<Set<String>> build() async {
+  Future<List<Exercicio>> build() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(chaveArquivados);
-    if (raw == null || raw.isEmpty) return {};
+    if (raw == null || raw.isEmpty) return [];
     try {
-      return (jsonDecode(raw) as List).map((e) => e.toString()).toSet();
+      return (jsonDecode(raw) as List).map((e) {
+        // Compat: formato antigo guardava só o nome (String).
+        if (e is String) return Exercicio(nome: e);
+        return Exercicio.fromJson(Map<String, dynamic>.from(e as Map));
+      }).toList();
     } catch (_) {
-      return {};
+      return [];
     }
   }
 
-  Future<void> _persist(Set<String> s) async {
+  Future<void> _persist(List<Exercicio> l) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(chaveArquivados, jsonEncode(s.toList()));
-    state = AsyncData(s);
+    await prefs.setString(
+      chaveArquivados,
+      jsonEncode(l.map((e) => e.toJson()).toList()),
+    );
+    state = AsyncData(l);
   }
 
-  bool contem(String nome) => (state.value ?? const {}).contains(nome);
+  List<Exercicio> get _atual => List<Exercicio>.of(state.value ?? const []);
 
-  Future<void> arquivar(String nome) async {
-    final s = Set<String>.of(state.value ?? const {})..add(nome);
-    await _persist(s);
+  /// A definição arquivada de [nome] (ou null).
+  Exercicio? pegar(String nome) =>
+      (state.value ?? const <Exercicio>[]).where((e) => e.nome == nome).firstOrNull;
+
+  /// Arquiva (guarda a definição). Se já existir pelo nome, substitui.
+  Future<void> arquivar(Exercicio e) async {
+    final l = _atual
+      ..removeWhere((x) => x.nome == e.nome)
+      ..add(e);
+    await _persist(l);
   }
 
   Future<void> desarquivar(String nome) async {
-    final s = Set<String>.of(state.value ?? const {})..remove(nome);
-    await _persist(s);
+    final l = _atual..removeWhere((e) => e.nome == nome);
+    await _persist(l);
   }
 }
+
+/// Conjunto de nomes arquivados a partir da lista (helper p/ a UI).
+Set<String> nomesArquivados(List<Exercicio>? lista) =>
+    {for (final e in (lista ?? const <Exercicio>[])) e.nome};
