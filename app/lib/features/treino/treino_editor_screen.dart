@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/exercicio.dart';
 import '../../models/treino.dart';
+import '../../services/arquivados_repository.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/dias.dart';
@@ -85,6 +86,46 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
               _salvar();
             },
           ),
+        ),
+      );
+  }
+
+  /// Arquiva o exercício (por nome): tira dos treinos (fora do cronômetro e do
+  /// check-in) e manda para o fim da Progressão, com o histórico guardado.
+  Future<void> _arquivarExercicio(Exercicio e) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Arquivar exercício?'),
+        content: Text(
+          '“${e.nome.isEmpty ? 'Sem nome' : e.nome}” sai dos seus treinos (fora do '
+          'cronômetro e do check-in) e vai para o fim da Progressão, marcado como '
+          '"Arquivado". O histórico fica guardado — dá para desarquivar depois, na '
+          'aba Progressão.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Arquivar'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(arquivadosProvider.notifier).arquivar(e.nome);
+    setState(() => _t.exercicios.removeWhere((x) => x.nome == e.nome));
+    await ref.read(treinosProvider.notifier).salvar(_t);
+    await ref.read(treinosProvider.notifier).removerExercicioPorNome(e.nome);
+    scaffoldMessengerKey.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Exercício arquivado (veja no fim da Progressão).'),
         ),
       );
   }
@@ -327,6 +368,7 @@ class _TreinoEditorScreenState extends ConsumerState<TreinoEditorScreen> {
                   exercicio: e,
                   onTap: () => _editarExercicio(e),
                   onDelete: () => _excluirExercicio(e),
+                  onArquivar: () => _arquivarExercicio(e),
                 );
               },
             ),
@@ -364,12 +406,14 @@ class _ExercicioRow extends StatelessWidget {
     required this.exercicio,
     required this.onTap,
     required this.onDelete,
+    required this.onArquivar,
   });
 
   final int index;
   final Exercicio exercicio;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+  final VoidCallback onArquivar;
 
   @override
   Widget build(BuildContext context) {
@@ -417,9 +461,19 @@ class _ExercicioRow extends StatelessWidget {
             partes.join(' · '),
             style: TextStyle(color: AppColors.dim, fontSize: 12.5),
           ),
-          trailing: IconButton(
-            icon: Icon(Icons.close, color: AppColors.dim2, size: 20),
-            onPressed: onDelete,
+          trailing: PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: AppColors.dim2, size: 20),
+            onSelected: (v) {
+              if (v == 'arquivar') {
+                onArquivar();
+              } else if (v == 'excluir') {
+                onDelete();
+              }
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'arquivar', child: Text('Arquivar exercício')),
+              PopupMenuItem(value: 'excluir', child: Text('Excluir')),
+            ],
           ),
         ),
       ),

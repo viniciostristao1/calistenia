@@ -3,6 +3,8 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-02 — v0.108.1 (arquivar também no editor do treino):**
+  - Agora dá para **arquivar** um exercício direto **no editor do treino** (menu ⋮ na linha do exercício → "Arquivar exercício"), além da aba Progressão. Mesmo efeito: sai dos treinos e vai pro fim da Progressão, com histórico guardado.
 - **2026-11-02 — v0.108.0 (arquivar exercício):**
   - Na **Progressão**, cada exercício tem um menu (⋮) com **"Arquivar exercício"**: útil quando você **sobe a dificuldade** de um movimento (ex.: declinada +5,5cm) e quer aposentar a versão antiga **sem perder o histórico**.
   - Arquivar: o exercício **sai dos seus treinos** (fora do cronômetro e do check-in) e vai para o **fim da lista de Progressão**, com o aviso **"Arquivado"** e um pouco apagado. O **gráfico/histórico fica guardado**. Dá para **desarquivar** depois (aí é só re-adicionar a um treino para voltar a treinar).

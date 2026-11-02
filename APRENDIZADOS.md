@@ -5,6 +5,16 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-02 — Arquivar no editor do treino (v0.108.1)
+
+Além da aba Progressão, o **editor do treino** (`treino_editor_screen.dart`) ganhou "Arquivar":
+o `_ExercicioRow` trocou o X por **PopupMenuButton** (Arquivar/Excluir) + handler
+`_arquivarExercicio(e)` = `arquivadosProvider.arquivar(e.nome)` + remove do `_t` local por nome
+(setState) + `salvar(_t)` + `removerExercicioPorNome(e.nome)` (os outros treinos). Mesmo efeito
+da Progressão. analyze limpo.
+
+---
+
 ## 2026-11-02 — Arquivar exercício (progressão por dificuldade) (v0.108.0)
 
 **Pedido:** ao subir a dificuldade de um movimento (ex.: flexão declinada +5,5cm), aposentar a
