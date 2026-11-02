@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/escudo.dart';
 import '../../models/registro_progressao.dart';
+import '../../services/arquivados_repository.dart';
 import '../../services/cards_repository.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
@@ -154,12 +155,21 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
       error: (e, _) => Center(child: Text('Erro ao carregar: $e')),
       data: (registros) {
         if (registros.isEmpty) return const _Vazio();
-        final grupos = agruparPorExercicio(registros);
+        final arquivados = ref.watch(arquivadosProvider).value ?? const <String>{};
+        final todos = agruparPorExercicio(registros);
+        // Arquivados vão para o FIM da lista (ordem relativa preservada).
+        final grupos = [
+          ...todos.where((g) => !arquivados.contains(g.exercicio)),
+          ...todos.where((g) => arquivados.contains(g.exercicio)),
+        ];
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           itemCount: grupos.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
-          itemBuilder: (_, i) => _ExercicioProgressoCard(grupo: grupos[i]),
+          itemBuilder: (_, i) => _ExercicioProgressoCard(
+            grupo: grupos[i],
+            arquivado: arquivados.contains(grupos[i].exercicio),
+          ),
         );
       },
     );
@@ -454,9 +464,59 @@ class _CategoriaRating extends StatelessWidget {
 }
 
 class _ExercicioProgressoCard extends ConsumerWidget {
-  const _ExercicioProgressoCard({required this.grupo});
+  const _ExercicioProgressoCard({required this.grupo, this.arquivado = false});
 
   final GrupoProgressao grupo;
+  final bool arquivado;
+
+  Future<void> _arquivar(BuildContext context, WidgetRef ref) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Arquivar exercício?'),
+        content: Text(
+          '“${grupo.exercicio}” sai dos seus treinos (fora do cronômetro e do '
+          'check-in) e vai para o fim da Progressão. O histórico fica guardado — '
+          'dá para desarquivar depois.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Arquivar'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(arquivadosProvider.notifier).arquivar(grupo.exercicio);
+    final n =
+        await ref.read(treinosProvider.notifier).removerExercicioPorNome(grupo.exercicio);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            n > 0 ? 'Arquivado e removido de $n treino(s).' : 'Arquivado.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _desarquivar(BuildContext context, WidgetRef ref) async {
+    await ref.read(arquivadosProvider.notifier).desarquivar(grupo.exercicio);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Desarquivado. Para treiná-lo de novo, adicione-o a um treino.'),
+        ),
+      );
+    }
+  }
 
   Future<void> _confirmarRemoverRegistro(
     BuildContext context,
@@ -520,9 +580,11 @@ class _ExercicioProgressoCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final delta = grupo.ultimo - grupo.primeiro;
-    return Card(
+    return Opacity(
+      opacity: arquivado ? 0.6 : 1.0,
+      child: Card(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+        padding: const EdgeInsets.fromLTRB(14, 6, 4, 6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -547,20 +609,58 @@ class _ExercicioProgressoCard extends ConsumerWidget {
                         const SizedBox(width: 8),
                         _DeltaChip(delta: delta),
                       ],
+                      if (arquivado) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.dim2.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Arquivado',
+                            style: TextStyle(
+                              color: AppColors.dim,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                IconButton(
-                  tooltip: 'Limpar progressão',
+                PopupMenuButton<String>(
                   padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    Icons.delete_outline,
-                    size: 20,
-                    color: AppColors.dim2,
-                  ),
-                  onPressed: () => _confirmarLimpar(context, ref),
+                  icon: Icon(Icons.more_vert, size: 20, color: AppColors.dim2),
+                  onSelected: (v) {
+                    if (v == 'arquivar') {
+                      _arquivar(context, ref);
+                    } else if (v == 'desarquivar') {
+                      _desarquivar(context, ref);
+                    } else if (v == 'limpar') {
+                      _confirmarLimpar(context, ref);
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    if (!arquivado)
+                      const PopupMenuItem(
+                        value: 'arquivar',
+                        child: Text('Arquivar exercício'),
+                      )
+                    else
+                      const PopupMenuItem(
+                        value: 'desarquivar',
+                        child: Text('Desarquivar'),
+                      ),
+                    const PopupMenuItem(
+                      value: 'limpar',
+                      child: Text('Limpar progressão'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -571,6 +671,7 @@ class _ExercicioProgressoCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

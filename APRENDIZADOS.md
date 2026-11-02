@@ -5,6 +5,41 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-02 — Arquivar exercício (progressão por dificuldade) (v0.108.0)
+
+**Pedido:** ao subir a dificuldade de um movimento (ex.: flexão declinada +5,5cm), aposentar a
+versão antiga sem perder o histórico; o exercício arquivado vai pro FIM da Progressão com aviso;
+documentar + avisar a Muse.
+
+**Feito (app):**
+- `services/arquivados_repository.dart`: `arquivadosProvider` (AsyncNotifier<Set<String>>, chave
+  `prog_arquivados_v1`, JSON lista de nomes). **Local + backup; NÃO sincroniza** (é organização da
+  visão; e o arquivado já sai dos treinos sincronizados — o sync usa união-por-id, que não casa
+  com set-de-strings).
+- `services/treinos_repository.dart`: `removerExercicioPorNome(nome)` — tira o exercício (por nome)
+  de TODOS os treinos (fora do cronômetro e do check-in); preserva a progressão (que é por nome).
+- `features/progressao/progressao_screen.dart`: `_desenvolvimento` põe os arquivados no FIM
+  (ordem relativa preservada); `_ExercicioProgressoCard` ganhou `arquivado` (opacidade 0.6 + chip
+  "Arquivado") e trocou o IconButton de limpar por **PopupMenuButton** (Arquivar/Desarquivar +
+  Limpar progressão). Arquivar = `arquivadosProvider.arquivar` + `removerExercicioPorNome`
+  (com confirmação + snackbar). Desarquivar só tira do set (re-treinar = re-adicionar a um treino).
+- `services/backup_service.dart`: `chaveArquivados` em `_chavesDados` + invalidate.
+
+**Muse (coordenação, `/opt/taskix-chat`, já deployado antes):** o coach agora entende VARIAÇÕES/
+NÍVEIS (mesmo nome-base + sufixo de dificuldade = mesma movimentação; queda de reps na versão
+difícil = nova linha de base, não regressão) e só cobra platô de exercício `[ativo]` (em treino
+atual); o arquivado sai dos treinos → vira `[fora dos treinos]` → a Muse ignora o platô dele.
+`calis_resumo.py` marca `[ativo]`/`[fora dos treinos]` por exercício.
+
+**Decisão de produto (reutilizável):** progressão por dificuldade = **criar exercício novo** p/ a
+variação dura (gráfico zerado honesto) + **arquivar** o antigo. **NÃO renomear** (renomear migra/
+funde o histórico → falsa regressão). Progressão é por NOME; gráfico vem dos registros, não dos
+treinos → remover do treino não apaga o histórico.
+
+**Gotcha:** o Write anexou `</content>` no fim do arquivo novo de novo; conferir o tail.
+
+---
+
 ## 2026-10-30 — Medidas: histórico guarda TODAS as medições (v0.107.1)
 
 **Sintoma (usuário):** "no histórico só aparece a última medição que eu fiz" — ele quer

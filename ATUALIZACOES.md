@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-02 — v0.108.0 (arquivar exercício):**
+  - Na **Progressão**, cada exercício tem um menu (⋮) com **"Arquivar exercício"**: útil quando você **sobe a dificuldade** de um movimento (ex.: declinada +5,5cm) e quer aposentar a versão antiga **sem perder o histórico**.
+  - Arquivar: o exercício **sai dos seus treinos** (fora do cronômetro e do check-in) e vai para o **fim da lista de Progressão**, com o aviso **"Arquivado"** e um pouco apagado. O **gráfico/histórico fica guardado**. Dá para **desarquivar** depois (aí é só re-adicionar a um treino para voltar a treinar).
+  - **Como fazer a adaptação (recomendado):** crie um **exercício novo** para a versão mais difícil (ex.: "Flexão declinada +5,5cm") — começa um gráfico zerado, honesto no nível novo — e **arquive** o antigo. Não renomeie o antigo para o nome novo (isso fundiria os históricos e pareceria regressão).
+  - A **Muse** já entende: trata variações do mesmo movimento como níveis (a queda de reps na versão difícil é esperada, não regressão) e **não cobra platô** de exercício aposentado.
+  - Re-testar: Progressão → ⋮ num exercício → Arquivar → conferir que saiu do treino e foi pro fim com "Arquivado"; depois Desarquivar.
 - **2026-10-30 — v0.107.1 (correção: o histórico guarda TODAS as medições):**
   - **Corrigido:** "Nova medição" estava **sobrescrevendo** a medição anterior do mesmo dia, então sobrava só a última. Agora **cada medição que você faz vira um registro próprio** no histórico — todas aparecem, nas datas que você fez. (Para alterar uma já feita, toque na linha dela no Histórico.)
   - Obs.: medições anteriores que já tinham sido sobrescritas não têm como voltar; daqui pra frente fica tudo guardado.

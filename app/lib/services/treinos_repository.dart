@@ -64,6 +64,23 @@ class TreinosNotifier extends AsyncNotifier<List<Treino>> {
     final list = _atual..removeWhere((x) => x.id == id);
     await _persist(list);
   }
+
+  /// Remove um exercício (por NOME) de TODOS os treinos — usado ao ARQUIVAR, pra
+  /// tirá-lo do cronômetro e do check-in. Preserva o histórico de progressão
+  /// (que é por nome). Devolve quantos treinos foram afetados.
+  Future<int> removerExercicioPorNome(String nome) async {
+    final list = _atual;
+    var afetados = 0;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].exercicios.any((e) => e.nome == nome)) {
+        final novo = list[i].copy()..exercicios.removeWhere((e) => e.nome == nome);
+        list[i] = novo;
+        afetados++;
+      }
+    }
+    if (afetados > 0) await _persist(list);
+    return afetados;
+  }
 }
 
 List<Treino> _seed() {
