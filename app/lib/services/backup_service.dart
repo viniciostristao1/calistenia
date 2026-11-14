@@ -11,6 +11,7 @@ import '../util/versao.dart';
 import 'checkin_repository.dart';
 import 'conclusao_repository.dart';
 import 'conquistas_repository.dart';
+import 'escudo_repository.dart';
 import 'gamificacao_pref.dart';
 import 'arquivados_repository.dart';
 import 'insignias_repository.dart';
@@ -38,6 +39,7 @@ const List<String> _chavesDados = [
   chaveProgressao, // 'progressao_v1'
   chaveConclusao, // 'conclusao_v1'
   chaveConquistas, // 'conquistas_v1'
+  chaveEscudo, // 'escudos_v1'
   chaveInsignias, // 'insignias_v1'
   chaveNotas, // 'notas_v1'
   chaveMedidas, // 'medidas_v1'
@@ -201,6 +203,7 @@ void _invalidarTudo(WidgetRef ref) {
   ref.invalidate(progressaoProvider);
   ref.invalidate(conclusaoProvider);
   ref.invalidate(conquistasProvider);
+  ref.invalidate(escudoProvider);
   ref.invalidate(insigniasProvider);
   ref.invalidate(notasProvider);
   ref.invalidate(medidasProvider);

@@ -24,6 +24,7 @@ import '../../services/moedas_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/som_repository.dart';
 import '../../services/tema_repository.dart';
+import '../../services/treino_foreground_service.dart';
 import '../../services/treinos_repository.dart';
 import '../../theme/app_colors.dart';
 import '../../util/conquista_badge.dart';
@@ -91,6 +92,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
 
   String? _carimbo; // "Série 2/3 ✓" mostrado ao concluir uma série
   Timer? _carimboTimer;
+
+  // Foreground service (cronômetro minimizado): mantém o Timer vivo em 2º
+  // plano e espelha o tempo na notificação persistente (a "ilha dinâmica").
+  bool _fgAtivo = false;
+  int _ultimoSegNotificado = -1;
 
   // POOL de players (baixa latência): reusar UM player a cada repetição curta
   // fazia o som falhar. Com vários players em rodízio, cada bip usa um livre.
@@ -161,23 +167,19 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     }
   }
 
-  /// Ao ir para segundo plano: normalmente PAUSA (o cronômetro não corre
-  /// escondido e evita o "travado" ao voltar). EXCEÇÃO: exercício LONGO
-  /// (bicicleta) não pausa — agenda a notificação do fim e segue contando pelo
-  /// relógio; ao voltar, o próximo tick se acerta (ver [_tick]). Ao retomar,
-  /// cancela a notificação e força um frame.
+  /// Minimizar NÃO pausa mais: o foreground service mantém o Timer rodando e
+  /// a notificação persistente mostra o tempo (caso do bike). Ao voltar,
+  /// cancela o aviso one-shot e força um frame + refresh da notificação.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) {
       if (_running) {
-        if (_faseAtualLonga) {
-          _agendarFimLongo();
-        } else {
-          _pausar();
-        }
+        _fgGarantir();
+        if (_faseAtualLonga) _agendarFimLongo();
       }
     } else if (mounted && !_concluido) {
       LembretesService.instance.cancelarFimExercicio();
+      _fgSincronizar(forcar: true);
       setState(() {});
     }
   }
@@ -194,6 +196,64 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
         .catchError((_) {});
   }
 
+  /// Título da notificação persistente (rodando vs pausado).
+  String _fgTitulo() =>
+      _running ? '⏱ ${widget.titulo}' : '⏸ ${widget.titulo} (pausado)';
+
+  /// Texto da notificação: "Execução 12 • Flexão" (curto p/ caber na pílula).
+  String _fgTexto() {
+    if (_fases.isEmpty) return 'Treino em andamento';
+    final i = _idx.clamp(0, _fases.length - 1);
+    final f = _fases[i];
+    final numero = _faseAtualLonga
+        ? _mmss(_restanteMs)
+        : '${(_restanteMs / 1000).ceil().clamp(0, 99999)}';
+    return '${f.tipo.rotulo} $numero • ${f.exercicioNome}';
+  }
+
+  /// Garante o foreground service de pé (e a 1ª sincronização). Se
+  /// [pedirPermissao] for true (chamado com o app em 1º plano), pede a
+  /// permissão de notificação antes; em 2º plano, só tenta subir.
+  void _fgGarantir({bool pedirPermissao = false}) {
+    if (_fases.isEmpty || _concluido) return;
+    if (_fgAtivo) {
+      _fgSincronizar(forcar: true);
+      return;
+    }
+    Future<void>(() async {
+      try {
+        if (pedirPermissao) {
+          final ok = await TreinoForegroundService.garantirPermissao();
+          if (!ok) return;
+        }
+        _fgAtivo = await TreinoForegroundService.iniciar(
+          titulo: _fgTitulo(),
+          texto: _fgTexto(),
+        );
+        if (_fgAtivo) {
+          _ultimoSegNotificado = -1;
+          _fgSincronizar(forcar: true);
+        }
+      } catch (_) {
+        _fgAtivo = false;
+      }
+    });
+  }
+
+  /// Espelha o tempo na notificação, no máximo 1× por segundo cheio (o tick é
+  /// de 100ms p/ o anel ficar fluido; a notificação não precisa disso).
+  void _fgSincronizar({bool forcar = false}) {
+    if (!_fgAtivo || _fases.isEmpty || _concluido) return;
+    final seg = (_restanteMs / 1000).ceil();
+    if (!forcar && seg == _ultimoSegNotificado) return;
+    _ultimoSegNotificado = seg;
+    TreinoForegroundService.atualizar(
+      titulo: _fgTitulo(),
+      texto: _fgTexto(),
+      // ignore: discarded_futures
+    ).catchError((_) => false);
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -205,6 +265,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _fim.dispose();
     WakelockPlus.disable();
     LembretesService.instance.cancelarFimExercicio();
+    TreinoForegroundService.parar();
+    _fgAtivo = false;
     super.dispose();
   }
 
@@ -218,6 +280,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 100), _tick);
     setState(() => _running = true);
+    // Sobe a notificação persistente (pede permissão na 1ª vez). Fire-and-
+    // forget: o cronômetro não depende dela para contar.
+    _fgGarantir(pedirPermissao: true);
   }
 
   void _pausar() {
@@ -226,6 +291,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     WakelockPlus.disable();
     LembretesService.instance.cancelarFimExercicio();
     setState(() => _running = false);
+    // Mantém o service exibindo "pausado" para retomar de onde parou.
+    _fgSincronizar(forcar: true);
   }
 
   void _alternarPausa() => _running ? _pausar() : _iniciar();
@@ -269,8 +336,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     } else {
       // Reconstrói a cada tick (100ms) para o ANEL drenar fluido. O travamento
       // que existia NÃO era daqui — era o áudio (ver _prepararSom/_replay) —, então
-      // manter a fluidez é seguro.
+      // manter a fluidez é seguro. A notificação atualiza 1×/s (ver _fgSincronizar).
       setState(() {});
+      _fgSincronizar();
     }
   }
 
@@ -299,6 +367,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       _mostrarCarimbo(faseTerm.serie, faseTerm.totalSeries);
     }
     setState(() {});
+    _fgSincronizar(forcar: true);
   }
 
   /// Mostra o carimbo "Série X/Y ✓" por ~1,6s ao concluir uma série.
@@ -321,6 +390,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     }
     HapticFeedback.mediumImpact();
     setState(() {});
+    _fgSincronizar(forcar: true);
   }
 
   void _finalizar() {
@@ -330,6 +400,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     HapticFeedback.heavyImpact();
     _tocarSom(fim: true); // som de fim marcando o término
     _talvezMarcar(_fases[_idx].exercicioIndex); // último exercício concluído
+    TreinoForegroundService.parar();
+    _fgAtivo = false;
     setState(() {
       _concluido = true;
       _running = false;

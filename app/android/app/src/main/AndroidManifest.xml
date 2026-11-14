@@ -6,6 +6,12 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- Cronômetro minimizado (foreground service tipo "health"/exercício):
+         mantém o Timer rodando e mostra a notificação persistente (a "ilha
+         dinâmica" nas marcas que têm). Sem isso o app pausa ao minimizar. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <application
         android:label="Calis Timer"
         android:name="${applicationName}"
@@ -40,6 +46,16 @@
         <meta-data
             android:name="com.vinyapps.calistenia.notification_icon"
             android:resource="@drawable/ic_stat_notif" />
+
+        <!-- Service do cronômetro minimizado (flutter_foreground_task).
+             NÃO renomear a classe: o plugin procura por este nome. health =
+             "exercise tracker" (o caso do bike/corrida). stopWithTask=true:
+             arrastar o app p/ fora dos recentes encerra o treino. -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="health"
+            android:stopWithTask="true"
+            android:exported="false" />
 
         <!-- Receivers do flutter_local_notifications: entregam a notificação
              agendada e a reagendam após reboot / atualização do app (os

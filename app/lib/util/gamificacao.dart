@@ -133,10 +133,14 @@ DateTime? inicioSequenciaAtual(
   return inicio;
 }
 
-/// **A falta que quebra a sequência atual** — o dia que o escudo cobriria p/
-/// restaurar a corrente (o 1º dia AGENDADO sem conclusão completa, andando p/
-/// trás a partir de hoje). Inclui uma tentativa de HOJE ("não consegui").
-/// `null` = não há falta a cobrir (a corrente não está quebrada).
+/// **A falta que o escudo cobriria** — o dia que o escudo cobriria p/
+/// restaurar (ou manter) a corrente. Ordem de prioridade, andando p/ trás a
+/// partir de hoje:
+/// 1. **HOJE agendado e ainda não completo** (pendente ou tentativa "não
+///    consegui") — cobertura PROATIVA (v0.109.0): o usuário pode gastar o
+///    escudo hoje mesmo, e hoje vira completo na hora;
+/// 2. senão, o 1º dia AGENDADO sem conclusão completa no passado.
+/// `null` = não há falta a cobrir (a corrente está intacta e hoje não precisa).
 DateTime? ultimaFaltaCobrivel(
   List<Conclusao> concs,
   List<Treino> treinos, {
@@ -163,8 +167,11 @@ DateTime? ultimaFaltaCobrivel(
     if (completo[d] == true) {
       // completo ou já coberto -> não é falta, segue p/ trás
     } else if (agendados.contains(wd)) {
+      // HOJE agendado e ainda não completo (pendente OU tentativa "não
+      // consegui", que tem entrada em `completo` como false): pode cobrir
+      // hoje de forma proativa — tem prioridade sobre faltas passadas.
+      if (d == hj) return d;
       if (d.isBefore(hj)) return d; // faltou/tentou num dia agendado passado
-      if (d == hj && completo.containsKey(d)) return d; // tentou HOJE
     }
     d = d.subtract(const Duration(days: 1));
   }

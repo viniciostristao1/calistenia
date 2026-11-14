@@ -5,6 +5,40 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-14 — Cronômetro minimizado (foreground service) + escudo no hoje (v0.109.0)
+
+**Pedidos:** (1) minimizar no bike e ver o tempo na "ilha dinâmica"; (2) escudo cobrindo hoje.
+
+**Feito:**
+- Foreground: nova dep `flutter_foreground_task: ^11.0.3` (Kotlin 2.3.20 + Gradle 9.1.0
+  do projeto já atendem o requisito Kotlin 2.2.20+/Gradle 8.11.1+; Flutter 3.44.7 OK).
+  Novo `services/treino_foreground_service.dart` (canal `calis_treino_v1`, importância
+  LOW + `onlyAlertOnce`, tipo `health` = exercise tracker, `stopWithTask: true`,
+  `TaskHandler` mínimo sem `onRepeatEvent` — a UI empurra o texto 1×/s).
+- `main.dart`: `FlutterForegroundTask.initCommunicationPort()` antes do runApp.
+- `AndroidManifest`: `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_HEALTH` + `WAKE_LOCK` e
+  o `<service ...ForegroundService android:foregroundServiceType="health">`.
+- `player_screen.dart`: `didChangeAppLifecycleState` **não pausa mais** ao minimizar
+  (só garante o service + one-shot do longo); `_iniciar` sobe a notificação (pede
+  permissão 1×), `_tick` espelha 1×/s (`_fgSincronizar`), `_pausar` mantém "pausado",
+  `_finalizar/dispose` derrubam. Sem permissão, o cronômetro segue sem notificação.
+- Escudo: `ultimaFaltaCobrivel` (gamificacao.dart) agora retorna **hoje agendado
+  pendente** com prioridade sobre faltas passadas (era só `completo.containsKey`);
+  sheet (`checkin_screen.dart`) mostra "Cobrir hoje (dd/mm)" nesse caso; backup passa
+  a incluir `escudos_v1` (+ invalidate no import).
+- Testes: `escudo_test.dart` +3 (hoje pendente, prioridade sobre passada, hoje
+  completo/não-agendado → null). 137/137 testes, analyze só com infos pré-existentes.
+
+**Gotchas:**
+- Android não tem "ilha dinâmica" padrão: a pílula é a notificação persistente
+  renderizada por cada marca (Samsung/Xiaomi/Motorola). Não prometer pixel igual.
+- `flutter_foreground_task` exige o nome exato do service no manifest; `health`
+  evita a declaração de `specialUse` na Play. `dataSync` teria limite de 6h no
+  Android 15 — `health` é o tipo correto p/ exercise tracker.
+- Notificação em LOW + `onlyAlertOnce`: atualizar 1×/s não vibra/toca a cada update.
+
+---
+
 ## 2026-11-02 — Desarquivar no editor + arquivo guarda a DEFINIÇÃO (v0.108.2)
 
 **Pedido:** no editor do treino, uma linha "N arquivado" (abaixo de "Adicionar de exercícios já

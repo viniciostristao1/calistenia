@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
 import 'features/root/root_screen.dart';
 import 'firebase_options.dart';
 import 'fx/fx.dart' show registerBuiltInRewards;
@@ -27,6 +29,10 @@ Future<void> main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
+
+  // Canal do foreground service (cronômetro minimizado): precisa existir
+  // antes de qualquer startService/updateService.
+  FlutterForegroundTask.initCommunicationPort();
 
   // Lembretes de treino (notificação local): inicializa o plugin + timezone.
   // Best-effort — nunca deve derrubar o boot do app.

@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-14 — v0.109.0 (cronômetro minimizado + escudo no hoje):**
+  - **Cronômetro continua minimizado:** ao sair do app (ex.: bike) o tempo **não pausa mais** — fica uma **notificação persistente** com o tempo ("Execução 12 • Bike"), visível na barra de status, tela de bloqueio e como pílula/"ilha dinâmica" nos aparelhos que têm. Pausar/retomar segue no app.
+  - **Escudo cobre hoje:** no Check-in → "Escudo guardado" → "Usar escudo" agora oferece **"Cobrir hoje"** quando hoje é dia agendado e ainda não treinou (hoje vira 🛡️ completo na hora, mantendo a sequência). Sem falta passada, ele já aparece hoje.
+  - Re-testar: iniciar bike → minimizar → conferir a notificação com o tempo; Check-in → usar escudo hoje.
+
 - **2026-11-02 — v0.108.2 (desarquivar fácil no editor + restaura o exercício):**
   - No **editor do treino**, abaixo de "Adicionar de exercícios já salvos", aparece **"N arquivado(s)"** com um **⋮** — toque e escolha **"Desarquivar"** direto ali (mais intuitivo que pela Progressão).
   - Agora **desarquivar devolve o exercício ao treino** com os mesmos tempos/séries (o app guarda a definição ao arquivar), pronto para treinar de novo.

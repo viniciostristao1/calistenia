@@ -82,12 +82,80 @@ void main() {
 
     test('ultimaFaltaCobrivel aponta a quebra; some ao cobrir', () {
       final c = _completos(hoje, 15, pular: {5});
+      // Hoje (k=0) está completo aqui, então a cobrível é a falta passada.
       final falta = ultimaFaltaCobrivel(c, [_t7()], hoje: hoje);
       expect(falta, hoje.subtract(const Duration(days: 5)));
       // Com ela coberta, não há mais falta a cobrir (resto tudo completo).
       final coberto = {hoje.subtract(const Duration(days: 5))};
       expect(
         ultimaFaltaCobrivel(c, [_t7()], hoje: hoje, diasEscudo: coberto),
+        isNull,
+      );
+    });
+
+    test('hoje pendente tem prioridade sobre falta passada', () {
+      // Hoje pendente + falta no dia -5: cobre hoje primeiro.
+      final c = _completos(hoje, 15, pular: {0, 5});
+      expect(ultimaFaltaCobrivel(c, [_t7()], hoje: hoje), hoje);
+      // Cobrindo hoje, a falta passada volta a ser a cobrível.
+      final cobertoHoje = {hoje};
+      expect(
+        ultimaFaltaCobrivel(
+          c,
+          [_t7()],
+          hoje: hoje,
+          diasEscudo: cobertoHoje,
+        ),
+        hoje.subtract(const Duration(days: 5)),
+      );
+      // Com as duas cobertas, não há mais falta a cobrir.
+      final cobertoTudo = {
+        hoje,
+        hoje.subtract(const Duration(days: 5)),
+      };
+      expect(
+        ultimaFaltaCobrivel(
+          c,
+          [_t7()],
+          hoje: hoje,
+          diasEscudo: cobertoTudo,
+        ),
+        isNull,
+      );
+    });
+
+    test('hoje pendente agendado é cobrível (proativo)', () {
+      // 5 dias completos até ontem; hoje agendado e pendente.
+      final c = _completos(hoje.subtract(const Duration(days: 1)), 5);
+      final falta = ultimaFaltaCobrivel(c, [_t7()], hoje: hoje);
+      expect(falta, hoje);
+      // Cobrir hoje mantém/restaura a corrente.
+      expect(
+        sequenciaIninterrupta(
+          c,
+          [_t7()],
+          hoje: hoje,
+          diasEscudo: {hoje},
+        ),
+        6,
+      );
+    });
+
+    test('hoje completo não oferece cobertura; hoje não-agendado tampouco', () {
+      // Hoje completo: corrente intacta, nada a cobrir.
+      final cCompleto = _completos(hoje, 5);
+      expect(
+        ultimaFaltaCobrivel(cCompleto, [_t7()], hoje: hoje),
+        isNull,
+      );
+      // Hoje sem treino agendado: nada a cobrir.
+      final semTreinoHoje = Treino(nome: 't', dias: const [0, 1, 2, 3, 4, 5], exercicios: [Exercicio(nome: 'A')]);
+      // hoje = 2026-06-15 é segunda (weekday 1 -> dia 0); usa um sábado como
+      // "hoje" p/ cair fora dos agendados (sábado = dia 5 agendado... então
+      // usa domingo=6, não agendado aqui).
+      final domingo = DateTime(2026, 6, 14);
+      expect(
+        ultimaFaltaCobrivel(const [], [semTreinoHoje], hoje: domingo),
         isNull,
       );
     });

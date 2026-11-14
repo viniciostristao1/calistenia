@@ -3,7 +3,7 @@ description: "Cronômetros de treino de calistenia — preparação, execução,
 publish_to: 'none'
 
 # versionName+versionCode. Ex.: 0.1.0+1 → versionName "0.1.0", versionCode 1.
-version: 0.108.2+167
+version: 0.109.0+168
 
 environment:
   sdk: ^3.12.2
@@ -23,6 +23,7 @@ dependencies:
   audioplayers: ^6.8.1
   firebase_crashlytics: ^5.2.7   # captura de crashes (relatório com stack trace)
   flutter_local_notifications: ^19.0.0  # lembretes de treino (notificação local)
+  flutter_foreground_task: ^11.0.3 # cronômetro visível minimizado (notificação persistente)
   timezone: ^0.10.0              # agendamento por horário local (dos lembretes)
   share_plus: ^12.0.1            # compartilhar o arquivo de backup (.json)
   file_picker: ^10.3.3           # escolher o arquivo ao importar backup

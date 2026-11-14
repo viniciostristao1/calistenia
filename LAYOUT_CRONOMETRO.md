@@ -75,6 +75,11 @@ série atual (são a mesma etapa/movimento) e aponta a próxima etapa DIFERENTE.
 - **Áudio (lowLatency/SoundPool):** os players de bip/fim são **pré-carregados 1×** (`setSource` no
   `_prepararSom`); cada disparo é `stop()+resume()` (`_replay`), NUNCA `play(AssetSource)` (que
   re-prepara e trava com muitas reps). Erros de áudio são engolidos (não derrubam o timer).
+- **Minimizado (v0.109.0):** o app **não pausa mais** ao ir p/ 2º plano. Um foreground service
+  (`treino_foreground_service.dart`, canal `calis_treino_v1` LOW + `onlyAlertOnce`, tipo `health`)
+  mantém o processo vivo e espelha `título = ⏱/⏸ + nome do treino`, `texto = "<Fase> <n> • <exercício>"`
+  **1× por segundo cheio** (`_fgSincronizar`; o tick segue a 100ms p/ o anel). Pausar mantém o service
+  com "(pausado)"; finalizar/sair derruba. Sem permissão de notificação, conta sem exibir.
 
 ## Cheat-sheet dos "botões de ajuste" mais pedidos
 

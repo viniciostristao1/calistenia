@@ -1125,7 +1125,8 @@ class _SequenciaLinha extends ConsumerWidget {
 }
 
 /// Banner do ESCUDO guardado (só aparece quando há 1 disponível). Tocar abre a
-/// folha "Usar escudo", que cobre a ÚLTIMA falta (vira dia completo).
+/// folha "Usar escudo", que cobre HOJE (se agendado e pendente) ou a ÚLTIMA
+/// falta (vira dia completo).
 class _EscudoDisponivel extends ConsumerWidget {
   const _EscudoDisponivel();
 
@@ -1207,6 +1208,15 @@ class _UsarEscudoSheet extends ConsumerWidget {
     );
     String fmt(DateTime d) =>
         '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+    // "Hoje" normalizado para comparar com a falta (que vem normalizada de
+    // ultimaFaltaCobrivel): se a falta é hoje, o texto/botão fala em "hoje".
+    final agora = DateTime.now();
+    final hoje = DateTime(agora.year, agora.month, agora.day);
+    final ehHoje =
+        falta != null &&
+        falta.year == hoje.year &&
+        falta.month == hoje.month &&
+        falta.day == hoje.day;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
@@ -1227,8 +1237,11 @@ class _UsarEscudoSheet extends ConsumerWidget {
             const SizedBox(height: 12),
             if (falta != null) ...[
               Text(
-                'Cobrir a falta de ${fmt(falta)} e contar como um dia completo — '
-                'isso mantém a sua sequência. O escudo é gasto (você só tem um).',
+                ehHoje
+                    ? 'Cobrir HOJE (${fmt(falta)}) e contar como um dia completo — '
+                          'isso mantém a sua sequência mesmo sem treinar. O escudo é gasto (você só tem um).'
+                    : 'Cobrir a falta de ${fmt(falta)} e contar como um dia completo — '
+                          'isso mantém a sua sequência. O escudo é gasto (você só tem um).',
                 style: TextStyle(color: AppColors.text),
               ),
               const SizedBox(height: 20),
@@ -1245,7 +1258,7 @@ class _UsarEscudoSheet extends ConsumerWidget {
                     if (context.mounted) Navigator.of(context).pop();
                   },
                   icon: const Icon(Icons.verified_user_rounded),
-                  label: Text('Cobrir ${fmt(falta)}'),
+                  label: Text(ehHoje ? 'Cobrir hoje (${fmt(falta)})' : 'Cobrir ${fmt(falta)}'),
                 ),
               ),
             ] else

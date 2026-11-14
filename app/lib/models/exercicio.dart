@@ -38,7 +38,9 @@ class Exercicio {
   bool unilateral; // um lado por vez (dois lados por série); false = bilateral
   bool
   longo; // "exercício longo" (tipo bicicleta): tempo em min:seg no player e
-  // continua contando com o app minimizado (+ notificação no fim); false = normal.
+  // aviso sonoro no fim mesmo minimizado; desde a v0.109.0 TODO exercício
+  // continua contando minimizado (foreground service + notificação), o longo
+  // só muda o formato do número e mantém o aviso one-shot de redundância.
 
   Exercicio({
     String? id,
