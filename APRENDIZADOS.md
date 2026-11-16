@@ -5,6 +5,70 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-16 — Resumo do treino para a Muse: 2 botões nas Configurações (v0.110.0)
+
+**Pedidos:** (1) botão que copia o desempenho de hoje + últimos 15 dias, já com a
+frase pronta ("Completei o treino hoje, agora são N dias consecutivos…" + resuminho
+para o Claude); (2) botão que gera um ARQUIVO (`treino-AAAA-MM-DD.md`) com o
+histórico de 15 dias (séries×reps, tempo, descanso, check-ins, progressão 3 meses,
+dias treinados/não, prêmios, rating) para anexar no chat.
+
+**O que cada botão faz:**
+- **"Copiar treino de hoje"** (`_SecaoResumoClaude._copiarHoje`): monta
+  `ResumoClaude.textoHoje()` e põe no clipboard + snackbar "Copiado!". Conteúdo:
+  frase da sequência (3 casos: completo hoje / treinou sem completar / nada hoje),
+  sessão de hoje (treino + estado, estrutura do plano, check-ins feitos, números de
+  progressão de hoje) e linha do rating. <1 KB, entra no chat como texto.
+- **"Gerar arquivo de 15 dias"** (`_gerarArquivo`): monta
+  `ResumoClaude.arquivoQuinzena()`, grava em `treino-AAAA-MM-DD.md` no diretório
+  temporário e abre o share sheet (`SharePlus`, `mime text/markdown`). Conteúdo:
+  frase do dia + aviso de honestidade, 15 linhas dia a dia (conclusão, estrutura
+  do plano, check-ins, feito), progressão 3 meses por exercício (1º→último,
+  nº de registros, "último recorde há Nd", `[ativo]`/`[fora dos treinos]`),
+  totais (15d treinados×não, 90d, check-ins, conclusões, conquistas, insígnias,
+  escudos) e seção Rating (atual + extrato das últimas pontuações).
+
+**Porquês (decisões que parecem detalhe e não são):**
+- **Por que nas Configurações e não no player/home:** os dois são fluxos de
+  *exportação eventual* (1×/dia, fora do treino), não parte do treino; Config
+  já abriga o outro exportador (Backup) com o mesmo molde de botões/estado
+  `_ocupado`/snack — consistência e zero interferência no fluxo de treino.
+- **Por que manual (copiar/compartilhar) e não envio automático:** o app é
+  local-first e o Claude não tem API de entrada; o usuário cola/anexa quando
+  quer (controle + privacidade: nada sai sozinho). O proxy do Taskix continua
+  sendo o caminho automático da Muse do app.
+- **Por que `ResumoClaude` é puro e separado da UI:** mesma lógica serve aos 2
+  botões e é 100% testável sem widget (`test/resumo_claude_test.dart`, 7 testes:
+  3 casos da frase, plano/feito/números/rating, arquivo com 15 dias/totais/
+  progressão). Regras de contagem **espelham o proxy** (`calis_resumo.py`):
+  sequência conta hoje senão ontem; gap do último completo pré-calculado
+  (LLM erra aritmética de data — mesma lição do proxy); "dias treinados" =
+  check-in OU conclusão; recorde/platô por exercício com flags ativo/aposentado.
+- **Por que tempo/descanso vêm "do plano":** `Conclusao` não guarda tempo
+  executado — só `duracaoTotalSeg` (estimativa do plano) e `resumoCurto`
+  (séries×reps·descanso) existem. O arquivo **rotula** ("tempo/descanso do
+  plano") em vez de fingir medição. Registrar tempo real exigiria gravar
+  início/fim da sessão — backlog, não desta versão.
+- **Por que o rating entrou:** existe de verdade (`ratingForma` 0–1000 +
+  bônus, `ratingDoDia` = ganho do dia, `extratoRating` = últimas pontuações em
+  `util/`). Linha compacta no texto + seção própria no arquivo. Não confundir
+  com "nota de esforço" (inexistente — se um dia houver RPE por treino, entra
+  como campo novo em `Conclusao`, não aqui).
+- **Por que l10n trilingue só no chrome:** títulos/desc/botões/snacks da seção
+  vão em `strings.dart` (pt/en/es, padrão do repo); o **conteúdo** gerado é
+  pt-BR fixo — é dado pessoal para a IA dele, não texto de interface.
+- **Por que `.md` + share (e não upload direto ao Drive):** o app não tem
+  credencial Google do usuário para o Drive; o share sheet usa o app que ele
+  já tem (Drive/WhatsApp/etc.). Subir sozinho exigiria OAuth novo — fora do
+  escopo.
+- **Gotcha do teste:** minha 1ª expectativa da sequência estava errada
+  (dias 15→14→13 = 3, não 2) — o código espelhava o proxy corretamente;
+  corrigi o TESTE, não o código. Sequência conta dias com treino, não "ontem".
+
+**Feito:** `services/resumo_claude_service.dart` (novo) + `_SecaoResumoClaude`
+em `config_screen.dart` (após Backup) + 6 strings em `l10n/strings.dart` +
+`test/resumo_claude_test.dart` (7). 144/144 testes, analyze sem erros/warnings.
+
 ## 2026-11-14 — Cronômetro minimizado (foreground service) + escudo no hoje (v0.109.0)
 
 **Pedidos:** (1) minimizar no bike e ver o tempo na "ilha dinâmica"; (2) escudo cobrindo hoje.

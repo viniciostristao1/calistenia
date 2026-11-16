@@ -1,12 +1,24 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../services/auth_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/cards_repository.dart';
+import '../../services/checkin_repository.dart';
+import '../../services/conclusao_repository.dart';
+import '../../services/conquistas_repository.dart';
+import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/idioma_repository.dart';
+import '../../services/insignias_repository.dart';
 import '../../services/lembretes_service.dart';
+import '../../services/progressao_repository.dart';
+import '../../services/resumo_claude_service.dart';
 import '../../services/som_repository.dart';
 import '../../services/sync_service.dart';
 import '../../services/tema_repository.dart';
@@ -132,6 +144,18 @@ class ConfigScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           const _SecaoBackup(),
+          const SizedBox(height: 20),
+          Text(
+            s.resumoClaudeTitulo,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            s.resumoClaudeDesc,
+            style: TextStyle(color: AppColors.dim, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          const _SecaoResumoClaude(),
           const SizedBox(height: 28),
           Center(
             child: Text(
@@ -800,6 +824,128 @@ class _SecaoBackupState extends ConsumerState<_SecaoBackup> {
             onPressed: _importar,
             icon: const Icon(Icons.download, size: 20),
             label: const Text('Importar'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Resumo do treino para a Muse: copiar o dia (clipboard) ou gerar o arquivo
+/// de 15 dias (share sheet) para colar/anexar no chat. Tudo local e offline —
+/// só lê os repositórios, nunca envia nada sozinho.
+class _SecaoResumoClaude extends ConsumerStatefulWidget {
+  const _SecaoResumoClaude();
+
+  @override
+  ConsumerState<_SecaoResumoClaude> createState() =>
+      _SecaoResumoClaudeState();
+}
+
+class _SecaoResumoClaudeState extends ConsumerState<_SecaoResumoClaude> {
+  bool _ocupado = false;
+
+  Future<void> _copiarHoje() async {
+    final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
+    setState(() => _ocupado = true);
+    try {
+      final texto = ResumoClaude.textoHoje(
+        hoje: DateTime.now(),
+        checkins: ref.read(checkinProvider).value ?? const [],
+        conclusoes: ref.read(conclusaoProvider).value ?? const [],
+        progressoes: ref.read(progressaoProvider).value ?? const [],
+        treinos: ref.read(treinosProvider).value ?? const [],
+        insignias: ref.read(insigniasProvider).value ?? const [],
+        escudos: ref.read(escudoProvider).value ?? const [],
+      );
+      await Clipboard.setData(ClipboardData(text: texto));
+      _aviso(s.resumoCopiado);
+    } catch (e) {
+      _aviso('Não foi possível copiar: $e');
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
+    }
+  }
+
+  Future<void> _gerarArquivo() async {
+    final s = Strings(ref.read(idiomaProvider).value ?? Idioma.pt);
+    setState(() => _ocupado = true);
+    try {
+      final agora = DateTime.now();
+      final texto = ResumoClaude.arquivoQuinzena(
+        hoje: agora,
+        checkins: ref.read(checkinProvider).value ?? const [],
+        conclusoes: ref.read(conclusaoProvider).value ?? const [],
+        progressoes: ref.read(progressaoProvider).value ?? const [],
+        treinos: ref.read(treinosProvider).value ?? const [],
+        conquistas: ref.read(conquistasProvider).value ?? const [],
+        insignias: ref.read(insigniasProvider).value ?? const [],
+        escudos: ref.read(escudoProvider).value ?? const [],
+      );
+      final dir = await getTemporaryDirectory();
+      final nome =
+          'treino-${agora.year}-${agora.month.toString().padLeft(2, '0')}-${agora.day.toString().padLeft(2, '0')}.md';
+      final arquivo = File('${dir.path}/$nome');
+      await arquivo.writeAsString(texto);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(arquivo.path, mimeType: 'text/markdown')],
+          subject: s.resumoClaudeTitulo,
+          text: s.resumoArquivoTexto,
+        ),
+      );
+    } catch (e) {
+      _aviso('Não foi possível gerar: $e');
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
+    }
+  }
+
+  void _aviso(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = Strings(ref.watch(idiomaProvider).value ?? Idioma.pt);
+    if (_ocupado) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 14),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.text,
+              side: BorderSide(color: AppColors.lineStrong),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            onPressed: _copiarHoje,
+            icon: const Icon(Icons.copy_rounded, size: 20),
+            label: Text(s.copiarTreinoHoje),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.text,
+              side: BorderSide(color: AppColors.lineStrong),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            onPressed: _gerarArquivo,
+            icon: const Icon(Icons.description_outlined, size: 20),
+            label: Text(s.gerarArquivo15dias),
           ),
         ),
       ],

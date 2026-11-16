@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-16 — v0.110.0 (resumo do treino para a Muse):**
+  - Em **Configurações → "Resumo para a Muse"**, dois botões novos: **"Copiar treino de hoje"** (copia um textinho com a frase do dia — ex.: "Completei o treino hoje, agora são 3 dias seguidos." — mais sessão, números e rating) e **"Gerar arquivo de 15 dias"** (gera um `treino-AAAA-MM-DD.md` e abre o compartilhar: dia a dia com séries×reps, progressão de 3 meses por exercício, totais, prêmios e rating). É o que você cola/anexa no chat do Claude para ele comentar seu desempenho.
+  - Re-testar: Configurações → copiar com e sem treino hoje; gerar o arquivo e abrir o .md.
+
 - **2026-11-14 — v0.109.0 (cronômetro minimizado + escudo no hoje):**
   - **Cronômetro continua minimizado:** ao sair do app (ex.: bike) o tempo **não pausa mais** — fica uma **notificação persistente** com o tempo ("Execução 12 • Bike"), visível na barra de status, tela de bloqueio e como pílula/"ilha dinâmica" nos aparelhos que têm. Pausar/retomar segue no app.
   - **Escudo cobre hoje:** no Check-in → "Escudo guardado" → "Usar escudo" agora oferece **"Cobrir hoje"** quando hoje é dia agendado e ainda não treinou (hoje vira 🛡️ completo na hora, mantendo a sequência). Sem falta passada, ele já aparece hoje.

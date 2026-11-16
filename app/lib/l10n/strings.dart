@@ -82,6 +82,30 @@ class Strings {
   );
   String get exportar => _t('Exportar', 'Export', 'Exportar');
   String get importar => _t('Importar', 'Import', 'Importar');
+  String get resumoClaudeTitulo =>
+      _t('Resumo para a Muse', 'Muse summary', 'Resumen para Muse');
+  String get resumoClaudeDesc => _t(
+    'Copie o treino de hoje ou gere o arquivo de 15 dias para conversar com a assistente sobre seu desempenho.',
+    'Copy today’s workout or generate the 15-day file to talk to the assistant about your progress.',
+    'Copia el entreno de hoy o genera el archivo de 15 días para hablar con la asistente sobre tu progreso.',
+  );
+  String get copiarTreinoHoje => _t(
+    'Copiar treino de hoje',
+    'Copy today’s workout',
+    'Copiar entreno de hoy',
+  );
+  String get gerarArquivo15dias => _t(
+    'Gerar arquivo de 15 dias',
+    'Generate 15-day file',
+    'Generar archivo de 15 días',
+  );
+  String get resumoCopiado =>
+      _t('Copiado!', 'Copied!', '¡Copiado!');
+  String get resumoArquivoTexto => _t(
+    'Resumo de treinos para a Muse (Calis Timer).',
+    'Workout summary for Muse (Calis Timer).',
+    'Resumen de entrenos para Muse (Calis Timer).',
+  );
 
   // Home / Root
   String get treinos => _t('Treinos', 'Workouts', 'Entrenos');
