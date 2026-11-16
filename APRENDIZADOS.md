@@ -5,6 +5,19 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-16 — Arquivo da Muse com medidas e notas (v0.111.0)
+
+**Pedido:** incluir no `treino-AAAA-MM-DD.md` as medidas corporais e as notas
+livres (existiam no app mas não iam no resumo).
+
+**Feito:** `arquivoQuinzena` ganhou `## Medidas corporais` (últimas 5 +
+evolução 1ª→última por métrica com valor nos dois extremos; `_fmtCm` local
+para "70" em vez de "70,0" — peso usa o `fmtPeso` existente) e `## Notas`
+(reusa `notasParaTexto()`); ambas omitidas quando vazias. Só no `.md` — o
+texto do clipboard segue <1 KB. Fiação em `_gerarArquivo` via
+`medidasProvider`/`notasProvider`. Testes: +2 em `resumo_claude_test.dart`
+(9 passando). Posturas: confirmado que não existe no app (sem model/campo).
+
 ## 2026-11-16 — Resumo do treino para a Muse: 2 botões nas Configurações (v0.110.0)
 
 **Pedidos:** (1) botão que copia o desempenho de hoje + últimos 15 dias, já com a

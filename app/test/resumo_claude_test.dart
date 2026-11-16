@@ -1,6 +1,8 @@
 import 'package:calistenia/models/checkin.dart';
 import 'package:calistenia/models/conclusao.dart';
 import 'package:calistenia/models/exercicio.dart';
+import 'package:calistenia/models/medida.dart';
+import 'package:calistenia/models/nota.dart';
 import 'package:calistenia/models/registro_progressao.dart';
 import 'package:calistenia/models/treino.dart';
 import 'package:calistenia/services/resumo_claude_service.dart';
@@ -128,6 +130,62 @@ void main() {
       expect(txt, contains('Check-ins: 3; conclusões: 2 (2 completas).'));
       expect(txt, contains('## Rating'));
       expect(txt, contains(RegExp(r'Rating: \d+/1000')));
+    });
+
+    test('medidas: últimas 5 + evolução primeira→última', () {
+      final txt = ResumoClaude.arquivoQuinzena(
+        hoje: _hoje,
+        checkins: const [],
+        conclusoes: const [],
+        progressoes: const [],
+        treinos: const [],
+        conquistas: const [],
+        insignias: const [],
+        escudos: const [],
+        medidas: [
+          Medida(data: _hoje.subtract(const Duration(days: 30)), peso: 70, cintura: 80),
+          Medida(data: _hoje.subtract(const Duration(days: 1)), peso: 71.5, cintura: 79, braco: 32),
+        ],
+      );
+      expect(txt, contains('## Medidas corporais (peso em kg, resto em cm)'));
+      expect(txt, contains('peso 70kg'));
+      expect(txt, contains('peso 71,5kg'));
+      expect(txt, contains('cintura 80.'));
+      expect(txt, contains('braço 32.'));
+      expect(txt, contains('Evolução ('));
+      expect(txt, contains('peso 70kg → 71,5kg'));
+      expect(txt, contains('cintura 80 → 79'));
+      expect(txt.contains('## Notas'), isFalse);
+    });
+
+    test('notas entram em seção própria; vazias somem', () {
+      final comNotas = ResumoClaude.arquivoQuinzena(
+        hoje: _hoje,
+        checkins: const [],
+        conclusoes: const [],
+        progressoes: const [],
+        treinos: const [],
+        conquistas: const [],
+        insignias: const [],
+        escudos: const [],
+        notas: [Nota(texto: 'joelho direito reclamou na bike')],
+      );
+      expect(comNotas, contains('## Notas'));
+      expect(comNotas, contains('joelho direito reclamou na bike'));
+
+      final semNada = ResumoClaude.arquivoQuinzena(
+        hoje: _hoje,
+        checkins: const [],
+        conclusoes: const [],
+        progressoes: const [],
+        treinos: const [],
+        conquistas: const [],
+        insignias: const [],
+        escudos: const [],
+        notas: [Nota()],
+      );
+      expect(semNada.contains('## Notas'), isFalse);
+      expect(semNada.contains('## Medidas'), isFalse);
     });
   });
 }

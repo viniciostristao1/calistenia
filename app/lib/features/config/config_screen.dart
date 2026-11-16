@@ -17,6 +17,8 @@ import '../../services/gamificacao_pref.dart';
 import '../../services/idioma_repository.dart';
 import '../../services/insignias_repository.dart';
 import '../../services/lembretes_service.dart';
+import '../../services/medidas_repository.dart';
+import '../../services/notas_repository.dart';
 import '../../services/progressao_repository.dart';
 import '../../services/resumo_claude_service.dart';
 import '../../services/som_repository.dart';
@@ -881,6 +883,8 @@ class _SecaoResumoClaudeState extends ConsumerState<_SecaoResumoClaude> {
         conquistas: ref.read(conquistasProvider).value ?? const [],
         insignias: ref.read(insigniasProvider).value ?? const [],
         escudos: ref.read(escudoProvider).value ?? const [],
+        medidas: ref.read(medidasProvider).value ?? const [],
+        notas: ref.read(notasProvider).value ?? const [],
       );
       final dir = await getTemporaryDirectory();
       final nome =

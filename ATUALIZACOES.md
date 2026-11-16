@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-16 — v0.111.0 (arquivo da Muse com medidas e notas):**
+  - O **"Gerar arquivo de 15 dias"** (Configurações → "Resumo para a Muse") ganhou duas seções: **Medidas corporais** (últimas 5 medições + evolução primeira→última por métrica) e **Notas** (texto livre do bloco de notas). Vazias, as seções somem sem quebrar o arquivo.
+  - Re-testar: gerar o arquivo com medidas/notas e abrir o .md.
+
 - **2026-11-16 — v0.110.0 (resumo do treino para a Muse):**
   - Em **Configurações → "Resumo para a Muse"**, dois botões novos: **"Copiar treino de hoje"** (copia um textinho com a frase do dia — ex.: "Completei o treino hoje, agora são 3 dias seguidos." — mais sessão, números e rating) e **"Gerar arquivo de 15 dias"** (gera um `treino-AAAA-MM-DD.md` e abre o compartilhar: dia a dia com séries×reps, progressão de 3 meses por exercício, totais, prêmios e rating). É o que você cola/anexa no chat do Claude para ele comentar seu desempenho.
   - Re-testar: Configurações → copiar com e sem treino hoje; gerar o arquivo e abrir o .md.

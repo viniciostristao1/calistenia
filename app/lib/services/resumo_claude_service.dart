@@ -3,6 +3,8 @@ import '../models/conclusao.dart';
 import '../models/conquista.dart';
 import '../models/escudo.dart';
 import '../models/insignia.dart';
+import '../models/medida.dart';
+import '../models/nota.dart';
 import '../models/registro_progressao.dart';
 import '../models/treino.dart';
 import '../util/extrato_rating.dart';
@@ -200,6 +202,8 @@ class ResumoClaude {
     required List<Conquista> conquistas,
     required List<Insignia> insignias,
     required List<Escudo> escudos,
+    List<Medida> medidas = const [],
+    List<Nota> notas = const [],
   }) {
     final h = _dia(hoje);
     final b = StringBuffer()
@@ -328,7 +332,62 @@ class ResumoClaude {
     if (extrato.isNotEmpty) {
       b.writeln('Últimas pontuações: ${extrato.map((p) => '${fmtDataCurta(p.data)} ${p.emoji} +${p.pontos} (${p.motivo})').join('; ')}.');
     }
+    b.writeln();
+
+    // ── medidas corporais ──
+    if (medidas.isNotEmpty) {
+      final ord = [...medidas]..sort((a, b) => a.data.compareTo(b.data));
+      final ultimas = ord.length <= 5 ? ord : ord.sublist(ord.length - 5);
+      b.writeln('## Medidas corporais (peso em kg, resto em cm)');
+      for (final m in ultimas) {
+        final partes = <String>[];
+        if (m.peso != null) partes.add('peso ${fmtPeso(m.peso!)}');
+        if (m.cintura != null) partes.add('cintura ${_fmtCm(m.cintura!)}');
+        if (m.braco != null) partes.add('braço ${_fmtCm(m.braco!)}');
+        if (m.peito != null) partes.add('peito ${_fmtCm(m.peito!)}');
+        if (m.coxa != null) partes.add('coxa ${_fmtCm(m.coxa!)}');
+        if (partes.isEmpty) continue;
+        b.writeln('- ${_diaTxt(_dia(m.data))}: ${partes.join(' · ')}.');
+      }
+      final evo = _evolucaoMedidas(ord);
+      if (evo.isNotEmpty) {
+        b.writeln(
+            'Evolução (${_diaTxt(_dia(ord.first.data))} → ${_diaTxt(_dia(ord.last.data))}): $evo.');
+      }
+      b.writeln();
+    }
+
+    // ── notas livres ──
+    final textoNotas = notasParaTexto(notas);
+    if (textoNotas.isNotEmpty) {
+      b.writeln('## Notas');
+      b.writeln(textoNotas);
+      b.writeln();
+    }
     return b.toString();
+  }
+
+  /// "70" em vez de "70,0" (cm das medidas; o peso usa `fmtPeso`).
+  static String _fmtCm(double v) => v == v.roundToDouble()
+      ? '${v.toInt()}'
+      : v.toStringAsFixed(1).replaceAll('.', ',');
+
+  /// Primeira → última por métrica (só as que têm valor nos dois extremos).
+  static String _evolucaoMedidas(List<Medida> ord) {
+    if (ord.length < 2) return '';
+    final a = ord.first, z = ord.last;
+    final partes = <String>[];
+    void par(String nome, double? va, double? vz, String Function(double) fmt) {
+      if (va == null || vz == null) return;
+      partes.add('$nome ${fmt(va)} → ${fmt(vz)}');
+    }
+
+    par('peso', a.peso, z.peso, fmtPeso);
+    par('cintura', a.cintura, z.cintura, _fmtCm);
+    par('braço', a.braco, z.braco, _fmtCm);
+    par('peito', a.peito, z.peito, _fmtCm);
+    par('coxa', a.coxa, z.coxa, _fmtCm);
+    return partes.join('; ');
   }
 
   static String _emojiConquista(String tipo) => switch (tipo) {
