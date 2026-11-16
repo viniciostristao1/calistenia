@@ -74,6 +74,30 @@ Estrutura na nuvem: um doc por usuário `users/{uid}` com os campos `treinos`, `
 - **Nome "Calis Timer":** é só o nome de **exibição** (`android:label` + título da home).
   Muda quando você quiser, sem afetar o Firebase. O package segue `com.vinyapps.calistenia`.
 
+## Resumo automático no Drive (OAuth do app, sem Cloud Function) — v0.112.0
+
+O app grava sozinho o `treinos.md` na pasta "Calis Timer" do Drive do usuário
+ao concluir um treino, usando o **login Google que já existe** + escopo
+`https://www.googleapis.com/auth/drive.file` (só arquivos criados pelo app —
+**não-sensível**, sem verificação). Não há Cloud Function, conta de serviço,
+chave ou Blaze: conta de serviço **não** cria arquivo em Drive pessoal
+(erro 403 `storageQuotaExceeded` — ela não tem cota e vira dona do arquivo).
+
+**Você configura uma vez no Google Cloud Console** (projeto `calis-timer`):
+
+1. **APIs e serviços → Biblioteca** → ative **Google Drive API** (se ainda não).
+2. **APIs e serviços → Tela de consentimento OAuth → Editar app**:
+   - **Escopos → Adicionar ou remover escopos** → marque
+     `.../auth/drive.file` ("Criar arquivos do app / ver arquivos abertos
+     pelo app") → **Salvar**.
+   - **Público-alvo → Publicar app** (sair de "Teste" → "Produção"). Motivo:
+     em Teste o refresh token **expira em 7 dias** e o envio pararia toda
+     semana; em Produção não expira. Por ser escopo não-sensível e uso
+     pessoal (só você), **não precisa de verificação**.
+3. No celular: saia e entre de novo no app (ou aguarde o próximo login) para
+   ver o consentimento do Drive **uma vez**; depois renova sozinho. Recusar =
+   o app nunca pergunta de novo (o resumo fica só pendente).
+
 ## Crashlytics (relatório de crashes) — v0.36.0
 
 Pacote `firebase_crashlytics`. Em `main.dart`, `FlutterError.onError` e

@@ -3,7 +3,7 @@ description: "Cronômetros de treino de calistenia — preparação, execução,
 publish_to: 'none'
 
 # versionName+versionCode. Ex.: 0.1.0+1 → versionName "0.1.0", versionCode 1.
-version: 0.111.0+170
+version: 0.112.0+171
 
 environment:
   sdk: ^3.12.2
@@ -28,6 +28,8 @@ dependencies:
   share_plus: ^12.0.1            # compartilhar o arquivo de backup (.json)
   file_picker: ^10.3.3           # escolher o arquivo ao importar backup
   path_provider: ^2.1.6          # pasta temporária p/ escrever o backup
+  googleapis: ^19.0.0
+  http: ^1.6.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

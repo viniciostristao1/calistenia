@@ -3,6 +3,17 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-16 — v0.112.0 (resumo automático no Drive):**
+  - Ao concluir um treino, o app acrescenta sozinho um bloco do dia no
+  `treinos.md` (pasta "Calis Timer" do seu Drive): data, treino, por exercício
+  (plano + feito) e check-ins do dia. No topo, bloco "Totais acumulados"
+  (primeiro treino, concluídos, dias, check-ins); blocos com +4 meses são
+  podados sem mexer nos totais. Funciona offline (tenta de novo ao abrir o
+  app). **Antes de usar:** autorize o acesso ao Drive no login e publique a
+  tela de consentimento (ver FIREBASE.md) — sem isso, nada é enviado.
+  - Re-testar: concluir treino com internet → bloco no Drive em segundos;
+  concluir offline → abrir com internet → bloco aparece.
+
 - **2026-11-16 — v0.111.0 (arquivo da Muse com medidas e notas):**
   - O **"Gerar arquivo de 15 dias"** (Configurações → "Resumo para a Muse") ganhou duas seções: **Medidas corporais** (últimas 5 medições + evolução primeira→última por métrica) e **Notas** (texto livre do bloco de notas). Vazias, as seções somem sem quebrar o arquivo.
   - Re-testar: gerar o arquivo com medidas/notas e abrir o .md.

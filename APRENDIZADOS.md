@@ -5,6 +5,24 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-16 — Resumo automático no Drive (v0.112.0)
+
+**Pedido:** ao concluir o treino, gravar sozinho um resumo curto num `treinos.md`
+do Drive (sem Cloud Function, sem conta de serviço — conta de serviço não cria
+arquivo em Drive pessoal, 403 `storageQuotaExceeded` confirmado na doc oficial).
+
+**Feito:** `drive_resumo_service.dart` — gatilho após `registrar()` no player
+(completo e tentativa) + retry silencioso no arranque da home. Escopo
+`drive.file` via `authorizationClient` do google_sign_in v7 (silencioso;
+interativo só na 1ª vez, recusa = nunca mais pergunta). Idempotência por
+marcador `<!-- conclusao:id:c|t -->` + mapa `contados` nas prefs; totais
+incrementais com carga inicial única do histórico; poda > 4 meses (SP) sem
+tocar totais; recriação a partir das prefs se arquivo/fileId sumirem; upgrade
+tentativa→completo troca o bloco e move a contagem. Arquivo nunca recebe
+medidas, notas, uid, e-mail, tokens. Pacotes novos: `googleapis`, `http`.
+Testes: `drive_resumo_test.dart` (9: bloco, carga única, sem duplicar,
+upgrade, poda, offline→reenvio, recriação, sem login). Suite: 155 passando.
+
 ## 2026-11-16 — Arquivo da Muse com medidas e notas (v0.111.0)
 
 **Pedido:** incluir no `treino-AAAA-MM-DD.md` as medidas corporais e as notas

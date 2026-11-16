@@ -16,6 +16,7 @@ import '../../services/auth_service.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
 import '../../services/conquistas_repository.dart';
+import '../../services/drive_resumo_service.dart';
 import '../../services/escudo_repository.dart';
 import '../../services/gamificacao_pref.dart';
 import '../../services/insignias_repository.dart';
@@ -440,7 +441,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   Future<void> _marcarCompleto() async {
     final treino = widget.treino;
     if (treino == null) return;
-    await ref.read(conclusaoProvider.notifier).registrar(treino);
+    final conc =
+        await ref.read(conclusaoProvider.notifier).registrar(treino);
     // Progressão automática: completar = fez o planejado; se as reps do plano
     // superam o recorde, vira recorde novo (sem folha manual).
     final novosRecordes = await _registrarRecordes();
@@ -448,6 +450,16 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
     final treinos = ref.read(treinosProvider).value ?? const [];
     final prog = ref.read(progressaoProvider).value ?? const [];
     final checkins = ref.read(checkinProvider).value ?? const [];
+    // Resumo no Drive (best-effort, sem travar o fluxo): só se algo mudou.
+    if (conc != null) {
+      unawaited(ref.read(driveResumoServiceProvider).enviarAposConclusao(
+            conclusao: conc,
+            treino: treino,
+            progressoes: prog,
+            checkins: checkins,
+            conclusoes: concs,
+          ));
+    }
     final diasValidos = checkins
         .map((c) => DateTime(c.data.year, c.data.month, c.data.day))
         .toSet();
@@ -584,10 +596,21 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
   /// sorteia uma frase de incentivo.
   Future<void> _marcarIncompleto() async {
     final treino = widget.treino;
-    if (treino != null) {
-      await ref
-          .read(conclusaoProvider.notifier)
-          .registrar(treino, completo: false);
+    if (treino == null) return;
+    final conc = await ref
+        .read(conclusaoProvider.notifier)
+        .registrar(treino, completo: false);
+    if (conc != null) {
+      final prog = ref.read(progressaoProvider).value ?? const [];
+      final checkins = ref.read(checkinProvider).value ?? const [];
+      final concs = ref.read(conclusaoProvider).value ?? const [];
+      unawaited(ref.read(driveResumoServiceProvider).enviarAposConclusao(
+            conclusao: conc,
+            treino: treino,
+            progressoes: prog,
+            checkins: checkins,
+            conclusoes: concs,
+          ));
     }
     if (!mounted) return;
     setState(() {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import '../../models/exercicio.dart';
 import '../../models/treino.dart';
 import '../../services/checkin_repository.dart';
 import '../../services/conclusao_repository.dart';
+import '../../services/drive_resumo_service.dart';
 import '../../services/escudo_repository.dart';
 import '../../services/home_layout_pref.dart';
 import '../../services/idioma_repository.dart';
@@ -36,6 +39,20 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _dia = diaDeHoje;
+
+  @override
+  void initState() {
+    super.initState();
+    // Reenvia resumos do Drive que ficaram pendentes (offline), sem UI.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(ref.read(driveResumoServiceProvider).tentarPendentes(
+            conclusoes:
+                ref.read(conclusaoProvider).value ?? const [],
+            checkins: ref.read(checkinProvider).value ?? const [],
+          ));
+    });
+  }
 
   /// Aba interna do modo Hoje/Semana (ideia 8).
   bool _verSemana = false;
