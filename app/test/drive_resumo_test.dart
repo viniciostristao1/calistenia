@@ -237,6 +237,84 @@ void main() {
     });
   });
 
+  group('plano semanal no arquivo', () {
+    Treino planoTreino(String nome, List<int> dias) => Treino(
+          id: nome,
+          nome: nome,
+          dias: dias,
+          exercicios: [Exercicio(nome: 'Flexão', series: 3, repeticoes: 10)],
+        );
+
+    test('entra após os totais e não duplica em envios seguidos', () async {
+      SharedPreferences.setMockInitialValues({});
+      final drive = _DriveFake();
+      final svc = _servico(drive, token: 'tok');
+      final treinos = [planoTreino('Peito', [0]), planoTreino('Costas', [1])];
+      for (final id in ['p1', 'p2']) {
+        await svc.enviarAposConclusao(
+          conclusao: _cc(id, 0),
+          treinos: treinos,
+          conclusoes: [_cc(id, 0)],
+          checkins: const [],
+          interativo: false,
+          agora: _hoje,
+        );
+      }
+      final texto = drive.arquivos['treinos.md']!;
+      expect('## Plano semanal'.allMatches(texto).length, 1);
+      expect(
+        texto.indexOf('## Plano semanal'),
+        lessThan(texto.indexOf('## 2026-10-16')),
+      );
+      expect(texto, contains('- Segunda: Peito (Flexão 3×10 · 3s/rep · desc 1min)'));
+      expect(texto, contains('- Terça: Costas (Flexão 3×10 · 3s/rep · desc 1min)'));
+      expect(texto, contains('- Quarta: — descanso —'));
+    });
+
+    test('poda preserva plano e totais; treinos vazios omitem', () async {
+      SharedPreferences.setMockInitialValues({});
+      final drive = _DriveFake();
+      final svc = _servico(drive, token: 'tok');
+      drive.arquivos['treinos.md'] =
+          '# Calis Timer — treinos\n\n## Totais acumulados (x)\n- a\n\n'
+          '## 2026-06-01 — X (completo)\n- Check-ins do dia: 0\n<!-- conclusao:old -->\n';
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(chaveDriveResumoCarga, true);
+      await prefs.setString(
+          chaveDriveResumoTotais,
+          '{"primeiro":0,"completos":1,"incompletos":0,'
+          '"dias":["2026-06-01"],"checkins":0,"contados":{}}');
+      await svc.enviarAposConclusao(
+        conclusao: _cc('n2', 0),
+        treinos: [planoTreino('Peito', [0])],
+        conclusoes: [_cc('n2', 0)],
+        checkins: const [],
+        interativo: false,
+        agora: _hoje,
+      );
+      var texto = drive.arquivos['treinos.md']!;
+      expect(texto.contains('2026-06-01'), isFalse);
+      expect(texto, contains('## Plano semanal'));
+      expect(texto, contains('Treinos concluídos: 2 (2 completos · 0 tentativas)'));
+
+      // Treinos vazios: sem seção, arquivo válido.
+      SharedPreferences.setMockInitialValues({});
+      final drive2 = _DriveFake();
+      final svc2 = _servico(drive2, token: 'tok');
+      await svc2.enviarAposConclusao(
+        conclusao: _cc('n3', 0),
+        treinos: const [],
+        conclusoes: [_cc('n3', 0)],
+        checkins: const [],
+        interativo: false,
+        agora: _hoje,
+      );
+      texto = drive2.arquivos['treinos.md']!;
+      expect(texto.contains('## Plano semanal'), isFalse);
+      expect(texto, contains('conclusao:n3'));
+    });
+  });
+
   group('pendentes e recriação', () {
     test('offline guarda pendente; online reenvia uma vez', () async {
       SharedPreferences.setMockInitialValues({});

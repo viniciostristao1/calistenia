@@ -5,6 +5,20 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-16 — Plano semanal no resumo (v0.113.0)
+
+**Pedido:** o Claude só via a ordem de execução e chutava o treino do dia
+("palpite"); a grade fixa (`Treino.dias` 0=seg..6=dom) não ia em nenhum
+export. Pedido extra: treino sem dia em linha própria + seção sempre presente.
+
+**Feito:** `ResumoClaude.blocoPlanoSemanal` (puro, compartilhado): dias por
+extenso (`nomesDiasLongos`), `;;` entre treinos do mesmo dia, `resumoCurto`
+por exercício, "— descanso —" e "Sem dia definido"; vazio omite. No Drive vai
+no preâmbulo (após Totais, reescrito a cada envio, fora da poda e sem
+marcador); no arquivo de 15 dias vai após a frase do dia. Envios passam a
+receber `treinos` (player + retry da home). Testes: +2 em cada arquivo de
+resumo (posição, duplicação, poda, vazio, sem-dia, proibidos). Suite: 160.
+
 ## 2026-11-16 — Resumo automático no Drive (v0.112.0)
 
 **Pedido:** ao concluir o treino, gravar sozinho um resumo curto num `treinos.md`

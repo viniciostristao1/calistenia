@@ -93,6 +93,37 @@ void main() {
     });
   });
 
+  group('blocoPlanoSemanal', () {
+    Treino mkTreino(String nome, List<int> dias, [String ex = 'Flexão']) =>
+        Treino(id: nome, nome: nome, dias: dias, exercicios: [
+          Exercicio(nome: ex, series: 3, repeticoes: 10),
+        ]);
+
+    test('dias variados, dois treinos no mesmo dia, descanso e sem dia', () {
+      final txt = ResumoClaude.blocoPlanoSemanal(
+        [
+          mkTreino('Peito', [0]),
+          mkTreino('Costas', [1]),
+          mkTreino('Ombro', [1]),
+          mkTreino('Avulso', []),
+        ],
+        '16/11',
+      );
+      expect(txt, contains('## Plano semanal (atualizado em 16/11)'));
+      expect(txt, contains('- Segunda: Peito (Flexão 3×10 · 3s/rep · desc 1min)'));
+      expect(txt, contains('Costas (Flexão 3×10 · 3s/rep · desc 1min) ;; Ombro (Flexão 3×10 · 3s/rep · desc 1min)'));
+      expect(txt, contains('- Quarta: — descanso —'));
+      expect(txt, contains('- Sem dia definido: Avulso (Flexão 3×10 · 3s/rep · desc 1min)'));
+      for (final proibido in ['uid', 'viniciostristao', 'peso:', 'cintura', 'token', 'nota']) {
+        expect(txt.contains(proibido), isFalse, reason: proibido);
+      }
+    });
+
+    test('sem treinos omite a seção', () {
+      expect(ResumoClaude.blocoPlanoSemanal(const [], '16/11'), isEmpty);
+    });
+  });
+
   group('arquivoQuinzena', () {
     test('15 linhas de dia + totais + progressão 3 meses', () {
       final txt = ResumoClaude.arquivoQuinzena(
@@ -130,6 +161,27 @@ void main() {
       expect(txt, contains('Check-ins: 3; conclusões: 2 (2 completas).'));
       expect(txt, contains('## Rating'));
       expect(txt, contains(RegExp(r'Rating: \d+/1000')));
+    });
+
+    test('plano semanal entra após a frase e antes dos 15 dias', () {
+      final t = Treino(id: 't1', nome: 'Peito', dias: const [1], exercicios: [
+        Exercicio(nome: 'Flexão', series: 3, repeticoes: 10),
+      ]);
+      final txt = ResumoClaude.arquivoQuinzena(
+        hoje: _hoje,
+        checkins: const [],
+        conclusoes: const [],
+        progressoes: const [],
+        treinos: [t],
+        conquistas: const [],
+        insignias: const [],
+        escudos: const [],
+      );
+      expect(txt, contains('- Terça: Peito (Flexão 3×10 · 3s/rep · desc 1min)'));
+      expect(
+        txt.indexOf('## Plano semanal'),
+        lessThan(txt.indexOf('## Últimos 15 dias')),
+      );
     });
 
     test('medidas: últimas 5 + evolução primeira→última', () {

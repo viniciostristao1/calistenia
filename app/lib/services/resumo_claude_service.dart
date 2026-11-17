@@ -7,6 +7,7 @@ import '../models/medida.dart';
 import '../models/nota.dart';
 import '../models/registro_progressao.dart';
 import '../models/treino.dart';
+import '../util/dias.dart';
 import '../util/extrato_rating.dart';
 import '../util/format.dart';
 import '../util/gamificacao.dart';
@@ -115,6 +116,46 @@ class ResumoClaude {
     return null;
   }
 
+  /// Grade fixa da semana a partir de `Treino.dias` (0=seg .. 6=dom).
+  /// Vazia quando não há treinos. Dia sem treino vira "— descanso —";
+  /// treino ativo sem dia cai na linha "Sem dia definido". Exercício
+  /// arquivado não aparece (já saiu dos treinos). Só usa nome/estrutura do
+  /// plano — nunca medidas, notas, uid ou e-mail.
+  static String blocoPlanoSemanal(
+      List<Treino> treinos, String atualizadoEm) {
+    if (treinos.isEmpty) return '';
+    final porDia = List.generate(7, (_) => <Treino>[]);
+    final semDia = <Treino>[];
+    for (final t in treinos) {
+      if (t.dias.isEmpty) {
+        semDia.add(t);
+      } else {
+        for (final d in t.dias) {
+          if (d >= 0 && d < 7) porDia[d].add(t);
+        }
+      }
+    }
+    String descrever(Treino t) {
+      final nome = t.nome.trim().isEmpty ? 'Treino' : t.nome;
+      if (t.exercicios.isEmpty) return nome;
+      final ex = t.exercicios.map((e) => '${e.nome} ${e.resumoCurto}');
+      return '$nome (${ex.join(' | ')})';
+    }
+
+    final b = StringBuffer('## Plano semanal (atualizado em $atualizadoEm)\n');
+    for (var d = 0; d < 7; d++) {
+      final doDia = porDia[d];
+      b.writeln(doDia.isEmpty
+          ? '- ${nomesDiasLongos[d]}: — descanso —'
+          : '- ${nomesDiasLongos[d]}: ${doDia.map(descrever).join(' ;; ')}');
+    }
+    if (semDia.isNotEmpty) {
+      b.writeln(
+          '- Sem dia definido: ${semDia.map(descrever).join(' ;; ')}');
+    }
+    return b.toString();
+  }
+
   /// Linha de abertura ("Completei o treino hoje, agora são N dias…").
   static String fraseStreak(
     DateTime hoje,
@@ -214,6 +255,12 @@ class ResumoClaude {
       ..writeln('_Tempo e descanso abaixo são DO PLANO (o app não registra '
           'tempo executado da sessão)._')
       ..writeln();
+
+    // ── plano semanal (grade fixa; responde "qual é o treino de terça?") ──
+    final plano = blocoPlanoSemanal(treinos, fmtDataCurta(h));
+    if (plano.isNotEmpty) {
+      b.writeln(plano);
+    }
 
     // ── dia a dia (15 dias, hoje incluso) ──
     b.writeln('## Últimos 15 dias');

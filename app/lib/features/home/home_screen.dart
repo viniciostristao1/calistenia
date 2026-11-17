@@ -50,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             conclusoes:
                 ref.read(conclusaoProvider).value ?? const [],
             checkins: ref.read(checkinProvider).value ?? const [],
+            treinos: ref.read(treinosProvider).value ?? const [],
           ));
     });
   }

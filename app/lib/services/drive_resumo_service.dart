@@ -13,6 +13,7 @@ import '../models/conclusao.dart';
 import '../models/registro_progressao.dart';
 import '../models/treino.dart';
 import '../util/format.dart';
+import 'resumo_claude_service.dart';
 
 /// Resumo automático do treino no Google Drive (`treinos.md`).
 ///
@@ -280,9 +281,14 @@ String montarArquivo({
   required TotaisResumo totais,
   required String atualizadoEm,
   required List<BlocoArquivo> diarios,
+  String plano = '',
 }) {
   final b = StringBuffer(blocoTotais(totais, atualizadoEm));
   b.writeln();
+  if (plano.isNotEmpty) {
+    b.write(plano.endsWith('\n') ? plano : '$plano\n');
+    b.writeln();
+  }
   for (final d in diarios) {
     b.write(d.texto);
     if (!d.texto.endsWith('\n')) b.write('\n');
@@ -571,6 +577,7 @@ class DriveResumoService {
     List<RegistroProgressao> progressoes = const [],
     List<CheckIn> checkins = const [],
     List<Conclusao> conclusoes = const [],
+    List<Treino> treinos = const [],
     bool interativo = true,
     DateTime? agora,
   }) async {
@@ -601,11 +608,13 @@ class DriveResumoService {
         pendente,
         conclusoes: conclusoes,
         checkinsTodos: checkins,
+        treinos: treinos,
         interativo: interativo,
         agora: agora,
       );
     } catch (_) {
       // best-effort: o treino já está salvo; o pendente tenta depois.
+      return;
     }
   }
 
@@ -613,6 +622,7 @@ class DriveResumoService {
   Future<void> tentarPendentes({
     required List<Conclusao> conclusoes,
     required List<CheckIn> checkins,
+    List<Treino> treinos = const [],
     bool interativo = false,
     DateTime? agora,
   }) async {
@@ -626,6 +636,7 @@ class DriveResumoService {
           p,
           conclusoes: conclusoes,
           checkinsTodos: checkins,
+          treinos: treinos,
           interativo: interativo,
           agora: agora,
         );
@@ -658,6 +669,7 @@ class DriveResumoService {
     PendenteResumo pendente, {
     required List<Conclusao> conclusoes,
     required List<CheckIn> checkinsTodos,
+    required List<Treino> treinos,
     required bool interativo,
     DateTime? agora,
   }) async {
@@ -678,9 +690,16 @@ class DriveResumoService {
         fileId = null; // sumiu: recria abaixo a partir das prefs
       }
     }
+    final plano = ResumoClaude.blocoPlanoSemanal(treinos, hojeTxt);
     if (fileId == null) {
       fileId = await drive.criar(
-          _nomePasta, _nomeArquivo, montarArquivo(totais: totais, atualizadoEm: hojeTxt, diarios: const []));
+          _nomePasta,
+          _nomeArquivo,
+          montarArquivo(
+              totais: totais,
+              atualizadoEm: hojeTxt,
+              diarios: const [],
+              plano: plano));
       await prefs.setString(chaveDriveResumoFileId, fileId);
       conteudo = null;
     }
@@ -719,7 +738,10 @@ class DriveResumoService {
       await drive.salvar(
           fileId,
           montarArquivo(
-              totais: totais, atualizadoEm: hojeTxt, diarios: diarios));
+              totais: totais,
+              atualizadoEm: hojeTxt,
+              diarios: diarios,
+              plano: plano));
       await prefs.setString(
           chaveDriveResumoTotais, jsonEncode(totais.toJson()));
       await _removerPendente(prefs, pendente.id);
@@ -738,8 +760,13 @@ class DriveResumoService {
     }
     await prefs.setString(
         chaveDriveResumoTotais, jsonEncode(totais.toJson()));
-    await drive.salvar(fileId,
-        montarArquivo(totais: totais, atualizadoEm: hojeTxt, diarios: diarios));
+    await drive.salvar(
+        fileId,
+        montarArquivo(
+            totais: totais,
+            atualizadoEm: hojeTxt,
+            diarios: diarios,
+            plano: plano));
     await _removerPendente(prefs, pendente.id);
   }
 

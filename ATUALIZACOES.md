@@ -3,6 +3,14 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-16 — v0.113.0 (plano semanal no resumo):**
+  - O `treinos.md` do Drive e o arquivo de 15 dias ganharam a seção **Plano
+  semanal** (segunda a domingo por extenso, treinos separados por `;;`,
+  exercício com séries×reps·tempo·descanso/carga; dia sem treino = "—
+  descanso —"; treino sem dia = linha "Sem dia definido").
+  - Re-testar: concluir um treino → `treinos.md` com a seção logo após os
+  totais; gerar o arquivo de 15 dias → seção após a frase do dia.
+
 - **2026-11-16 — v0.112.0 (resumo automático no Drive):**
   - Ao concluir um treino, o app acrescenta sozinho um bloco do dia no
   `treinos.md` (pasta "Calis Timer" do seu Drive): data, treino, por exercício

@@ -458,6 +458,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
             progressoes: prog,
             checkins: checkins,
             conclusoes: concs,
+            treinos: treinos,
           ));
     }
     final diasValidos = checkins
@@ -604,12 +605,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen>
       final prog = ref.read(progressaoProvider).value ?? const [];
       final checkins = ref.read(checkinProvider).value ?? const [];
       final concs = ref.read(conclusaoProvider).value ?? const [];
+      final treinos = ref.read(treinosProvider).value ?? const [];
       unawaited(ref.read(driveResumoServiceProvider).enviarAposConclusao(
             conclusao: conc,
             treino: treino,
             progressoes: prog,
             checkins: checkins,
             conclusoes: concs,
+            treinos: treinos,
           ));
     }
     if (!mounted) return;
