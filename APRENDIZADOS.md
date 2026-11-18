@@ -5,6 +5,37 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-18 — Medidas do corpo no treinos.md + peso 2 casas (v0.114.0)
+
+**Decisão do usuário (SUBSTITUI a regra antiga "o arquivo NUNCA recebe medidas"):** o
+`treinos.md` do Drive passa a incluir a seção `## Medidas do corpo (histórico)` (tabela
+Data | Peso (kg) | Cintura | Braço | Peito | Coxa) para a IA de conversa acompanhar a
+evolução. Continua PROIBIDO notas/uid/e-mail/tokens/chaves. Documentado no docstring de
+`services/drive_resumo_service.dart`.
+
+**Como encaixou na arquitetura existente (sem refatorar):** a seção é tratada como mais um
+pedaço do PREÂMBULO reconstruído a cada gravação — igual ao plano semanal. `montarArquivo`
+ganhou `String medidas` (entre o plano e os blocos diários). Como o preâmbulo é sempre
+remontado do estado atual, saem de graça: **não duplica**, **editar/apagar reescreve**, e a
+**poda de 4 meses não toca** (ela só remove blocos `## YYYY-MM-DD`). Fonte da verdade = as
+prefs do `medidasProvider` (`chaveMedidas`), lidas direto pelo serviço (`_lerMedidas`).
+
+**Gatilho/offline:** `enviarAposMedida` (disparado pela UI em `medidas_bloco.dart` ao
+salvar/editar/apagar/desfazer — mesmo padrão dos treinos, a tela dispara) regrava via
+`_regravarComMedidas`. Se offline, marca `chaveDriveResumoMedidasPendente`; o retry do
+arranque (`tentarPendentes`) reescreve na próxima oportunidade. Toda `enviarAposConclusao`
+também já inclui a tabela (as 3 chamadas de `montarArquivo` em `_enviarPendente`).
+
+**Gotcha:** o caso "Novo" de `_enviarPendente` tinha indentação diferente (12 vs 14 espaços),
+então o `replace_all` não o pegou e ele re-salvava SEM medidas (apagava a seção que o
+`criar` tinha posto). Lição: ao propagar um parâmetro por várias chamadas, conferir TODAS
+(teste "medidas convivem com treino" pegou isso).
+
+**Peso 2 casas:** `_fmtNum` (medidas_bloco) usava `toStringAsFixed(1)` → 56,75 virava 56,8 só
+na EXIBIÇÃO (o `_parse` com `double.tryParse` sempre preservou o dado). Passou a até 2 casas
+sem zero à toa; corrige também o campo ao reeditar. Na tabela do Drive, `_fmtMedidaCelula` usa
+a mesma regra.
+
 ## 2026-11-16 — Plano semanal no resumo (v0.113.0)
 
 **Pedido:** o Claude só via a ordem de execução e chutava o treino do dia

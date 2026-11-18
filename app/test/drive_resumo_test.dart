@@ -3,11 +3,33 @@ import 'dart:convert';
 import 'package:calistenia/models/checkin.dart';
 import 'package:calistenia/models/conclusao.dart';
 import 'package:calistenia/models/exercicio.dart';
+import 'package:calistenia/models/medida.dart';
 import 'package:calistenia/models/registro_progressao.dart';
 import 'package:calistenia/models/treino.dart';
 import 'package:calistenia/services/drive_resumo_service.dart';
+import 'package:calistenia/services/medidas_repository.dart' show chaveMedidas;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Medida de teste (data 'YYYY-MM-DD'); campos omitidos ficam nulos (em branco).
+Medida _md(
+  String isoDay, {
+  String? id,
+  double? peso,
+  double? cintura,
+  double? braco,
+  double? peito,
+  double? coxa,
+}) =>
+    Medida(
+      id: id ?? 'm-$isoDay',
+      data: DateTime.parse(isoDay),
+      peso: peso,
+      cintura: cintura,
+      braco: braco,
+      peito: peito,
+      coxa: coxa,
+    );
 
 final _hoje = DateTime(2026, 10, 16);
 
@@ -383,6 +405,143 @@ void main() {
       );
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString(chaveDriveResumoPendentes), contains('s1'));
+    });
+  });
+
+  group('medidas no arquivo (histórico do corpo)', () {
+    Future<void> porMedidas(List<Medida> ms) async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          chaveMedidas, jsonEncode(ms.map((e) => e.toJson()).toList()));
+    }
+
+    test('blocoMedidas: cronológico, campos vazios e 2 casas no peso', () {
+      final md = blocoMedidas([
+        _md('2026-11-01', peso: 79, cintura: 85, coxa: 57), // braço/peito vazios
+        _md('2026-09-01',
+            peso: 82.0, cintura: 88, braco: 38, peito: 102, coxa: 58),
+        _md('2026-10-01', peso: 56.75, cintura: 86.8), // 2 casas + 1 casa
+      ]);
+      expect(md, contains('## Medidas do corpo (histórico)'));
+      expect(
+          md,
+          contains(
+              '| Data | Peso (kg) | Cintura (cm) | Braço (cm) | Peito (cm) | Coxa (cm) |'));
+      // Ordem antigo → recente.
+      expect(md.indexOf('2026-09-01'), lessThan(md.indexOf('2026-10-01')));
+      expect(md.indexOf('2026-10-01'), lessThan(md.indexOf('2026-11-01')));
+      // Linha completa (peso inteiro sem casas).
+      expect(md, contains('| 2026-09-01 | 82 | 88 | 38 | 102 | 58 |'));
+      // Peso de balança com 2 casas; cintura com 1 casa; demais em branco.
+      expect(md, contains('| 2026-10-01 | 56,75 | 86,8 |  |  |  |'));
+      // Campos em branco ficam vazios (não "0"); linha segue válida.
+      expect(md, contains('| 2026-11-01 | 79 | 85 |  |  | 57 |'));
+      expect(md.contains(' 0 '), isFalse);
+    });
+
+    test('lista vazia → seção omitida (string vazia)', () {
+      expect(blocoMedidas(const []), '');
+    });
+
+    test('salvar: seção entra após os totais e antes dos diários; sem proibidos',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final drive = _DriveFake();
+      final svc = _servico(drive, token: 'tok');
+      await porMedidas([_md('2026-10-10', peso: 56.75, cintura: 86)]);
+      await svc.enviarAposMedida(
+          conclusoes: const [], checkins: const [], agora: _hoje);
+      final texto = drive.arquivos['treinos.md']!;
+      expect(texto, contains('## Medidas do corpo (histórico)'));
+      expect(texto, contains('| 2026-10-10 | 56,75 | 86 |  |  |  |'));
+      expect(texto.indexOf('## Totais acumulados'),
+          lessThan(texto.indexOf('## Medidas do corpo')));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(chaveDriveResumoMedidasPendente), isFalse);
+      for (final proibido in [
+        'uid',
+        'viniciostristao@gmail.com',
+        'token',
+        'Nota('
+      ]) {
+        expect(texto.contains(proibido), isFalse, reason: proibido);
+      }
+    });
+
+    test('envio repetido não duplica a seção; 2 medições no mesmo dia = 2 linhas',
+        () async {
+      SharedPreferences.setMockInitialValues({});
+      final drive = _DriveFake();
+      final svc = _servico(drive, token: 'tok');
+      await porMedidas([
+        _md('2026-10-10', id: 'a', peso: 80),
+        _md('2026-10-10', id: 'b', peso: 81),
+      ]);
+      for (var i = 0; i < 3; i++) {
+        await svc.enviarAposMedida(
+            conclusoes: const [], checkins: const [], agora: _hoje);
+      }
+      final texto = drive.arquivos['treinos.md']!;
+      expect('## Medidas do corpo'.allMatches(texto).length, 1);
+      expect('| 2026-10-10 |'.allMatches(texto).length, 2);
+    });
+
+    test('editar/apagar reescreve a tabela do estado atual', () async {
+      SharedPreferences.setMockInitialValues({});
+      final drive = _DriveFake();
+      final svc = _servico(drive, token: 'tok');
+      await porMedidas([
+        _md('2026-10-10', id: 'a', peso: 80),
+        _md('2026-10-11', id: 'z', peso: 79),
+      ]);
+      await svc.enviarAposMedida(
+          conclusoes: const [], checkins: const [], agora: _hoje);
+      expect(drive.arquivos['treinos.md']!, contains('2026-10-11'));
+      // Apaga a de 11 e edita a de 10 (80 -> 78): o estado atual é regravado.
+      await porMedidas([_md('2026-10-10', id: 'a', peso: 78)]);
+      await svc.enviarAposMedida(
+          conclusoes: const [], checkins: const [], agora: _hoje);
+      final texto = drive.arquivos['treinos.md']!;
+      expect(texto.contains('2026-10-11'), isFalse);
+      expect(texto, contains('| 2026-10-10 | 78 |'));
+      expect('| 2026-10-10 |'.allMatches(texto).length, 1);
+    });
+
+    test('offline: fica pendente e aparece na próxima oportunidade', () async {
+      SharedPreferences.setMockInitialValues({});
+      final drive = _DriveFake()..falharTudo = true;
+      final svc = _servico(drive, token: 'tok');
+      await porMedidas([_md('2026-10-10', peso: 80)]);
+      await svc.enviarAposMedida(
+          conclusoes: const [], checkins: const [], agora: _hoje);
+      var prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(chaveDriveResumoMedidasPendente), isTrue);
+      expect(drive.arquivos.containsKey('treinos.md'), isFalse);
+      // Volta a internet: o retry do arranque reescreve e limpa o flag.
+      drive.falharTudo = false;
+      await svc.tentarPendentes(
+          conclusoes: const [], checkins: const [], agora: _hoje);
+      prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(chaveDriveResumoMedidasPendente), isFalse);
+      expect(drive.arquivos['treinos.md'], contains('| 2026-10-10 | 80 |'));
+    });
+
+    test('medidas convivem com treino e NÃO são podadas (> 4 meses)', () async {
+      SharedPreferences.setMockInitialValues({});
+      final drive = _DriveFake();
+      final svc = _servico(drive, token: 'tok');
+      await porMedidas([_md('2026-05-01', peso: 85)]); // bem antiga
+      await svc.enviarAposConclusao(
+        conclusao: _cc('t', 0),
+        conclusoes: [_cc('t', 0)],
+        checkins: const [],
+        interativo: false,
+        agora: _hoje,
+      );
+      final texto = drive.arquivos['treinos.md']!;
+      expect(texto, contains('## Medidas do corpo (histórico)'));
+      expect(texto, contains('| 2026-05-01 | 85 |')); // sobrevive à poda
+      expect(texto, contains('conclusao:t'));
     });
   });
 }

@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-18 — v0.114.0 (medidas do corpo no resumo do Drive + peso com 2 casas):**
+  - O arquivo **`treinos.md`** (pasta "Calis Timer" do seu Drive) agora traz a seção **"Medidas do corpo (histórico)"** — tabela com **Data · Peso (kg) · Cintura · Braço · Peito · Coxa** — para a Muse/IA acompanhar sua evolução **junto dos treinos, sem você exportar nada**.
+  - Atualiza **sozinho** ao salvar/editar/apagar uma medida (em até ~1 min). Sem internet, sobe na próxima oportunidade. Campos em branco ficam vazios (não viram 0). A tabela **nunca é apagada** (a poda de 4 meses vale só para os blocos de treino).
+  - O **peso agora aceita e mostra 2 casas decimais** (ex.: **56,75** não vira mais 56,8), na tela de Medidas e no arquivo.
+  - Re-testar: salve uma pesagem e, em ~1 min, veja a linha nova no `treinos.md`.
+
 - **2026-11-16 — v0.113.0 (plano semanal no resumo):**
   - O `treinos.md` do Drive e o arquivo de 15 dias ganharam a seção **Plano
   semanal** (segunda a domingo por extenso, treinos separados por `;;`,

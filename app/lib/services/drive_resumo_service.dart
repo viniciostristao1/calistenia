@@ -10,9 +10,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/checkin.dart';
 import '../models/conclusao.dart';
+import '../models/medida.dart';
 import '../models/registro_progressao.dart';
 import '../models/treino.dart';
 import '../util/format.dart';
+import 'medidas_repository.dart' show chaveMedidas;
 import 'resumo_claude_service.dart';
 
 /// Resumo automático do treino no Google Drive (`treinos.md`).
@@ -23,10 +25,16 @@ import 'resumo_claude_service.dart';
 /// Tudo é best-effort e nunca quebra o salvamento do treino.
 ///
 /// Regras duras (pedido do usuário):
-/// - o arquivo NUNCA recebe medidas, notas, uid, e-mail, tokens ou chaves — o
-///   montador só recebe conclusão/treino/progressão/check-ins do dia;
-/// - idempotência por marcador `<!-- conclusao:<id> -->` (a entrega pode
-///   repetir; o mesmo treino nunca conta duas vezes);
+/// - DECISÃO DO USUÁRIO (2026-11-18, SUBSTITUI a regra anterior): o arquivo
+///   AGORA inclui o HISTÓRICO DE MEDIDAS do corpo — seção
+///   "## Medidas do corpo (histórico)" com tabela peso/circunferências — para a
+///   IA de conversa acompanhar a evolução do peso e das medidas junto dos
+///   treinos, sem exportar nada. Continua PROIBIDO: notas, uid, e-mail, tokens
+///   ou chaves. A tabela é sempre REESCRITA do estado atual das medidas (nunca
+///   duplica; editar/apagar no app reflete no arquivo) e NUNCA é podada (a poda
+///   de 4 meses vale só p/ os blocos diários de treino).
+/// - idempotência dos BLOCOS DE TREINO por marcador `<!-- conclusao:<id> -->`
+///   (a entrega pode repetir; o mesmo treino nunca conta duas vezes);
 /// - totais acumulados incrementais nas prefs (fonte da verdade); a poda dos
 ///   blocos > 4 meses nunca altera os totais.
 
@@ -39,6 +47,7 @@ const chaveDriveResumoTotais = 'drive_resumo_totais_v1';
 const chaveDriveResumoPendentes = 'drive_resumo_pendentes_v1';
 const chaveDriveResumoRecusado = 'drive_resumo_recusado_v1';
 const chaveDriveResumoCarga = 'drive_resumo_carga_inicial_v1';
+const chaveDriveResumoMedidasPendente = 'drive_resumo_medidas_pendente_v1';
 
 /// Totais acumulados (nunca descartados; vivem nas prefs e no topo do arquivo).
 class TotaisResumo {
@@ -277,16 +286,57 @@ String blocoTotais(TotaisResumo t, String atualizadoEm) {
   return b.toString();
 }
 
+/// Formata uma célula de medida SEM unidade (a coluna já traz "(kg)"/"(cm)"):
+/// inteiro quando redondo, senão até 2 casas sem zero à toa (o peso de balança
+/// 56,75 mantém as 2 casas). Campo ausente = célula vazia (nunca "0"/"-").
+String _fmtMedidaCelula(double? v) {
+  if (v == null) return '';
+  if (v == v.roundToDouble()) return v.toInt().toString();
+  var s = v.toStringAsFixed(2);
+  if (s.endsWith('0')) s = s.substring(0, s.length - 1);
+  return s.replaceAll('.', ',');
+}
+
+/// Seção "## Medidas do corpo (histórico)": tabela Markdown em ordem CRONOLÓGICA
+/// (antigo → recente; decisão do usuário 2026-11-18). Colunas:
+/// Data | Peso (kg) | Cintura (cm) | Braço (cm) | Peito (cm) | Coxa (cm).
+/// Uma linha por medição (data do registro); campos em branco ficam com a célula
+/// vazia (a linha segue válida). Lista vazia → '' (seção omitida, sem quebrar o
+/// arquivo). NUNCA inclui notas, uid, e-mail, tokens ou chaves.
+String blocoMedidas(List<Medida> medidas) {
+  if (medidas.isEmpty) return '';
+  final ord = [...medidas]..sort((a, b) {
+      final c = a.data.compareTo(b.data);
+      return c != 0 ? c : a.atualizadoEm.compareTo(b.atualizadoEm);
+    });
+  final b = StringBuffer('## Medidas do corpo (histórico)\n\n')
+    ..writeln(
+        '| Data | Peso (kg) | Cintura (cm) | Braço (cm) | Peito (cm) | Coxa (cm) |')
+    ..writeln(
+        '|------|-----------|--------------|------------|------------|------------|');
+  for (final m in ord) {
+    b.writeln('| ${diaChave(m.data)} | ${_fmtMedidaCelula(m.peso)} | '
+        '${_fmtMedidaCelula(m.cintura)} | ${_fmtMedidaCelula(m.braco)} | '
+        '${_fmtMedidaCelula(m.peito)} | ${_fmtMedidaCelula(m.coxa)} |');
+  }
+  return b.toString();
+}
+
 String montarArquivo({
   required TotaisResumo totais,
   required String atualizadoEm,
   required List<BlocoArquivo> diarios,
   String plano = '',
+  String medidas = '',
 }) {
   final b = StringBuffer(blocoTotais(totais, atualizadoEm));
   b.writeln();
   if (plano.isNotEmpty) {
     b.write(plano.endsWith('\n') ? plano : '$plano\n');
+    b.writeln();
+  }
+  if (medidas.isNotEmpty) {
+    b.write(medidas.endsWith('\n') ? medidas : '$medidas\n');
     b.writeln();
   }
   for (final d in diarios) {
@@ -520,6 +570,24 @@ class DriveResumoService {
     }
   }
 
+  /// Medidas atuais (fonte da verdade = as prefs do [medidasProvider]). O service
+  /// lê direto p/ reescrever a tabela do estado atual a cada gravação do arquivo.
+  List<Medida> _lerMedidas(SharedPreferences prefs) {
+    final raw = prefs.getString(chaveMedidas);
+    if (raw == null || raw.isEmpty) return const [];
+    try {
+      return [(jsonDecode(raw) as List)]
+          .expand((e) => e)
+          .map((e) => Medida.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  String _blocoMedidas(SharedPreferences prefs) =>
+      blocoMedidas(_lerMedidas(prefs));
+
   Future<DriveArquivos?> _arquivos({required bool interativo}) async {
     final token = await _token(interativo: interativo);
     if (token == null) return null;
@@ -641,9 +709,107 @@ class DriveResumoService {
           agora: agora,
         );
       }
+      // Medida que ficou pendente (offline): reescreve o arquivo com o estado
+      // atual das medidas na próxima oportunidade (mesmo gatilho de retry do
+      // arranque que já existe p/ os treinos).
+      if (prefs.getBool(chaveDriveResumoMedidasPendente) == true) {
+        await _regravarComMedidas(
+          prefs,
+          conclusoes: conclusoes,
+          checkins: checkins,
+          treinos: treinos,
+          interativo: interativo,
+          agora: agora,
+        );
+      }
     } catch (_) {
       /* best-effort */
     }
+  }
+
+  /// Chamar ao SALVAR/EDITAR/APAGAR uma medida no app (a medida já está
+  /// persistida). Atualiza a seção "Medidas do corpo" no Drive em segundos — a
+  /// tabela é sempre reescrita do estado atual (não duplica; reflete edição e
+  /// exclusão). Offline/erro → fica o flag pendente e o reenvio ocorre na
+  /// próxima oportunidade (arranque do app ou próximo treino). Nunca lança.
+  Future<void> enviarAposMedida({
+    required List<Conclusao> conclusoes,
+    required List<CheckIn> checkins,
+    List<Treino> treinos = const [],
+    bool interativo = false,
+    DateTime? agora,
+  }) async {
+    try {
+      final prefs = await _prefs();
+      await prefs.setBool(chaveDriveResumoMedidasPendente, true);
+      await _regravarComMedidas(
+        prefs,
+        conclusoes: conclusoes,
+        checkins: checkins,
+        treinos: treinos,
+        interativo: interativo,
+        agora: agora,
+      );
+    } catch (_) {
+      // best-effort: a medida já está salva; o flag reenvia depois.
+    }
+  }
+
+  /// Reescreve o arquivo com os dados ATUAIS (totais das prefs + plano dos
+  /// treinos + tabela de medidas das prefs + blocos diários mantidos). Não
+  /// adiciona bloco de treino nem mexe nos totais. Limpa o flag no sucesso.
+  Future<void> _regravarComMedidas(
+    SharedPreferences prefs, {
+    required List<Conclusao> conclusoes,
+    required List<CheckIn> checkins,
+    required List<Treino> treinos,
+    required bool interativo,
+    DateTime? agora,
+  }) async {
+    final totais = await _garantirCargaInicial(prefs, conclusoes, checkins);
+    final drive = await _arquivos(interativo: interativo);
+    if (drive == null) return; // sem login/autorização: fica pendente (flag)
+    final agoraSp =
+        (agora ?? DateTime.now()).toUtc().subtract(const Duration(hours: 3));
+    final hojeTxt = _fmtDataLonga(agoraSp);
+    final medidasStr = _blocoMedidas(prefs);
+    final plano = ResumoClaude.blocoPlanoSemanal(treinos, hojeTxt);
+    var fileId = prefs.getString(chaveDriveResumoFileId);
+    String? conteudo;
+    if (fileId != null) {
+      try {
+        conteudo = await drive.ler(fileId);
+      } catch (e) {
+        if (!_ehNaoEncontrado(e)) return; // offline/outro erro: tenta depois
+        fileId = null; // sumiu: recria abaixo a partir das prefs
+      }
+    }
+    if (fileId == null) {
+      fileId = await drive.criar(
+          _nomePasta,
+          _nomeArquivo,
+          montarArquivo(
+              totais: totais,
+              atualizadoEm: hojeTxt,
+              diarios: const [],
+              plano: plano,
+              medidas: medidasStr));
+      await prefs.setString(chaveDriveResumoFileId, fileId);
+      await prefs.setBool(chaveDriveResumoMedidasPendente, false);
+      return;
+    }
+    conteudo ??= await drive.ler(fileId);
+    final corte = corte4Meses(diaChave(agoraSp));
+    final diarios = _diariosMantidos(extrairBlocos(conteudo), corte);
+    await drive.salvar(
+        fileId,
+        montarArquivo(
+            totais: totais,
+            atualizadoEm: hojeTxt,
+            diarios: diarios,
+            plano: plano,
+            medidas: medidasStr));
+    await prefs.setBool(chaveDriveResumoMedidasPendente, false);
   }
 
   Future<void> _guardarPendente(
@@ -674,6 +840,7 @@ class DriveResumoService {
     DateTime? agora,
   }) async {
     var totais = await _garantirCargaInicial(prefs, conclusoes, checkinsTodos);
+    final medidasStr = _blocoMedidas(prefs);
     final drive = await _arquivos(interativo: interativo);
     if (drive == null) return; // sem login/autorização: fica pendente
     final agoraSp = (agora ?? DateTime.now()).toUtc().subtract(
@@ -699,7 +866,8 @@ class DriveResumoService {
               totais: totais,
               atualizadoEm: hojeTxt,
               diarios: const [],
-              plano: plano));
+              plano: plano,
+              medidas: medidasStr));
       await prefs.setString(chaveDriveResumoFileId, fileId);
       conteudo = null;
     }
@@ -741,7 +909,8 @@ class DriveResumoService {
               totais: totais,
               atualizadoEm: hojeTxt,
               diarios: diarios,
-              plano: plano));
+              plano: plano,
+              medidas: medidasStr));
       await prefs.setString(
           chaveDriveResumoTotais, jsonEncode(totais.toJson()));
       await _removerPendente(prefs, pendente.id);
@@ -766,7 +935,8 @@ class DriveResumoService {
             totais: totais,
             atualizadoEm: hojeTxt,
             diarios: diarios,
-            plano: plano));
+            plano: plano,
+            medidas: medidasStr));
     await _removerPendente(prefs, pendente.id);
   }
 

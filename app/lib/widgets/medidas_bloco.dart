@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/medida.dart';
+import '../services/checkin_repository.dart';
+import '../services/conclusao_repository.dart';
+import '../services/drive_resumo_service.dart';
 import '../services/idioma_repository.dart';
 import '../services/medidas_repository.dart';
 import '../services/tema_repository.dart';
+import '../services/treinos_repository.dart';
 import '../theme/app_colors.dart';
 import '../l10n/strings.dart';
 import 'sub_abas.dart';
@@ -74,12 +80,13 @@ String _duas(int n) => n.toString().padLeft(2, '0');
 String _fmtData(DateTime d) => '${_duas(d.day)}/${_duas(d.month)}/${d.year}';
 String _fmtDataCurta(DateTime d) => '${_duas(d.day)}/${_duas(d.month)}';
 
-/// Número "limpo": sem casa decimal quando é inteiro (72, não 72.0); senão 1
-/// casa (72.5). Vírgula como separador (padrão pt).
+/// Número "limpo": sem casa decimal quando é inteiro (72, não 72.0); senão até
+/// 2 casas, sem zero à toa — o peso de balança preserva as 2 casas (56,75) e
+/// 56,80 vira 56,8. Vírgula como separador (padrão pt).
 String _fmtNum(double v) {
-  final s = (v == v.roundToDouble())
-      ? v.toStringAsFixed(0)
-      : v.toStringAsFixed(1);
+  if (v == v.roundToDouble()) return v.toStringAsFixed(0);
+  var s = v.toStringAsFixed(2);
+  if (s.endsWith('0')) s = s.substring(0, s.length - 1); // "56.80" -> "56.8"
   return s.replaceAll('.', ',');
 }
 
@@ -249,12 +256,25 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
     ),
   );
 
+  /// Atualiza a seção "Medidas do corpo" no treinos.md do Drive após qualquer
+  /// mudança da lista (salvar/editar/apagar/desfazer). Best-effort e sem travar
+  /// a UI — o serviço reescreve a tabela do estado atual e cuida de fila/retry,
+  /// igual aos treinos.
+  void _syncMedidasDrive() {
+    unawaited(ref.read(driveResumoServiceProvider).enviarAposMedida(
+          conclusoes: ref.read(conclusaoProvider).value ?? const [],
+          checkins: ref.read(checkinProvider).value ?? const [],
+          treinos: ref.read(treinosProvider).value ?? const [],
+        ));
+  }
+
   Future<void> _novaMedicao(Strings s) async {
     // SEMPRE cria um registro novo (em branco). Cada medição que o usuário faz é
     // um item do histórico — nunca sobrescreve a anterior. Para alterar uma
     // medição já feita, ele toca na linha dela no Histórico (aí sim edita).
     final r = await _abrirEditor(inicial: null, dataPadrao: DateTime.now());
     if (mounted && r == 'salvou') {
+      _syncMedidasDrive();
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(SnackBar(content: Text(s.salvo)));
@@ -267,6 +287,7 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
     final r = await _abrirEditor(inicial: m, dataPadrao: m.data);
     if (!mounted) return;
     if (r == 'excluiu') {
+      _syncMedidasDrive();
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(
@@ -274,12 +295,15 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
             content: Text(s.excluirMedicao),
             action: SnackBarAction(
               label: s.desfazer,
-              onPressed: () =>
-                  ref.read(medidasProvider.notifier).restaurar(antes),
+              onPressed: () {
+                ref.read(medidasProvider.notifier).restaurar(antes);
+                _syncMedidasDrive();
+              },
             ),
           ),
         );
     } else if (r == 'salvou') {
+      _syncMedidasDrive();
       ScaffoldMessenger.of(context)
         ..clearSnackBars()
         ..showSnackBar(SnackBar(content: Text(s.salvo)));
