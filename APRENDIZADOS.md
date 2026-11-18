@@ -5,6 +5,26 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-18 — Plano semanal ignora treino sem exercício ativo (v0.115.0)
+
+**Bug:** o treino "Bike" (dia Dom marcado) ficou com `exercicios == []` porque o único
+exercício foi **arquivado** — e arquivar REMOVE o exercício de `treino.exercicios`
+(`treino_editor_screen.dart:120-123`: `arquivar(e)` + `exercicios.removeWhere`). O
+`blocoPlanoSemanal` tinha `if (t.exercicios.isEmpty) return nome;` → imprimia só "Bike", então
+o plano mostrava "Domingo: Bike" enquanto a home já dizia "0 exercícios".
+
+**Fix (decisão do usuário):** `blocoPlanoSemanal` passa a filtrar
+`treinos.where((t) => t.exercicios.isNotEmpty)` ANTES de montar; dia sem treino vira
+"— descanso —" (comportamento que já existia); se nenhum treino tiver exercício, a seção é
+omitida (`''`). Reflete a tela inicial (mesma fonte: `treinosProvider`).
+
+**Perguntas respondidas:** (1) `blocoPlanoSemanal` usa a MESMA fonte da home, `treinosProvider`
+(passado por parâmetro pelos chamadores do `drive_resumo_service`). (2) Não existe "treino
+arquivado" — só exercícios se arquivam (saem da lista). (3) A **sequência** (`sequencia` +
+`diasTreinados`) conta check-in/conclusão REAIS, não o plano; treino vazio não dá para iniciar
+(`habilitado: exercicios.isNotEmpty`), então nunca vira check-in/conclusão → é ignorado na
+sequência (não conta nem quebra). **Essa regra NÃO foi tocada.**
+
 ## 2026-11-18 — Medidas do corpo no treinos.md + peso 2 casas (v0.114.0)
 
 **Decisão do usuário (SUBSTITUI a regra antiga "o arquivo NUNCA recebe medidas"):** o

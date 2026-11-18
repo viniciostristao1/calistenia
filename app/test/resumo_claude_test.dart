@@ -122,6 +122,33 @@ void main() {
     test('sem treinos omite a seção', () {
       expect(ResumoClaude.blocoPlanoSemanal(const [], '16/11'), isEmpty);
     });
+
+    test('treino sem exercício ativo não entra; o dia vira descanso', () {
+      final txt = ResumoClaude.blocoPlanoSemanal(
+        [
+          mkTreino('Peito', [0]), // segunda, com exercício
+          // domingo (6), mas o único exercício foi arquivado → lista vazia:
+          Treino(
+              id: 'bike', nome: 'Bike', dias: const [6], exercicios: const <Exercicio>[]),
+        ],
+        '16/11',
+      );
+      expect(txt, contains('- Segunda: Peito (Flexão 3×10 · 3s/rep · desc 1min)'));
+      // Domingo tinha só o Bike vazio → vira descanso; "Bike" não aparece.
+      expect(txt, contains('- Domingo: — descanso —'));
+      expect(txt.contains('Bike'), isFalse);
+    });
+
+    test('todos os treinos sem exercício ativo → seção omitida', () {
+      final txt = ResumoClaude.blocoPlanoSemanal(
+        [
+          Treino(
+              id: 'bike', nome: 'Bike', dias: const [6], exercicios: const <Exercicio>[]),
+        ],
+        '16/11',
+      );
+      expect(txt, isEmpty);
+    });
   });
 
   group('arquivoQuinzena', () {

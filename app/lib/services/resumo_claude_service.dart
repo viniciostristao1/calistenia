@@ -123,10 +123,18 @@ class ResumoClaude {
   /// plano — nunca medidas, notas, uid ou e-mail.
   static String blocoPlanoSemanal(
       List<Treino> treinos, String atualizadoEm) {
-    if (treinos.isEmpty) return '';
+    // Só treinos COM exercício ativo entram no plano: quando o único exercício
+    // é arquivado, ele sai de `treino.exercicios` (lista vazia) e o treino não dá
+    // nem para iniciar na home — então NÃO representa treino real e o plano deve
+    // refletir isso (o dia vira "— descanso —"). Decisão do usuário 2026-11-18.
+    // A sequência (dias seguidos) NÃO muda: ela conta check-in/conclusão reais,
+    // não o plano.
+    final comExercicios =
+        treinos.where((t) => t.exercicios.isNotEmpty).toList();
+    if (comExercicios.isEmpty) return '';
     final porDia = List.generate(7, (_) => <Treino>[]);
     final semDia = <Treino>[];
-    for (final t in treinos) {
+    for (final t in comExercicios) {
       if (t.dias.isEmpty) {
         semDia.add(t);
       } else {

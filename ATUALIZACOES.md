@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-18 — v0.115.0 (plano semanal reflete o estado real):**
+  - No resumo do Drive (`treinos.md`), um treino **sem exercícios ativos** (ex.: "Bike", quando o único exercício foi **arquivado**) **não aparece mais** no Plano semanal — o dia fica como **"— descanso —"**. Volta a aparecer quando tiver ao menos um exercício ativo.
+  - A **tela inicial**, a **edição de treinos** e a **sequência (dias seguidos)** continuam iguais.
+
 - **2026-11-18 — v0.114.0 (medidas do corpo no resumo do Drive + peso com 2 casas):**
   - O arquivo **`treinos.md`** (pasta "Calis Timer" do seu Drive) agora traz a seção **"Medidas do corpo (histórico)"** — tabela com **Data · Peso (kg) · Cintura · Braço · Peito · Coxa** — para a Muse/IA acompanhar sua evolução **junto dos treinos, sem você exportar nada**.
   - Atualiza **sozinho** ao salvar/editar/apagar uma medida (em até ~1 min). Sem internet, sobe na próxima oportunidade. Campos em branco ficam vazios (não viram 0). A tabela **nunca é apagada** (a poda de 4 meses vale só para os blocos de treino).
