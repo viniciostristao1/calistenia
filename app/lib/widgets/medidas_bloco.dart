@@ -128,117 +128,138 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
           top: 10,
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.lineStrong,
-                  borderRadius: BorderRadius.circular(2),
+        // Altura de conteúdo (até 95% da tela), arrastável; cabeçalho e botão
+        // "+ Nova medição" fixos, só o miolo rola (com o controller da sheet).
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.92,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollCtrl) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.lineStrong,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            Row(
-              children: [
-                const Icon(_iconeMedidas, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    s.medidasCorpo,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+              Row(
+                children: [
+                  const Icon(_iconeMedidas, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      s.medidasCorpo,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  '${todas.length}',
-                  style: TextStyle(color: AppColors.dim, fontSize: 12),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (todas.isNotEmpty)
-              SubAbas(
-                abas: [s.grafico, s.historico],
-                selecionado: _vista,
-                onSelect: (i) => setState(() => _vista = i),
-              ),
-            const SizedBox(height: 12),
-            Flexible(
-              child: async.when(
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: CircularProgressIndicator(),
+                  Text(
+                    s.medicoesQtd(todas.length),
+                    style: TextStyle(color: AppColors.dim, fontSize: 12),
                   ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (todas.isNotEmpty)
+                SubAbas(
+                  abas: [s.grafico, s.historico],
+                  selecionado: _vista,
+                  onSelect: (i) => setState(() => _vista = i),
                 ),
-                error: (e, _) => Center(child: Text('$e')),
-                data: (_) => todas.isEmpty
-                    ? _vazio(s)
-                    : (_vista == 0
-                          ? _vistaGrafico(s, todas)
-                          : _vistaHistorico(s, todas)),
+              Expanded(
+                child: async.when(
+                  loading: () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                  error: (e, _) => Center(child: Text('$e')),
+                  data: (_) => todas.isEmpty
+                      ? ListView(
+                          controller: scrollCtrl,
+                          children: [_vazio(s)],
+                        )
+                      : ListView(
+                          controller: scrollCtrl,
+                          children: [
+                            if (_vista == 0) ..._filhosGrafico(s, todas) else ..._filhosHistorico(s, todas),
+                          ],
+                        ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: context.accent,
-                side: BorderSide(color: context.accent),
-                minimumSize: const Size.fromHeight(48),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: context.accent,
+                  side: BorderSide(color: context.accent),
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                onPressed: () => _novaMedicao(s),
+                icon: const Icon(Icons.add),
+                label: Text(s.novaMedicao),
               ),
-              onPressed: () => _novaMedicao(s),
-              icon: const Icon(Icons.add),
-              label: Text(s.novaMedicao),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   /// Gráfico: seletor de métrica + painel (valor atual + variações + linha).
-  Widget _vistaGrafico(Strings s, List<Medida> todas) => ListView(
-    shrinkWrap: true,
-    children: [
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (final m in MetricaCorporal.values) ...[
-              _ChipMetrica(
-                rotulo: _rotuloMetrica(s, m),
-                selecionado: _metrica == m,
-                onTap: () => setState(() => _metrica = m),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ],
+  /// O seletor ocupa a largura toda em 5 partes iguais (nada fica cortado).
+  List<Widget> _filhosGrafico(Strings s, List<Medida> todas) => [
+    SegmentedButton<MetricaCorporal>(
+      segments: [
+        for (final m in MetricaCorporal.values)
+          ButtonSegment(
+            value: m,
+            label: Text(
+              _rotuloMetrica(s, m),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
+      selected: {_metrica},
+      onSelectionChanged: (v) => setState(() => _metrica = v.first),
+      showSelectedIcon: false,
+      expandedInsets: EdgeInsets.zero,
+      style: SegmentedButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        foregroundColor: AppColors.text,
+        selectedBackgroundColor: context.accent,
+        selectedForegroundColor: context.onAccent,
+        side: BorderSide(color: AppColors.line),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
-      const SizedBox(height: 12),
-      _PainelMetrica(metrica: _metrica, medidas: todas, s: s),
-    ],
-  );
+    ),
+    const SizedBox(height: 12),
+    _PainelMetrica(metrica: _metrica, medidas: todas, s: s),
+  ];
 
-  /// Histórico: tabela de todas as medidas por data, com evolução por valor.
-  Widget _vistaHistorico(Strings s, List<Medida> todas) => ListView(
-    shrinkWrap: true,
-    children: [
-      _TabelaHistorico(medidas: todas, s: s, onEditar: (m) => _editar(s, m)),
-      const SizedBox(height: 8),
-      Text(
-        s.medidasLegenda,
-        style: TextStyle(color: AppColors.dim2, fontSize: 11),
-      ),
-    ],
-  );
+  /// Histórico: um cartão por medição + legenda com as unidades.
+  List<Widget> _filhosHistorico(Strings s, List<Medida> todas) => [
+    _CartoesHistorico(medidas: todas, s: s, onEditar: (m) => _editar(s, m)),
+    const SizedBox(height: 8),
+    Text(
+      s.medidasLegenda,
+      style: TextStyle(color: AppColors.dim2, fontSize: 11),
+    ),
+  ];
 
   Widget _vazio(Strings s) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 28),
@@ -325,45 +346,6 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
   );
 }
 
-/// Uma pílula do seletor de métrica.
-class _ChipMetrica extends StatelessWidget {
-  const _ChipMetrica({
-    required this.rotulo,
-    required this.selecionado,
-    required this.onTap,
-  });
-
-  final String rotulo;
-  final bool selecionado;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(99),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        decoration: BoxDecoration(
-          color: selecionado ? context.accent : AppColors.surface,
-          borderRadius: BorderRadius.circular(99),
-          border: Border.all(
-            color: selecionado ? context.accent : AppColors.line,
-          ),
-        ),
-        child: Text(
-          rotulo,
-          style: TextStyle(
-            color: selecionado ? context.onAccent : AppColors.text,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Painel da métrica escolhida: valor atual grande, variações (desde a 1ª e vs.
 /// anterior) e o gráfico de aumento/diminuição.
 class _PainelMetrica extends StatelessWidget {
@@ -391,10 +373,21 @@ class _PainelMetrica extends StatelessWidget {
       return _box(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 18),
-          child: Text(
-            s.semDadosMetrica,
-            style: TextStyle(color: AppColors.dim),
-            textAlign: TextAlign.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                s.semDadosMetrica,
+                style: TextStyle(color: AppColors.dim),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                s.toqueNovaMedicao,
+                style: TextStyle(color: AppColors.dim2, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       );
@@ -551,12 +544,12 @@ class _DeltaChip extends StatelessWidget {
   }
 }
 
-/// Tabela de histórico: linhas = medições (mais recente em cima), colunas =
-/// Data + cada métrica. Cada valor traz uma setinha vs. o valor ANTERIOR
-/// (cronológico) daquela métrica — verde subiu, vermelho desceu — p/ comparar a
-/// evolução. Rola na horizontal se não couber. Tocar numa linha edita.
-class _TabelaHistorico extends StatelessWidget {
-  const _TabelaHistorico({
+/// Histórico: um CARTÃO por medição (mais recente em cima). Cada cartão mostra
+/// a data + grade com as métricas PREENCHIDAS (rótulo com unidade + valor +
+/// setinha vs. o valor anterior daquela métrica). Métrica vazia nem aparece
+/// (sem traço "–"). Tocar no cartão edita (altura mínima de 48dp).
+class _CartoesHistorico extends StatelessWidget {
+  const _CartoesHistorico({
     required this.medidas,
     required this.s,
     required this.onEditar,
@@ -565,9 +558,6 @@ class _TabelaHistorico extends StatelessWidget {
   final List<Medida> medidas; // mais recente primeiro
   final Strings s;
   final void Function(Medida) onEditar;
-
-  static const double _wData = 66;
-  static const double _wCol = 68;
 
   @override
   Widget build(BuildContext context) {
@@ -585,135 +575,192 @@ class _TabelaHistorico extends StatelessWidget {
       }
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Cabeçalho.
-          Container(
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.line)),
-            ),
-            child: Row(
-              children: [
-                _celulaCabecalho(s.data, _wData, esquerda: true),
-                for (final m in MetricaCorporal.values)
-                  _celulaCabecalho(_rotuloMetrica(s, m), _wCol),
-              ],
-            ),
-          ),
-          for (final medida in medidas)
-            InkWell(
-              onTap: () => onEditar(medida),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: AppColors.line.withValues(alpha: 0.5)),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: _wData,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 11),
-                        child: Text(
-                          _fmtDataCurta(medida.data),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    for (final metrica in MetricaCorporal.values)
-                      _celulaValor(
-                        medida.valorDe(metrica),
-                        deltas[medida.id]?[metrica],
-                      ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _celulaCabecalho(String txt, double w, {bool esquerda = false}) =>
-      SizedBox(
-        width: w,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(
-            txt,
-            textAlign: esquerda ? TextAlign.left : TextAlign.center,
-            style: TextStyle(
-              color: AppColors.dim,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      );
-
-  Widget _celulaValor(double? valor, double? delta) {
-    if (valor == null) {
-      return SizedBox(
-        width: _wCol,
-        child: Center(
-          child: Text('—', style: TextStyle(color: AppColors.dim2)),
+    final filhos = <Widget>[];
+    for (var i = 0; i < medidas.length; i++) {
+      if (i > 0) filhos.add(const SizedBox(height: 10));
+      final medida = medidas[i];
+      filhos.add(
+        _CartaoMedicao(
+          medida: medida,
+          s: s,
+          deltas: deltas[medida.id] ?? const {},
+          onTap: () => onEditar(medida),
         ),
       );
     }
-    final sobe = delta != null && delta > 0.0001;
-    final desce = delta != null && delta < -0.0001;
+    return Column(children: filhos);
+  }
+}
+
+/// Um cartão de medição: data + grade de até 3 colunas com as métricas.
+/// Só entra na grade quem tem valor (o resto nem é mostrado).
+class _CartaoMedicao extends StatelessWidget {
+  const _CartaoMedicao({
+    required this.medida,
+    required this.s,
+    required this.deltas,
+    required this.onTap,
+  });
+
+  final Medida medida;
+  final Strings s;
+  final Map<MetricaCorporal, double?> deltas;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final comValor = [
+      for (final m in MetricaCorporal.values)
+        if (medida.valorDe(m) != null) m,
+    ];
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(14, 10, 10, 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.line),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    _fmtDataCurta(medida.data),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.dim,
+                    size: 20,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              LayoutBuilder(
+                builder: (context, c) {
+                  // Célula com ~76dp de altura em qualquer largura (sem
+                  // estouro e sem sobra): a grade só define a largura.
+                  final chipW = (c.maxWidth - 16) / 3;
+                  return GridView.count(
+                    crossAxisCount: 3,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: chipW / 76,
+                    children: [
+                      for (final m in comValor)
+                        _MiniMetrica(
+                          s: s,
+                          metrica: m,
+                          valor: medida.valorDe(m)!,
+                          delta: deltas[m],
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Uma medida dentro do cartão: rótulo com unidade + valor + evolução.
+/// A linha da evolução sempre ocupa a mesma altura (alinhamento estável).
+class _MiniMetrica extends StatelessWidget {
+  const _MiniMetrica({
+    required this.s,
+    required this.metrica,
+    required this.valor,
+    required this.delta,
+  });
+
+  final Strings s;
+  final MetricaCorporal metrica;
+  final double valor;
+  final double? delta;
+
+  @override
+  Widget build(BuildContext context) {
+    final sobe = delta != null && delta! > 0.0001;
+    final desce = delta != null && delta! < -0.0001;
     final cor = sobe
         ? AppColors.prep
         : desce
         ? AppColors.danger
-        : AppColors.dim2;
-    return SizedBox(
-      width: _wCol,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 9),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _fmtNum(valor),
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+        : AppColors.dim;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${_rotuloMetrica(s, metrica)} (${metrica.unidade})',
+            style: TextStyle(
+              color: AppColors.dim,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: 2),
-            if (delta == null)
-              const SizedBox(height: 12)
-            else
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    sobe
-                        ? Icons.arrow_upward_rounded
-                        : desce
-                        ? Icons.arrow_downward_rounded
-                        : Icons.remove_rounded,
-                    size: 11,
-                    color: cor,
-                  ),
-                  if (sobe || desce)
-                    Text(
-                      _fmtNum(delta.abs()),
-                      style: TextStyle(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            _fmtNum(valor),
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          SizedBox(
+            height: 14,
+            child: delta == null
+                ? null
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        sobe
+                            ? Icons.arrow_upward_rounded
+                            : desce
+                            ? Icons.arrow_downward_rounded
+                            : Icons.remove_rounded,
+                        size: 12,
                         color: cor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
                       ),
-                    ),
-                ],
-              ),
-          ],
-        ),
+                      if (sobe || desce)
+                        Text(
+                          _fmtNum(delta!.abs()),
+                          style: TextStyle(
+                            color: cor,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                    ],
+                  ),
+          ),
+        ],
       ),
     );
   }

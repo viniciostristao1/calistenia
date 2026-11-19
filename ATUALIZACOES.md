@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-19 — v0.116.0 (Medidas: Histórico em cartões + seletor cheio):**
+  - Na folha **Medidas do corpo**, a aba **Histórico** virou **um cartão por data** (data + grade com as medidas preenchidas, cada uma com **rótulo e unidade**, ex. "Cintura (cm)", e seta de evolução). Toque no cartão para editar. Nada fica cortado em telas de 360dp.
+  - Na aba **Gráfico**, o seletor virou **5 botões lado a lado** (Peso · Cintura · Braço · Peito · Coxa), todos visíveis sem rolar. O cabeçalho mostra **"N medições"** e a folha abre quase cheia, com cabeçalho e botão "+ Nova medição" fixos.
+  - Re-testar: abrir Medidas, trocar de métrica, ver o Histórico em telas estreitas e tocar num cartão para editar.
+
 - **2026-11-18 — v0.115.0 (plano semanal reflete o estado real):**
   - No resumo do Drive (`treinos.md`), um treino **sem exercícios ativos** (ex.: "Bike", quando o único exercício foi **arquivado**) **não aparece mais** no Plano semanal — o dia fica como **"— descanso —"**. Volta a aparecer quando tiver ao menos um exercício ativo.
   - A **tela inicial**, a **edição de treinos** e a **sequência (dias seguidos)** continuam iguais.

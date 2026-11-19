@@ -5,6 +5,36 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-19 — Medidas: Histórico em cartões + SegmentedButton + sheet arrastável (v0.116.0)
+
+**Pedido (análise prévia aprovada):** cards por data (não tabela), data sem ano,
+`SegmentedButton` de 5 métricas, header fixo. Sem mexer em gravação/Drive/
+`treinos.md`, tema, 48dp de toque, 360/411dp.
+
+**Feito (só `lib/widgets/medidas_bloco.dart` + 3 strings pt/en/es em `l10n/strings.dart`):**
+- `_TabelaHistorico` (Row de largura fixa 406dp, Coxa cortada em 360dp) → `_CartoesHistorico`:
+  um `_CartaoMedicao` por data (grade 3 col, só métricas preenchidas, rótulo com unidade,
+  seta vs. anterior com a MESMA regra de delta da tabela, `minHeight: 48`, chevron de affordance).
+  Grade com altura de célula constante via `LayoutBuilder` (`chipW/76`).
+- Chips roláveis → `SegmentedButton` com `expandedInsets: EdgeInsets.zero` (5 partes iguais,
+  `showSelectedIcon: false`, fonte 12 + ellipsis de segurança no rótulo).
+- Sheet: `DraggableScrollableSheet` (0.92/0.40/0.95, `expand: false`), header (alça+título+
+  contador+`SubAbas`) e botão "+ Nova medição" fixos, miolo num `ListView` único com o
+  controller da sheet (sem `ListView` aninhados); contador virou `s.medicoesQtd(n)`;
+  legenda "…num cartão…"; vazio do gráfico ganhou a dica `s.toqueNovaMedicao`.
+- `_ChipMetrica` removido (morto → evita `unused_element`).
+
+**Gotchas:**
+- `SegmentedButton` SEM `expandedInsets` dimensiona pelo conteúdo (estouraria em 360dp);
+  COM `expandedInsets` divide igualmente — rótulo vai em `Flexible`, então ellipsis no
+  `Text` é o disjuntor (o teste `find.text('Cintura')` exato detecta corte).
+- `_MiniMetrica` estourou 5.9px na 1ª versão (`childAspectRatio: 1.4` fixo): célula de grade
+  tem altura rígida — usar `LayoutBuilder` p/ altura constante (76dp) em qualquer largura.
+- Teste novo `test/medidas_sheet_test.dart` (4 casos: gráfico 360/411 sem corte, histórico em
+  cards + edição, métrica vazia com dica). Idioma fixado em pt via mock (`idioma_v1`), senão
+  o locale en_US do ambiente de teste resolve EN.
+- `flutter analyze` = 4 infos preexistentes (fora de `medidas_bloco.dart`/`strings.dart`).
+
 ## 2026-11-18 — Plano semanal ignora treino sem exercício ativo (v0.115.0)
 
 **Bug:** o treino "Bike" (dia Dom marcado) ficou com `exercicios == []` porque o único

@@ -174,6 +174,11 @@ class Strings {
   String get medidas => _t('Medidas', 'Measurements', 'Medidas');
   String get medidasCorpo =>
       _t('Medidas do corpo', 'Body measurements', 'Medidas del cuerpo');
+  String medicoesQtd(int n) => _t(
+    '$n ${n == 1 ? 'medição' : 'medições'}',
+    '$n ${n == 1 ? 'measurement' : 'measurements'}',
+    '$n ${n == 1 ? 'medición' : 'mediciones'}',
+  );
   String get novaMedicao =>
       _t('Nova medição', 'New entry', 'Nueva medición');
   String get editarMedicao =>
@@ -188,9 +193,14 @@ class Strings {
   String get salvo => _t('Salvo!', 'Saved!', '¡Guardado!');
   String get grafico => _t('Gráfico', 'Chart', 'Gráfico');
   String get medidasLegenda => _t(
-    'Peso em kg · demais em cm. Toque numa linha para editar.',
-    'Weight in kg · others in cm. Tap a row to edit.',
-    'Peso en kg · resto en cm. Toca una fila para editar.',
+    'Peso em kg · demais em cm. Toque num cartão para editar.',
+    'Weight in kg · others in cm. Tap a card to edit.',
+    'Peso en kg · resto en cm. Toca una tarjeta para editar.',
+  );
+  String get toqueNovaMedicao => _t(
+    'Toque em “Nova medição” para registrar.',
+    'Tap “New entry” to log it.',
+    'Toca “Nueva medición” para registrarla.',
   );
   String get semDadosMetrica => _t(
     'Sem dados desta medida ainda.',
