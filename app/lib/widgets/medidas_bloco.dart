@@ -21,6 +21,8 @@ const IconData _iconeMedidas = Icons.straighten;
 
 /// Botão das MEDIDAS do corpo p/ a AppBar do Check-in — fica à ESQUERDA do
 /// bloco de notas (pedido do usuário). Abre a folha [_MedidasSheet].
+/// Sem badge de contagem no topo e sem contador no cabeçalho (pedido do
+/// usuário, v0.117.0).
 class MedidasButton extends ConsumerWidget {
   const MedidasButton({super.key});
 
@@ -29,38 +31,10 @@ class MedidasButton extends ConsumerWidget {
     ref.watch(temaProvider);
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
-    final qtd = ref.watch(medidasProvider).value?.length ?? 0;
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        IconButton(
-          tooltip: s.medidas,
-          icon: const Icon(_iconeMedidas),
-          onPressed: () => abrirMedidas(context),
-        ),
-        if (qtd > 0)
-          Positioned(
-            right: 4,
-            top: 6,
-            child: IgnorePointer(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(
-                  color: context.accent,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                child: Text(
-                  '$qtd',
-                  style: TextStyle(
-                    color: context.onAccent,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
+    return IconButton(
+      tooltip: s.medidas,
+      icon: const Icon(_iconeMedidas),
+      onPressed: () => abrirMedidas(context),
     );
   }
 }
@@ -161,10 +135,6 @@ class _MedidasSheetState extends ConsumerState<_MedidasSheet> {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                  ),
-                  Text(
-                    s.medicoesQtd(todas.length),
-                    style: TextStyle(color: AppColors.dim, fontSize: 12),
                   ),
                 ],
               ),

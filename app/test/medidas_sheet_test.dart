@@ -72,8 +72,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      // Cabeçalho com contador rotulado + datas sem ano.
-      expect(find.text('2 medições'), findsOneWidget);
+      // Cabeçalho sem contador (removido v0.117.0) + datas sem ano.
+      expect(find.text('2 medições'), findsNothing);
       expect(find.text('18/11'), findsOneWidget);
       expect(find.text('10/11'), findsOneWidget);
       expect(find.textContaining('/2026'), findsNothing);

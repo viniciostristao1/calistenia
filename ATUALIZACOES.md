@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-20 — v0.117.0 (Check-in sem badges de contagem):**
+  - Os ícones de **medidas (régua)** e **notas** no topo do Check-in **não mostram mais número** (antes: círculos laranja com o total). Mesmos ícones, mesmo tamanho, mesma ação ao tocar.
+  - A contagem também saiu do cabeçalho de dentro de cada folha (a pedido: remoção completa).
+  - Re-testar: abrir Check-in (sem números nos ícones), tocar nos dois ícones (telas abrem normal).
+
 - **2026-11-19 — v0.116.0 (Medidas: Histórico em cartões + seletor cheio):**
   - Na folha **Medidas do corpo**, a aba **Histórico** virou **um cartão por data** (data + grade com as medidas preenchidas, cada uma com **rótulo e unidade**, ex. "Cintura (cm)", e seta de evolução). Toque no cartão para editar. Nada fica cortado em telas de 360dp.
   - Na aba **Gráfico**, o seletor virou **5 botões lado a lado** (Peso · Cintura · Braço · Peito · Coxa), todos visíveis sem rolar. O cabeçalho mostra **"N medições"** e a folha abre quase cheia, com cabeçalho e botão "+ Nova medição" fixos.

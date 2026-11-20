@@ -5,6 +5,26 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-20 — Check-in sem badges de contagem (v0.117.0)
+
+**Pedido:** remover os círculos laranja com 2/1 dos ícones de medidas e notas no topo do
+Check-in (pareciam notificação). Verificar antes o que o número era; se útil, manter dentro
+da tela. Resposta do usuário ao final: remoção COMPLETA (nem no topo, nem dentro).
+
+**Verificação:** era o total de registros (`medidasProvider.value.length` e
+`notasProvider.value.length`), não pendência nem não-lido. Já existia dentro das folhas
+(`s.medicoesQtd` / `s.notasQtd` no cabeçalho) — removido também por decisão final.
+
+**Feito (sem mexer em lógica/sync/Drive/`treinos.md`/calendário/abas/tema):**
+- `lib/widgets/medidas_bloco.dart`: `MedidasButton` (Stack+Positioned badge) → `IconButton`
+  puro (mesmo tooltip/ícone/`abrirMedidas`); removido `Text(s.medicoesQtd)` do header da sheet.
+- `lib/widgets/notas_bloco.dart`: `NotasButton` idem; removido `Text(s.notasQtd)` do header.
+- `test/medidas_sheet_test.dart`: `'2 medições'` agora `findsNothing`.
+- Versão `0.117.0+176` (`pubspec.yaml` + `util/versao.dart`).
+
+**Testes:** `flutter analyze` = 4 infos preexistentes (fora dos arquivos tocados);
+`flutter test` = 173 passed.
+
 ## 2026-11-19 — Medidas: Histórico em cartões + SegmentedButton + sheet arrastável (v0.116.0)
 
 **Pedido (análise prévia aprovada):** cards por data (não tabela), data sem ano,

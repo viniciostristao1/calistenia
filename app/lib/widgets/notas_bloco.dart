@@ -13,6 +13,8 @@ import '../l10n/strings.dart';
 
 /// Botão do bloco de notas p/ a AppBar do Check-in — fica À ESQUERDA da
 /// pílula de moedas ([MoedasBadge]). Abre a folha [_BlocoNotasSheet].
+/// Sem badge de contagem no topo e sem contador no cabeçalho (pedido do
+/// usuário, v0.117.0).
 class NotasButton extends ConsumerWidget {
   const NotasButton({super.key});
 
@@ -21,41 +23,10 @@ class NotasButton extends ConsumerWidget {
     ref.watch(temaProvider);
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
-    final qtd = ref.watch(notasProvider).value?.length ?? 0;
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        IconButton(
-          tooltip: s.blocoNotas,
-          icon: const Icon(Icons.sticky_note_2_outlined),
-          onPressed: () => abrirBlocoNotas(context),
-        ),
-        if (qtd > 0)
-          Positioned(
-            right: 6,
-            top: 6,
-            child: IgnorePointer(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 5,
-                  vertical: 1,
-                ),
-                decoration: BoxDecoration(
-                  color: context.accent,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                child: Text(
-                  '$qtd',
-                  style: TextStyle(
-                    color: context.onAccent,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
+    return IconButton(
+      tooltip: s.blocoNotas,
+      icon: const Icon(Icons.sticky_note_2_outlined),
+      onPressed: () => abrirBlocoNotas(context),
     );
   }
 }
@@ -216,10 +187,6 @@ class _BlocoNotasSheetState extends ConsumerState<_BlocoNotasSheet> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                ),
-                Text(
-                  s.notasQtd(notas.length),
-                  style: TextStyle(color: AppColors.dim, fontSize: 12),
                 ),
               ],
             ),
