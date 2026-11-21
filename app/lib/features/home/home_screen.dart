@@ -265,12 +265,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _novoTreino,
-        backgroundColor: context.accent,
-        foregroundColor: context.onAccent,
-        icon: const Icon(Icons.add),
-        label: Text(s.novoTreino),
+      // Ação separada ACIMA da barra flutuante (v0.120.0): com o extendBody do
+      // RootScreen o FAB ancorava no fundo da tela, atrás do item Progressão
+      // (a barra translúcida deixava o laranja vazar). O bottom extra o tira
+      // das coordenadas da barra, sem tocar nos itens. Só layout, sem lógica.
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 96),
+        child: FloatingActionButton.extended(
+          onPressed: _novoTreino,
+          backgroundColor: context.accent,
+          foregroundColor: context.onAccent,
+          icon: const Icon(Icons.add),
+          label: Text(s.novoTreino),
+        ),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),

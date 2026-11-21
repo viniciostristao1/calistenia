@@ -5,6 +5,21 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-21 — Novo treino sem sobrepor a barra (v0.120.0)
+
+**Causa:** `extendBody: true` do RootScreen (v0.118.0) fez o body ocupar a tela
+toda; o `FloatingActionButton.extended` da Home (Scaffold aninhado, `endFloat`)
+ancora no fundo da tela = mesmas coordenadas do terço direito da barra. Antes,
+sem extendBody, o body terminava acima da barra opaca. A barra translúcida
+(85%) deixou o laranja vazar atrás do Progressão. A barra em si é inocente
+(Row de 3 Expanded, sem Stack/Positioned/FAB dentro).
+
+**Feito (só layout, sem lógica/Drive/`treinos.md`):** `home_screen.dart` — FAB
+embrulhado em `Padding(bottom: 96)` (ação separada acima da barra, sem tocar
+nos itens; nomes/ordem/destaque/transparência iguais). Versão `0.120.0+179`.
+
+**Testes:** `analyze` = 4 infos preexistentes; `flutter test` = 173 passed.
+
 ## 2026-11-21 — Destaque suave na navegação (v0.119.0)
 
 **Respostas do usuário:** contêiner = semitransparente (sem desfoque, sem mudança);

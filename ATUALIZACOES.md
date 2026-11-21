@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-21 — v0.120.0 (Novo treino sem sobrepor a barra):**
+  - O botão **"+ Novo treino"** agora fica **acima da barra flutuante**, como ação separada — não aparece mais atrás do item Progressão.
+  - Barra segue igual (pílula, 3 itens, destaque e transparência).
+  - Re-testar: aba Treinos em 360/411dp (sem sobreposição), tocar nos 3 itens + Novo treino.
+
 - **2026-11-21 — v0.119.0 (destaque suave na navegação):**
   - O item selecionado da pílula agora é **laranja suave** (fundo translúcido + ícone/texto em laranja), a pedido. Contêiner segue **semitransparente sem desfoque**.
   - Re-testar: trocar de aba e conferir o destaque.
