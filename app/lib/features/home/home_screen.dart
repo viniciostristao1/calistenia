@@ -718,7 +718,7 @@ Widget _listaDoDia(List<Treino> treinos, int dia) {
   final doDia = treinos.where((t) => t.dias.contains(dia)).toList();
   if (doDia.isEmpty) return _Vazio(dia: dia);
   return ListView.separated(
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
     itemCount: doDia.length,
     separatorBuilder: (_, _) => const SizedBox(height: 12),
     itemBuilder: (_, i) => _TreinoCard(treino: doDia[i]),
@@ -956,7 +956,7 @@ class _SemanaLista extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = Strings(ref.watch(idiomaProvider).value ?? Idioma.pt);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 112),
       children: [
         for (var d = 0; d < 7; d++)
           _DiaSemana(dia: d, treinos: treinos, hoje: d == diaDeHoje, s: s),

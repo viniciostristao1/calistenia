@@ -164,7 +164,7 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
           ...todos.where((g) => arquivados.contains(g.exercicio)),
         ];
         return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 112),
           itemCount: grupos.length,
           separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (_, i) => _ExercicioProgressoCard(
@@ -210,7 +210,7 @@ class _ProgressaoScreenState extends ConsumerState<ProgressaoScreen> {
     return KeyedSubtree(
       key: ValueKey(_animKey),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 112),
         children: [
           _RatingCard(rating: rating),
           const SizedBox(height: 18),
@@ -1271,7 +1271,7 @@ class _Colecao extends ConsumerWidget {
           ),
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 112),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               childAspectRatio: 0.60,
@@ -1529,7 +1529,7 @@ class _ResumoView extends ConsumerWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 112),
       children: [
         const Text(
           'Resumo da semana',

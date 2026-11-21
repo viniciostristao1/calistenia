@@ -3,6 +3,12 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-21 — v0.118.0 (navegação flutuante em pílula):**
+  - A barra inferior virou uma **pílula flutuante** (suspensa, cantos arredondados, sombra suave). Mesmos itens, nomes, ícones e ordem.
+  - Cada item tem **ícone em cima + texto embaixo**; o selecionado ganha destaque em **laranja** com ícone/texto em contraste.
+  - As listas agora passam por trás da barra e a última linha fica visível acima dela ao rolar.
+  - Re-testar: trocar de aba (destaque acompanha), rolar até o fim nas 3 abas, conferir com gestos do sistema.
+
 - **2026-11-20 — v0.117.0 (Check-in sem badges de contagem):**
   - Os ícones de **medidas (régua)** e **notas** no topo do Check-in **não mostram mais número** (antes: círculos laranja com o total). Mesmos ícones, mesmo tamanho, mesma ação ao tocar.
   - A contagem também saiu do cabeçalho de dentro de cada folha (a pedido: remoção completa).

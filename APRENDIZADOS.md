@@ -5,6 +5,26 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-21 — Navegação flutuante em pílula (v0.118.0)
+
+**Mapeamento prévio:** 3 itens, só no `RootScreen` (`features/root/root_screen.dart`):
+Treinos (`fitness_center`, `s.treinos`), Check-in (`calendar_month`, `s.checkIn`),
+Progressão (`trending_up`, `s.progressao`). O outro `bottomNavigationBar` do app
+(`treino_editor_screen.dart`) é o botão "Iniciar treino" — não mexido.
+
+**Feito (só visual + espaço inferior; sem lógica/Drive/`treinos.md`):**
+- Novo `widgets/barra_navegacao.dart` (`BarraNavegacaoFlutuante`): pílula única
+  (`radius 99`, `surface` 85% + sombra `black 25%/blur 16`, borda `line`);
+  item = ícone 24 em cima + texto 11.5 embaixo; selecionado = pílula `accent`
+  atrás + conteúdo `onAccent`; repouso = `dim` (contraste 5.8/8.8 no âmbar).
+- `RootScreen`: `extendBody: true` + `SafeArea(16,0,16,12)` na barra (flutua das
+  bordas e respeita gestos); mesma ordem/ícones/rótulos e o restart do Rating.
+- Espaço inferior 24/96 → 112 nas listas (home/checkin/progressão) + `bottom: 104`
+  no scroll do calendário (última linha acima da barra; conteúdo passa por trás).
+
+**Testes:** `analyze` = 4 infos preexistentes (fora dos tocados);
+`flutter test` = 173 passed.
+
 ## 2026-11-20 — Check-in sem badges de contagem (v0.117.0)
 
 **Pedido:** remover os círculos laranja com 2/1 dos ícones de medidas e notas no topo do

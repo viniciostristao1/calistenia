@@ -220,6 +220,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         // (shrinkWrap, sem scroll próprio) → as insígnias do mês vêm LOGO após a
         // última semana, não empurradas p/ o rodapé (era o Expanded de antes).
         return SingleChildScrollView(
+          // Espaço p/ a barra flutuante (v0.118.0): a última linha fica acima
+          // dela ao rolar; o conteúdo passa por trás (extendBody no RootScreen).
+          padding: const EdgeInsets.only(bottom: 104),
           child: Column(
             children: [
               _Cabecalho(
@@ -725,7 +728,7 @@ class _GaleriaConquistas extends ConsumerWidget {
         _ConquistaCard(tipo: t, ativo: atuais.contains(t), nivel: nivel.atual);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 112),
       children: [
         _ConquistasAtuaisBox(atuais: atuais),
         const SizedBox(height: 20),
@@ -826,7 +829,7 @@ class _HistoricoConquistas extends ConsumerWidget {
     final chavesConq = mapaConq.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 112),
       children: [
         if (chavesIns.isNotEmpty) ...[
           const _TituloSecao(
