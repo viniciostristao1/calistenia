@@ -3,6 +3,10 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-21 — v0.119.0 (destaque suave na navegação):**
+  - O item selecionado da pílula agora é **laranja suave** (fundo translúcido + ícone/texto em laranja), a pedido. Contêiner segue **semitransparente sem desfoque**.
+  - Re-testar: trocar de aba e conferir o destaque.
+
 - **2026-11-21 — v0.118.0 (navegação flutuante em pílula):**
   - A barra inferior virou uma **pílula flutuante** (suspensa, cantos arredondados, sombra suave). Mesmos itens, nomes, ícones e ordem.
   - Cada item tem **ícone em cima + texto embaixo**; o selecionado ganha destaque em **laranja** com ícone/texto em contraste.

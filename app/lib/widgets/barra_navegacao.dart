@@ -18,8 +18,8 @@ class DestinoNavegacao {
 
 /// Barra de navegação flutuante em pílula (v0.118.0): contêiner único,
 /// suspenso, cantos totalmente arredondados. Cada item tem ícone em cima e
-/// texto embaixo; o selecionado ganha pílula menor atrás (accent) com
-/// ícone+texto em [onAccent]. Cores só da paleta atual ([AppColors]).
+/// texto embaixo; o selecionado ganha pílula menor atrás (accent translúcido)
+/// com ícone+texto no accent. Cores só da paleta atual ([AppColors]).
 class BarraNavegacaoFlutuante extends StatelessWidget {
   const BarraNavegacaoFlutuante({
     super.key,
@@ -65,8 +65,9 @@ class BarraNavegacaoFlutuante extends StatelessWidget {
 }
 
 /// Um item: ícone em cima + texto embaixo, centralizados, mesmo espaçamento.
-/// Selecionado = pílula accent atrás + conteúdo em onAccent; repouso =
-/// conteúdo em [AppColors.dim] (contraste sobre o surface).
+/// Selecionado (suave, v0.119.0) = pílula accent translúcido atrás +
+/// ícone/texto em accent; repouso = conteúdo em [AppColors.dim] (contraste
+/// sobre o surface).
 class _ItemNavegacao extends StatelessWidget {
   const _ItemNavegacao({
     required this.destino,
@@ -80,14 +81,16 @@ class _ItemNavegacao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final conteudo = selecionado ? context.onAccent : AppColors.dim;
+    final conteudo = selecionado ? context.accent : AppColors.dim;
     return InkWell(
       borderRadius: BorderRadius.circular(99),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
         decoration: BoxDecoration(
-          color: selecionado ? context.accent : Colors.transparent,
+          color: selecionado
+              ? context.accent.withValues(alpha: 0.20)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(99),
         ),
         child: Column(

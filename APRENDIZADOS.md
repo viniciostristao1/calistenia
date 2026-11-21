@@ -5,6 +5,17 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-21 — Destaque suave na navegação (v0.119.0)
+
+**Respostas do usuário:** contêiner = semitransparente (sem desfoque, sem mudança);
+destaque = laranja suave (mudança).
+
+**Feito (`widgets/barra_navegacao.dart`):** pílula do selecionado
+`accent 20%` + ícone/texto em `accent` (antes: pílula sólida + `onAccent`).
+Repouso segue `dim`. Versão `0.119.0+178`.
+
+**Testes:** `analyze` = 4 infos preexistentes; `flutter test` = 173 passed.
+
 ## 2026-11-21 — Navegação flutuante em pílula (v0.118.0)
 
 **Mapeamento prévio:** 3 itens, só no `RootScreen` (`features/root/root_screen.dart`):
