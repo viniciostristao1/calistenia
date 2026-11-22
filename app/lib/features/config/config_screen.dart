@@ -33,8 +33,10 @@ import '../../util/gamificacao.dart' show diasAgendados;
 import '../../l10n/strings.dart';
 import '../lab/lab_screen.dart';
 
-/// Configurações do app: tema, som, gamificação, lembretes de treino, conta
-/// (login + status da sincronização) e backup em arquivo.
+/// Configurações do app em lista única, agrupada por títulos curtos:
+/// Aparência, Treino, Conta e Dados. Cada item tem título + uma linha curta +
+/// seta (abre/expande) ou chave (liga/desliga). Só visual — nenhuma lógica
+/// das opções foi alterada.
 class ConfigScreen extends ConsumerWidget {
   const ConfigScreen({super.key});
 
@@ -50,114 +52,109 @@ class ConfigScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          const _SecaoTema(),
-          const SizedBox(height: 14),
-          const _SecaoIdioma(),
-          const SizedBox(height: 14),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: som,
-            onChanged: (v) => ref.read(somProvider.notifier).definir(v),
-            activeThumbColor: context.accent,
-            title: Text(
-              s.som,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-            ),
-            subtitle: Text(
-              s.somDesc,
-              style: TextStyle(color: AppColors.dim, fontSize: 13),
-            ),
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: gami,
-            onChanged: (v) => ref.read(gamificacaoProvider.notifier).definir(v),
-            activeThumbColor: context.accent,
-            title: Text(
-              s.gamificacao,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-            ),
-            subtitle: Text(
-              s.gamificacaoDesc,
-              style: TextStyle(color: AppColors.dim, fontSize: 13),
-            ),
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: cardsPre,
-            onChanged: (v) =>
-                ref.read(cardsPreTreinoProvider.notifier).definir(v),
-            activeThumbColor: context.accent,
-            title: const Text(
-              'Card antes do treino',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-            ),
-            subtitle: Text(
-              'Mostra um card motivacional ao iniciar o treino (dos que você tem). '
-              'Colecione mais na aba Progressão › Cards.',
-              style: TextStyle(color: AppColors.dim, fontSize: 13),
-            ),
-          ),
-          // 🧪 Laboratório de Animações = ferramenta de DEV. Só aparece no canal
-          // de teste (build-apk com --dart-define=LAB=true); no build da Play
-          // Store (build-aab, sem o flag) fica oculto. Ver util/flags.dart.
-          if (kMostrarLab) ...[
-            const SizedBox(height: 8),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Text('🧪', style: TextStyle(fontSize: 22)),
-              title: const Text(
-                'Laboratório de Animações',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          _GrupoTitulo(s.grupoAparencia),
+          const SizedBox(height: 8),
+          const _Cartao(children: [_SecaoTema(), _Div(), _SecaoIdioma()]),
+          const SizedBox(height: 16),
+          _GrupoTitulo(s.grupoTreino),
+          const SizedBox(height: 8),
+          _Cartao(
+            children: [
+              SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                value: som,
+                onChanged: (v) =>
+                    ref.read(somProvider.notifier).definir(v),
+                activeThumbColor: context.accent,
+                title: Text(
+                  s.som,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+                subtitle: Text(
+                  s.somDesc,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: AppColors.dim, fontSize: 13),
+                ),
               ),
-              subtitle: Text(
-                'Área de testes das animações e recompensas (não altera seu progresso)',
-                style: TextStyle(color: AppColors.dim, fontSize: 13),
+              const _Div(),
+              SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                value: gami,
+                onChanged: (v) =>
+                    ref.read(gamificacaoProvider.notifier).definir(v),
+                activeThumbColor: context.accent,
+                title: Text(
+                  s.gamificacao,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+                subtitle: Text(
+                  s.gamificacaoDesc,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: AppColors.dim, fontSize: 13),
+                ),
               ),
-              trailing: Icon(Icons.chevron_right, color: AppColors.dim),
-              onTap: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const LabScreen())),
-            ),
-          ],
-          const SizedBox(height: 20),
-          const _SecaoLembretes(),
-          const SizedBox(height: 20),
-          Text(
-            s.conta,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+              const _Div(),
+              SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                value: cardsPre,
+                onChanged: (v) =>
+                    ref.read(cardsPreTreinoProvider.notifier).definir(v),
+                activeThumbColor: context.accent,
+                title: const Text(
+                  'Card antes do treino',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
+                subtitle: Text(
+                  'Card motivacional ao iniciar o treino.',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: AppColors.dim, fontSize: 13),
+                ),
+              ),
+              const _Div(),
+              const _SecaoLembretes(),
+              // 🧪 Laboratório de Animações = ferramenta de DEV. Só aparece no canal
+              // de teste (build-apk com --dart-define=LAB=true); no build da Play
+              // Store (build-aab, sem o flag) fica oculto. Ver util/flags.dart.
+              if (kMostrarLab) ...[const _Div(), const _TileLab()],
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            s.contaDesc,
-            style: TextStyle(color: AppColors.dim, fontSize: 13),
+          const SizedBox(height: 16),
+          _GrupoTitulo(s.conta),
+          const SizedBox(height: 8),
+          _ItemExpansivel(
+            titulo: s.conta,
+            descricao: s.contaDesc,
+            child: const _SecaoConta(),
           ),
-          const SizedBox(height: 12),
-          const _SecaoConta(),
-          const SizedBox(height: 20),
-          Text(
-            s.backupArquivo,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          const SizedBox(height: 16),
+          _GrupoTitulo(s.grupoDados),
+          const SizedBox(height: 8),
+          _ItemExpansivel(
+            titulo: s.backupArquivo,
+            descricao: s.backupDesc,
+            child: const _SecaoBackup(),
           ),
-          const SizedBox(height: 4),
-          Text(
-            s.backupDesc,
-            style: TextStyle(color: AppColors.dim, fontSize: 13),
+          const SizedBox(height: 10),
+          _ItemExpansivel(
+            titulo: s.resumoClaudeTitulo,
+            descricao: s.resumoClaudeDesc,
+            child: const _SecaoResumoClaude(),
           ),
-          const SizedBox(height: 12),
-          const _SecaoBackup(),
-          const SizedBox(height: 20),
-          Text(
-            s.resumoClaudeTitulo,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            s.resumoClaudeDesc,
-            style: TextStyle(color: AppColors.dim, fontSize: 13),
-          ),
-          const SizedBox(height: 12),
-          const _SecaoResumoClaude(),
           const SizedBox(height: 28),
           Center(
             child: Text(
@@ -171,6 +168,190 @@ class ConfigScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+}
+
+/// Título curto de grupo ("Aparência", "Treino"...): uma linha, sem descrição.
+class _GrupoTitulo extends StatelessWidget {
+  const _GrupoTitulo(this.texto);
+
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        texto,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: AppColors.dim,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+  }
+}
+
+/// Cartão de grupo: fundo surface, cantos arredondados, borda sutil.
+/// Os filhos cuidam do próprio respiro interno; [_Div] separa os itens.
+class _Cartao extends StatelessWidget {
+  const _Cartao({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    );
+  }
+}
+
+/// Separador fino entre itens de um [_Cartao].
+class _Div extends StatelessWidget {
+  const _Div();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: AppColors.line,
+      indent: 14,
+      endIndent: 14,
+    );
+  }
+}
+
+/// Item expansível: título + uma linha curta + seta (⌄/›); tocar abre o
+/// conteúdo ([child]) dentro do próprio cartão. Usado por Conta, Backup e
+/// Resumo — a lógica interna de cada um não mudou.
+class _ItemExpansivel extends StatefulWidget {
+  const _ItemExpansivel({
+    required this.titulo,
+    required this.descricao,
+    required this.child,
+  });
+
+  final String titulo;
+  final String descricao;
+  final Widget child;
+
+  @override
+  State<_ItemExpansivel> createState() => _ItemExpansivelState();
+}
+
+class _ItemExpansivelState extends State<_ItemExpansivel> {
+  bool _aberto = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => setState(() => _aberto = !_aberto),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.titulo,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.descricao,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.dim,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    _aberto ? Icons.expand_less : Icons.expand_more,
+                    color: AppColors.dim,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_aberto)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 2, 14, 14),
+              child: widget.child,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Linha do Laboratório dentro do grupo Treino (só com o flag LAB de dev).
+class _TileLab extends StatelessWidget {
+  const _TileLab();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: const Text('🧪', style: TextStyle(fontSize: 22)),
+        title: const Text(
+          'Laboratório de Animações',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        ),
+        subtitle: Text(
+          'Testes de animação, sem mexer no progresso.',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: AppColors.dim, fontSize: 13),
+        ),
+        trailing: Icon(Icons.chevron_right, color: AppColors.dim),
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const LabScreen())),
       ),
     );
   }
@@ -191,7 +372,9 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
     final tema = ref.watch(temaProvider).value ?? TemaApp.ambar;
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
-    return Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
@@ -205,14 +388,18 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
                   children: [
                     Text(
                       s.tema,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       s.temaDesc,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: AppColors.dim, fontSize: 13),
                     ),
                   ],
@@ -278,6 +465,7 @@ class _SecaoTemaState extends ConsumerState<_SecaoTema> {
           ),
         ],
       ],
+      ),
     );
   }
 }
@@ -296,7 +484,9 @@ class _SecaoIdiomaState extends ConsumerState<_SecaoIdioma> {
   Widget build(BuildContext context) {
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
-    return Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
@@ -310,14 +500,18 @@ class _SecaoIdiomaState extends ConsumerState<_SecaoIdioma> {
                   children: [
                     Text(
                       s.idiomaLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       s.idiomaDesc,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: AppColors.dim, fontSize: 13),
                     ),
                   ],
@@ -343,6 +537,7 @@ class _SecaoIdiomaState extends ConsumerState<_SecaoIdioma> {
             ),
         ],
       ],
+      ),
     );
   }
 }
@@ -421,7 +616,9 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
     final idioma = ref.watch(idiomaProvider).value ?? Idioma.pt;
     final s = Strings(idioma);
 
-    return Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SwitchListTile(
@@ -434,10 +631,14 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
           activeThumbColor: context.accent,
           title: Text(
             s.lembrarTreinar,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
           ),
           subtitle: Text(
             config.ativo ? s.lembrarDescOn : s.lembrarDescOff,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(color: AppColors.dim, fontSize: 13),
           ),
         ),
@@ -515,6 +716,7 @@ class _SecaoLembretesState extends ConsumerState<_SecaoLembretes> {
             ],
           ],
       ],
+      ),
     );
   }
 }

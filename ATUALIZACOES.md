@@ -3,6 +3,11 @@
 Uma linha por melhoria visível / release. Topo = mais recente. É o "o que mudou / o que
 re-testar".
 
+- **2026-11-22 — v0.121.0 (Configurações em lista agrupada):**
+  - A tela Config virou **lista única por grupos** (Aparência, Treino, Conta, Dados): cada item tem **título + 1 linha curta + seta**, e o que liga/desliga mantém a **chave**.
+  - Textos encurtados ("Bips no fim do treino.", "Segunda via em arquivo .json." etc.); "Gerenciar horários" aparece **uma vez só**, dentro de Lembrar de treinar.
+  - Re-testar: abrir cada seta, ligar/desligar cada chave, 360/411dp sem corte.
+
 - **2026-11-21 — v0.120.0 (Novo treino sem sobrepor a barra):**
   - O botão **"+ Novo treino"** agora fica **acima da barra flutuante**, como ação separada — não aparece mais atrás do item Progressão.
   - Barra segue igual (pílula, 3 itens, destaque e transparência).

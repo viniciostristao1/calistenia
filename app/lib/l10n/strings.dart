@@ -14,11 +14,15 @@ class Strings {
 
   // Config
   String get configTitulo => _t('Configurações', 'Settings', 'Configuración');
+  String get grupoAparencia =>
+      _t('Aparência', 'Appearance', 'Apariencia');
+  String get grupoTreino => _t('Treino', 'Training', 'Entreno');
+  String get grupoDados => _t('Dados', 'Data', 'Datos');
   String get tema => _t('Tema', 'Theme', 'Tema');
   String get temaDesc => _t(
-    'Muda as cores e o visual do app inteiro.',
-    'Changes colors and look of the whole app.',
-    'Cambia los colores y el aspecto de toda la app.',
+    'Cores e visual do app.',
+    'App colors and look.',
+    'Colores y aspecto.',
   );
   String get idiomaLabel => _t('Idioma', 'Language', 'Idioma');
   String get idiomaDesc => _t(
@@ -28,28 +32,28 @@ class Strings {
   );
   String get som => _t('Som', 'Sound', 'Sonido');
   String get somDesc => _t(
-    'Bips nas transições e no fim do treino.',
-    'Beeps on transitions and at workout end.',
-    'Pitidos en transiciones y al final del entreno.',
+    'Bips no fim do treino.',
+    'Beeps at workout end.',
+    'Pitidos al final del entreno.',
   );
   String get gamificacao => _t('Gamificação', 'Gamification', 'Gamificación');
   String get gamificacaoDesc => _t(
-    'Medalhas, troféus e a pergunta “treino completo?” no fim do treino.',
-    'Medals, trophies and the “workout complete?” prompt at the end.',
-    'Medallas, trofeos y la pregunta “¿entreno completo?” al final.',
+    'Medalhas, troféus e pergunta final.',
+    'Medals, trophies and final prompt.',
+    'Medallas, trofeos y pregunta final.',
   );
   String get lembrarTreinar =>
       _t('Lembrar de treinar', 'Training reminders', 'Recordatorios');
   String get lembrarDescOn => _t(
-    'Notificação ligada nos dias com treino.',
-    'Notifications on for training days.',
-    'Notificaciones activas en días con entreno.',
+    'Aviso nos dias com treino.',
+    'Reminder on training days.',
+    'Aviso en días con entreno.',
   );
   String get lembrarDescOff => _t('Desligado.', 'Off.', 'Desactivado.');
   String get nenhumTreinoAgendado => _t(
-    'Nenhum treino agendado ainda. Marque os dias de um treino no editor para o lembrete aparecer aqui.',
-    'No training scheduled yet. Assign days to a workout in the editor to see reminders here.',
-    'Aún no hay entreno programado. Asigna días a un entreno en el editor para ver recordatorios aquí.',
+    'Sem dias com treino. Marque os dias no editor.',
+    'No training days. Set days in the editor.',
+    'Sin días de entreno. Marca los días en el editor.',
   );
   String get gerenciarHorarios =>
       _t('Gerenciar horários', 'Manage schedules', 'Gestionar horarios');
@@ -62,9 +66,9 @@ class Strings {
   );
   String get conta => _t('Conta', 'Account', 'Cuenta');
   String get contaDesc => _t(
-    'Entre com Google para guardar treinos, check-ins e progressão na sua conta e recuperá-los em qualquer aparelho.',
-    'Sign in with Google to save workouts, check-ins and progress to your account and restore on any device.',
-    'Inicia sesión con Google para guardar entrenos, check-ins y progreso en tu cuenta y restaurarlos en cualquier dispositivo.',
+    'Salve tudo na conta e recupere depois.',
+    'Save everything to your account.',
+    'Guarda todo en tu cuenta.',
   );
   String get entrarGoogle => _t(
     'Entrar com Google',
@@ -76,18 +80,18 @@ class Strings {
   String get backupArquivo =>
       _t('Backup em arquivo', 'File backup', 'Copia en archivo');
   String get backupDesc => _t(
-    'Uma segunda via, independente da conta: exporte tudo (treinos, progressão, check-ins, conquistas) num arquivo .json e restaure quando quiser.',
-    'A second copy, independent of the account: export everything (workouts, progress, check-ins, achievements) to a .json file and restore anytime.',
-    'Una segunda copia, independiente de la cuenta: exporta todo (entrenos, progreso, check-ins, logros) a un .json y restaura cuando quieras.',
+    'Segunda via em arquivo .json.',
+    'Second copy as a .json file.',
+    'Segunda copia en .json.',
   );
   String get exportar => _t('Exportar', 'Export', 'Exportar');
   String get importar => _t('Importar', 'Import', 'Importar');
   String get resumoClaudeTitulo =>
       _t('Resumo para a Muse', 'Muse summary', 'Resumen para Muse');
   String get resumoClaudeDesc => _t(
-    'Copie o treino de hoje ou gere o arquivo de 15 dias para conversar com a assistente sobre seu desempenho.',
-    'Copy today’s workout or generate the 15-day file to talk to the assistant about your progress.',
-    'Copia el entreno de hoy o genera el archivo de 15 días para hablar con la asistente sobre tu progreso.',
+    'Copie o treino ou gere o arquivo de 15 dias.',
+    'Copy the workout or make the 15-day file.',
+    'Copia el entreno o genera el archivo.',
   );
   String get copiarTreinoHoje => _t(
     'Copiar treino de hoje',

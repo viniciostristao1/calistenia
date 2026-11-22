@@ -5,6 +5,22 @@ e **gotchas** (para não repetir). Ler antes de mexer em build/assinatura/plugin
 
 ---
 
+## 2026-11-22 — Configurações em lista agrupada (v0.121.0)
+
+**Pedido:** lista única por grupos (Aparência, Treino, Conta, Dados), 1 linha curta
+por item, seta p/ abrir, chave p/ liga/desliga, sem repetir "Gerenciar horários".
+
+**Feito (só `config_screen.dart` + textos Config em `l10n/strings.dart`; lógica
+intacta):** `_GrupoTitulo` + `_Cartao`/`_Div` + `_ItemExpansivel` (Conta, Backup,
+Resumo) e chaves no cartão Treino (Som, Gamificação, Card, Lembrar c/ gerenciar
+dentro); Tema/Idioma e Lab reaproveitados no cartão. Textos PT/EN/ES encurtados
+(ex.: som "Bips no fim do treino."). Sem 2ª tela de Lembrar no código — valia só
+dentro do item. Toggle rows mantidos com chave (pergunta feita ao usuário no fim).
+`maxLines: 1` + ellipsis em todos os cabeçalhos (360dp). Versão `0.121.0+180`.
+
+**Testes:** `analyze` = 4 infos preexistentes (fora dos tocados);
+`flutter test` = 173 passed.
+
 ## 2026-11-21 — Novo treino sem sobrepor a barra (v0.120.0)
 
 **Causa:** `extendBody: true` do RootScreen (v0.118.0) fez o body ocupar a tela
